@@ -1,0 +1,49 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { extractResponsePayload, assertVersionCanBeConfirmed } from '../src/contract.js';
+import { createDifyClient } from '../src/dify.js';
+import { GenerationService } from '../src/service.js';
+
+const validPayload = { data: { outputs: { response_payload_json: JSON.stringify({
+  document: { title: '技术响应', markdown: '# 技术响应\n\n正式正文', sections: [{ id: 'summary', title: '项目概述' }] },
+  warnings: [{ level: 'warning', code: 'W-01', message: '交付周期需要复核' }], risk_status: 'warning'
+}) } } };
+
+test('合法 response_payload_json 通过契约并提取正式正文', () => {
+  const result = extractResponsePayload(validPayload);
+  assert.equal(result.markdown, '# 技术响应\n\n正式正文');
+  assert.equal(result.riskStatus, 'warning');
+  assert.equal(result.sections[0].title, '项目概述');
+});
+
+test('非法契约返回 CONTRACT_INVALID 且不创建正式文档版本', async () => {
+  let completed = false;
+  let failedGenerationRecorded = false;
+  const repository = {
+    getProject: async () => ({ id: 'project-1' }),
+    createJob: async () => ({ id: 'job-1', project_id: 'project-1' }),
+    updateJob: async () => {},
+    recordFailedGeneration: async () => { failedGenerationRecorded = true; },
+    completeGeneration: async () => { completed = true; }
+  };
+  const difyClient = { run: async () => extractResponsePayload({ data: { outputs: { response_payload_json: '{"risk_status":"pass"}' } } }) };
+  const service = new GenerationService({ repository, difyClient, workflowVersion: '4.2' });
+  await assert.rejects(() => service.generate({ projectId: 'project-1', inputs: {
+    project_name: '测试项目', project_type: '智慧城市', bid_need: '需求', focus_points: '重点', output_mode: '技术标初稿'
+  } }), (error) => error.code === 'CONTRACT_INVALID');
+  assert.equal(completed, false);
+  assert.equal(failedGenerationRecorded, true);
+});
+
+test('critical 风险禁止确认版本', () => {
+  assert.throws(() => assertVersionCanBeConfirmed({ risk_status: 'critical' }, '已知悉'), (error) => error.code === 'CRITICAL_RISK' && error.status === 409);
+});
+
+test('Dify 调用失败返回明确错误码', async () => {
+  const client = createDifyClient({ apiBase: 'https://api.dify.example/v1', apiKey: 'test-only', fetchImpl: async () => { throw new Error('network unavailable'); } });
+  await assert.rejects(() => client.run({ project_name: '测试' }), (error) => error.code === 'DIFY_CALL_FAILED' && error.status === 502);
+});
+
+test('禁止从 result/text/answer 兜底读取正文', () => {
+  assert.throws(() => extractResponsePayload({ data: { outputs: { result: '# 不应读取', text: '# 不应读取', answer: '# 不应读取' } } }), (error) => error.code === 'CONTRACT_INVALID');
+});

@@ -1,47 +1,47 @@
 const API_BASE = import.meta.env.VITE_API_BASE || '';
-const GATEWAY_TIMEOUT_MESSAGE =
-  'Dify Cloud 网关超时，请稍后重试，或缩短生成内容 / 改用 streaming / 本地部署 Dify。';
-
-function looksLikeHtmlError(text) {
-  return /<!doctype html>/i.test(text)
-    || /<html[\s>]/i.test(text)
-    || /504:\s*gateway time-out/i.test(text)
-    || /gateway timeout/i.test(text);
-}
 
 async function request(path, options = {}) {
-  const response = await fetch(`${API_BASE}${path}`, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers
-    },
-    ...options
-  });
-
-  const responseText = await response.text();
-
-  if (looksLikeHtmlError(responseText)) {
-    throw new Error(GATEWAY_TIMEOUT_MESSAGE);
-  }
-
+  const headers = { ...(options.headers || {}) };
+  if (options.body && !(options.body instanceof FormData)) headers['Content-Type'] = 'application/json';
+  const response = await fetch(`${API_BASE}${path}`, { ...options, headers });
+  const text = await response.text();
   let payload = {};
-
-  try {
-    payload = responseText ? JSON.parse(responseText) : {};
-  } catch (_error) {
-    throw new Error('服务返回了非预期响应，请稍后重试。');
-  }
-
+  try { payload = text ? JSON.parse(text) : {}; }
+  catch (_error) { throw new Error('服务返回了非预期响应，请稍后重试。'); }
   if (!response.ok) {
-    throw new Error(payload.message || '请求失败，请稍后重试');
+    const error = new Error(payload.message || '请求失败，请稍后重试。');
+    error.code = payload.code;
+    throw error;
   }
-
   return payload;
 }
 
-export function generateBid(inputs) {
-  return request('/api/generate-bid', {
-    method: 'POST',
-    body: JSON.stringify(inputs)
-  });
-}
+export const api = {
+  listProjects: () => request('/api/projects'),
+  getProject: (id) => request(`/api/projects/${id}`),
+  createProject(data) {
+    const body = new FormData();
+    body.append('name', data.name);
+    if (data.deadline) body.append('deadline', data.deadline);
+    if (data.file) body.append('tender_file', data.file);
+    return request('/api/projects', { method: 'POST', body });
+  },
+  uploadTenderFile(projectId, file) {
+    const body = new FormData();
+    body.append('file', file);
+    return request(`/api/projects/${projectId}/tender-files`, { method: 'POST', body });
+  },
+  generate(projectId, inputs) {
+    return request(`/api/projects/${projectId}/generation-jobs`, { method: 'POST', body: JSON.stringify(inputs) });
+  },
+  confirmVersion(versionId, confirmationText) {
+    return request(`/api/document-versions/${versionId}/review-decisions`, {
+      method: 'POST', body: JSON.stringify({ decision: 'confirmed', confirmation_text: confirmationText })
+    });
+  },
+  generateBid(inputs) {
+    return request('/api/generate-bid', { method: 'POST', body: JSON.stringify(inputs) });
+  }
+};
+
+export const generateBid = api.generateBid;

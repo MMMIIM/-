@@ -12,9 +12,18 @@
     "backend:dev": "npm run dev -w backend",
     "frontend:dev": "npm run dev -w frontend",
     "build": "npm run build -w frontend",
-    "start": "npm run start -w backend"
+    "start": "npm run start -w backend",
+    "db:migrate": "npm run db:migrate -w backend",
+    "test": "npm run test -w backend",
+    "lint": "npm run lint --if-present -w backend && npm run lint --if-present -w frontend"
   },
   "dependencies": {
-    "concurrently": "^9.1.2"
+    "concurrently": "^9.2.4"
+  },
+  "overrides": {
+    "body-parser": "1.20.6",
+    "nanoid": "3.3.18",
+    "postcss": "8.5.23",
+    "shell-quote": "1.10.0"
   }
 }
