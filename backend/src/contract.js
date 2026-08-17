@@ -6,6 +6,29 @@ function invalid(reason) {
   throw new AppError('CONTRACT_INVALID', ERROR_MESSAGES.CONTRACT_INVALID, 502, reason);
 }
 
+function attachResponsePayloadAudit(error, rawValue) {
+  if (!(error instanceof AppError) || error.code !== 'CONTRACT_INVALID') return;
+
+  error.audit = { ...(error.audit || {}), responsePayloadMissing: rawValue === undefined };
+  if (rawValue === undefined) return;
+
+  if (typeof rawValue === 'string') {
+    try {
+      error.audit.responsePayloadJson = JSON.parse(rawValue);
+    } catch (_parseError) {
+      error.audit.rawResponseText = rawValue;
+    }
+    return;
+  }
+
+  try {
+    JSON.stringify(rawValue);
+    error.audit.responsePayloadJson = rawValue;
+  } catch (_serializationError) {
+    error.audit.rawResponseText = String(rawValue);
+  }
+}
+
 export function parseResponsePayload(rawValue) {
   let value = rawValue;
 
@@ -61,13 +84,14 @@ export function parseResponsePayload(rawValue) {
 
 export function extractResponsePayload(difyPayload) {
   const outputs = difyPayload?.data?.outputs ?? difyPayload?.outputs;
-  if (!outputs || !Object.prototype.hasOwnProperty.call(outputs, 'response_payload_json')) invalid('output is missing');
+  const rawValue = outputs && Object.prototype.hasOwnProperty.call(outputs, 'response_payload_json')
+    ? outputs.response_payload_json
+    : undefined;
   try {
-    return parseResponsePayload(outputs.response_payload_json);
+    if (rawValue === undefined) invalid('output is missing');
+    return parseResponsePayload(rawValue);
   } catch (error) {
-    if (error instanceof AppError && error.code === 'CONTRACT_INVALID') {
-      error.auditPayload = outputs.response_payload_json;
-    }
+    attachResponsePayloadAudit(error, rawValue);
     throw error;
   }
 }

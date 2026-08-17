@@ -77,11 +77,42 @@ export class PgRepository {
     return rows[0];
   }
 
-  async recordFailedGeneration({ job, responsePayload, workflowVersion, runtimeMs }) {
+  async recordFailedGeneration({
+    job,
+    responsePayloadJson,
+    rawDifyResponseJson,
+    rawResponseText,
+    errorCode,
+    errorMessage,
+    workflowVersion,
+    runtimeMs
+  }) {
+    const serializedResponsePayload = responsePayloadJson === undefined
+      ? null
+      : JSON.stringify(responsePayloadJson);
+    const serializedDifyResponse = rawDifyResponseJson === undefined
+      ? null
+      : JSON.stringify(rawDifyResponseJson);
     const { rows } = await this.pool.query(`
-      INSERT INTO generations (project_id, job_id, response_payload_json, workflow_version, runtime_ms, status)
-      VALUES ($1, $2, $3, $4, $5, 'failed') RETURNING id
-    `, [job.project_id, job.id, responsePayload, workflowVersion, runtimeMs]);
+      INSERT INTO generations (
+        project_id, job_id, response_payload_json, raw_dify_response_json, raw_response_text,
+        error_code, error_message, workflow_version, runtime_ms, status
+      )
+      VALUES ($1, $2, $3::jsonb, $4::jsonb, $5, $6, $7, $8, $9, 'failed')
+      RETURNING id, project_id, job_id, status, error_code, error_message,
+        workflow_version, runtime_ms, response_payload_json, raw_dify_response_json,
+        raw_response_text, created_at
+    `, [
+      job.project_id,
+      job.id,
+      serializedResponsePayload,
+      serializedDifyResponse,
+      rawResponseText ?? null,
+      errorCode,
+      errorMessage,
+      workflowVersion,
+      runtimeMs
+    ]);
     return rows[0];
   }
 

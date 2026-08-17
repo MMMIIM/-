@@ -19,11 +19,12 @@ test('合法 response_payload_json 通过契约并提取正式正文', () => {
 test('非法契约返回 CONTRACT_INVALID 且不创建正式文档版本', async () => {
   let completed = false;
   let failedGenerationRecorded = false;
+  let failedAudit;
   const repository = {
     getProject: async () => ({ id: 'project-1' }),
     createJob: async () => ({ id: 'job-1', project_id: 'project-1' }),
     updateJob: async () => {},
-    recordFailedGeneration: async () => { failedGenerationRecorded = true; },
+    recordFailedGeneration: async (audit) => { failedGenerationRecorded = true; failedAudit = audit; },
     completeGeneration: async () => { completed = true; }
   };
   const difyClient = { run: async () => extractResponsePayload({ data: { outputs: { response_payload_json: '{"risk_status":"pass"}' } } }) };
@@ -33,6 +34,51 @@ test('非法契约返回 CONTRACT_INVALID 且不创建正式文档版本', async
   } }), (error) => error.code === 'CONTRACT_INVALID');
   assert.equal(completed, false);
   assert.equal(failedGenerationRecorded, true);
+  assert.equal(failedAudit.errorCode, 'CONTRACT_INVALID');
+  assert.equal(failedAudit.rawResponseText, undefined);
+});
+
+test('四类非法 response_payload_json 都携带可持久化审计上下文', () => {
+  const cases = [
+    [{ data: { outputs: {} } }, (audit) => assert.equal(audit.responsePayloadMissing, true)],
+    [{ data: { outputs: { response_payload_json: 42 } } }, (audit) => assert.equal(audit.responsePayloadJson, 42)],
+    [{ data: { outputs: { response_payload_json: '{bad-json' } } }, (audit) => assert.equal(audit.rawResponseText, '{bad-json')],
+    [{ data: { outputs: { response_payload_json: { risk_status: 'pass' } } } }, (audit) => assert.deepEqual(audit.responsePayloadJson, { risk_status: 'pass' })]
+  ];
+
+  for (const [payload, assertAudit] of cases) {
+    assert.throws(() => extractResponsePayload(payload), (error) => {
+      assert.equal(error.code, 'CONTRACT_INVALID');
+      assertAudit(error.audit);
+      return true;
+    });
+  }
+});
+
+test('失败审计数据库错误不覆盖 CONTRACT_INVALID', async () => {
+  const logged = [];
+  const repository = {
+    getProject: async () => ({ id: 'project-1' }),
+    createJob: async () => ({ id: 'job-1', project_id: 'project-1' }),
+    updateJob: async (_jobId, status) => {
+      if (status === 'failed') throw new Error('database unavailable');
+    },
+    recordFailedGeneration: async () => { throw new Error('jsonb write failed'); }
+  };
+  const difyClient = {
+    run: async () => extractResponsePayload({ data: { outputs: { response_payload_json: '{bad-json' } } })
+  };
+  const service = new GenerationService({
+    repository,
+    difyClient,
+    workflowVersion: '4.2',
+    logger: { error: (...args) => logged.push(args) }
+  });
+
+  await assert.rejects(() => service.generate({ projectId: 'project-1', inputs: {
+    project_name: '测试项目', project_type: '智慧城市', bid_need: '需求', focus_points: '重点', output_mode: '技术标初稿'
+  } }), (error) => error.code === 'CONTRACT_INVALID');
+  assert.equal(logged.length, 2);
 });
 
 test('critical 风险禁止确认版本', () => {

@@ -23,7 +23,18 @@ function extractFromSse(text) {
       if (!(error instanceof SyntaxError)) throw error;
     }
   }
-  return extractResponsePayload(finishedPayload);
+  try {
+    return extractResponsePayload(finishedPayload);
+  } catch (error) {
+    if (error instanceof AppError && error.code === 'CONTRACT_INVALID') {
+      error.audit = {
+        ...(error.audit || {}),
+        rawDifyResponseJson: finishedPayload,
+        rawResponseText: error.audit?.rawResponseText || (finishedPayload ? undefined : text)
+      };
+    }
+    throw error;
+  }
 }
 
 export function createDifyClient({ apiBase, apiKey, fetchImpl = fetch }) {
@@ -50,7 +61,25 @@ export function createDifyClient({ apiBase, apiKey, fetchImpl = fetch }) {
       const contentType = response.headers.get('content-type') || '';
       try {
         if (contentType.includes('text/event-stream')) return extractFromSse(await response.text());
-        if (contentType.includes('application/json')) return extractResponsePayload(await response.json());
+        if (contentType.includes('application/json')) {
+          const responseText = await response.text();
+          let responseJson;
+          try {
+            responseJson = JSON.parse(responseText);
+          } catch (_parseError) {
+            const contractError = new AppError('CONTRACT_INVALID', ERROR_MESSAGES.CONTRACT_INVALID, 502);
+            contractError.audit = { rawResponseText: responseText };
+            throw contractError;
+          }
+          try {
+            return extractResponsePayload(responseJson);
+          } catch (error) {
+            if (error instanceof AppError && error.code === 'CONTRACT_INVALID') {
+              error.audit = { ...(error.audit || {}), rawDifyResponseJson: responseJson };
+            }
+            throw error;
+          }
+        }
       } catch (error) {
         if (error instanceof AppError) throw error;
         throw new AppError('CONTRACT_INVALID', ERROR_MESSAGES.CONTRACT_INVALID, 502);

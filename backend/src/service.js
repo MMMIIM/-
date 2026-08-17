@@ -4,10 +4,11 @@ import { AppError, ERROR_MESSAGES } from './errors.js';
 export const REQUIRED_INPUTS = ['project_name', 'project_type', 'bid_need', 'focus_points', 'output_mode'];
 
 export class GenerationService {
-  constructor({ repository, difyClient, workflowVersion }) {
+  constructor({ repository, difyClient, workflowVersion, logger = console }) {
     this.repository = repository;
     this.difyClient = difyClient;
     this.workflowVersion = workflowVersion;
+    this.logger = logger;
   }
 
   async generate({ projectId, inputs, user }) {
@@ -29,19 +30,33 @@ export class GenerationService {
       const appError = error instanceof AppError
         ? error
         : new AppError('GENERATION_FAILED', '生成任务失败，请稍后重试。', 500);
-      if (appError.code === 'CONTRACT_INVALID' && appError.auditPayload !== undefined) {
+      if (appError.code === 'CONTRACT_INVALID') {
         try {
           await this.repository.recordFailedGeneration({
             job,
-            responsePayload: appError.auditPayload,
+            responsePayloadJson: appError.audit?.responsePayloadJson,
+            rawDifyResponseJson: appError.audit?.rawDifyResponseJson,
+            rawResponseText: appError.audit?.rawResponseText,
+            errorCode: appError.code,
+            errorMessage: appError.message,
             workflowVersion: this.workflowVersion,
             runtimeMs: Date.now() - startedAt
           });
-        } catch (_auditError) {
-          // Keep the public error deterministic; database observability captures audit persistence failures.
+        } catch (auditError) {
+          this.logger.error('Failed to persist generation audit', {
+            jobId: job.id,
+            error: auditError instanceof Error ? auditError.message : String(auditError)
+          });
         }
       }
-      await this.repository.updateJob(job.id, 'failed', { code: appError.code, message: appError.message });
+      try {
+        await this.repository.updateJob(job.id, 'failed', { code: appError.code, message: appError.message });
+      } catch (jobUpdateError) {
+        this.logger.error('Failed to persist generation job failure', {
+          jobId: job.id,
+          error: jobUpdateError instanceof Error ? jobUpdateError.message : String(jobUpdateError)
+        });
+      }
       throw appError;
     }
   }
