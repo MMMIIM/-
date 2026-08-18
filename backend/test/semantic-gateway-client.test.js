@@ -3,9 +3,12 @@ import assert from 'node:assert/strict';
 import {
   SemanticGatewayClient,
   createGenerationProvider,
+  createSemanticGatewayClientFromEnv,
   normalizeGatewayTransport
 } from '../src/pipeline/semantic-gateway-client.js';
 import { DeterministicPipelineService, runDeterministicPipeline } from '../src/pipeline/generation-audit.js';
+import { isAbsolute } from 'node:path';
+import { BACKEND_ENV_PATH, createBackendRuntime } from '../src/backend-runtime.js';
 
 const request = {
   task_type: 'draft_sections',
@@ -214,4 +217,73 @@ test('默认 GENERATION_PROVIDER=mock 保持原 writer，semantic_gateway 审计
   });
   assert.equal(pipelineResult.ok, true);
   assert.equal(pipelineResult.envelope.provider_audit.raw_response_payload_json, raw);
+});
+
+test('backend/.env 使用唯一绝对路径并覆盖长期进程继承的旧网关配置', async () => {
+  const env = {
+    V43_GATEWAY_API_BASE: 'https://stale.invalid/v1',
+    V43_GATEWAY_API_KEY: 'stale-test-key',
+    V43_GATEWAY_USER: 'stale-user'
+  };
+  let dotenvOptions;
+  const runtime = createBackendRuntime({
+    env,
+    dotenvConfig(options) {
+      dotenvOptions = options;
+      Object.assign(options.processEnv, {
+        V43_GATEWAY_API_BASE: 'http://127.0.0.1:18080/v1',
+        V43_GATEWAY_API_KEY: 'runtime-test-key',
+        V43_GATEWAY_USER: 'runtime-user'
+      });
+      return { parsed: {} };
+    }
+  });
+  assert.equal(isAbsolute(BACKEND_ENV_PATH), true);
+  assert.match(BACKEND_ENV_PATH.replace(/\\/g, '/'), /\/backend\/\.env$/);
+  assert.equal(dotenvOptions.path, BACKEND_ENV_PATH);
+  assert.equal(dotenvOptions.override, true);
+  assert.equal(dotenvOptions.processEnv, env);
+  assert.equal(runtime.env.V43_GATEWAY_API_BASE, 'http://127.0.0.1:18080/v1');
+});
+
+test('网关配置解析器只接受 V43_GATEWAY_*，绝不回退到旧 DIFY_*', async () => {
+  const legacyOnlyClient = createSemanticGatewayClientFromEnv({
+    env: {
+      DIFY_API_BASE: 'https://api.dify.invalid/v1',
+      DIFY_API_KEY: 'legacy-test-key',
+      DIFY_USER: 'legacy-user'
+    },
+    fetchImpl: async () => { throw new Error('must not be called'); }
+  });
+  await assert.rejects(
+    () => legacyOnlyClient.run(request),
+    (error) => error.code === 'GATEWAY_NOT_CONFIGURED'
+  );
+});
+
+test('网络诊断只记录 provider、host、port 与错误分类', async () => {
+  const diagnostics = [];
+  const gatewayClient = createSemanticGatewayClientFromEnv({
+    env: {
+      V43_GATEWAY_API_BASE: 'http://127.0.0.1:18080/v1',
+      V43_GATEWAY_API_KEY: 'never-log-this-test-key',
+      V43_GATEWAY_USER: 'diagnostic-user'
+    },
+    fetchImpl: async () => { throw new Error('private network detail'); },
+    logger: { warn: (...args) => diagnostics.push(args) }
+  });
+  await assert.rejects(
+    () => gatewayClient.run(request),
+    (error) => error.code === 'GATEWAY_NETWORK_ERROR'
+  );
+  assert.deepEqual(diagnostics, [[
+    'Semantic Gateway transport diagnostic',
+    {
+      provider: 'semantic_gateway',
+      gateway_host: '127.0.0.1',
+      gateway_port: '18080',
+      error_classification: 'GATEWAY_NETWORK_ERROR'
+    }
+  ]]);
+  assert.doesNotMatch(JSON.stringify(diagnostics), /never-log|Authorization|private network|task_instruction/i);
 });

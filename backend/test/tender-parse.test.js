@@ -11,6 +11,7 @@ import { RequirementParseService } from '../src/requirement-parse-service.js';
 import { createApp } from '../src/app.js';
 import { AppError } from '../src/errors.js';
 import { normalizeUtf8FileName } from '../src/file-name.js';
+import { createBackendRuntime } from '../src/backend-runtime.js';
 
 async function createDocx(text) {
   const zip = new JSZip();
@@ -220,10 +221,11 @@ test('解析失败落审计且绝不创建或确认 Requirement 基线', async (
 });
 
 test('确认服务只消费成功候选并由后端路由，已冻结基线拒绝替换', async () => {
+  const parseJobId = '11111111-1111-4111-8111-111111111111';
   let persisted;
   const repository = {
     getParseJob: async () => ({
-      id: 'parse-1', status: 'succeeded', candidates: [{
+      id: parseJobId, status: 'succeeded', candidates: [{
         req_id: 'REQ-001', content: '系统应提供安全审计日志。', source_excerpt: '提供安全审计日志。',
         source_page: 1, source_paragraph: 2, ordinal: 1
       }]
@@ -231,13 +233,13 @@ test('确认服务只消费成功候选并由后端路由，已冻结基线拒�
     confirmRequirementBaseline: async (value) => { persisted = value; return { baseline: { status: 'confirmed' }, requirements: value.requirements }; }
   };
   const service = new RequirementParseService({ repository });
-  const result = await service.confirm('parse-1');
+  const result = await service.confirm(parseJobId);
   assert.equal(result.baseline.status, 'confirmed');
   assert.deepEqual(persisted.requirements[0].target_sections, ['solution-design', 'security-compliance']);
 
   repository.confirmRequirementBaseline = async () => { throw Object.assign(new Error('frozen'), { code: 'REQUIREMENT_BASELINE_FROZEN' }); };
   await assert.rejects(
-    () => service.confirm('parse-1'),
+    () => service.confirm(parseJobId),
     (error) => error.code === 'REQUIREMENT_BASELINE_FROZEN' && error.status === 409
   );
 });
@@ -340,6 +342,119 @@ test('解析 API 合法失败统一返回安全 JSON error 契约', async () => 
       message: '需求提取服务返回格式无效。'
     });
     assert.doesNotMatch(JSON.stringify(payload), /raw response|stack|prompt/i);
+  } finally {
+    await new Promise((resolve, reject) => server.close((error) => (error ? reject(error) : resolve())));
+  }
+});
+
+test('完整 tender parse service 使用 V43 网关地址且忽略旧 DIFY 配置', async () => {
+  const projectId = '22222222-2222-4222-8222-222222222222';
+  const tenderFileId = '33333333-3333-4333-8333-333333333333';
+  const parseJobId = '44444444-4444-4444-8444-444444444444';
+  let requestedUrl;
+  let persisted;
+  const raw = JSON.stringify({
+    schema_version: '4.3-gateway',
+    task_type: 'requirement_extraction',
+    status: 'success',
+    data: {
+      requirements: [{
+        content: '系统应提供审计日志。',
+        source_excerpt: '招标文件要求提供审计日志。',
+        source_page: 1,
+        source_paragraph: 1
+      }]
+    },
+    warnings: []
+  });
+  const runtime = createBackendRuntime({
+    loadEnvironment: false,
+    env: {
+      V43_GATEWAY_API_BASE: 'http://127.0.0.1:18080/v1',
+      V43_GATEWAY_API_KEY: 'v43-test-key',
+      V43_GATEWAY_USER: 'v43-test-user',
+      DIFY_API_BASE: 'https://api.dify.invalid/v1',
+      DIFY_API_KEY: 'legacy-test-key'
+    }
+  });
+  const gatewayClient = runtime.createSemanticGatewayClient({
+    fetchImpl: async (url) => {
+      requestedUrl = url;
+      return gatewayResponse(raw);
+    },
+    logger: { warn: () => {} }
+  });
+  const repository = {
+    getProject: async () => ({ id: projectId }),
+    getRequirementBaseline: async () => null,
+    getTenderFile: async () => ({
+      id: tenderFileId,
+      project_id: projectId,
+      storage_key: `${projectId}/tender.txt`,
+      original_name: 'tender.txt',
+      mime_type: 'text/plain'
+    }),
+    createParseJob: async () => ({ id: parseJobId }),
+    updateParseJob: async () => {},
+    completeParseJob: async (value) => {
+      persisted = value;
+      return { id: parseJobId, status: 'succeeded', candidates: value.candidates };
+    },
+    failParseJob: async () => { throw new Error('must not fail'); }
+  };
+  const service = new RequirementParseService({
+    repository,
+    storage: { read: async () => Buffer.from('系统应提供审计日志。') },
+    textExtractor: async () => ({
+      text: '系统应提供审计日志。',
+      paragraphs: [{ paragraph: 1, page: 1, text: '系统应提供审计日志。' }],
+      pages: [{ page: 1, text: '系统应提供审计日志。' }],
+      warnings: []
+    }),
+    extractionGateway: createRequirementExtractionGateway(gatewayClient)
+  });
+
+  const result = await service.start({ projectId, tenderFileId });
+  assert.equal(result.status, 'succeeded');
+  assert.equal(requestedUrl, 'http://127.0.0.1:18080/v1/workflows/run');
+  assert.doesNotMatch(requestedUrl, /api\.dify\.invalid/);
+  assert.equal(persisted.candidates[0].req_id, 'REQ-001');
+});
+
+test('非法 tender parse job id 返回 400 INVALID_JOB_ID 且不访问数据库', async () => {
+  let repositoryCalled = false;
+  const service = new RequirementParseService({
+    repository: {
+      getParseJob: async () => { repositoryCalled = true; return null; }
+    }
+  });
+  await assert.rejects(
+    () => service.get('not-a-uuid'),
+    (error) => error.code === 'INVALID_JOB_ID' && error.status === 400
+  );
+  await assert.rejects(
+    () => service.confirm('also-invalid'),
+    (error) => error.code === 'INVALID_JOB_ID' && error.status === 400
+  );
+  assert.equal(repositoryCalled, false);
+
+  const app = createApp({
+    repository: {},
+    storage: {},
+    generationService: {},
+    requirementParseService: service
+  });
+  const server = await new Promise((resolve) => {
+    const listener = app.listen(0, '127.0.0.1', () => resolve(listener));
+  });
+  const { port } = server.address();
+  try {
+    const response = await fetch(`http://127.0.0.1:${port}/api/tender-parse-jobs/not-a-uuid`);
+    assert.equal(response.status, 400);
+    const payload = await response.json();
+    assert.equal(payload.ok, false);
+    assert.equal(payload.error.code, 'INVALID_JOB_ID');
+    assert.equal(payload.error.message, '需求解析任务 ID 格式无效。');
   } finally {
     await new Promise((resolve, reject) => server.close((error) => (error ? reject(error) : resolve())));
   }

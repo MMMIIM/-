@@ -1,12 +1,7 @@
-import dotenv from 'dotenv';
-import { dirname, resolve } from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
-import {
-  SemanticGatewayError,
-  createSemanticGatewayClientFromEnv
-} from '../src/pipeline/semantic-gateway-client.js';
-
-const directory = dirname(fileURLToPath(import.meta.url));
+import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { SemanticGatewayError } from '../src/pipeline/semantic-gateway-client.js';
+import { createBackendRuntime } from '../src/backend-runtime.js';
 
 export const GATEWAY_HEALTHCHECK_REQUEST = Object.freeze({
   task_type: 'healthcheck',
@@ -53,8 +48,8 @@ export async function runGatewaySmoke({
 }
 
 async function main() {
-  dotenv.config({ path: resolve(directory, '../.env') });
-  const client = createSemanticGatewayClientFromEnv();
+  const runtime = createBackendRuntime();
+  const client = runtime.createSemanticGatewayClient();
   process.exitCode = await runGatewaySmoke({ client });
 }
 

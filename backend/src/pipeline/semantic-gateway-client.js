@@ -4,6 +4,26 @@ function normalizeBaseUrl(value) {
   return String(value || '').trim().replace(/\/+$/, '');
 }
 
+export function parseSemanticGatewayConfig(env = {}) {
+  return Object.freeze({
+    apiBase: normalizeBaseUrl(env.V43_GATEWAY_API_BASE),
+    apiKey: String(env.V43_GATEWAY_API_KEY || '').trim(),
+    user: String(env.V43_GATEWAY_USER || '').trim()
+  });
+}
+
+function safeGatewayTarget(apiBase) {
+  try {
+    const target = new URL(apiBase);
+    return {
+      gateway_host: target.hostname,
+      gateway_port: target.port || (target.protocol === 'https:' ? '443' : '80')
+    };
+  } catch (_error) {
+    return { gateway_host: 'invalid', gateway_port: 'unknown' };
+  }
+}
+
 function auditFor(taskType, extras = {}) {
   return { provider: 'semantic_gateway', task_type: taskType, ...extras };
 }
@@ -58,12 +78,22 @@ function validateGatewayEnvelope(value, requestedTaskType, rawResponsePayloadJso
 }
 
 export class SemanticGatewayClient {
-  constructor({ apiBase, apiKey, user, fetchImpl = fetch, timeoutMs = 30000 }) {
+  constructor({ apiBase, apiKey, user, fetchImpl = fetch, timeoutMs = 30000, logger = null }) {
     this.apiBase = normalizeBaseUrl(apiBase);
     this.apiKey = String(apiKey || '').trim();
     this.user = String(user || '').trim();
     this.fetchImpl = fetchImpl;
     this.timeoutMs = timeoutMs;
+    this.logger = logger;
+    this.gatewayTarget = safeGatewayTarget(this.apiBase);
+  }
+
+  diagnose(errorCode) {
+    this.logger?.warn?.('Semantic Gateway transport diagnostic', {
+      provider: 'semantic_gateway',
+      ...this.gatewayTarget,
+      error_classification: errorCode
+    });
   }
 
   async run({ task_type: taskType, task_instruction: taskInstruction, task_payload_json: taskPayloadJson } = {}) {
@@ -114,14 +144,17 @@ export class SemanticGatewayClient {
       });
     } catch (error) {
       if (timedOut || error?.name === 'AbortError') {
+        this.diagnose('GATEWAY_TIMEOUT');
         throw new SemanticGatewayError('GATEWAY_TIMEOUT', 'Semantic Gateway 请求超时。', auditFor(taskType), 504);
       }
+      this.diagnose('GATEWAY_NETWORK_ERROR');
       throw new SemanticGatewayError('GATEWAY_NETWORK_ERROR', 'Semantic Gateway 网络请求失败。', auditFor(taskType));
     } finally {
       clearTimeout(timer);
     }
 
     if (!response.ok) {
+      this.diagnose('GATEWAY_HTTP_ERROR');
       throw new SemanticGatewayError(
         'GATEWAY_HTTP_ERROR',
         'Semantic Gateway 返回非成功 HTTP 状态。',
@@ -181,13 +214,18 @@ export class SemanticGatewayClient {
   }
 }
 
-export function createSemanticGatewayClientFromEnv({ env = process.env, fetchImpl = fetch, timeoutMs } = {}) {
+export function createSemanticGatewayClientFromEnv({
+  env = process.env,
+  fetchImpl = fetch,
+  timeoutMs,
+  logger
+} = {}) {
+  const config = parseSemanticGatewayConfig(env);
   return new SemanticGatewayClient({
-    apiBase: env.V43_GATEWAY_API_BASE,
-    apiKey: env.V43_GATEWAY_API_KEY,
-    user: env.V43_GATEWAY_USER,
+    ...config,
     fetchImpl,
-    timeoutMs
+    timeoutMs,
+    logger
   });
 }
 

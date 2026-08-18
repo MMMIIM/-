@@ -4,6 +4,14 @@ import { AppError } from './errors.js';
 import { routeRequirement } from './pipeline/chapter-router.js';
 
 const MAX_EXTRACTED_CHARACTERS = 300_000;
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export function assertValidParseJobId(jobId) {
+  if (!UUID_PATTERN.test(String(jobId || ''))) {
+    throw new AppError('INVALID_JOB_ID', '需求解析任务 ID 格式无效。', 400);
+  }
+  return jobId;
+}
 
 function normalizeError(error) {
   if (error instanceof AppError) return error;
@@ -98,12 +106,14 @@ export class RequirementParseService {
   }
 
   async get(jobId) {
+    assertValidParseJobId(jobId);
     const job = await this.repository.getParseJob(jobId);
     if (!job) throw new AppError('TENDER_PARSE_JOB_NOT_FOUND', '需求解析任务不存在。', 404);
     return job;
   }
 
   async confirm(jobId) {
+    assertValidParseJobId(jobId);
     const job = await this.repository.getParseJob(jobId);
     if (!job) throw new AppError('TENDER_PARSE_JOB_NOT_FOUND', '需求解析任务不存在。', 404);
     if (job.status !== 'succeeded') {
