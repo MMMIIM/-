@@ -61,6 +61,7 @@ input:focus, select:focus, textarea:focus { border-color: #2f6fed; box-shadow: 0
 .task-item > div, .version-list > div > div { flex: 1; }
 .task-item p, .version-list p { margin-top: 5px; }
 .task-error { flex-basis: 100%; color: #b42318; font-size: 13px; }
+.task-item .audit-summary { color: #475467; font-size: 12px; }
 .section-heading { justify-content: space-between; gap: 16px; margin-bottom: 18px; }
 .section-heading h2 { margin-bottom: 5px; }
 .upload-actions, .compact-actions { gap: 8px; }

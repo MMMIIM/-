@@ -90,6 +90,57 @@ test('Dify 调用失败返回明确错误码', async () => {
   await assert.rejects(() => client.run({ project_name: '测试' }), (error) => error.code === 'DIFY_CALL_FAILED' && error.status === 502);
 });
 
+test('Dify HTTP 失败响应携带可脱敏持久化审计', async () => {
+  const client = createDifyClient({
+    apiBase: 'https://dify.invalid/v1', apiKey: 'test-only',
+    fetchImpl: async () => new Response(JSON.stringify({ code: 'upstream_error', message: 'private detail' }), {
+      status: 502,
+      headers: { 'Content-Type': 'application/json' }
+    })
+  });
+  await assert.rejects(() => client.run({ project_name: '测试' }), (error) => {
+    assert.equal(error.code, 'DIFY_CALL_FAILED');
+    assert.deepEqual(error.audit.rawDifyResponseJson, { code: 'upstream_error', message: 'private detail' });
+    return true;
+  });
+});
+
+test('Dify 调用失败也创建 failed Generation 审计', async () => {
+  let failedAudit;
+  const repository = {
+    getProject: async () => ({ id: 'project-1' }),
+    createJob: async () => ({ id: 'job-1', project_id: 'project-1' }),
+    updateJob: async () => {},
+    recordFailedGeneration: async (audit) => { failedAudit = audit; }
+  };
+  const service = new GenerationService({
+    repository,
+    difyClient: createDifyClient({
+      apiBase: 'https://dify.invalid/v1', apiKey: 'test-only',
+      fetchImpl: async () => { throw new Error('network unavailable'); }
+    }),
+    workflowVersion: '4.2'
+  });
+  await assert.rejects(() => service.generate({ projectId: 'project-1', inputs: {
+    project_name: '测试项目', project_type: '智慧城市', bid_need: '需求', focus_points: '重点', output_mode: '技术标初稿'
+  } }), (error) => error.code === 'DIFY_CALL_FAILED');
+  assert.equal(failedAudit.errorCode, 'DIFY_CALL_FAILED');
+  assert.equal(failedAudit.workflowVersion, '4.2');
+});
+
+test('Dify 成功返回携带可持久化的外层响应审计', async () => {
+  const client = createDifyClient({
+    apiBase: 'https://dify.invalid/v1',
+    apiKey: 'test-only',
+    fetchImpl: async () => new Response(JSON.stringify(validPayload), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    })
+  });
+  const parsed = await client.run({ project_name: '测试' });
+  assert.deepEqual(parsed.audit.rawDifyResponseJson, validPayload);
+});
+
 test('禁止从 result/text/answer 兜底读取正文', () => {
   assert.throws(() => extractResponsePayload({ data: { outputs: { result: '# 不应读取', text: '# 不应读取', answer: '# 不应读取' } } }), (error) => error.code === 'CONTRACT_INVALID');
 });

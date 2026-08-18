@@ -24,7 +24,8 @@ function extractFromSse(text) {
     }
   }
   try {
-    return extractResponsePayload(finishedPayload);
+    const parsed = extractResponsePayload(finishedPayload);
+    return { ...parsed, audit: { rawDifyResponseJson: finishedPayload } };
   } catch (error) {
     if (error instanceof AppError && error.code === 'CONTRACT_INVALID') {
       error.audit = {
@@ -56,7 +57,18 @@ export function createDifyClient({ apiBase, apiKey, fetchImpl = fetch }) {
         throw new AppError('DIFY_CALL_FAILED', ERROR_MESSAGES.DIFY_CALL_FAILED, 502);
       }
       if (!response.ok) {
-        throw new AppError('DIFY_CALL_FAILED', ERROR_MESSAGES.DIFY_CALL_FAILED, response.status >= 500 ? 502 : 400);
+        let responseText = '';
+        try { responseText = await response.text(); } catch (_readError) { /* response body unavailable */ }
+        const callError = new AppError(
+          'DIFY_CALL_FAILED', ERROR_MESSAGES.DIFY_CALL_FAILED,
+          response.status >= 500 ? 502 : 400
+        );
+        try {
+          callError.audit = { rawDifyResponseJson: JSON.parse(responseText) };
+        } catch (_parseError) {
+          if (responseText) callError.audit = { rawResponseText: responseText };
+        }
+        throw callError;
       }
       const contentType = response.headers.get('content-type') || '';
       try {
@@ -72,7 +84,8 @@ export function createDifyClient({ apiBase, apiKey, fetchImpl = fetch }) {
             throw contractError;
           }
           try {
-            return extractResponsePayload(responseJson);
+            const parsed = extractResponsePayload(responseJson);
+            return { ...parsed, audit: { rawDifyResponseJson: responseJson } };
           } catch (error) {
             if (error instanceof AppError && error.code === 'CONTRACT_INVALID') {
               error.audit = { ...(error.audit || {}), rawDifyResponseJson: responseJson };

@@ -59,7 +59,13 @@ function Workspace({ projectId, onBack }) {
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
   async function load() { setError(''); try { setData(await api.getProject(projectId)); } catch (requestError) { setError(requestError.message); } }
-  useEffect(() => { load(); }, [projectId]);
+  useEffect(() => {
+    let active = true;
+    const refresh = async () => { if (active) await load(); };
+    refresh();
+    const timer = window.setInterval(refresh, 2500);
+    return () => { active = false; window.clearInterval(timer); };
+  }, [projectId]);
   if (!data && !error) return <Loading text="正在加载项目工作台" full />;
   if (!data) return <PageShell title="项目工作台" onBack={onBack}><Notice kind="error">{error}</Notice></PageShell>;
   const latestVersion = data.versions?.[0];
@@ -67,11 +73,12 @@ function Workspace({ projectId, onBack }) {
 }
 
 function Overview({ data }) {
+  const auditsByJob = new Map((data.generations || []).map((generation) => [generation.job_id, generation]));
   const tasks = [
-    ...data.jobs.map((job) => ({ ...job, type: '标书生成' })),
+    ...data.jobs.map((job) => ({ ...job, type: '标书生成', audit: auditsByJob.get(job.id) })),
     ...data.tenderFiles.map((file) => ({ id: `file-${file.id}`, type: `文件上传 · ${file.original_name}`, status: file.status, created_at: file.created_at }))
   ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-  return <div className="overview-grid"><section className="card stats"><Stat label="项目状态" value={statusLabels[data.project.status] || data.project.status} /><Stat label="招标文件" value={`${data.tenderFiles.length} 份`} /><Stat label="文档版本" value={`${data.versions.length} 个`} /><Stat label="风险状态" value={data.versions[0] ? riskLabels[data.versions[0].risk_status] : '待生成'} /></section><section className="card"><h2>任务中心</h2>{tasks.length ? <div className="task-list">{tasks.map((task) => <div key={task.id} className="task-item"><div><strong>{task.type}</strong><p>{formatDate(task.created_at)}</p></div><Badge type={task.status}>{statusLabels[task.status] || task.status}</Badge>{task.error_message ? <span className="task-error">{task.error_message}</span> : null}</div>)}</div> : <Empty title="暂无任务" text="上传招标文件或在“标书”页发起生成。" />}</section></div>;
+  return <div className="overview-grid"><section className="card stats"><Stat label="项目状态" value={statusLabels[data.project.status] || data.project.status} /><Stat label="招标文件" value={`${data.tenderFiles.length} 份`} /><Stat label="文档版本" value={`${data.versions.length} 个`} /><Stat label="风险状态" value={data.versions[0] ? riskLabels[data.versions[0].risk_status] : '待生成'} /></section><section className="card"><h2>任务中心</h2>{tasks.length ? <div className="task-list">{tasks.map((task) => <div key={task.id} className="task-item"><div><strong>{task.type}</strong><p>{formatDate(task.created_at)}</p>{task.audit ? <p className="audit-summary">审计已归档 · Workflow {task.audit.workflow_version} · {task.audit.runtime_ms} ms{task.audit.error_code ? ` · ${task.audit.error_code}` : ''}</p> : null}</div><Badge type={task.status}>{statusLabels[task.status] || task.status}</Badge>{task.error_message ? <span className="task-error">{task.error_message}</span> : null}</div>)}</div> : <Empty title="暂无任务" text="上传招标文件或在“标书”页发起生成。" />}</section></div>;
 }
 
 function TenderFiles({ projectId, files, onChanged }) {

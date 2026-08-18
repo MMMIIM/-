@@ -92,7 +92,7 @@ test('PostgreSQL 持久化四类 CONTRACT_INVALID，且不创建 DocumentVersion
 
       if (scenario.expected === 'text') {
         assert.equal(audit.response_payload_json, null);
-        assert.equal(audit.raw_response_text, '{bad-json');
+        assert.match(audit.raw_response_text, /^\[redacted raw text; length=\d+\]$/);
       } else if (scenario.expected === 'jsonb') {
         assert.notEqual(audit.response_payload_json, null);
         assert.equal(audit.raw_response_text, null);
@@ -123,6 +123,49 @@ test('PostgreSQL 持久化四类 CONTRACT_INVALID，且不创建 DocumentVersion
     );
     assert.equal(versionRows[0].count, 0);
     console.log(`FAILED_GENERATION_EXAMPLE=${JSON.stringify(example)}`);
+  } finally {
+    await pool.query(`DELETE FROM projects WHERE id = $1`, [project.id]);
+    await pool.end();
+  }
+});
+
+test('PostgreSQL 持久化合法 Dify 外层审计并创建 DocumentVersion', async () => {
+  assert.ok(process.env.DATABASE_URL, 'DATABASE_URL is required for PostgreSQL integration tests');
+  const pool = createPool();
+  const repository = new PgRepository(pool);
+  const project = await repository.createProject({ name: `成功归档集成测试 ${Date.now()}` });
+  const response = { data: { outputs: { response_payload_json: JSON.stringify({
+    document: {
+      title: '脱敏技术响应',
+      markdown: '# 脱敏技术响应\n\n测试正文',
+      sections: [{ id: 'overview', title: '项目概述' }]
+    },
+    warnings: [],
+    risk_status: 'pass'
+  }) } } };
+
+  try {
+    const difyClient = createDifyClient({
+      apiBase: 'https://dify.invalid/v1',
+      apiKey: 'integration-test-only',
+      fetchImpl: async () => new Response(JSON.stringify(response), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      })
+    });
+    const service = new GenerationService({ repository, difyClient, workflowVersion: '4.2' });
+    const result = await service.generate({ projectId: project.id, inputs });
+
+    assert.equal(result.generation.status, 'succeeded');
+    assert.equal(result.version.risk_status, 'pass');
+    assert.ok(result.generation.raw_dify_response_json);
+    assert.equal(result.generation.raw_response_text, null);
+    assert.equal(result.generation.error_code, null);
+
+    const generations = await repository.listGenerations(project.id);
+    assert.equal(generations.length, 1);
+    assert.equal(generations[0].has_response_payload_json, true);
+    assert.equal(generations[0].has_raw_dify_response_json, true);
   } finally {
     await pool.query(`DELETE FROM projects WHERE id = $1`, [project.id]);
     await pool.end();

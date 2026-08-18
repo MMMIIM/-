@@ -1,0 +1,25 @@
+{
+  "data": {
+    "id": "[redacted-id]",
+    "error": null,
+    "files": [],
+    "status": "succeeded",
+    "outputs": {
+      "result": "[redacted-generated-content]"
+    },
+    "created_at": 0,
+    "created_by": {
+      "id": "[redacted-id]",
+      "user": "[redacted-user]"
+    },
+    "finished_at": 0,
+    "total_steps": 9,
+    "workflow_id": "[redacted-id]",
+    "elapsed_time": 170.453985,
+    "total_tokens": 24834,
+    "exceptions_count": 0
+  },
+  "event": "workflow_finished",
+  "task_id": "[redacted-id]",
+  "workflow_run_id": "[redacted-id]"
+}

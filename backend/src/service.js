@@ -1,5 +1,6 @@
 import { assertVersionCanBeConfirmed } from './contract.js';
 import { AppError, ERROR_MESSAGES } from './errors.js';
+import { sanitizeAuditJson, sanitizeAuditText } from './audit.js';
 
 export const REQUIRED_INPUTS = ['project_name', 'project_type', 'bid_need', 'focus_points', 'output_mode'];
 
@@ -30,24 +31,22 @@ export class GenerationService {
       const appError = error instanceof AppError
         ? error
         : new AppError('GENERATION_FAILED', '生成任务失败，请稍后重试。', 500);
-      if (appError.code === 'CONTRACT_INVALID') {
-        try {
-          await this.repository.recordFailedGeneration({
-            job,
-            responsePayloadJson: appError.audit?.responsePayloadJson,
-            rawDifyResponseJson: appError.audit?.rawDifyResponseJson,
-            rawResponseText: appError.audit?.rawResponseText,
-            errorCode: appError.code,
-            errorMessage: appError.message,
-            workflowVersion: this.workflowVersion,
-            runtimeMs: Date.now() - startedAt
-          });
-        } catch (auditError) {
-          this.logger.error('Failed to persist generation audit', {
-            jobId: job.id,
-            error: auditError instanceof Error ? auditError.message : String(auditError)
-          });
-        }
+      try {
+        await this.repository.recordFailedGeneration({
+          job,
+          responsePayloadJson: sanitizeAuditJson(appError.audit?.responsePayloadJson),
+          rawDifyResponseJson: sanitizeAuditJson(appError.audit?.rawDifyResponseJson),
+          rawResponseText: sanitizeAuditText(appError.audit?.rawResponseText),
+          errorCode: appError.code,
+          errorMessage: appError.message,
+          workflowVersion: this.workflowVersion,
+          runtimeMs: Date.now() - startedAt
+        });
+      } catch (auditError) {
+        this.logger.error('Failed to persist generation audit', {
+          jobId: job.id,
+          error: auditError instanceof Error ? auditError.message : String(auditError)
+        });
       }
       try {
         await this.repository.updateJob(job.id, 'failed', { code: appError.code, message: appError.message });

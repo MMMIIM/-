@@ -50,10 +50,11 @@ export function createApp({ repository, storage, generationService, corsOrigin }
     try {
       const project = await repository.getProject(req.params.projectId);
       if (!project) throw new AppError('PROJECT_NOT_FOUND', ERROR_MESSAGES.PROJECT_NOT_FOUND, 404);
-      const [tenderFiles, jobs, versions] = await Promise.all([
-        repository.listTenderFiles(project.id), repository.listJobs(project.id), repository.listVersions(project.id)
+      const [tenderFiles, jobs, generations, versions] = await Promise.all([
+        repository.listTenderFiles(project.id), repository.listJobs(project.id),
+        repository.listGenerations(project.id), repository.listVersions(project.id)
       ]);
-      res.json({ project, tenderFiles, jobs, versions });
+      res.json({ project, tenderFiles, jobs, generations, versions });
     } catch (error) { next(error); }
   });
 
