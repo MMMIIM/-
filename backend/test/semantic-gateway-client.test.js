@@ -4,7 +4,8 @@ import {
   SemanticGatewayClient,
   createGenerationProvider,
   createSemanticGatewayClientFromEnv,
-  normalizeGatewayTransport
+  normalizeGatewayTransport,
+  classifyGatewayPayload
 } from '../src/pipeline/semantic-gateway-client.js';
 import { DeterministicPipelineService, runDeterministicPipeline } from '../src/pipeline/generation-audit.js';
 import { isAbsolute } from 'node:path';
@@ -112,10 +113,10 @@ test('response_payload_json 必须保留为原始字符串输入', async () => {
 
 test('response_payload_json 非法 JSON 返回 GATEWAY_INVALID_JSON 并保留原始字符串审计', async () => {
   await assert.rejects(
-    () => client(async () => gatewayResponse('{bad-json')).run(request),
+    () => client(async () => gatewayResponse('bad-json')).run(request),
     (error) => {
       assert.equal(error.code, 'GATEWAY_INVALID_JSON');
-      assert.equal(error.audit.raw_response_payload_json, '{bad-json');
+      assert.equal(error.audit.raw_response_payload_json, 'bad-json');
       return true;
     }
   );
@@ -180,7 +181,7 @@ test('禁用输出字段即使携带合法 envelope 也绝不作为回退', asyn
   );
 
   await assert.rejects(
-    () => client(async () => gatewayResponse('{invalid', {
+    () => client(async () => gatewayResponse('invalid', {
       result: forbiddenValue,
       text: forbiddenValue,
       answer: forbiddenValue
@@ -286,4 +287,30 @@ test('网络诊断只记录 provider、host、port 与错误分类', async () =>
     }
   ]]);
   assert.doesNotMatch(JSON.stringify(diagnostics), /never-log|Authorization|private network|task_instruction/i);
+});
+
+test('transport 仅清理 BOM、空白、单个完整 think 与完整 JSON 围栏', () => {
+  const json = JSON.stringify(gatewayEnvelope());
+  assert.equal(normalizeGatewayTransport(`\uFEFF  <think>private</think>\n\`\`\`json\n${json}\n\`\`\`  `), json);
+  assert.equal(normalizeGatewayTransport(`comment ${json}`), `comment ${json}`);
+  assert.equal(normalizeGatewayTransport(`\`\`\`json\n${json}`), `\`\`\`json\n${json}`);
+});
+
+test('截断 JSON 返回 GATEWAY_TRUNCATED_JSON，且不抢救括号', async () => {
+  const client = new SemanticGatewayClient({
+    apiBase: 'https://gateway.test/v1', apiKey: 'x', user: 'u',
+    fetchImpl: async () => gatewayResponse('{"schema_version":"4.3-gateway","data":{')
+  });
+  await assert.rejects(() => client.run(request), (error) => error.code === 'GATEWAY_TRUNCATED_JSON' && error.audit.response_classification === 'truncated_json');
+});
+
+test('响应失败分类覆盖围栏、额外说明、控制字符和 wrong_schema', async () => {
+  assert.equal(classifyGatewayPayload('```json\n{}'), 'markdown_fence');
+  assert.equal(classifyGatewayPayload('说明：{}'), 'extra_commentary');
+  assert.equal(classifyGatewayPayload('{"x":"\u0001"}'), 'invalid_control_character');
+  const client = new SemanticGatewayClient({
+    apiBase: 'https://gateway.test/v1', apiKey: 'x', user: 'u',
+    fetchImpl: async () => gatewayResponse(JSON.stringify({ ...gatewayEnvelope(), schema_version: 'bad' }))
+  });
+  await assert.rejects(() => client.run(request), (error) => error.audit.response_classification === 'wrong_schema');
 });

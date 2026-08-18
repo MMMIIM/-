@@ -9,6 +9,7 @@ import { GenerationService } from '../src/service.js';
 import { DeterministicPipelineService } from '../src/pipeline/generation-audit.js';
 import { RequirementParseService } from '../src/requirement-parse-service.js';
 import { SemanticGatewayError } from '../src/pipeline/semantic-gateway-client.js';
+import { ProductionBetaService } from '../src/pipeline/production-beta-service.js';
 
 const directory = dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: resolve(directory, '../.env') });
@@ -130,6 +131,23 @@ test('PostgreSQL 持久化四类 CONTRACT_INVALID，且不创建 DocumentVersion
     await pool.query(`DELETE FROM projects WHERE id = $1`, [project.id]);
     await pool.end();
   }
+});
+
+test('PostgreSQL 持久化 Production Beta Plan、Claim 决策、Coverage 与失败审计', async () => {
+  const pool=createPool(); const repository=new PgRepository(pool); const project=await repository.createProject({name:`Beta 集成 ${Date.now()}`});
+  try {
+    const file=(await pool.query(`INSERT INTO tender_files(project_id,original_name,storage_key,mime_type,size_bytes) VALUES($1,'fixture.txt','fixture','text/plain',1) RETURNING *`,[project.id])).rows[0];
+    const job=(await pool.query(`INSERT INTO tender_parse_jobs(project_id,tender_file_id,status) VALUES($1,$2,'succeeded') RETURNING *`,[project.id,file.id])).rows[0];
+    const baseline=(await pool.query(`INSERT INTO requirement_baselines(project_id,parse_job_id,status,confirmed_at) VALUES($1,$2,'building',now()) RETURNING *`,[project.id,job.id])).rows[0];
+    await pool.query(`INSERT INTO requirements(baseline_id,project_id,req_id,content,source_excerpt,source_text,is_mandatory,mandatory_marker,target_sections,ordinal) VALUES($1,$2,'REQ-001','数据接入','★数据接入','★数据接入',true,'★','["data-integration"]',1)`,[baseline.id,project.id]);
+    await pool.query(`UPDATE requirement_baselines SET status='confirmed' WHERE id=$1`,[baseline.id]);
+    const service=new ProductionBetaService({repository});
+    const evidence={evidence_id:`EVI-${Date.now()}`,material_id:'fixture',source_type:'material',source_roles:['capability'],module:'data',content:'能力依据',source_page:1,source_hash:'sha256:fixture',evidence_level:'verified',commitment_level:'capability'};
+    const result=await service.process(project.id,{evidence:[evidence],response_plans:[{requirement_id:'REQ-001',response_status:'full',response_summary:'响应',supporting_evidence_ids:[evidence.evidence_id]}],claims:[{claim_id:`CLM-${Date.now()}`,requirement_id:'REQ-001',claim_type:'statement',text:'支持数据接入',basis_requirement_ids:['REQ-001'],basis_evidence_ids:[evidence.evidence_id]}]});
+    assert.equal(result.run.status,'succeeded'); assert.equal(result.coverage.valid,true); assert.equal(result.writer_input.length,1);
+    await assert.rejects(()=>service.process(project.id,{evidence:[],response_plans:[],claims:[]}));
+    const {rows}=await pool.query(`SELECT status,error_code FROM production_beta_runs WHERE project_id=$1 ORDER BY created_at DESC LIMIT 1`,[project.id]); assert.equal(rows[0].status,'failed'); assert.equal(rows[0].error_code,'RESPONSE_PLAN_MISSING');
+  } finally { await pool.query(`DELETE FROM projects WHERE id=$1`,[project.id]); await pool.end(); }
 });
 
 test('PostgreSQL 持久化合法 Dify 外层审计并创建 DocumentVersion', async () => {

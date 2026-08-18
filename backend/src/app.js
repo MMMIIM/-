@@ -12,7 +12,7 @@ function requireText(value, fieldName) {
   return normalized;
 }
 
-export function createApp({ repository, storage, generationService, requirementParseService, corsOrigin }) {
+export function createApp({ repository, storage, generationService, requirementParseService, productionBetaService, corsOrigin }) {
   const app = express();
   app.use(cors({ origin: corsOrigin || 'http://localhost:5173' }));
   app.use(express.json({ limit: '2mb' }));
@@ -122,6 +122,16 @@ export function createApp({ repository, storage, generationService, requirementP
     catch (error) { next(error); }
   });
 
+  app.get('/api/projects/:projectId/production-beta', async (req, res, next) => {
+    try { res.json({ ok: true, ...(await productionBetaService.get(req.params.projectId)) }); }
+    catch (error) { next(error); }
+  });
+
+  app.post('/api/projects/:projectId/production-beta', async (req, res, next) => {
+    try { res.status(201).json({ ok: true, ...(await productionBetaService.process(req.params.projectId, req.body)) }); }
+    catch (error) { next(error); }
+  });
+
   app.get('/api/projects/:projectId/generation-jobs', async (req, res, next) => {
     try { res.json({ jobs: await repository.listJobs(req.params.projectId) }); } catch (error) { next(error); }
   });
@@ -155,7 +165,9 @@ export function createApp({ repository, storage, generationService, requirementP
       const uploadError = { code: 'UPLOAD_INVALID', message: '文件上传失败，请确认文件不超过 50 MB。' };
       return res.status(400).json({ ok: false, error: uploadError, ...uploadError });
     }
-    const appError = error instanceof AppError ? error : new AppError('INTERNAL_ERROR', '服务暂时不可用，请稍后重试。', 500);
+    const appError = error instanceof AppError ? error : error?.code
+      ? new AppError(error.code, error.message, error.status || 422)
+      : new AppError('INTERNAL_ERROR', '服务暂时不可用，请稍后重试。', 500);
     const safeError = { code: appError.code, message: appError.message };
     return res.status(appError.status).json({ ok: false, error: safeError, ...safeError });
   });

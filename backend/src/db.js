@@ -643,6 +643,41 @@ export class PgRepository {
     }
   }
 
+  async getFormalRequirements(projectId) {
+    const { rows } = await this.pool.query(`SELECT id, req_id, content AS text, is_mandatory, target_sections FROM requirements WHERE project_id=$1 ORDER BY ordinal`, [projectId]);
+    return rows;
+  }
+
+  async saveProductionBetaResult(projectId, result) {
+    const client = await this.pool.connect();
+    try {
+      await client.query('BEGIN');
+      const run = (await client.query(`INSERT INTO production_beta_runs(project_id,status,audit_json) VALUES($1,'succeeded',$2::jsonb) RETURNING *`, [projectId, JSON.stringify({ writer_claim_count: result.writer_input.length })])).rows[0];
+      for (const evidence of result.evidence) await client.query(`INSERT INTO evidences(evidence_id,project_id,material_id,source_type,source_roles,module,content,source_page,source_hash,evidence_level,commitment_level) VALUES($1,$2,$3,$4,$5::jsonb,$6,$7,$8,$9,$10,$11) ON CONFLICT(evidence_id) DO NOTHING`, [evidence.evidence_id, projectId, evidence.material_id || null, evidence.source_type, JSON.stringify(evidence.source_roles || []), evidence.module, evidence.content, evidence.source_page || null, evidence.source_hash, evidence.evidence_level, evidence.commitment_level]);
+      const requirements = await client.query(`SELECT id,req_id FROM requirements WHERE project_id=$1`, [projectId]);
+      const requirementIds = new Map(requirements.rows.map((item) => [item.req_id, item.id]));
+      for (const plan of result.plans) await client.query(`INSERT INTO response_plans(project_id,requirement_id,response_status,response_summary,implementation_actions,optional_design,deliverables,acceptance_methods,conditions,supporting_evidence_ids,capability_gap,target_sections) VALUES($1,$2,$3,$4,$5::jsonb,$6::jsonb,$7::jsonb,$8::jsonb,$9::jsonb,$10::jsonb,$11,$12::jsonb) ON CONFLICT(project_id,requirement_id) DO UPDATE SET response_status=excluded.response_status,response_summary=excluded.response_summary,supporting_evidence_ids=excluded.supporting_evidence_ids,capability_gap=excluded.capability_gap,target_sections=excluded.target_sections`, [projectId, requirementIds.get(plan.requirement_id), plan.response_status, plan.response_summary, JSON.stringify(plan.implementation_actions || []), JSON.stringify(plan.optional_design || null), JSON.stringify(plan.deliverables || []), JSON.stringify(plan.acceptance_methods || []), JSON.stringify(plan.conditions || []), JSON.stringify(plan.supporting_evidence_ids || []), plan.capability_gap || null, JSON.stringify(plan.target_sections)]);
+      for (const item of result.evaluatedClaims) { const claim=(await client.query(`INSERT INTO claims(claim_id,project_id,requirement_id,claim_type,text,basis_requirement_ids,basis_evidence_ids,requested_commitment,target_sections) VALUES($1,$2,$3,$4,$5,$6::jsonb,$7::jsonb,$8,$9::jsonb) ON CONFLICT(claim_id) DO UPDATE SET text=excluded.text RETURNING id`, [item.claim.claim_id,projectId,requirementIds.get(item.claim.requirement_id)||null,item.claim.claim_type,item.claim.text,JSON.stringify(item.claim.basis_requirement_ids||[]),JSON.stringify(item.claim.basis_evidence_ids||[]),item.claim.requested_commitment||null,JSON.stringify(item.claim.target_sections||[])])).rows[0]; await client.query(`INSERT INTO claim_decisions(claim_id,decision,reason_code) VALUES($1,$2,$3) ON CONFLICT(claim_id) DO UPDATE SET decision=excluded.decision,reason_code=excluded.reason_code`,[claim.id,item.decision.decision,item.decision.reason_code]); }
+      for (const item of result.coverage.coverage) await client.query(`INSERT INTO requirement_coverages(project_id,requirement_id,covered,approved_claim_ids) VALUES($1,$2,$3,$4::jsonb) ON CONFLICT(project_id,requirement_id) DO UPDATE SET covered=excluded.covered,approved_claim_ids=excluded.approved_claim_ids`,[projectId,requirementIds.get(item.requirement_id),item.covered,JSON.stringify(item.approved_claim_ids)]);
+      await client.query('COMMIT');
+      return { run, ...result };
+    } catch(error) { await client.query('ROLLBACK'); throw error; } finally { client.release(); }
+  }
+
+  async saveProductionBetaFailure(projectId, error) {
+    await this.pool.query(`INSERT INTO production_beta_runs(project_id,status,error_code,error_message,audit_json) VALUES($1,'failed',$2,$3,'{}')`, [projectId, error.code || 'PRODUCTION_BETA_FAILED', String(error.message || '处理失败').slice(0, 500)]);
+  }
+
+  async getProductionBetaResult(projectId) {
+    const [runs, plans, claims, coverage] = await Promise.all([
+      this.pool.query(`SELECT id,status,error_code,error_message,created_at,updated_at FROM production_beta_runs WHERE project_id=$1 ORDER BY created_at DESC LIMIT 1`,[projectId]),
+      this.pool.query(`SELECT rp.*,r.req_id AS requirement_id FROM response_plans rp JOIN requirements r ON r.id=rp.requirement_id WHERE rp.project_id=$1 ORDER BY r.ordinal`,[projectId]),
+      this.pool.query(`SELECT c.claim_id,c.requirement_id,c.claim_type,c.text,c.basis_requirement_ids,c.basis_evidence_ids,c.requested_commitment,c.target_sections,cd.decision,cd.reason_code FROM claims c JOIN claim_decisions cd ON cd.claim_id=c.id WHERE c.project_id=$1 ORDER BY c.created_at`,[projectId]),
+      this.pool.query(`SELECT r.req_id AS requirement_id,rc.covered,rc.approved_claim_ids FROM requirement_coverages rc JOIN requirements r ON r.id=rc.requirement_id WHERE rc.project_id=$1 ORDER BY r.ordinal`,[projectId])
+    ]);
+    return { run:runs.rows[0]||null, plans:plans.rows, claims:claims.rows, coverage:coverage.rows, uncovered_requirement_ids:coverage.rows.filter((item)=>!item.covered).map((item)=>item.requirement_id) };
+  }
+
   async touchProject(id) {
     await this.pool.query(`UPDATE projects SET updated_at = now() WHERE id = $1`, [id]);
   }

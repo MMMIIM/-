@@ -59,10 +59,43 @@ export function normalizeGatewayTransport(raw) {
       'response_payload_json 必须是字符串。'
     );
   }
-  if (!raw.startsWith('<think>')) return raw;
-  const closingIndex = raw.indexOf('</think>', '<think>'.length);
-  if (closingIndex === -1) return raw;
-  return raw.slice(closingIndex + '</think>'.length).replace(/^\s+/, '');
+  let normalized = raw.replace(/^\uFEFF/, '').trim();
+  if (normalized.startsWith('<think>')) {
+    const closingIndex = normalized.indexOf('</think>', '<think>'.length);
+    if (closingIndex !== -1) {
+      normalized = normalized.slice(closingIndex + '</think>'.length).trim();
+    }
+  }
+  const fence = normalized.match(/^```(?:json)?[ \t]*\r?\n([\s\S]*)\r?\n```$/i);
+  if (fence) normalized = fence[1].trim();
+  return normalized;
+}
+
+function jsonStructureIsTruncated(value) {
+  const stack = [];
+  let inString = false;
+  let escaped = false;
+  for (const character of value) {
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (character === '\\') escaped = true;
+      else if (character === '"') inString = false;
+      continue;
+    }
+    if (character === '"') inString = true;
+    else if (character === '{' || character === '[') stack.push(character);
+    else if (character === '}' || character === ']') stack.pop();
+  }
+  return inString || stack.length > 0 || /:\s*$|,\s*$/.test(value);
+}
+
+export function classifyGatewayPayload(raw, normalized = raw) {
+  const source = typeof raw === 'string' ? raw.replace(/^\uFEFF/, '').trim() : '';
+  if (source.startsWith('<think>')) return 'think_wrapper';
+  if (/^```(?:json)?(?:\s|$)/i.test(source)) return 'markdown_fence';
+  if (/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/.test(normalized)) return 'invalid_control_character';
+  if (jsonStructureIsTruncated(normalized)) return 'truncated_json';
+  return 'extra_commentary';
 }
 
 function validateGatewayEnvelope(value, requestedTaskType, rawResponsePayloadJson) {
@@ -232,13 +265,23 @@ export class SemanticGatewayClient {
     try {
       envelope = JSON.parse(normalized);
     } catch (_error) {
+      const responseClassification = classifyGatewayPayload(rawResponsePayloadJson, normalized);
       throw new SemanticGatewayError(
-        'GATEWAY_INVALID_JSON',
-        'response_payload_json 不是可整体解析的 JSON。',
-        audit
+        responseClassification === 'truncated_json' ? 'GATEWAY_TRUNCATED_JSON' : 'GATEWAY_INVALID_JSON',
+        responseClassification === 'truncated_json'
+          ? 'response_payload_json 在完整 JSON 结束前被截断。'
+          : 'response_payload_json 不是可整体解析的 JSON。',
+        { ...audit, response_classification: responseClassification }
       );
     }
-    validateGatewayEnvelope(envelope, taskType, rawResponsePayloadJson);
+    try {
+      validateGatewayEnvelope(envelope, taskType, rawResponsePayloadJson);
+    } catch (error) {
+      if (error instanceof SemanticGatewayError) {
+        error.audit = { ...error.audit, response_classification: 'wrong_schema' };
+      }
+      throw error;
+    }
     return { envelope, audit };
   }
 }

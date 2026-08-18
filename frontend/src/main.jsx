@@ -5,7 +5,7 @@ import { ArrowLeft, CheckCircle2, Clipboard, Download, FilePlus2, FileSearch, Fo
 import { api } from './api.js';
 import './styles.css';
 
-const tabs = ['概览', '招标文件', '需求解析', '企业材料', '标书', '风险复核', '版本记录'];
+const tabs = ['概览', '招标文件', '需求解析', '响应规划', '企业材料', '标书', '风险复核', '版本记录'];
 const projectTypes = ['智慧城市', '数据治理', '系统集成', '园区运营', '应急管理', 'AI 应用'];
 const outputModes = ['技术标初稿', '售前方案', '响应矩阵', '风险清单'];
 const statusLabels = { draft: '草稿', generating: '生成中', review: '待复核', requirements_review: '需求待确认', requirements_confirmed: '需求已确认', confirmed: '已确认', candidate: '候选', queued: '排队中', running: '进行中', succeeded: '成功', failed: '失败' };
@@ -69,7 +69,30 @@ function Workspace({ projectId, onBack }) {
   if (!data && !error) return <Loading text="正在加载项目工作台" full />;
   if (!data) return <PageShell title="项目工作台" onBack={onBack}><Notice kind="error">{error}</Notice></PageShell>;
   const latestVersion = data.versions?.[0];
-  return <PageShell title={data.project.name} subtitle={`项目工作台 · ${statusLabels[data.project.status] || data.project.status}`} onBack={onBack}><nav className="tabs">{tabs.map((tab) => <button className={activeTab === tab ? 'active' : ''} key={tab} onClick={() => setActiveTab(tab)}>{tab}</button>)}</nav>{error ? <Notice kind="error">{error}</Notice> : null}{activeTab === '概览' ? <Overview data={data} /> : null}{activeTab === '招标文件' ? <TenderFiles projectId={projectId} files={data.tenderFiles} onChanged={load} /> : null}{activeTab === '需求解析' ? <RequirementParsing projectId={projectId} files={data.tenderFiles} parseJobs={data.parseJobs || []} baseline={data.requirementBaseline} onChanged={load} /> : null}{activeTab === '企业材料' ? <EmptyCard title="企业材料将在后续阶段接入" text="P0-1 仅保留业务入口，本阶段不接入企业 RAG、知识库检索或材料解析。" /> : null}{activeTab === '标书' ? <BidDocument project={data.project} version={latestVersion} onGenerated={load} /> : null}{activeTab === '风险复核' ? <RiskReview version={latestVersion} onConfirmed={load} /> : null}{activeTab === '版本记录' ? <Versions versions={data.versions} /> : null}</PageShell>;
+  return <PageShell title={data.project.name} subtitle={`项目工作台 · ${statusLabels[data.project.status] || data.project.status}`} onBack={onBack}><nav className="tabs">{tabs.map((tab) => <button className={activeTab === tab ? 'active' : ''} key={tab} onClick={() => setActiveTab(tab)}>{tab}</button>)}</nav>{error ? <Notice kind="error">{error}</Notice> : null}{activeTab === '概览' ? <Overview data={data} /> : null}{activeTab === '招标文件' ? <TenderFiles projectId={projectId} files={data.tenderFiles} onChanged={load} /> : null}{activeTab === '需求解析' ? <RequirementParsing projectId={projectId} files={data.tenderFiles} parseJobs={data.parseJobs || []} baseline={data.requirementBaseline} onChanged={load} /> : null}{activeTab === '响应规划' ? <ProductionBeta projectId={projectId} /> : null}{activeTab === '企业材料' ? <EmptyCard title="企业材料将在后续阶段接入" text="P0-1 仅保留业务入口，本阶段不接入企业 RAG、知识库检索或材料解析。" /> : null}{activeTab === '标书' ? <BidDocument project={data.project} version={latestVersion} onGenerated={load} /> : null}{activeTab === '风险复核' ? <RiskReview version={latestVersion} onConfirmed={load} /> : null}{activeTab === '版本记录' ? <Versions versions={data.versions} /> : null}</PageShell>;
+}
+
+function ProductionBeta({ projectId }) {
+  const [state, setState] = useState({ loading: true, data: null, error: null });
+  useEffect(() => {
+    let active = true;
+    api.getProductionBeta(projectId)
+      .then((data) => { if (active) setState({ loading: false, data, error: null }); })
+      .catch((error) => { if (active) setState({ loading: false, data: null, error }); });
+    return () => { active = false; };
+  }, [projectId]);
+  if (state.loading) return <EmptyCard title="正在读取响应规划" text="加载处理状态、Claim 与覆盖矩阵。" />;
+  if (state.error) return <Notice kind="error">{state.error.code} · {state.error.message}</Notice>;
+  const data = state.data || {};
+  const approved = (data.claims || []).filter((item) => item.decision === 'approved');
+  const rejected = (data.claims || []).filter((item) => item.decision === 'rejected');
+  return <section className="card">
+    <div className="section-heading"><div><h2>Response Plan 与 Claim 门禁</h2><p>后端控制范围、依据、风险决策和覆盖；本阶段不生成正文。</p></div><Badge type={data.run?.status}>{data.run?.status || '尚未处理'}</Badge></div>
+    {data.run?.status === 'failed' ? <Notice kind="error">{data.run.error_code} · {data.run.error_message}</Notice> : null}
+    <div className="parse-summary"><Stat label="Response Plan" value={`${data.plans?.length || 0} 条`} /><Stat label="Approved Claim" value={`${approved.length} 条`} /><Stat label="Rejected Claim" value={`${rejected.length} 条`} /><Stat label="未覆盖 Requirement" value={`${data.uncovered_requirement_ids?.length || 0} 条`} /></div>
+    {data.uncovered_requirement_ids?.length ? <Notice kind="warning">未覆盖：{data.uncovered_requirement_ids.join('、')}</Notice> : null}
+    <div className="table-scroll"><table className="data-table"><thead><tr><th>Claim</th><th>类型</th><th>正文</th><th>门禁</th><th>原因</th></tr></thead><tbody>{(data.claims || []).map((claim) => <tr key={claim.claim_id}><td>{claim.claim_id}</td><td>{claim.claim_type}</td><td>{claim.text}</td><td><Badge type={claim.decision}>{claim.decision}</Badge></td><td>{claim.reason_code || '—'}</td></tr>)}</tbody></table></div>
+  </section>;
 }
 
 function Overview({ data }) {

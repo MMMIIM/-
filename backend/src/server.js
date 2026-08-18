@@ -9,6 +9,7 @@ import { extractTenderText } from './tender-text-extractor.js';
 import { RequirementParseService } from './requirement-parse-service.js';
 import { createRequirementExtractionGateway } from './pipeline/requirement-extraction.js';
 import { createBackendRuntime } from './backend-runtime.js';
+import { ProductionBetaService } from './pipeline/production-beta-service.js';
 
 const directory = dirname(fileURLToPath(import.meta.url));
 const runtime = createBackendRuntime();
@@ -32,11 +33,13 @@ const requirementParseService = new RequirementParseService({
   extractionGateway: createRequirementExtractionGateway(runtime.createSemanticGatewayClient()),
   env: runtimeEnv
 });
+const productionBetaService = new ProductionBetaService({ repository });
 const app = createApp({
   repository,
   storage,
   generationService,
   requirementParseService,
+  productionBetaService,
   corsOrigin: runtimeEnv.CORS_ORIGIN
 });
 

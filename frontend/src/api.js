@@ -54,6 +54,9 @@ export const api = {
   confirmRequirementBaseline(jobId) {
     return request(`/api/tender-parse-jobs/${jobId}/confirm`, { method: 'POST' });
   },
+  getProductionBeta(projectId) {
+    return request(`/api/projects/${projectId}/production-beta`);
+  },
   generate(projectId, inputs) {
     return request(`/api/projects/${projectId}/generation-jobs`, { method: 'POST', body: JSON.stringify(inputs) });
   },
