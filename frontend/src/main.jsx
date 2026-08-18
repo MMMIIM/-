@@ -1,14 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { marked } from 'marked';
-import { ArrowLeft, Clipboard, Download, FilePlus2, FolderPlus, Loader2, RefreshCw, Sparkles } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Clipboard, Download, FilePlus2, FileSearch, FolderPlus, Loader2, RefreshCw, Sparkles } from 'lucide-react';
 import { api } from './api.js';
 import './styles.css';
 
-const tabs = ['概览', '招标文件', '企业材料', '标书', '风险复核', '版本记录'];
+const tabs = ['概览', '招标文件', '需求解析', '企业材料', '标书', '风险复核', '版本记录'];
 const projectTypes = ['智慧城市', '数据治理', '系统集成', '园区运营', '应急管理', 'AI 应用'];
 const outputModes = ['技术标初稿', '售前方案', '响应矩阵', '风险清单'];
-const statusLabels = { draft: '草稿', generating: '生成中', review: '待复核', confirmed: '已确认', queued: '排队中', running: '进行中', succeeded: '成功', failed: '失败' };
+const statusLabels = { draft: '草稿', generating: '生成中', review: '待复核', requirements_review: '需求待确认', requirements_confirmed: '需求已确认', confirmed: '已确认', candidate: '候选', queued: '排队中', running: '进行中', succeeded: '成功', failed: '失败' };
 const riskLabels = { pass: '通过', warning: '警告', critical: '严重' };
 
 function formatDate(value, fallback = '—') {
@@ -23,7 +23,7 @@ function Loading({ text, full }) { return <div className={`loading ${full ? 'ful
 function Stat({ label, value }) { return <div><span>{label}</span><strong>{value}</strong></div>; }
 
 function PageShell({ title, subtitle, onBack, children }) {
-  return <main className="app-shell"><header className="app-header"><div className="brand-row">{onBack ? <button className="icon-button" onClick={onBack}><ArrowLeft size={20} /></button> : null}<div><p className="eyebrow">政企投标辅助工作台</p><h1>{title}</h1>{subtitle ? <p className="subtitle">{subtitle}</p> : null}</div></div><Badge>Dify Workflow v4.2</Badge></header>{children}</main>;
+  return <main className="app-shell"><header className="app-header"><div className="brand-row">{onBack ? <button className="icon-button" onClick={onBack}><ArrowLeft size={20} /></button> : null}<div><p className="eyebrow">政企投标辅助工作台</p><h1>{title}</h1>{subtitle ? <p className="subtitle">{subtitle}</p> : null}</div></div><Badge>4.3 后端确定性流程</Badge></header>{children}</main>;
 }
 
 function ProjectList({ onCreate, onOpen }) {
@@ -69,13 +69,14 @@ function Workspace({ projectId, onBack }) {
   if (!data && !error) return <Loading text="正在加载项目工作台" full />;
   if (!data) return <PageShell title="项目工作台" onBack={onBack}><Notice kind="error">{error}</Notice></PageShell>;
   const latestVersion = data.versions?.[0];
-  return <PageShell title={data.project.name} subtitle={`项目工作台 · ${statusLabels[data.project.status] || data.project.status}`} onBack={onBack}><nav className="tabs">{tabs.map((tab) => <button className={activeTab === tab ? 'active' : ''} key={tab} onClick={() => setActiveTab(tab)}>{tab}</button>)}</nav>{error ? <Notice kind="error">{error}</Notice> : null}{activeTab === '概览' ? <Overview data={data} /> : null}{activeTab === '招标文件' ? <TenderFiles projectId={projectId} files={data.tenderFiles} onChanged={load} /> : null}{activeTab === '企业材料' ? <EmptyCard title="企业材料将在后续阶段接入" text="P0-1 仅保留业务入口，本阶段不接入企业 RAG、知识库检索或材料解析。" /> : null}{activeTab === '标书' ? <BidDocument project={data.project} version={latestVersion} onGenerated={load} /> : null}{activeTab === '风险复核' ? <RiskReview version={latestVersion} onConfirmed={load} /> : null}{activeTab === '版本记录' ? <Versions versions={data.versions} /> : null}</PageShell>;
+  return <PageShell title={data.project.name} subtitle={`项目工作台 · ${statusLabels[data.project.status] || data.project.status}`} onBack={onBack}><nav className="tabs">{tabs.map((tab) => <button className={activeTab === tab ? 'active' : ''} key={tab} onClick={() => setActiveTab(tab)}>{tab}</button>)}</nav>{error ? <Notice kind="error">{error}</Notice> : null}{activeTab === '概览' ? <Overview data={data} /> : null}{activeTab === '招标文件' ? <TenderFiles projectId={projectId} files={data.tenderFiles} onChanged={load} /> : null}{activeTab === '需求解析' ? <RequirementParsing projectId={projectId} files={data.tenderFiles} parseJobs={data.parseJobs || []} baseline={data.requirementBaseline} onChanged={load} /> : null}{activeTab === '企业材料' ? <EmptyCard title="企业材料将在后续阶段接入" text="P0-1 仅保留业务入口，本阶段不接入企业 RAG、知识库检索或材料解析。" /> : null}{activeTab === '标书' ? <BidDocument project={data.project} version={latestVersion} onGenerated={load} /> : null}{activeTab === '风险复核' ? <RiskReview version={latestVersion} onConfirmed={load} /> : null}{activeTab === '版本记录' ? <Versions versions={data.versions} /> : null}</PageShell>;
 }
 
 function Overview({ data }) {
   const auditsByJob = new Map((data.generations || []).map((generation) => [generation.job_id, generation]));
   const tasks = [
     ...data.jobs.map((job) => ({ ...job, type: '标书生成', audit: auditsByJob.get(job.id) })),
+    ...(data.parseJobs || []).map((job) => ({ ...job, type: `需求解析 · ${job.file_name}` })),
     ...data.tenderFiles.map((file) => ({ id: `file-${file.id}`, type: `文件上传 · ${file.original_name}`, status: file.status, created_at: file.created_at }))
   ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
   return <div className="overview-grid"><section className="card stats"><Stat label="项目状态" value={statusLabels[data.project.status] || data.project.status} /><Stat label="招标文件" value={`${data.tenderFiles.length} 份`} /><Stat label="文档版本" value={`${data.versions.length} 个`} /><Stat label="风险状态" value={data.versions[0] ? riskLabels[data.versions[0].risk_status] : '待生成'} /></section><section className="card"><h2>任务中心</h2>{tasks.length ? <div className="task-list">{tasks.map((task) => <div key={task.id} className="task-item"><div><strong>{task.type}</strong><p>{formatDate(task.created_at)}</p>{task.audit ? <p className="audit-summary">审计已归档 · Workflow {task.audit.workflow_version} · {task.audit.runtime_ms} ms{task.audit.error_code ? ` · ${task.audit.error_code}` : ''}</p> : null}</div><Badge type={task.status}>{statusLabels[task.status] || task.status}</Badge>{task.error_message ? <span className="task-error">{task.error_message}</span> : null}</div>)}</div> : <Empty title="暂无任务" text="上传招标文件或在“标书”页发起生成。" />}</section></div>;
@@ -90,6 +91,57 @@ function TenderFiles({ projectId, files, onChanged }) {
     catch (error) { setState({ ...state, loading: false, error: error.message }); }
   }
   return <section className="card"><div className="section-heading"><div><h2>招标文件</h2><p>文件内容保存在后端存储，不进入版本库。</p></div><div className="upload-actions"><input type="file" onChange={(event) => setState({ ...state, file: event.target.files?.[0] || null, error: '' })} /><button className="primary-inline" onClick={uploadFile} disabled={state.loading}><FilePlus2 size={16} />上传</button></div></div>{state.error ? <Notice kind="error">{state.error}</Notice> : null}{files.length ? <div className="file-list">{files.map((file) => <div key={file.id}><strong>{file.original_name}</strong><span>{Math.ceil(Number(file.size_bytes) / 1024)} KB · {formatDate(file.created_at)}</span><Badge type={file.status}>{statusLabels[file.status] || file.status}</Badge></div>)}</div> : <Empty title="暂无招标文件" text="上传文件后会关联到当前项目。" />}</section>;
+}
+
+function RequirementParsing({ projectId, files, parseJobs, baseline, onChanged }) {
+  const latestJob = parseJobs[0];
+  const [selectedFileId, setSelectedFileId] = useState(files[0]?.id || '');
+  const [jobDetail, setJobDetail] = useState(null);
+  const [state, setState] = useState({ loading: false, error: '', message: '' });
+
+  useEffect(() => {
+    if (!selectedFileId && files[0]?.id) setSelectedFileId(files[0].id);
+  }, [files, selectedFileId]);
+
+  useEffect(() => {
+    let active = true;
+    if (!latestJob?.id) { setJobDetail(null); return () => { active = false; }; }
+    api.getTenderParseJob(latestJob.id)
+      .then((payload) => { if (active) setJobDetail(payload.job); })
+      .catch((error) => { if (active) setState((current) => ({ ...current, error: error.message })); });
+    return () => { active = false; };
+  }, [latestJob?.id, latestJob?.updated_at]);
+
+  async function startParse() {
+    if (!selectedFileId) return setState({ loading: false, error: '请先上传并选择招标文件。', message: '' });
+    setState({ loading: true, error: '', message: '' });
+    try {
+      const payload = await api.startTenderParse(projectId, selectedFileId);
+      setJobDetail(payload.job);
+      setState({ loading: false, error: '', message: '需求解析完成，请核对候选需求后确认基线。' });
+      await onChanged();
+    } catch (error) {
+      setState({ loading: false, error: error.message, message: '' });
+      await onChanged();
+    }
+  }
+
+  async function confirmBaseline() {
+    if (!jobDetail?.id) return;
+    setState({ loading: true, error: '', message: '' });
+    try {
+      await api.confirmRequirementBaseline(jobDetail.id);
+      setState({ loading: false, error: '', message: '需求基线已确认并冻结。' });
+      await onChanged();
+    } catch (error) {
+      setState({ loading: false, error: error.message, message: '' });
+    }
+  }
+
+  const displayJob = jobDetail || latestJob;
+  const candidates = baseline?.requirements || jobDetail?.candidates || [];
+  const isConfirmed = Boolean(baseline);
+  return <section className="card requirement-panel"><div className="section-heading"><div><h2>需求解析与基线确认</h2><p>语义网关只提取候选内容；REQ-ID、章节路由与冻结由后端完成。</p></div><div className="parse-actions"><select value={selectedFileId} onChange={(event) => setSelectedFileId(event.target.value)} disabled={isConfirmed || state.loading}><option value="">选择招标文件</option>{files.map((file) => <option value={file.id} key={file.id}>{file.original_name}</option>)}</select><button className="primary-inline" onClick={startParse} disabled={isConfirmed || state.loading || !files.length}>{state.loading ? <Loader2 className="spin" size={16} /> : <FileSearch size={16} />}{displayJob ? '返回重新解析' : '发起需求解析'}</button></div></div>{state.error ? <Notice kind="error">{state.error}</Notice> : null}{state.message ? <Notice kind="success">{state.message}</Notice> : null}{displayJob ? <div className="parse-summary"><Stat label="文件名" value={displayJob.file_name || '—'} /><Stat label="解析状态" value={isConfirmed ? '基线已确认' : statusLabels[displayJob.status] || displayJob.status} /><Stat label="需求数量" value={`${candidates.length || displayJob.requirement_count || 0} 条`} /><Stat label="解析警告" value={`${displayJob.warnings_json?.length || 0} 条`} /></div> : null}{displayJob?.error_message ? <Notice kind="error">{displayJob.error_message}</Notice> : null}{displayJob?.warnings_json?.map((warning, index) => <Notice kind="warning" key={index}>{warning.message || String(warning)}</Notice>)}{candidates.length ? <><div className="table-scroll"><table className="data-table requirement-table"><thead><tr><th>REQ-ID</th><th>需求内容</th><th>来源片段</th><th>来源位置</th><th>状态</th></tr></thead><tbody>{candidates.map((candidate) => <tr key={candidate.req_id}><td><strong>{candidate.req_id}</strong></td><td>{candidate.content}</td><td>{candidate.source_excerpt}</td><td>{candidate.source_page ? `第 ${candidate.source_page} 页` : candidate.source_paragraph ? `第 ${candidate.source_paragraph} 段` : '未标注'}</td><td><Badge type={isConfirmed ? 'confirmed' : candidate.status}>{isConfirmed ? '已确认' : statusLabels[candidate.status] || '候选'}</Badge></td></tr>)}</tbody></table></div><div className="baseline-actions"><p>{isConfirmed ? '该基线已冻结，不可增删改或合并 REQ-ID。' : '确认前请核对候选需求；本阶段不支持自由编辑 REQ-ID。'}</p><button className="primary-inline" onClick={confirmBaseline} disabled={isConfirmed || state.loading || displayJob?.status !== 'succeeded'}><CheckCircle2 size={16} />{isConfirmed ? '需求基线已确认' : '确认需求基线'}</button></div></> : <Empty title="暂无候选需求" text={files.length ? '选择招标文件并发起需求解析。' : '请先在“招标文件”页上传 DOCX、文本型 PDF 或纯文本文件。'} />}</section>;
 }
 
 function BidDocument({ project, version, onGenerated }) {
@@ -118,7 +170,7 @@ function RiskReview({ version, onConfirmed }) {
 }
 
 function Versions({ versions }) {
-  return <section className="card"><h2>版本记录</h2>{versions.length ? <div className="version-list">{versions.map((version) => <div key={version.id}><div><strong>V{version.version_number} · {version.title}</strong><p>{formatDate(version.created_at)}{version.confirmed_at ? ` · 确认于 ${formatDate(version.confirmed_at)}` : ''}</p></div><Badge type={version.risk_status}>{riskLabels[version.risk_status]}</Badge><Badge type={version.status}>{version.status === 'confirmed' ? '已确认' : '待确认'}</Badge></div>)}</div> : <Empty title="暂无版本" text="合法的 Dify 契约输出会形成可追溯版本。" />}</section>;
+  return <section className="card"><h2>版本记录</h2>{versions.length ? <div className="version-list">{versions.map((version) => <div key={version.id}><div><strong>V{version.version_number} · {version.title}</strong><p>{formatDate(version.created_at)}{version.confirmed_at ? ` · 确认于 ${formatDate(version.confirmed_at)}` : ''}</p></div><Badge type={version.risk_status}>{riskLabels[version.risk_status]}</Badge><Badge type={version.status}>{version.status === 'confirmed' ? '已确认' : '待确认'}</Badge></div>)}</div> : <Empty title="暂无版本" text="通过后端契约与风险校验的生成结果会形成可追溯版本。" />}</section>;
 }
 
 function App() {

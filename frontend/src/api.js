@@ -31,6 +31,17 @@ export const api = {
     body.append('file', file);
     return request(`/api/projects/${projectId}/tender-files`, { method: 'POST', body });
   },
+  startTenderParse(projectId, tenderFileId) {
+    return request(`/api/projects/${projectId}/tender-parse-jobs`, {
+      method: 'POST', body: JSON.stringify({ tender_file_id: tenderFileId })
+    });
+  },
+  getTenderParseJob(jobId) {
+    return request(`/api/tender-parse-jobs/${jobId}`);
+  },
+  confirmRequirementBaseline(jobId) {
+    return request(`/api/tender-parse-jobs/${jobId}/confirm`, { method: 'POST' });
+  },
   generate(projectId, inputs) {
     return request(`/api/projects/${projectId}/generation-jobs`, { method: 'POST', body: JSON.stringify(inputs) });
   },

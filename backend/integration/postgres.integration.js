@@ -7,6 +7,8 @@ import { createPool, PgRepository } from '../src/db.js';
 import { createDifyClient } from '../src/dify.js';
 import { GenerationService } from '../src/service.js';
 import { DeterministicPipelineService } from '../src/pipeline/generation-audit.js';
+import { RequirementParseService } from '../src/requirement-parse-service.js';
+import { SemanticGatewayError } from '../src/pipeline/semantic-gateway-client.js';
 
 const directory = dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: resolve(directory, '../.env') });
@@ -294,6 +296,128 @@ test('4.3 合法 envelope 持久化 Generation 并创建 DocumentVersion', async
     assert.equal(rows[0].workflow_version, '4.3');
     assert.equal(rows[0].response_payload_json.schema_version, '4.3');
     assert.ok(rows[0].response_payload_json.document.markdown.includes('第三方系统数据接入'));
+  } finally {
+    await pool.query(`DELETE FROM projects WHERE id = $1`, [project.id]);
+    await pool.end();
+  }
+});
+
+test('PostgreSQL 确认 Requirement 基线后禁止增删改合并', async () => {
+  assert.ok(process.env.DATABASE_URL, 'DATABASE_URL is required for PostgreSQL integration tests');
+  const pool = createPool();
+  const repository = new PgRepository(pool);
+  const project = await repository.createProject({ name: `Requirement 冻结集成测试 ${Date.now()}` });
+  const tenderFile = await repository.addTenderFile({
+    projectId: project.id,
+    originalName: 'tender.txt',
+    storageKey: `${project.id}/integration-${Date.now()}.txt`,
+    mimeType: 'text/plain',
+    sizeBytes: 30
+  });
+  const service = new RequirementParseService({
+    repository,
+    storage: { read: async () => Buffer.from('系统应支持标准接口并提供安全审计。') },
+    textExtractor: async () => ({
+      text: '系统应支持标准接口并提供安全审计。',
+      paragraphs: [{ paragraph: 1, page: null, text: '系统应支持标准接口并提供安全审计。' }],
+      pages: [],
+      warnings: []
+    }),
+    extractionGateway: {
+      extract: async () => ({
+        candidates: [{
+          req_id: 'REQ-001', content: '系统应支持标准接口并提供安全审计。',
+          source_excerpt: '支持标准接口并提供安全审计', source_page: null,
+          source_paragraph: 1, ordinal: 1
+        }],
+        warnings: [],
+        audit: { provider: 'semantic_gateway', task_type: 'requirement_extraction' }
+      })
+    }
+  });
+
+  try {
+    const parseJob = await service.start({ projectId: project.id, tenderFileId: tenderFile.id });
+    assert.equal(parseJob.status, 'succeeded');
+    assert.equal(parseJob.candidates[0].req_id, 'REQ-001');
+    const confirmed = await service.confirm(parseJob.id);
+    assert.equal(confirmed.baseline.status, 'confirmed');
+    const baseline = await repository.getRequirementBaseline(project.id);
+    assert.equal(baseline.requirements.length, 1);
+    assert.deepEqual(baseline.requirements[0].target_sections, [
+      'data-integration', 'solution-design', 'security-compliance'
+    ]);
+
+    await assert.rejects(
+      () => pool.query(`UPDATE requirements SET content = 'mutated' WHERE id = $1`, [baseline.requirements[0].id]),
+      (error) => error.code === '55000'
+    );
+    await assert.rejects(
+      () => pool.query(`DELETE FROM requirements WHERE id = $1`, [baseline.requirements[0].id]),
+      (error) => error.code === '55000'
+    );
+    await assert.rejects(
+      () => pool.query(`
+        INSERT INTO requirements
+          (baseline_id, project_id, req_id, content, source_excerpt, target_sections, ordinal)
+        VALUES ($1, $2, 'REQ-002', 'new', 'new', '[]'::jsonb, 2)
+      `, [baseline.id, project.id]),
+      (error) => error.code === '55000'
+    );
+    await assert.rejects(
+      () => pool.query(`UPDATE requirement_baselines SET status = 'building' WHERE id = $1`, [baseline.id]),
+      (error) => error.code === '55000'
+    );
+    const { rows: versions } = await pool.query(
+      `SELECT count(*)::int AS count FROM document_versions WHERE project_id = $1`, [project.id]
+    );
+    assert.equal(versions[0].count, 0);
+  } finally {
+    await pool.query(`DELETE FROM projects WHERE id = $1`, [project.id]);
+    await pool.end();
+  }
+});
+
+test('PostgreSQL 解析契约失败只创建 failed 解析审计，不创建 Requirement 基线', async () => {
+  assert.ok(process.env.DATABASE_URL, 'DATABASE_URL is required for PostgreSQL integration tests');
+  const pool = createPool();
+  const repository = new PgRepository(pool);
+  const project = await repository.createProject({ name: `Requirement 失败集成测试 ${Date.now()}` });
+  const tenderFile = await repository.addTenderFile({
+    projectId: project.id,
+    originalName: 'invalid.txt',
+    storageKey: `${project.id}/invalid-${Date.now()}.txt`,
+    mimeType: 'text/plain',
+    sizeBytes: 10
+  });
+  const service = new RequirementParseService({
+    repository,
+    storage: { read: async () => Buffer.from('requirement') },
+    textExtractor: async () => ({
+      text: 'requirement', paragraphs: [{ paragraph: 1, page: null, text: 'requirement' }],
+      pages: [], warnings: []
+    }),
+    extractionGateway: {
+      extract: async () => {
+        throw new SemanticGatewayError(
+          'GATEWAY_REQUIREMENTS_INVALID', '候选需求输出契约无效。',
+          { raw_response_payload_json: '{invalid' }, 422
+        );
+      }
+    },
+    logger: { error: () => {} }
+  });
+
+  try {
+    await assert.rejects(
+      () => service.start({ projectId: project.id, tenderFileId: tenderFile.id }),
+      (error) => error.code === 'GATEWAY_REQUIREMENTS_INVALID'
+    );
+    const jobs = await repository.listParseJobs(project.id);
+    assert.equal(jobs[0].status, 'failed');
+    assert.equal(jobs[0].error_code, 'GATEWAY_REQUIREMENTS_INVALID');
+    assert.equal(jobs[0].requirement_count, 0);
+    assert.equal(await repository.getRequirementBaseline(project.id), null);
   } finally {
     await pool.query(`DELETE FROM projects WHERE id = $1`, [project.id]);
     await pool.end();

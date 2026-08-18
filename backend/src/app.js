@@ -11,7 +11,7 @@ function requireText(value, fieldName) {
   return normalized;
 }
 
-export function createApp({ repository, storage, generationService, corsOrigin }) {
+export function createApp({ repository, storage, generationService, requirementParseService, corsOrigin }) {
   const app = express();
   app.use(cors({ origin: corsOrigin || 'http://localhost:5173' }));
   app.use(express.json({ limit: '2mb' }));
@@ -50,11 +50,12 @@ export function createApp({ repository, storage, generationService, corsOrigin }
     try {
       const project = await repository.getProject(req.params.projectId);
       if (!project) throw new AppError('PROJECT_NOT_FOUND', ERROR_MESSAGES.PROJECT_NOT_FOUND, 404);
-      const [tenderFiles, jobs, generations, versions] = await Promise.all([
+      const [tenderFiles, jobs, generations, versions, parseJobs, requirementBaseline] = await Promise.all([
         repository.listTenderFiles(project.id), repository.listJobs(project.id),
-        repository.listGenerations(project.id), repository.listVersions(project.id)
+        repository.listGenerations(project.id), repository.listVersions(project.id),
+        repository.listParseJobs(project.id), repository.getRequirementBaseline(project.id)
       ]);
-      res.json({ project, tenderFiles, jobs, generations, versions });
+      res.json({ project, tenderFiles, jobs, generations, versions, parseJobs, requirementBaseline });
     } catch (error) { next(error); }
   });
 
@@ -87,6 +88,35 @@ export function createApp({ repository, storage, generationService, corsOrigin }
         documentVersion: result.version
       });
     } catch (error) { next(error); }
+  });
+
+  app.post('/api/projects/:projectId/tender-parse-jobs', async (req, res, next) => {
+    try {
+      const tenderFileId = requireText(req.body?.tender_file_id, '招标文件');
+      const job = await requirementParseService.start({
+        projectId: req.params.projectId,
+        tenderFileId
+      });
+      res.status(201).json({ job });
+    } catch (error) { next(error); }
+  });
+
+  app.get('/api/projects/:projectId/tender-parse-jobs', async (req, res, next) => {
+    try {
+      const project = await repository.getProject(req.params.projectId);
+      if (!project) throw new AppError('PROJECT_NOT_FOUND', ERROR_MESSAGES.PROJECT_NOT_FOUND, 404);
+      res.json({ jobs: await repository.listParseJobs(project.id) });
+    } catch (error) { next(error); }
+  });
+
+  app.get('/api/tender-parse-jobs/:jobId', async (req, res, next) => {
+    try { res.json({ job: await requirementParseService.get(req.params.jobId) }); }
+    catch (error) { next(error); }
+  });
+
+  app.post('/api/tender-parse-jobs/:jobId/confirm', async (req, res, next) => {
+    try { res.status(201).json(await requirementParseService.confirm(req.params.jobId)); }
+    catch (error) { next(error); }
   });
 
   app.get('/api/projects/:projectId/generation-jobs', async (req, res, next) => {

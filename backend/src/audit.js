@@ -1,6 +1,6 @@
 const SAFE_STRING_KEYS = new Set([
   'event', 'status', 'risk_status', 'level', 'code', 'error_code',
-  'workflow_version', 'response_mode'
+  'workflow_version', 'response_mode', 'provider', 'task_type'
 ]);
 
 function redactString(value) {

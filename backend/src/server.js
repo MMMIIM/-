@@ -6,6 +6,10 @@ import { createPool, PgRepository } from './db.js';
 import { createDifyClient } from './dify.js';
 import { GenerationService } from './service.js';
 import { LocalFileStorage } from './storage.js';
+import { extractTenderText } from './tender-text-extractor.js';
+import { RequirementParseService } from './requirement-parse-service.js';
+import { createSemanticGatewayClientFromEnv } from './pipeline/semantic-gateway-client.js';
+import { createRequirementExtractionGateway } from './pipeline/requirement-extraction.js';
 
 const directory = dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: resolve(directory, '../.env') });
@@ -21,7 +25,19 @@ const generationService = new GenerationService({
   difyClient,
   workflowVersion: process.env.DIFY_WORKFLOW_VERSION || '4.2'
 });
-const app = createApp({ repository, storage, generationService, corsOrigin: process.env.CORS_ORIGIN });
+const requirementParseService = new RequirementParseService({
+  repository,
+  storage,
+  textExtractor: extractTenderText,
+  extractionGateway: createRequirementExtractionGateway(createSemanticGatewayClientFromEnv())
+});
+const app = createApp({
+  repository,
+  storage,
+  generationService,
+  requirementParseService,
+  corsOrigin: process.env.CORS_ORIGIN
+});
 
 const port = Number(process.env.PORT || 3001);
 const host = process.env.HOST || '127.0.0.1';

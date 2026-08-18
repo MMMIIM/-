@@ -1,5 +1,5 @@
-import { mkdir, writeFile } from 'node:fs/promises';
-import { extname, resolve } from 'node:path';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { extname, isAbsolute, relative, resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
 
 export class LocalFileStorage {
@@ -14,5 +14,15 @@ export class LocalFileStorage {
     const fileName = `${randomUUID()}${extension}`;
     await writeFile(resolve(projectDirectory, fileName), buffer, { flag: 'wx' });
     return `${projectId}/${fileName}`;
+  }
+
+  async read(storageKey) {
+    const normalizedKey = String(storageKey || '').replace(/\\/g, '/');
+    const filePath = resolve(this.rootDirectory, normalizedKey);
+    const relativePath = relative(this.rootDirectory, filePath);
+    if (!normalizedKey || relativePath.startsWith('..') || isAbsolute(relativePath)) {
+      throw Object.assign(new Error('文件存储路径无效。'), { code: 'STORAGE_KEY_INVALID' });
+    }
+    return readFile(filePath);
   }
 }
