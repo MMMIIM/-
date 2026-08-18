@@ -156,6 +156,11 @@ export function aggregateRequirementCandidates(chunkResults, { mandatoryScopeRul
         source_paragraph: candidate.source_paragraph ?? null,
         source_section: candidate.source_section ?? null,
         source_clause_id: candidate.source_clause_id ?? null,
+        source_hash: candidate.source_hash ?? null,
+        source_chunk_id: candidate.source_chunk_id ?? null,
+        category: candidate.category ?? null,
+        mandatory_observed: candidate.mandatory_observed === true,
+        requires_confirmation: candidate.requires_confirmation === true,
         source_start_offset: candidate.source_start_offset ?? null,
         source_end_offset: candidate.source_end_offset ?? null,
         chunk_number: chunkResult.chunk_number
@@ -179,6 +184,11 @@ export function aggregateRequirementCandidates(chunkResults, { mandatoryScopeRul
     source_paragraph: entry.source.source_paragraph,
     source_section: entry.source.source_section,
     source_clause_id: entry.source.source_clause_id,
+    source_hash: entry.source.source_hash,
+    source_chunk_id: entry.source.source_chunk_id,
+    category: entry.source.category,
+    mandatory_observed: entry.source.mandatory_observed,
+    requires_confirmation: entry.source.requires_confirmation,
     ordinal: index + 1,
     sources: [entry.source]
   }, { scopeRules: mandatoryScopeRules }));

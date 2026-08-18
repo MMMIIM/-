@@ -12,6 +12,7 @@ import {
   chunkExtractedText,
   resolveRequirementChunkBudget
 } from './pipeline/requirement-chunker.js';
+import { SourceLocationResolver } from './pipeline/source-location-resolver.js';
 
 const MAX_EXTRACTED_CHARACTERS = 300_000;
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -37,30 +38,6 @@ function sha256(value) {
   return createHash('sha256').update(value).digest('hex');
 }
 
-function locateCandidateSource(candidate, chunk) {
-  const matchingSegment = chunk.segments.find((segment) => (
-    candidate.source_paragraph && segment.paragraph === candidate.source_paragraph
-  )) || chunk.segments.find((segment) => (
-    candidate.source_page && segment.page === candidate.source_page
-  ));
-  const relativeIndex = matchingSegment?.text.indexOf(candidate.source_excerpt) ?? -1;
-  const sourceStartOffset = relativeIndex >= 0 && matchingSegment
-    ? matchingSegment.source_start_offset + relativeIndex
-    : matchingSegment?.source_start_offset ?? chunk.source_start_offset;
-  return {
-    ...candidate,
-    source_text: matchingSegment?.text ?? candidate.source_excerpt,
-    source_section: matchingSegment?.source_section ?? null,
-    source_clause_id: matchingSegment?.source_clause_id ?? null,
-    source_page: candidate.source_page ?? matchingSegment?.page ?? null,
-    source_paragraph: candidate.source_paragraph ?? matchingSegment?.paragraph ?? null,
-    source_start_offset: sourceStartOffset,
-    source_end_offset: relativeIndex >= 0
-      ? sourceStartOffset + candidate.source_excerpt.length
-      : matchingSegment?.source_end_offset ?? chunk.source_end_offset
-  };
-}
-
 function scheduleImmediately(task) {
   setImmediate(task);
 }
@@ -83,6 +60,7 @@ export class RequirementParseService {
     this.logger = logger;
     this.chunkBudget = chunkBudget;
     this.scheduler = scheduler;
+    this.sourceLocationResolver = new SourceLocationResolver();
   }
 
   async start({ projectId, tenderFileId, waitForCompletion = false }) {
@@ -115,6 +93,11 @@ export class RequirementParseService {
   }
 
   async processJob({ job, tenderFile }) {
+    if (typeof this.repository.claimParseJob === 'function') {
+      const claimed = await this.repository.claimParseJob(job.id);
+      if (!claimed) return this.repository.getParseJob(job.id);
+      job = claimed;
+    }
     const startedAt = Date.now();
     let extraction;
     let sectionAnalysis;
@@ -170,7 +153,11 @@ export class RequirementParseService {
         characterBudget: this.chunkBudget.characterBudget,
         tokenBudget: this.chunkBudget.tokenBudget
       }).map((chunk) => ({ ...chunk, content_sha256: sha256(chunk.text) }));
-      await this.repository.initializeParseChunks(job.id, chunks);
+      const persistedChunks = await this.repository.initializeParseChunks(job.id, chunks);
+      if (Array.isArray(persistedChunks)) {
+        const ids = new Map(persistedChunks.map((item) => [item.chunk_number, item.id]));
+        chunks = chunks.map((chunk) => ({ ...chunk, id: ids.get(chunk.chunk_number) || null }));
+      }
 
       const chunkResults = [];
       const warnings = [...extraction.warnings, ...sectionAnalysis.warnings];
@@ -183,7 +170,13 @@ export class RequirementParseService {
             fileName: tenderFile.original_name, text: chunk.text,
             paragraphs: chunk.segments, chunk
           });
-          const candidates = gatewayResult.candidates.map((candidate) => locateCandidateSource(candidate, chunk));
+          const resolvedCandidates = gatewayResult.candidates.map((candidate) => ({
+            candidate,
+            resolution: this.sourceLocationResolver.resolve(candidate, chunk)
+          }));
+          const candidates = resolvedCandidates.map(({ candidate, resolution }) => ({
+            ...candidate, ...resolution.location
+          }));
           const runtimeMs = Date.now() - chunkStartedAt;
           await this.repository.completeParseChunk({
             jobId: job.id, chunkNumber: chunk.chunk_number,
@@ -192,6 +185,10 @@ export class RequirementParseService {
           });
           warnings.push(...gatewayResult.warnings.map((warning) => ({
             ...warning, chunk_number: chunk.chunk_number
+          })));
+          warnings.push(...resolvedCandidates.filter(({ resolution }) => resolution.warning).map(({ candidate, resolution }) => ({
+            ...resolution.warning, chunk_number: chunk.chunk_number,
+            candidate_index: candidate.candidate_index
           })));
           chunkResults.push({ chunk_number: chunk.chunk_number, candidates });
         } catch (caught) {

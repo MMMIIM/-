@@ -20,7 +20,7 @@ export function parseSemanticGatewayConfig(env = {}) {
       healthcheck: positiveTimeout(env.V43_GATEWAY_HEALTHCHECK_TIMEOUT_MS, 15_000),
       requirement_extraction: positiveTimeout(
         env.V43_GATEWAY_REQUIREMENT_EXTRACTION_TIMEOUT_MS,
-        120_000
+        300_000
       )
     })
   });
@@ -103,7 +103,10 @@ function validateGatewayEnvelope(value, requestedTaskType, rawResponsePayloadJso
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     throw new SemanticGatewayError('GATEWAY_ENVELOPE_INVALID', '网关 envelope 必须是对象。', audit);
   }
-  if (value.schema_version !== '4.3-gateway') {
+  const expectedSchemaVersion = requestedTaskType === 'requirement_extraction'
+    ? '4.3-requirement-extraction'
+    : '4.3-gateway';
+  if (value.schema_version !== expectedSchemaVersion) {
     throw new SemanticGatewayError('GATEWAY_ENVELOPE_INVALID', '网关 schema_version 无效。', audit);
   }
   if (value.task_type !== requestedTaskType) {

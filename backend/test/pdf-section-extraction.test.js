@@ -97,7 +97,7 @@ test('章节级 mandatory scope 传播到第四章候选但排除5.2.6', () => {
 test('网关 requirements 空数组是合法成功，非数组和多余字段仍失败', () => {
   const result = validateRequirementExtractionEnvelope({
     envelope: {
-      schema_version: '4.3-gateway', task_type: 'requirement_extraction',
+      schema_version: '4.3-requirement-extraction', task_type: 'requirement_extraction',
       status: 'success', data: { requirements: [] }, warnings: []
     },
     audit: { provider: 'semantic_gateway' }
@@ -106,7 +106,7 @@ test('网关 requirements 空数组是合法成功，非数组和多余字段仍
   for (const data of [{ requirements: 'invalid' }, { requirements: [], extra: true }, {}]) {
     assert.throws(() => validateRequirementExtractionEnvelope({
       envelope: {
-        schema_version: '4.3-gateway', task_type: 'requirement_extraction',
+        schema_version: '4.3-requirement-extraction', task_type: 'requirement_extraction',
         status: 'success', data, warnings: []
       }, audit: {}
     }), (error) => error.code === 'GATEWAY_REQUIREMENTS_INVALID');

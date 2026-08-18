@@ -85,6 +85,16 @@ export class PgRepository {
     return rows[0] || null;
   }
 
+  async claimParseJob(jobId) {
+    const { rows } = await this.pool.query(`
+      UPDATE tender_parse_jobs
+      SET phase = 'section_classification', updated_at = now()
+      WHERE id = $1 AND status = 'running' AND phase = 'text_extraction'
+      RETURNING *
+    `, [jobId]);
+    return rows[0] || null;
+  }
+
   async updateParseJobProgress({
     jobId,
     phase,
@@ -114,16 +124,18 @@ export class PgRepository {
 
   async initializeParseChunks(jobId, chunks) {
     const client = await this.pool.connect();
+    const persisted = [];
     try {
       await client.query('BEGIN');
       for (const chunk of chunks) {
-        await client.query(`
+        const result = await client.query(`
           INSERT INTO tender_parse_chunks (
             parse_job_id, chunk_number, character_count, estimated_token_count,
             source_start_offset, source_end_offset, source_start_page, source_end_page,
             source_start_paragraph, source_end_paragraph, starts_at_title_boundary,
             content_sha256
           ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+          RETURNING id, chunk_number
         `, [
           jobId, chunk.chunk_number, chunk.character_count, chunk.estimated_token_count,
           chunk.source_start_offset, chunk.source_end_offset,
@@ -131,6 +143,7 @@ export class PgRepository {
           chunk.source_start_paragraph, chunk.source_end_paragraph,
           chunk.starts_at_title_boundary, chunk.content_sha256
         ]);
+        persisted.push(result.rows[0]);
       }
       await client.query(`
         UPDATE tender_parse_jobs
@@ -138,6 +151,7 @@ export class PgRepository {
         WHERE id = $1
       `, [jobId, chunks.length]);
       await client.query('COMMIT');
+      return persisted;
     } catch (error) {
       await client.query('ROLLBACK');
       throw error;
@@ -273,9 +287,10 @@ export class PgRepository {
             (parse_job_id, req_id, content, source_excerpt, source_page, source_paragraph,
              ordinal, sources_json, source_text, is_mandatory, mandatory_marker,
              source_section, source_clause_id, mandatory_scope_source_text,
-             mandatory_scope_section, exception_clause_ids)
+             mandatory_scope_section, exception_clause_ids, source_hash, source_chunk_id,
+             category, mandatory_observed, requires_confirmation)
           VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9, $10, $11,
-            $12, $13, $14, $15, $16::jsonb)
+            $12, $13, $14, $15, $16::jsonb, $17, $18, $19, $20, $21)
         `, [
           jobId, candidate.req_id, candidate.content, candidate.source_excerpt,
           candidate.source_page, candidate.source_paragraph, candidate.ordinal,
@@ -283,7 +298,9 @@ export class PgRepository {
           candidate.is_mandatory, candidate.mandatory_marker,
           candidate.source_section, candidate.source_clause_id,
           candidate.mandatory_scope_source_text, candidate.mandatory_scope_section,
-          JSON.stringify(candidate.exception_clause_ids || [])
+          JSON.stringify(candidate.exception_clause_ids || []), candidate.source_hash,
+          candidate.source_chunk_id, candidate.category, candidate.mandatory_observed === true,
+          candidate.requires_confirmation === true
         ]);
       }
       await client.query(`UPDATE projects SET status = 'requirements_review', updated_at = now() WHERE id = $1`, [
@@ -370,7 +387,8 @@ export class PgRepository {
       SELECT id, req_id, content, source_excerpt, source_page, source_paragraph,
         source_text, is_mandatory, mandatory_marker,
         source_section, source_clause_id, mandatory_scope_source_text,
-        mandatory_scope_section, exception_clause_ids,
+        mandatory_scope_section, exception_clause_ids, source_hash, source_chunk_id,
+        category, mandatory_observed, requires_confirmation,
         ordinal, status, sources_json, created_at
       FROM requirement_candidates WHERE parse_job_id = $1 ORDER BY ordinal
     `, [id]), this.pool.query(`
@@ -408,7 +426,8 @@ export class PgRepository {
       SELECT id, req_id, content, source_excerpt, source_page, source_paragraph,
         source_text, is_mandatory, mandatory_marker,
         source_section, source_clause_id, mandatory_scope_source_text,
-        mandatory_scope_section, exception_clause_ids,
+        mandatory_scope_section, exception_clause_ids, source_hash, source_chunk_id,
+        category, requires_confirmation,
         target_sections, ordinal, created_at
       FROM requirements WHERE baseline_id = $1 ORDER BY ordinal
     `, [rows[0].id]);
@@ -444,9 +463,10 @@ export class PgRepository {
             (baseline_id, project_id, req_id, content, source_excerpt,
              source_page, source_paragraph, target_sections, ordinal,
              source_text, is_mandatory, mandatory_marker, source_section, source_clause_id,
-             mandatory_scope_source_text, mandatory_scope_section, exception_clause_ids)
+             mandatory_scope_source_text, mandatory_scope_section, exception_clause_ids,
+             source_hash, source_chunk_id, category, requires_confirmation)
           VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9, $10, $11, $12,
-            $13, $14, $15, $16, $17::jsonb)
+            $13, $14, $15, $16, $17::jsonb, $18, $19, $20, $21)
         `, [
           baseline.id, job.project_id, requirement.req_id, requirement.content,
           requirement.source_excerpt, requirement.source_page, requirement.source_paragraph,
@@ -454,7 +474,9 @@ export class PgRepository {
           requirement.source_text, requirement.is_mandatory, requirement.mandatory_marker,
           requirement.source_section, requirement.source_clause_id,
           requirement.mandatory_scope_source_text, requirement.mandatory_scope_section,
-          JSON.stringify(requirement.exception_clause_ids || [])
+          JSON.stringify(requirement.exception_clause_ids || []), requirement.source_hash,
+          requirement.source_chunk_id, requirement.category,
+          requirement.requires_confirmation === true
         ]);
       }
       const confirmed = await client.query(`

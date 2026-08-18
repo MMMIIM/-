@@ -199,7 +199,7 @@ test('非法分片输出或汇总失败均不得完成任务', async () => {
       gateway: {
         extract: async () => {
           if (error) throw error;
-          return { candidates: [{ content: '', source_excerpt: '' }], warnings: [], audit: {} };
+          return { candidates: [{ content: '', source_excerpt: '要求一。' }], warnings: [], audit: {} };
         }
       }
     });
@@ -260,14 +260,12 @@ test('超过 12,000 字符才启用 8,000 字符确定性分片', () => {
   assert.ok(chunks.every((chunk) => chunk.character_count <= 8000));
 });
 
-test('task_type timeout 配置确实传入 SemanticGatewayClient', () => {
+test('requirement_extraction 默认 300 秒、healthcheck 15 秒且配置传入 Client', () => {
   const config = parseSemanticGatewayConfig({
-    V43_GATEWAY_TIMEOUT_MS: '30000',
-    V43_GATEWAY_HEALTHCHECK_TIMEOUT_MS: '5000',
-    V43_GATEWAY_REQUIREMENT_EXTRACTION_TIMEOUT_MS: '120000'
+    V43_GATEWAY_TIMEOUT_MS: '30000'
   });
-  assert.equal(config.taskTimeouts.healthcheck, 5000);
-  assert.equal(config.taskTimeouts.requirement_extraction, 120000);
+  assert.equal(config.taskTimeouts.healthcheck, 15000);
+  assert.equal(config.taskTimeouts.requirement_extraction, 300000);
   assert.notEqual(config.taskTimeouts.healthcheck, config.taskTimeouts.requirement_extraction);
   const client = createSemanticGatewayClientFromEnv({
     env: {
@@ -275,14 +273,39 @@ test('task_type timeout 配置确实传入 SemanticGatewayClient', () => {
       V43_GATEWAY_API_KEY: 'test-only',
       V43_GATEWAY_USER: 'test-user',
       V43_GATEWAY_HEALTHCHECK_TIMEOUT_MS: '15000',
-      V43_GATEWAY_REQUIREMENT_EXTRACTION_TIMEOUT_MS: '120000'
+      V43_GATEWAY_REQUIREMENT_EXTRACTION_TIMEOUT_MS: '300000'
     },
     fetchImpl: async () => { throw new Error('must not call'); }
   });
   assert.equal(client.taskTimeouts.healthcheck, 15000);
-  assert.equal(client.taskTimeouts.requirement_extraction, 120000);
+  assert.equal(client.taskTimeouts.requirement_extraction, 300000);
   assert.deepEqual(resolveRequirementChunkBudget({
     REQUIREMENT_SINGLE_CALL_CHAR_THRESHOLD: '12000',
     REQUIREMENT_CHUNK_CHAR_BUDGET: '8000', REQUIREMENT_CHUNK_TOKEN_BUDGET: '8000'
   }), { singleCallThreshold: 12000, characterBudget: 8000, tokenBudget: 8000 });
+});
+
+test('数据库任务领取锁保证同一 job/chunk 不会被重复调用', async () => {
+  let gatewayCalls = 0;
+  const { service, repository } = serviceFor({
+    extraction: extractionFor(['第四章 项目要求和有关说明', '系统应记录审计日志。']),
+    chunkBudget: { singleCallThreshold: 12000, characterBudget: 8000, tokenBudget: 8000 },
+    gateway: { extract: async () => { gatewayCalls += 1; await Promise.resolve(); return { candidates: [{ content: '记录审计日志。', source_excerpt: '系统应记录审计日志。', source_page: 1, source_paragraph: 2 }], warnings: [], audit: {} }; } }
+  });
+  let claimed = false;
+  repository.claimParseJob = async () => {
+    if (claimed) return null;
+    claimed = true;
+    return { id: 'parse-1', status: 'running', phase: 'section_classification' };
+  };
+  repository.getParseJob = async () => ({ id: 'parse-1', status: 'running', phase: 'section_classification' });
+  const job = { id: 'parse-1', status: 'running', phase: 'text_extraction' };
+  const tenderFile = await repository.getTenderFile();
+  const [first, duplicate] = await Promise.all([
+    service.processJob({ job, tenderFile }),
+    service.processJob({ job, tenderFile })
+  ]);
+  assert.equal(first.status, 'succeeded');
+  assert.equal(duplicate.status, 'running');
+  assert.equal(gatewayCalls, 1);
 });
