@@ -6,7 +6,8 @@ import {
   RequirementParsing,
   formatRequirementLevel,
   formatRequirementSource,
-  formatTenderParsePhase
+  formatTenderParsePhase,
+  summarizeRequirementSources
 } from './main.jsx';
 
 const file = {
@@ -56,6 +57,14 @@ describe('前端 tender parse API 错误契约', () => {
 });
 
 describe('需求解析状态渲染', () => {
+  it('汇总已定位、建议匹配、未定位和已排除，不展开重复来源 warning', () => {
+    expect(summarizeRequirementSources([
+      { source_verified: true, candidate_decision: 'include' },
+      { source_verified: false, source_resolution_status: 'suggested', candidate_decision: 'pending' },
+      { source_verified: false, source_resolution_status: 'unresolved', candidate_decision: 'pending' },
+      { source_verified: false, candidate_decision: 'exclude' }
+    ])).toEqual({ total: 4, verified: 1, suggested: 1, unresolved: 1, excluded: 1, pending: 2 });
+  });
   it('展示文本提取、分片进度、汇总校验和失败分片', () => {
     expect(formatTenderParsePhase({ status: 'running', phase: 'text_extraction' })).toBe('文本提取');
     expect(formatTenderParsePhase({ status: 'running', phase: 'section_classification' })).toBe('文档章节分类');

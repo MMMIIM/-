@@ -74,6 +74,14 @@ input:focus, select:focus, textarea:focus { border-color: #2f6fed; box-shadow: 0
 .parse-summary span { color: #667085; font-size: 12px; }
 .parse-summary strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .requirement-table td { max-width: 420px; white-space: normal; vertical-align: top; line-height: 1.55; }
+.source-filter { display: flex; justify-content: flex-end; }
+.source-filter label { display: flex; align-items: center; gap: 8px; color: #475467; font-size: 13px; }
+.source-filter select { width: 150px; }
+.source-review { display: grid; gap: 12px; border: 1px solid #b2ccff; border-radius: 9px; padding: 16px; background: #f7faff; }
+.source-review h3, .source-review p { margin: 0; }
+.review-paragraphs { max-height: 360px; overflow: auto; border: 1px solid #dce5ef; border-radius: 7px; padding: 10px; background: #fff; }
+.review-paragraphs p { padding: 6px 4px; border-bottom: 1px solid #eef2f6; font-size: 13px; line-height: 1.55; }
+.source-review .compact-actions { display: grid; grid-template-columns: 120px 120px auto auto auto; }
 .baseline-actions { display: flex; align-items: center; justify-content: space-between; gap: 16px; border-top: 1px solid #e5eaf0; padding-top: 16px; }
 .baseline-actions p { margin: 0; color: #667085; font-size: 13px; }
 .document-layout { display: grid; grid-template-columns: minmax(320px, .68fr) minmax(520px, 1.32fr); gap: 16px; }

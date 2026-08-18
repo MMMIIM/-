@@ -1,4 +1,5 @@
 import pg from 'pg';
+import { createHash } from 'node:crypto';
 import { sanitizeAuditJson, sanitizeAuditText } from './audit.js';
 import { normalizeTenderFileRecord, normalizeUtf8FileName } from './file-name.js';
 import { assertMandatoryRequirementMetadata } from './pipeline/mandatory-requirement.js';
@@ -288,9 +289,18 @@ export class PgRepository {
              ordinal, sources_json, source_text, is_mandatory, mandatory_marker,
              source_section, source_clause_id, mandatory_scope_source_text,
              mandatory_scope_section, exception_clause_ids, source_hash, source_chunk_id,
-             category, mandatory_observed, requires_confirmation)
+             category, mandatory_observed, requires_confirmation,
+             source_page_start, source_page_end, source_paragraph_start, source_paragraph_end,
+             source_paragraphs_json, source_match_type, source_match_score,
+             source_resolution_status, source_resolution_method, source_resolved_at,
+             source_verified, candidate_decision, decision_reason, decided_at)
           VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9, $10, $11,
-            $12, $13, $14, $15, $16::jsonb, $17, $18, $19, $20, $21)
+            $12, $13, $14, $15, $16::jsonb, $17, $18, $19, $20, $21,
+            $22, $23, $24, $25, $26::jsonb, $27, $28, $29, $30,
+            CASE WHEN $31 THEN now() ELSE NULL END, $31,
+            CASE WHEN $31 THEN 'include' ELSE 'pending' END,
+            CASE WHEN $31 THEN 'deterministic_source_resolution' ELSE NULL END,
+            CASE WHEN $31 THEN now() ELSE NULL END)
         `, [
           jobId, candidate.req_id, candidate.content, candidate.source_excerpt,
           candidate.source_page, candidate.source_paragraph, candidate.ordinal,
@@ -300,7 +310,15 @@ export class PgRepository {
           candidate.mandatory_scope_source_text, candidate.mandatory_scope_section,
           JSON.stringify(candidate.exception_clause_ids || []), candidate.source_hash,
           candidate.source_chunk_id, candidate.category, candidate.mandatory_observed === true,
-          candidate.requires_confirmation === true
+          candidate.requires_confirmation === true,
+          candidate.source_page_start ?? candidate.source_page,
+          candidate.source_page_end ?? candidate.source_page,
+          candidate.source_paragraph_start ?? candidate.source_paragraph,
+          candidate.source_paragraph_end ?? candidate.source_paragraph,
+          JSON.stringify(candidate.source_paragraphs_json || []), candidate.source_match_type || null,
+          candidate.source_match_score ?? null, candidate.source_resolution_status || (candidate.source_hash ? 'verified' : 'unresolved'),
+          candidate.source_resolution_method || (candidate.source_hash ? 'automatic' : null),
+          candidate.source_verified === true || Boolean(candidate.source_hash)
         ]);
       }
       await client.query(`UPDATE projects SET status = 'requirements_review', updated_at = now() WHERE id = $1`, [
@@ -389,6 +407,10 @@ export class PgRepository {
         source_section, source_clause_id, mandatory_scope_source_text,
         mandatory_scope_section, exception_clause_ids, source_hash, source_chunk_id,
         category, mandatory_observed, requires_confirmation,
+        source_page_start, source_page_end, source_paragraph_start, source_paragraph_end,
+        source_paragraphs_json, source_match_type, source_match_score,
+        source_resolution_status, source_resolution_method, source_resolved_at,
+        source_verified, candidate_decision, decision_reason, decided_at,
         ordinal, status, sources_json, created_at
       FROM requirement_candidates WHERE parse_job_id = $1 ORDER BY ordinal
     `, [id]), this.pool.query(`
@@ -416,6 +438,111 @@ export class PgRepository {
     };
   }
 
+  async getSourceReconciliationContext(parseJobId) {
+    const result = await this.pool.query(`
+      SELECT j.*, f.id AS file_id, f.original_name, f.storage_key, f.mime_type, f.size_bytes,
+        r.file_hash AS previous_file_hash
+      FROM tender_parse_jobs j JOIN tender_files f ON f.id=j.tender_file_id
+      LEFT JOIN LATERAL (
+        SELECT file_hash FROM requirement_source_reconciliations
+        WHERE parse_job_id=j.id ORDER BY reconciled_at DESC LIMIT 1
+      ) r ON true WHERE j.id=$1
+    `, [parseJobId]);
+    if (!result.rows[0]) return null;
+    const row = result.rows[0];
+    const [candidates, chunks, section] = await Promise.all([
+      this.pool.query(`SELECT * FROM requirement_candidates WHERE parse_job_id=$1 ORDER BY ordinal`, [parseJobId]),
+      this.pool.query(`SELECT * FROM tender_parse_chunks WHERE parse_job_id=$1 ORDER BY chunk_number`, [parseJobId]),
+      this.pool.query(`SELECT * FROM tender_document_sections WHERE parse_job_id=$1 AND archive_role IN ('requirement_extraction','requirement_extraction_fallback') LIMIT 1`, [parseJobId])
+    ]);
+    return {
+      job: row,
+      file: { id: row.file_id, original_name: row.original_name, storage_key: row.storage_key, mime_type: row.mime_type, size_bytes: row.size_bytes },
+      previous_file_hash: row.previous_file_hash,
+      candidates: candidates.rows, chunks: chunks.rows, technical_section: section.rows[0] || null
+    };
+  }
+
+  async saveSourceReconciliation({ parseJobId, tenderFileId, paragraphs, updates, fileHash, extractedTextHash, extractorVersion, extractedAt, statistics }) {
+    const client = await this.pool.connect();
+    try {
+      await client.query('BEGIN');
+      await client.query(`DELETE FROM tender_document_paragraphs WHERE parse_job_id=$1`, [parseJobId]);
+      for (const paragraph of paragraphs) await client.query(`
+        INSERT INTO tender_document_paragraphs
+          (parse_job_id,tender_file_id,page_number,paragraph_number,text,normalized_text,start_offset,end_offset,text_hash,extractor_version)
+        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+      `, [parseJobId, tenderFileId, paragraph.page ?? null, paragraph.paragraph, paragraph.text,
+        paragraph.text.normalize('NFKC').replace(/\s+/g, ''), paragraph.source_start_offset,
+        paragraph.source_end_offset, createHash('sha256').update(paragraph.text).digest('hex'), extractorVersion]);
+      for (const item of updates) await client.query(`
+        UPDATE requirement_candidates SET
+          source_page=$2,source_paragraph=$3,source_page_start=$4,source_page_end=$5,
+          source_paragraph_start=$6,source_paragraph_end=$7,source_paragraphs_json=$8::jsonb,
+          source_hash=$9,source_match_type=$10,source_match_score=$11,
+          source_resolution_status=$12,source_resolution_method=$13,source_verified=$14,
+          source_resolved_at=CASE WHEN $14 THEN now() ELSE NULL END,
+          candidate_decision=$15,decision_reason=$16,decided_at=CASE WHEN $15='include' THEN now() ELSE decided_at END
+        WHERE id=$1
+      `, [item.id,item.source_page,item.source_paragraph,item.source_page_start,item.source_page_end,
+        item.source_paragraph_start,item.source_paragraph_end,JSON.stringify(item.source_paragraphs_json || []),
+        item.source_hash,item.source_match_type,item.source_match_score,item.source_resolution_status,
+        item.source_resolution_method,item.source_verified,item.candidate_decision,item.decision_reason]);
+      await client.query(`
+        INSERT INTO requirement_source_reconciliations
+          (parse_job_id,tender_file_id,extractor_version,file_hash,extracted_text_hash,status,statistics_json,extracted_at,reconciled_at)
+        VALUES($1,$2,$3,$4,$5,'succeeded',$6::jsonb,$7,now())
+        ON CONFLICT(parse_job_id,extractor_version,file_hash,extracted_text_hash)
+        DO UPDATE SET statistics_json=excluded.statistics_json,status='succeeded',reconciled_at=now()
+      `, [parseJobId,tenderFileId,extractorVersion,fileHash,extractedTextHash,JSON.stringify(statistics),extractedAt]);
+      await client.query(`
+        UPDATE tender_parse_jobs SET
+          warnings_json=(SELECT COALESCE(jsonb_agg(value),'[]'::jsonb) FROM jsonb_array_elements(warnings_json) value WHERE COALESCE(value->>'code','') NOT LIKE 'SOURCE_LOCATION_%') ||
+            CASE WHEN $2::int + $3::int > 0 THEN jsonb_build_array(jsonb_build_object('code','SOURCE_RECONCILIATION_REVIEW_REQUIRED','message',format('仍有 %s 条建议匹配、%s 条未定位候选需人工处理。',$2,$3))) ELSE '[]'::jsonb END,
+          summary_json=summary_json || jsonb_build_object('source_reconciliation',$4::jsonb),updated_at=now()
+        WHERE id=$1
+      `, [parseJobId, statistics.suggested, statistics.unresolved, JSON.stringify(statistics)]);
+      await client.query('COMMIT');
+    } catch (error) { await client.query('ROLLBACK'); throw error; } finally { client.release(); }
+  }
+
+  async getCandidateSourceReview(candidateId) {
+    const candidate = (await this.pool.query(`
+      SELECT c.*,k.source_start_paragraph AS chunk_start_paragraph,k.source_end_paragraph AS chunk_end_paragraph
+      FROM requirement_candidates c LEFT JOIN tender_parse_chunks k ON k.id=c.source_chunk_id WHERE c.id=$1
+    `, [candidateId])).rows[0];
+    if (!candidate) return null;
+    const paragraphs = await this.pool.query(`
+      SELECT paragraph_number,page_number,text FROM tender_document_paragraphs
+      WHERE parse_job_id=$1 AND paragraph_number BETWEEN GREATEST(1,COALESCE($2,$4,1)-3) AND COALESCE($3,$5,1)+3
+      ORDER BY paragraph_number
+    `, [candidate.parse_job_id, candidate.source_paragraph_start, candidate.source_paragraph_end,
+      candidate.chunk_start_paragraph, candidate.chunk_end_paragraph]);
+    return { candidate, paragraphs: paragraphs.rows };
+  }
+
+  async getCandidateParagraphRange(candidateId, start, end) {
+    const { rows } = await this.pool.query(`
+      SELECT p.* FROM tender_document_paragraphs p JOIN requirement_candidates c ON c.parse_job_id=p.parse_job_id
+      WHERE c.id=$1 AND p.paragraph_number BETWEEN $2 AND $3 ORDER BY p.paragraph_number
+    `, [candidateId,start,end]);
+    return rows;
+  }
+
+  async saveCandidateSourceDecision({ candidateId, action, reason, location }) {
+    const client = await this.pool.connect();
+    try {
+      await client.query('BEGIN');
+      const previous = (await client.query(`SELECT * FROM requirement_candidates WHERE id=$1 FOR UPDATE`, [candidateId])).rows[0];
+      if (!previous) throw Object.assign(new Error('候选需求不存在。'), { code: 'REQUIREMENT_CANDIDATE_NOT_FOUND', status: 404 });
+      const result = action === 'exclude'
+        ? await client.query(`UPDATE requirement_candidates SET candidate_decision='exclude',decision_reason=$2,decided_at=now() WHERE id=$1 RETURNING *`, [candidateId,reason])
+        : await client.query(`UPDATE requirement_candidates SET source_page=$2,source_paragraph=$3,source_page_start=$4,source_page_end=$5,source_paragraph_start=$6,source_paragraph_end=$7,source_paragraphs_json=$8::jsonb,source_hash=$9,source_match_type=$10,source_match_score=$11,source_resolution_status='verified',source_resolution_method='manual',source_verified=true,source_resolved_at=now(),candidate_decision='include',decision_reason=$12,decided_at=now() WHERE id=$1 RETURNING *`, [candidateId,location.source_page,location.source_paragraph,location.source_page_start,location.source_page_end,location.source_paragraph_start,location.source_paragraph_end,JSON.stringify(location.source_paragraphs_json),location.source_hash,location.source_match_type,location.source_match_score,reason]);
+      await client.query(`INSERT INTO requirement_source_decision_audits(parse_job_id,candidate_id,action,previous_state_json,new_state_json,reason) VALUES($1,$2,$3,$4::jsonb,$5::jsonb,$6)`, [previous.parse_job_id,candidateId,action,JSON.stringify({decision:previous.candidate_decision,status:previous.source_resolution_status}),JSON.stringify({decision:result.rows[0].candidate_decision,status:result.rows[0].source_resolution_status}),reason]);
+      await client.query('COMMIT'); return result.rows[0];
+    } catch (error) { await client.query('ROLLBACK'); throw error; } finally { client.release(); }
+  }
+
   async getRequirementBaseline(projectId) {
     const { rows } = await this.pool.query(`
       SELECT * FROM requirement_baselines
@@ -427,7 +554,9 @@ export class PgRepository {
         source_text, is_mandatory, mandatory_marker,
         source_section, source_clause_id, mandatory_scope_source_text,
         mandatory_scope_section, exception_clause_ids, source_hash, source_chunk_id,
-        category, requires_confirmation,
+        category, requires_confirmation, source_page_start, source_page_end,
+        source_paragraph_start, source_paragraph_end, source_paragraphs_json,
+        source_match_type, source_match_score, source_resolution_method, source_verified,
         target_sections, ordinal, created_at
       FROM requirements WHERE baseline_id = $1 ORDER BY ordinal
     `, [rows[0].id]);
@@ -464,9 +593,13 @@ export class PgRepository {
              source_page, source_paragraph, target_sections, ordinal,
              source_text, is_mandatory, mandatory_marker, source_section, source_clause_id,
              mandatory_scope_source_text, mandatory_scope_section, exception_clause_ids,
-             source_hash, source_chunk_id, category, requires_confirmation)
+             source_hash, source_chunk_id, category, requires_confirmation,
+             source_page_start, source_page_end, source_paragraph_start, source_paragraph_end,
+             source_paragraphs_json, source_match_type, source_match_score,
+             source_resolution_method, source_verified)
           VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9, $10, $11, $12,
-            $13, $14, $15, $16, $17::jsonb, $18, $19, $20, $21)
+            $13, $14, $15, $16, $17::jsonb, $18, $19, $20, $21,
+            $22, $23, $24, $25, $26::jsonb, $27, $28, $29, $30)
         `, [
           baseline.id, job.project_id, requirement.req_id, requirement.content,
           requirement.source_excerpt, requirement.source_page, requirement.source_paragraph,
@@ -476,7 +609,12 @@ export class PgRepository {
           requirement.mandatory_scope_source_text, requirement.mandatory_scope_section,
           JSON.stringify(requirement.exception_clause_ids || []), requirement.source_hash,
           requirement.source_chunk_id, requirement.category,
-          requirement.requires_confirmation === true
+          requirement.requires_confirmation === true,
+          requirement.source_page_start, requirement.source_page_end,
+          requirement.source_paragraph_start, requirement.source_paragraph_end,
+          JSON.stringify(requirement.source_paragraphs_json || []), requirement.source_match_type,
+          requirement.source_match_score, requirement.source_resolution_method,
+          requirement.source_verified === true
         ]);
       }
       const confirmed = await client.query(`

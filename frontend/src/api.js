@@ -54,6 +54,14 @@ export const api = {
   confirmRequirementBaseline(jobId) {
     return request(`/api/tender-parse-jobs/${jobId}/confirm`, { method: 'POST' });
   },
+  getCandidateSourceReview(candidateId) {
+    return request(`/api/requirement-candidates/${candidateId}/source-review`);
+  },
+  decideCandidateSource(candidateId, decision) {
+    return request(`/api/requirement-candidates/${candidateId}/source-decision`, {
+      method: 'POST', body: JSON.stringify(decision)
+    });
+  },
   getProductionBeta(projectId) {
     return request(`/api/projects/${projectId}/production-beta`);
   },

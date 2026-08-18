@@ -572,3 +572,24 @@ test('PostgreSQL 对历史 Latin-1 乱码文件名只修复 API 展示，不改�
     await pool.end();
   }
 });
+
+test('PostgreSQL 持久化人工来源范围、排除决定与审计', async () => {
+  assert.ok(process.env.DATABASE_URL, 'DATABASE_URL is required for PostgreSQL integration tests');
+  const pool = createPool(); const repository = new PgRepository(pool);
+  const project = await repository.createProject({ name: `来源人工复核集成测试 ${Date.now()}` });
+  const file = await repository.addTenderFile({ projectId: project.id, originalName: 'source.pdf', storageKey: `${project.id}/source.pdf`, mimeType: 'application/pdf', sizeBytes: 10 });
+  const job = await repository.createParseJob({ projectId: project.id, tenderFileId: file.id });
+  try {
+    const candidate = (await pool.query(`INSERT INTO requirement_candidates(parse_job_id,req_id,content,source_excerpt,source_text,ordinal) VALUES($1,'REQ-001','需求正文','来源原文','来源原文',1) RETURNING *`, [job.id])).rows[0];
+    for (const paragraph of [1, 2]) await pool.query(`INSERT INTO tender_document_paragraphs(parse_job_id,tender_file_id,page_number,paragraph_number,text,normalized_text,start_offset,end_offset,text_hash,extractor_version) VALUES($1,$2,$3,$4,$5,$5,$6,$7,$8,'test')`, [job.id,file.id,paragraph,paragraph,`第${paragraph}段`,(paragraph-1)*10,paragraph*10,`hash-${paragraph}`]);
+    const range = await repository.getCandidateParagraphRange(candidate.id, 1, 2);
+    assert.equal(range.length, 2);
+    const associated = await repository.saveCandidateSourceDecision({ candidateId: candidate.id, action: 'associate', reason: '人工核验', location: { source_page: 1, source_paragraph: 1, source_page_start: 1, source_page_end: 2, source_paragraph_start: 1, source_paragraph_end: 2, source_paragraphs_json: [{paragraph:1},{paragraph:2}], source_hash: 'verified-hash', source_match_type: 'manual', source_match_score: 1 } });
+    assert.equal(associated.source_verified, true);
+    assert.equal(associated.candidate_decision, 'include');
+    const excluded = await repository.saveCandidateSourceDecision({ candidateId: candidate.id, action: 'exclude', reason: '不纳入' });
+    assert.equal(excluded.candidate_decision, 'exclude');
+    const audit = await pool.query(`SELECT action FROM requirement_source_decision_audits WHERE candidate_id=$1 ORDER BY created_at`, [candidate.id]);
+    assert.deepEqual(audit.rows.map((item) => item.action), ['associate', 'exclude']);
+  } finally { await pool.query(`DELETE FROM projects WHERE id=$1`, [project.id]); await pool.end(); }
+});

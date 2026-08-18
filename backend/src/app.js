@@ -12,7 +12,7 @@ function requireText(value, fieldName) {
   return normalized;
 }
 
-export function createApp({ repository, storage, generationService, requirementParseService, productionBetaService, corsOrigin }) {
+export function createApp({ repository, storage, generationService, requirementParseService, requirementSourceService, productionBetaService, corsOrigin }) {
   const app = express();
   app.use(cors({ origin: corsOrigin || 'http://localhost:5173' }));
   app.use(express.json({ limit: '2mb' }));
@@ -119,6 +119,16 @@ export function createApp({ repository, storage, generationService, requirementP
 
   app.post('/api/tender-parse-jobs/:jobId/confirm', async (req, res, next) => {
     try { res.status(201).json({ ok: true, ...(await requirementParseService.confirm(req.params.jobId)) }); }
+    catch (error) { next(error); }
+  });
+
+  app.get('/api/requirement-candidates/:candidateId/source-review', async (req, res, next) => {
+    try { res.json({ ok: true, ...(await requirementSourceService.getCandidateReview(req.params.candidateId)) }); }
+    catch (error) { next(error); }
+  });
+
+  app.post('/api/requirement-candidates/:candidateId/source-decision', async (req, res, next) => {
+    try { res.json({ ok: true, candidate: await requirementSourceService.decideCandidateSource(req.params.candidateId, req.body || {}) }); }
     catch (error) { next(error); }
   });
 

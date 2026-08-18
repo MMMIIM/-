@@ -13,6 +13,7 @@ import {
   resolveRequirementChunkBudget
 } from './pipeline/requirement-chunker.js';
 import { SourceLocationResolver } from './pipeline/source-location-resolver.js';
+import { summarizeSourceReadiness } from './requirement-source-service.js';
 
 const MAX_EXTRACTED_CHARACTERS = 300_000;
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -278,9 +279,22 @@ export class RequirementParseService {
     if (!job.candidates?.length) {
       throw new AppError('REQUIREMENTS_REQUIRED', '解析任务没有可确认的候选需求。', 422);
     }
+    const readiness = summarizeSourceReadiness(job.candidates);
+    if (readiness.mandatory_unverified) {
+      throw new AppError('MANDATORY_SOURCE_UNVERIFIED', `仍有 ${readiness.mandatory_unverified} 条实质性要求未验证来源，禁止确认基线。`, 422);
+    }
+    if (readiness.pending) {
+      throw new AppError('CANDIDATE_DECISIONS_PENDING', `仍有 ${readiness.pending} 条候选尚未人工处理，不能确认基线。`, 422);
+    }
+    if (readiness.included_unverified) {
+      throw new AppError('INCLUDED_SOURCE_UNVERIFIED', `仍有 ${readiness.included_unverified} 条拟纳入候选缺少已验证来源。`, 422);
+    }
+    if (!readiness.included) {
+      throw new AppError('INCLUDED_REQUIREMENTS_REQUIRED', '至少需要保留一条已验证来源的候选需求。', 422);
+    }
     let requirements;
     try {
-      requirements = job.candidates.map((candidate) => {
+      requirements = job.candidates.filter((candidate) => candidate.candidate_decision === undefined || candidate.candidate_decision === 'include').map((candidate) => {
         assertMandatoryRequirementMetadata(candidate);
         return {
           ...candidate,

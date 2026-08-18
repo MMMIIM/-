@@ -9,6 +9,7 @@
     "db:migrate": "node src/migrate.js",
     "check:gateway": "node scripts/gateway-check.js",
     "smoke:gateway": "node scripts/gateway-smoke.js",
+    "reconcile:sources": "node scripts/reconcile-requirement-sources.js",
     "test": "node --test",
     "test:postgres": "node --test integration/postgres.integration.js"
   },
