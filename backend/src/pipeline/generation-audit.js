@@ -6,6 +6,7 @@ import { sanitizeDocument } from './document-sanitizer.js';
 import { validateDocument } from './document-validator.js';
 import { buildTraceabilityMatrix } from './traceability-service.js';
 import { createResponseEnvelope } from './response-envelope.js';
+import { createGenerationProvider } from './semantic-gateway-client.js';
 
 export const PIPELINE_STATES = [
   'created', 'canonicalized', 'planned', 'claims_gated',
@@ -44,13 +45,14 @@ export class GenerationAudit {
   }
 }
 
-function normalizeDrafts(drafts) {
+function normalizeWriterOutput(writerOutput) {
+  const drafts = Array.isArray(writerOutput) ? writerOutput : writerOutput?.sections;
   if (!Array.isArray(drafts) || drafts.length === 0) {
-    throw Object.assign(new Error('Mock writer 未返回章节草稿。'), { code: 'WRITER_OUTPUT_INVALID' });
+    throw Object.assign(new Error('生成提供方未返回章节草稿。'), { code: 'WRITER_OUTPUT_INVALID' });
   }
-  return drafts.map((section) => {
+  const sections = drafts.map((section) => {
     if (!section || typeof section !== 'object' || typeof section.draft_text !== 'string' || !section.draft_text.trim()) {
-      throw Object.assign(new Error('Mock writer 章节格式无效。'), { code: 'WRITER_OUTPUT_INVALID' });
+      throw Object.assign(new Error('生成提供方章节格式无效。'), { code: 'WRITER_OUTPUT_INVALID' });
     }
     return {
       id: String(section.id || '').trim(),
@@ -59,6 +61,10 @@ function normalizeDrafts(drafts) {
       draft_text: section.draft_text.trim()
     };
   });
+  return {
+    sections,
+    providerAudit: Array.isArray(writerOutput) ? undefined : writerOutput?.provider_audit
+  };
 }
 
 function failureValidation(error) {
@@ -83,6 +89,7 @@ export async function runDeterministicPipeline({ rawRequirements, writer, title 
   let baselineRequirements = [];
   let sections = [];
   let traceability = [];
+  let providerAudit;
   try {
     requirements = canonicalizeRequirements(rawRequirements);
     baselineRequirements = structuredClone(requirements);
@@ -108,7 +115,9 @@ export async function runDeterministicPipeline({ rawRequirements, writer, title 
         supported_commitments: structuredClone(claimGate.supported_commitments)
       }
     });
-    sections = normalizeDrafts(await writer.write(writerContext));
+    const writerOutput = normalizeWriterOutput(await writer.write(writerContext));
+    sections = writerOutput.sections;
+    providerAudit = writerOutput.providerAudit;
     audit.advance('drafted');
 
     sections = sanitizeDocument(sections, claimGate);
@@ -130,7 +139,10 @@ export async function runDeterministicPipeline({ rawRequirements, writer, title 
       return {
         ok: false,
         error,
-        envelope: createResponseEnvelope({ title, requirements, sections, traceability, validation, audit: audit.snapshot() })
+        envelope: createResponseEnvelope({
+          title, requirements, sections, traceability, validation,
+          audit: audit.snapshot(), providerAudit
+        })
       };
     }
     audit.advance('validated');
@@ -139,24 +151,46 @@ export async function runDeterministicPipeline({ rawRequirements, writer, title 
     audit.advance('finalized');
     return {
       ok: true,
-      envelope: createResponseEnvelope({ title, requirements, sections, traceability, validation, audit: audit.snapshot() })
+      envelope: createResponseEnvelope({
+        title, requirements, sections, traceability, validation,
+        audit: audit.snapshot(), providerAudit
+      })
     };
   } catch (caught) {
     const error = caught instanceof Error ? caught : new Error(String(caught));
+    providerAudit = providerAudit || error.audit;
     audit.fail(error);
     const validation = failureValidation(error);
     return {
       ok: false,
       error,
-      envelope: createResponseEnvelope({ title, requirements, sections, traceability, validation, audit: audit.snapshot() })
+      envelope: createResponseEnvelope({
+        title, requirements, sections, traceability, validation,
+        audit: audit.snapshot(), providerAudit
+      })
     };
   }
 }
 
 export class DeterministicPipelineService {
-  constructor({ repository, writer, logger = console }) {
+  constructor({
+    repository,
+    writer,
+    mockWriter,
+    provider,
+    env,
+    fetchImpl,
+    timeoutMs,
+    logger = console
+  }) {
     this.repository = repository;
-    this.writer = writer;
+    this.writer = writer || createGenerationProvider({
+      provider,
+      mockWriter,
+      env,
+      fetchImpl,
+      timeoutMs
+    });
     this.logger = logger;
   }
 

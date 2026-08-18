@@ -1,4 +1,4 @@
-export function createResponseEnvelope({ title, requirements, sections, traceability, validation, audit }) {
+export function createResponseEnvelope({ title, requirements, sections, traceability, validation, audit, providerAudit }) {
   const markdown = sections
     .filter((section) => typeof section.final_text === 'string')
     .map((section) => `## ${section.title}\n\n${section.final_text}`)
@@ -23,6 +23,7 @@ export function createResponseEnvelope({ title, requirements, sections, traceabi
     traceability_matrix: traceability,
     warnings: [...validationWarnings, ...validationErrors],
     risk_status: validation.risk_status,
-    generation_audit: audit
+    generation_audit: audit,
+    ...(providerAudit ? { provider_audit: providerAudit } : {})
   };
 }
