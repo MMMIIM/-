@@ -14,6 +14,7 @@ import {
 } from './pipeline/requirement-chunker.js';
 import { SourceLocationResolver } from './pipeline/source-location-resolver.js';
 import { summarizeSourceReadiness } from './requirement-source-service.js';
+import { DocumentCapabilityDetector } from './pipeline/document-capability-detector.js';
 
 const MAX_EXTRACTED_CHARACTERS = 300_000;
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -52,6 +53,7 @@ export class RequirementParseService {
     logger = console,
     env = process.env,
     chunkBudget = resolveRequirementChunkBudget(env),
+    capabilityDetector = new DocumentCapabilityDetector(),
     scheduler = scheduleImmediately
   }) {
     this.repository = repository;
@@ -60,6 +62,7 @@ export class RequirementParseService {
     this.extractionGateway = extractionGateway;
     this.logger = logger;
     this.chunkBudget = chunkBudget;
+    this.capabilityDetector = capabilityDetector;
     this.scheduler = scheduler;
     this.sourceLocationResolver = new SourceLocationResolver();
   }
@@ -107,9 +110,22 @@ export class RequirementParseService {
     let failedChunkNumber = null;
     try {
       const buffer = await this.storage.read(tenderFile.storage_key);
-      extraction = await this.textExtractor({
+      this.capabilityDetector.assertSupported(this.capabilityDetector.detect({
         fileName: tenderFile.original_name, mimeType: tenderFile.mime_type, buffer
-      });
+      }));
+      try {
+        extraction = await this.textExtractor({
+          fileName: tenderFile.original_name, mimeType: tenderFile.mime_type, buffer
+        });
+      } catch (extractionError) {
+        this.capabilityDetector.assertSupported(this.capabilityDetector.detect({
+          fileName: tenderFile.original_name, mimeType: tenderFile.mime_type, buffer, extractionError
+        }));
+        throw extractionError;
+      }
+      const documentCapability = this.capabilityDetector.assertSupported(this.capabilityDetector.detect({
+        fileName: tenderFile.original_name, mimeType: tenderFile.mime_type, buffer, extraction
+      }));
       if (extraction.text.length > MAX_EXTRACTED_CHARACTERS) {
         throw new AppError(
           'TENDER_TEXT_TOO_LARGE',
@@ -126,6 +142,9 @@ export class RequirementParseService {
         extractedCharacterCount: extraction.text.length
       });
       sectionAnalysis = classifyTenderSections(extraction);
+      if (!sectionAnalysis.technicalSection) {
+        throw new AppError('NO_TECHNICAL_REQUIREMENTS_FOUND', '未识别到可处理的技术或项目需求章节。', 422);
+      }
       mandatoryScopeRules = detectMandatoryScopeRules(sectionAnalysis.technicalSection);
       await this.repository.saveParseDocumentAnalysis({
         jobId: job.id,
@@ -140,7 +159,8 @@ export class RequirementParseService {
         character_count: extraction.text.length,
         extraction_section: extractionScope.title,
         extraction_section_character_count: extractionScope.character_count,
-        used_fulltext_fallback: sectionAnalysis.usedFullTextFallback
+        used_fulltext_fallback: sectionAnalysis.usedFullTextFallback,
+        document_capability: documentCapability
       };
       await this.repository.updateParseJobProgress({
         jobId: job.id, phase: 'chunking', summary: extractionSummary,

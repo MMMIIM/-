@@ -130,8 +130,8 @@ test('所有候选均为空时汇总失败', () => {
 
 test('长文件串行处理所有分片并在最终汇总后生成稳定基线候选', async () => {
   const extraction = extractionFor([
-    '第一章 范围', '系统应提供审计日志。',
-    '第二章 接口', '系统应提供审计日志。', '支持标准接口。'
+    '第一章 技术要求', '系统应提供审计日志。',
+    '第二章 服务接口需求', '系统应提供审计日志。', '支持标准接口。'
   ]);
   let active = 0;
   let maxActive = 0;
@@ -165,7 +165,7 @@ test('长文件串行处理所有分片并在最终汇总后生成稳定基线�
 });
 
 test('单片超时保存失败分片与耗时，不完成任务或创建部分基线', async () => {
-  const extraction = extractionFor(['第一章 范围', '要求一。', '第二章 安全', '要求二。']);
+  const extraction = extractionFor(['第一章 技术要求', '要求一。', '第二章 安全需求', '要求二。']);
   const { service, repository } = serviceFor({
     extraction,
     chunkBudget: { singleCallThreshold: 1, characterBudget: 40, tokenBudget: 40 },
@@ -194,7 +194,7 @@ test('非法分片输出或汇总失败均不得完成任务', async () => {
     null
   ]) {
     const { service, repository } = serviceFor({
-      extraction: extractionFor(['要求一。']),
+      extraction: extractionFor(['技术要求：系统应提供能力。']),
       chunkBudget: { singleCallThreshold: 1, characterBudget: 100, tokenBudget: 100 },
       gateway: {
         extract: async () => {

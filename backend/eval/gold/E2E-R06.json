@@ -1,0 +1,1 @@
+{"expected_requirements":[],"forbidden_extractions":[],"mandatory_clauses":[],"responsibility_boundaries":["不得从图像猜测需求"],"expected_source_ranges":[],"expected_document_capability":{"document_type":"pdf","text_extractable":false,"likely_scanned":true,"supported":false,"unsupported_reason":"OCR_REQUIRED"},"notes":"扫描PDF或无文本负案例，禁止调用模型。"}

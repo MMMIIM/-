@@ -436,9 +436,9 @@ test('PostgreSQL 解析契约失败只创建 failed 解析审计，不创建 Req
   });
   const service = new RequirementParseService({
     repository,
-    storage: { read: async () => Buffer.from('requirement') },
+    storage: { read: async () => Buffer.from('技术要求：系统应提供审计能力。') },
     textExtractor: async () => ({
-      text: 'requirement', paragraphs: [{ paragraph: 1, page: null, text: 'requirement' }],
+      text: '技术要求：系统应提供审计能力。', paragraphs: [{ paragraph: 1, page: null, text: '技术要求：系统应提供审计能力。' }],
       pages: [], warnings: []
     }),
     extractionGateway: {

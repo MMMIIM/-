@@ -215,7 +215,7 @@ test('解析失败落审计且绝不创建或确认 Requirement 基线', async (
   };
   const service = new RequirementParseService({
     repository,
-    storage: { read: async () => Buffer.from('A valid tender requirement.') },
+    storage: { read: async () => Buffer.from('技术要求：系统应提供审计日志。') },
     textExtractor: extractTenderText,
     extractionGateway: {
       extract: async () => { throw new SemanticGatewayError('GATEWAY_REQUIREMENTS_INVALID', 'invalid', { raw_response_payload_json: '{bad' }, 422); }

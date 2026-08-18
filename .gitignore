@@ -48,6 +48,8 @@ datasets/
 dataset/
 raw-data/
 annotation-data/
+backend/eval/reports/*.json
+backend/eval/live-inputs/
 temp/
 tmp/
 

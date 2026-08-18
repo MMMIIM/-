@@ -10,6 +10,8 @@
     "check:gateway": "node scripts/gateway-check.js",
     "smoke:gateway": "node scripts/gateway-smoke.js",
     "reconcile:sources": "node scripts/reconcile-requirement-sources.js",
+    "eval:requirements": "node scripts/eval-requirements.js",
+    "eval:live": "node scripts/eval-live.js",
     "test": "node --test",
     "test:postgres": "node --test integration/postgres.integration.js"
   },

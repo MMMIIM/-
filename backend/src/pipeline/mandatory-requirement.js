@@ -38,7 +38,7 @@ export function detectMandatoryScopeRules(section) {
   return section.paragraphs.flatMap((paragraph) => {
     const rule = scopeRuleFromText(
       paragraph.text,
-      section.title,
+      paragraph.source_section || section.title,
       paragraph.page ?? null,
       paragraph.paragraph ?? null
     );

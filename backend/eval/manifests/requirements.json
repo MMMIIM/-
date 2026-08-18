@@ -1,0 +1,11 @@
+{
+  "suite": "v4.3-requirement-extraction",
+  "cases": [
+    { "id": "E2E-R01", "fixture": "fixtures/E2E-R01.json", "gold": "gold/E2E-R01.json" },
+    { "id": "E2E-R02", "fixture": "fixtures/E2E-R02.json", "gold": "gold/E2E-R02.json" },
+    { "id": "E2E-R03", "fixture": "fixtures/E2E-R03.json", "gold": "gold/E2E-R03.json" },
+    { "id": "E2E-R04", "fixture": "fixtures/E2E-R04.json", "gold": "gold/E2E-R04.json" },
+    { "id": "E2E-R05", "fixture": "fixtures/E2E-R05.json", "gold": "gold/E2E-R05.json" },
+    { "id": "E2E-R06", "fixture": "fixtures/E2E-R06.json", "gold": "gold/E2E-R06.json" }
+  ]
+}
