@@ -2,7 +2,7 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { request } from './api.js';
-import { RequirementParsing, formatTenderParsePhase } from './main.jsx';
+import { RequirementParsing, formatRequirementLevel, formatTenderParsePhase } from './main.jsx';
 
 const file = {
   id: 'file-1',
@@ -85,12 +85,21 @@ describe('需求解析状态渲染', () => {
       id: 'job-2', file_name: file.original_name, status: 'succeeded', warnings_json: [],
       candidates: [{
         req_id: 'REQ-001', content: '支持标准接口。', source_excerpt: '系统应支持标准接口。',
+        source_text: '★系统应支持标准接口，详见第 3.2 条。',
+        is_mandatory: true, mandatory_marker: '★',
         source_page: 1, source_paragraph: 2, status: 'candidate'
       }]
     });
     expect(html).toContain('REQ-001');
     expect(html).toContain('支持标准接口。');
+    expect(html).toContain('要求等级');
+    expect(html).toContain('★ 实质性要求');
     expect(html).toContain('确认需求基线');
+  });
+
+  it('一般要求显示确定性等级文本', () => {
+    expect(formatRequirementLevel({ is_mandatory: false, mandatory_marker: null })).toBe('一般要求');
+    expect(formatRequirementLevel({ is_mandatory: true, mandatory_marker: '★' })).toBe('★ 实质性要求');
   });
 
   it('confirmed 显示冻结状态且不允许重新解析', () => {

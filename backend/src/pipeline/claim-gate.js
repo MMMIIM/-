@@ -22,6 +22,9 @@ export function createClaimGate(requirements) {
 
   return {
     requirement_ids: requirements.map((requirement) => requirement.req_id),
+    mandatory_requirement_ids: requirements
+      .filter((requirement) => requirement.is_mandatory)
+      .map((requirement) => requirement.req_id),
     supported_commitments: supportedCommitments,
     isFixedCommitmentSupported(sentence) {
       const durations = extractDurations(sentence);

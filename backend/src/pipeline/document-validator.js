@@ -66,8 +66,17 @@ export function validateDocument({ baselineRequirements, requirements, sections 
 
   const traceability = buildTraceabilityMatrix(requirements, sections);
   const uncovered = traceability.filter((item) => item.status === 'uncovered').map((item) => item.req_id);
+  const uncoveredMandatory = traceability
+    .filter((item) => item.status === 'uncovered' && item.is_mandatory)
+    .map((item) => item.req_id);
   if (uncovered.length) {
     errors.push({ code: 'REQUIREMENT_COVERAGE_INSUFFICIENT', message: `以下 REQ-ID 未覆盖：${uncovered.join('、')}` });
+  }
+  if (uncoveredMandatory.length) {
+    errors.push({
+      code: 'MANDATORY_REQUIREMENT_COVERAGE_INSUFFICIENT',
+      message: `以下实质性要求未覆盖：${uncoveredMandatory.join('、')}`
+    });
   }
   const coverage = requirements.length
     ? (requirements.length - uncovered.length) / requirements.length

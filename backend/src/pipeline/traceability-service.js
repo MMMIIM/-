@@ -9,6 +9,8 @@ export function buildTraceabilityMatrix(requirements, sections) {
     ));
     return {
       req_id: requirement.req_id,
+      is_mandatory: requirement.is_mandatory,
+      mandatory_marker: requirement.mandatory_marker,
       target_sections: [...requirement.target_sections],
       section_ids: matchedSections.map((section) => section.id),
       status: matchedSections.length ? 'covered' : 'uncovered'

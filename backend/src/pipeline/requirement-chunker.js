@@ -1,3 +1,5 @@
+import { enrichMandatoryRequirement } from './mandatory-requirement.js';
+
 const DEFAULT_SINGLE_CALL_THRESHOLD = 12_000;
 const DEFAULT_CHARACTER_BUDGET = 8_000;
 const DEFAULT_TOKEN_BUDGET = 8_000;
@@ -126,29 +128,15 @@ export function chunkExtractedText({
   return chunks;
 }
 
-function normalizedContent(value) {
-  return String(value || '').trim().replace(/\s+/g, '').toLocaleLowerCase('zh-CN');
-}
-
-function sourceKey(source) {
-  return JSON.stringify([
-    source.source_excerpt,
-    source.source_page,
-    source.source_paragraph,
-    source.source_start_offset,
-    source.source_end_offset
-  ]);
-}
-
 export function aggregateRequirementCandidates(chunkResults) {
-  const merged = new Map();
+  const candidates = [];
   for (const chunkResult of chunkResults) {
     for (const candidate of chunkResult.candidates || []) {
       const content = String(candidate.content || '').trim();
-      const key = normalizedContent(content);
-      if (!key) continue;
+      if (!content) continue;
       const source = {
         source_excerpt: String(candidate.source_excerpt || '').trim(),
+        source_text: String(candidate.source_text || candidate.source_excerpt || '').trim(),
         source_page: candidate.source_page ?? null,
         source_paragraph: candidate.source_paragraph ?? null,
         source_start_offset: candidate.source_start_offset ?? null,
@@ -156,29 +144,22 @@ export function aggregateRequirementCandidates(chunkResults) {
         chunk_number: chunkResult.chunk_number
       };
       if (!source.source_excerpt) continue;
-      if (!merged.has(key)) {
-        merged.set(key, { content, sources: [], sourceKeys: new Set() });
-      }
-      const entry = merged.get(key);
-      const keyForSource = sourceKey(source);
-      if (!entry.sourceKeys.has(keyForSource)) {
-        entry.sourceKeys.add(keyForSource);
-        entry.sources.push(source);
-      }
+      candidates.push({ content, source });
     }
   }
-  if (!merged.size) {
+  if (!candidates.length) {
     throw Object.assign(new Error('所有分片均未汇总出有效候选需求。'), {
       code: 'REQUIREMENT_AGGREGATION_FAILED'
     });
   }
-  return [...merged.values()].map((entry, index) => ({
+  return candidates.map((entry, index) => enrichMandatoryRequirement({
     req_id: `REQ-${String(index + 1).padStart(3, '0')}`,
     content: entry.content,
-    source_excerpt: entry.sources[0].source_excerpt,
-    source_page: entry.sources[0].source_page,
-    source_paragraph: entry.sources[0].source_paragraph,
+    source_excerpt: entry.source.source_excerpt,
+    source_text: entry.source.source_text,
+    source_page: entry.source.source_page,
+    source_paragraph: entry.source.source_paragraph,
     ordinal: index + 1,
-    sources: entry.sources
+    sources: [entry.source]
   }));
 }

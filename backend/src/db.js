@@ -1,6 +1,7 @@
 import pg from 'pg';
 import { sanitizeAuditJson, sanitizeAuditText } from './audit.js';
 import { normalizeTenderFileRecord, normalizeUtf8FileName } from './file-name.js';
+import { assertMandatoryRequirementMetadata } from './pipeline/mandatory-requirement.js';
 
 const { Pool } = pg;
 
@@ -229,12 +230,13 @@ export class PgRepository {
         await client.query(`
           INSERT INTO requirement_candidates
             (parse_job_id, req_id, content, source_excerpt, source_page, source_paragraph,
-             ordinal, sources_json)
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb)
+             ordinal, sources_json, source_text, is_mandatory, mandatory_marker)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9, $10, $11)
         `, [
           jobId, candidate.req_id, candidate.content, candidate.source_excerpt,
           candidate.source_page, candidate.source_paragraph, candidate.ordinal,
-          JSON.stringify(candidate.sources || [])
+          JSON.stringify(candidate.sources || []), candidate.source_text,
+          candidate.is_mandatory, candidate.mandatory_marker
         ]);
       }
       await client.query(`UPDATE projects SET status = 'requirements_review', updated_at = now() WHERE id = $1`, [
@@ -319,6 +321,7 @@ export class PgRepository {
     if (!rows[0]) return null;
     const [candidates, chunks] = await Promise.all([this.pool.query(`
       SELECT id, req_id, content, source_excerpt, source_page, source_paragraph,
+        source_text, is_mandatory, mandatory_marker,
         ordinal, status, sources_json, created_at
       FROM requirement_candidates WHERE parse_job_id = $1 ORDER BY ordinal
     `, [id]), this.pool.query(`
@@ -344,6 +347,7 @@ export class PgRepository {
     if (!rows[0]) return null;
     const requirements = await this.pool.query(`
       SELECT id, req_id, content, source_excerpt, source_page, source_paragraph,
+        source_text, is_mandatory, mandatory_marker,
         target_sections, ordinal, created_at
       FROM requirements WHERE baseline_id = $1 ORDER BY ordinal
     `, [rows[0].id]);
@@ -373,15 +377,18 @@ export class PgRepository {
       `, [job.project_id, job.id]);
       const baseline = baselineResult.rows[0];
       for (const requirement of requirements) {
+        assertMandatoryRequirementMetadata(requirement);
         await client.query(`
           INSERT INTO requirements
             (baseline_id, project_id, req_id, content, source_excerpt,
-             source_page, source_paragraph, target_sections, ordinal)
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9)
+             source_page, source_paragraph, target_sections, ordinal,
+             source_text, is_mandatory, mandatory_marker)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9, $10, $11, $12)
         `, [
           baseline.id, job.project_id, requirement.req_id, requirement.content,
           requirement.source_excerpt, requirement.source_page, requirement.source_paragraph,
-          JSON.stringify(requirement.target_sections), requirement.ordinal
+          JSON.stringify(requirement.target_sections), requirement.ordinal,
+          requirement.source_text, requirement.is_mandatory, requirement.mandatory_marker
         ]);
       }
       const confirmed = await client.query(`

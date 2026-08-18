@@ -239,6 +239,7 @@ test('确认服务只消费成功候选并由后端路由，已冻结基线拒�
     getParseJob: async () => ({
       id: parseJobId, status: 'succeeded', candidates: [{
         req_id: 'REQ-001', content: '系统应提供安全审计日志。', source_excerpt: '提供安全审计日志。',
+        source_text: '提供安全审计日志。', is_mandatory: false, mandatory_marker: null,
         source_page: 1, source_paragraph: 2, ordinal: 1
       }]
     }),

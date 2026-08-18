@@ -1,4 +1,8 @@
 import { routeRequirement } from './chapter-router.js';
+import {
+  assertMandatoryRequirementMetadata,
+  enrichMandatoryRequirement
+} from './mandatory-requirement.js';
 
 function ruleError(code, message) {
   const error = new Error(message);
@@ -12,6 +16,15 @@ export function assertRequirementIdsUnchanged(baseline, candidate) {
   if (expected.length !== actual.length || expected.some((reqId, index) => reqId !== actual[index])) {
     throw ruleError('REQUIREMENT_ID_MUTATED', 'REQ-ID 不得增删、修改、合并或重排。');
   }
+  baseline.forEach((requirement, index) => {
+    assertMandatoryRequirementMetadata(requirement);
+    assertMandatoryRequirementMetadata(candidate[index]);
+    if (requirement.source_text !== candidate[index].source_text
+      || requirement.is_mandatory !== candidate[index].is_mandatory
+      || requirement.mandatory_marker !== candidate[index].mandatory_marker) {
+      throw ruleError('REQUIREMENT_MANDATORY_METADATA_MUTATED', 'Requirement mandatory 元数据不得修改。');
+    }
+  });
 }
 
 export function canonicalizeRequirements(rawRequirements, router = routeRequirement) {
@@ -38,10 +51,25 @@ export function canonicalizeRequirements(rawRequirements, router = routeRequirem
       throw ruleError('REQUIREMENT_ROUTE_FAILED', `${reqId} 未路由到后端章节。`);
     }
 
+    const sourceText = typeof raw.source_text === 'string' && raw.source_text.trim()
+      ? raw.source_text.trim()
+      : typeof raw.source_excerpt === 'string' && raw.source_excerpt.trim()
+        ? raw.source_excerpt.trim()
+        : text;
+    const hasProvidedMetadata = Object.hasOwn(raw, 'is_mandatory')
+      || Object.hasOwn(raw, 'mandatory_marker');
+    const mandatoryRequirement = hasProvidedMetadata
+      ? { source_text: sourceText, is_mandatory: raw.is_mandatory, mandatory_marker: raw.mandatory_marker }
+      : enrichMandatoryRequirement({}, { sourceText });
+    assertMandatoryRequirementMetadata(mandatoryRequirement);
+
     return {
       req_id: reqId,
       text,
       source_ref: typeof raw.source_ref === 'string' ? raw.source_ref.trim() || null : null,
+      source_text: mandatoryRequirement.source_text,
+      is_mandatory: mandatoryRequirement.is_mandatory,
+      mandatory_marker: mandatoryRequirement.mandatory_marker,
       target_sections: [...new Set(targetSections)]
     };
   });

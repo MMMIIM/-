@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { sanitizeAuditJson } from './audit.js';
 import { AppError } from './errors.js';
 import { routeRequirement } from './pipeline/chapter-router.js';
+import { assertMandatoryRequirementMetadata } from './pipeline/mandatory-requirement.js';
 import {
   aggregateRequirementCandidates,
   chunkExtractedText,
@@ -44,6 +45,7 @@ function locateCandidateSource(candidate, chunk) {
     : matchingSegment?.source_start_offset ?? chunk.source_start_offset;
   return {
     ...candidate,
+    source_text: matchingSegment?.text ?? candidate.source_excerpt,
     source_page: candidate.source_page ?? matchingSegment?.page ?? null,
     source_paragraph: candidate.source_paragraph ?? matchingSegment?.paragraph ?? null,
     source_start_offset: sourceStartOffset,
@@ -252,10 +254,23 @@ export class RequirementParseService {
     if (!job.candidates?.length) {
       throw new AppError('REQUIREMENTS_REQUIRED', '解析任务没有可确认的候选需求。', 422);
     }
-    const requirements = job.candidates.map((candidate) => ({
-      ...candidate,
-      target_sections: routeRequirement({ req_id: candidate.req_id, text: candidate.content })
-    }));
+    let requirements;
+    try {
+      requirements = job.candidates.map((candidate) => {
+        assertMandatoryRequirementMetadata(candidate);
+        return {
+          ...candidate,
+          target_sections: routeRequirement({ req_id: candidate.req_id, text: candidate.content })
+        };
+      });
+    } catch (error) {
+      throw new AppError(
+        error.code || 'REQUIREMENT_MANDATORY_METADATA_INVALID',
+        error.message || 'Requirement mandatory 信息校验失败。',
+        422,
+        error
+      );
+    }
     try {
       return await this.repository.confirmRequirementBaseline({ jobId, requirements });
     } catch (error) {

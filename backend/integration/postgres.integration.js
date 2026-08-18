@@ -316,10 +316,10 @@ test('PostgreSQL 确认 Requirement 基线后禁止增删改合并', async () =>
   });
   const service = new RequirementParseService({
     repository,
-    storage: { read: async () => Buffer.from('系统应支持标准接口并提供安全审计。') },
+    storage: { read: async () => Buffer.from('★系统应支持标准接口并提供安全审计，详见第 3.2 条。') },
     textExtractor: async () => ({
-      text: '系统应支持标准接口并提供安全审计。',
-      paragraphs: [{ paragraph: 1, page: null, text: '系统应支持标准接口并提供安全审计。' }],
+      text: '★系统应支持标准接口并提供安全审计，详见第 3.2 条。',
+      paragraphs: [{ paragraph: 1, page: null, text: '★系统应支持标准接口并提供安全审计，详见第 3.2 条。' }],
       pages: [],
       warnings: []
     }),
@@ -327,7 +327,7 @@ test('PostgreSQL 确认 Requirement 基线后禁止增删改合并', async () =>
       extract: async () => ({
         candidates: [{
           content: '系统应支持标准接口并提供安全审计。',
-          source_excerpt: '支持标准接口并提供安全审计', source_page: null,
+          source_excerpt: '★系统应支持标准接口并提供安全审计，详见第 3.2 条。', source_page: null,
           source_paragraph: 1
         }],
         warnings: [],
@@ -342,13 +342,34 @@ test('PostgreSQL 确认 Requirement 基线后禁止增删改合并', async () =>
     });
     assert.equal(parseJob.status, 'succeeded');
     assert.equal(parseJob.candidates[0].req_id, 'REQ-001');
+    assert.equal(parseJob.candidates[0].is_mandatory, true);
+    assert.equal(parseJob.candidates[0].mandatory_marker, '★');
+    assert.match(parseJob.candidates[0].source_text, /★.*第 3\.2 条/);
     assert.equal(parseJob.phase, 'succeeded');
     assert.equal(parseJob.total_chunks, 1);
     assert.equal(parseJob.chunks[0].status, 'succeeded');
+    await pool.query(`
+      UPDATE requirement_candidates
+      SET is_mandatory = false, mandatory_marker = NULL
+      WHERE id = $1
+    `, [parseJob.candidates[0].id]);
+    await assert.rejects(
+      () => service.confirm(parseJob.id),
+      (error) => error.code === 'REQUIREMENT_MANDATORY_METADATA_CONFLICT'
+    );
+    assert.equal(await repository.getRequirementBaseline(project.id), null);
+    await pool.query(`
+      UPDATE requirement_candidates
+      SET is_mandatory = true, mandatory_marker = '★'
+      WHERE id = $1
+    `, [parseJob.candidates[0].id]);
     const confirmed = await service.confirm(parseJob.id);
     assert.equal(confirmed.baseline.status, 'confirmed');
     const baseline = await repository.getRequirementBaseline(project.id);
     assert.equal(baseline.requirements.length, 1);
+    assert.equal(baseline.requirements[0].is_mandatory, true);
+    assert.equal(baseline.requirements[0].mandatory_marker, '★');
+    assert.match(baseline.requirements[0].source_text, /★.*第 3\.2 条/);
     assert.deepEqual(baseline.requirements[0].target_sections, [
       'data-integration', 'solution-design', 'security-compliance'
     ]);

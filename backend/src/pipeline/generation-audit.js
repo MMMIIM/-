@@ -112,6 +112,7 @@ export async function runDeterministicPipeline({ rawRequirements, writer, title 
       chapters: structuredClone(chapters),
       claimGate: {
         requirement_ids: [...claimGate.requirement_ids],
+        mandatory_requirement_ids: [...claimGate.mandatory_requirement_ids],
         supported_commitments: structuredClone(claimGate.supported_commitments)
       }
     });

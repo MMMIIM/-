@@ -98,7 +98,7 @@ test('标题边界确定性开启新分片', () => {
   assert.equal(chunks[1].starts_at_title_boundary, true);
 });
 
-test('汇总确定性删除空项与跨片重复，保留全部来源后一次生成 REQ-ID', () => {
+test('汇总只删除空项，不合并来源层重复条款，并一次生成稳定 REQ-ID', () => {
   const candidates = aggregateRequirementCandidates([
     { chunk_number: 1, candidates: [
       { content: '', source_excerpt: '' },
@@ -111,9 +111,11 @@ test('汇总确定性删除空项与跨片重复，保留全部来源后一次�
   ]);
   assert.deepEqual(candidates.map(({ req_id, content }) => ({ req_id, content })), [
     { req_id: 'REQ-001', content: '提供审计日志。' },
-    { req_id: 'REQ-002', content: '支持标准接口。' }
+    { req_id: 'REQ-002', content: '提供审计日志。' },
+    { req_id: 'REQ-003', content: '支持标准接口。' }
   ]);
-  assert.equal(candidates[0].sources.length, 2);
+  assert.equal(candidates[0].sources.length, 1);
+  assert.equal(candidates[1].sources.length, 1);
 });
 
 test('所有候选均为空时汇总失败', () => {
@@ -154,7 +156,7 @@ test('长文件串行处理所有分片并在最终汇总后生成稳定基线�
   const result = await service.start({ projectId: 'project-1', tenderFileId: 'file-1', waitForCompletion: true });
   assert.equal(maxActive, 1);
   assert.ok(repository.state.chunks.length >= 2);
-  assert.deepEqual(result.candidates.map((candidate) => candidate.req_id), ['REQ-001', 'REQ-002']);
+  assert.deepEqual(result.candidates.map((candidate) => candidate.req_id), ['REQ-001', 'REQ-002', 'REQ-003']);
   assert.equal(repository.state.completedChunks.length, repository.state.chunks.length);
   assert.equal(repository.state.failedJob, null);
 });
