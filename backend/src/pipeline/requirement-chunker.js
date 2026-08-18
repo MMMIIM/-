@@ -39,14 +39,20 @@ function locateParagraphs(text, paragraphs) {
   let cursor = 0;
   return paragraphs.filter((paragraph) => String(paragraph?.text || '').trim()).map((paragraph) => {
     const value = String(paragraph.text).trim();
-    let start = text.indexOf(value, cursor);
+    let start = Number.isInteger(paragraph.source_start_offset)
+      ? paragraph.source_start_offset
+      : text.indexOf(value, cursor);
     if (start < 0) start = cursor;
-    const end = Math.min(text.length, start + value.length);
+    const end = Number.isInteger(paragraph.source_end_offset)
+      ? paragraph.source_end_offset
+      : start + value.length;
     cursor = end;
     return {
       text: value,
       page: paragraph.page ?? null,
       paragraph: paragraph.paragraph ?? null,
+      source_section: paragraph.source_section ?? null,
+      source_clause_id: paragraph.source_clause_id ?? null,
       source_start_offset: start,
       source_end_offset: end,
       starts_at_title_boundary: isTitleBoundary(value)
@@ -119,7 +125,16 @@ export function chunkExtractedText({
     current = [];
   };
   for (const unit of units) {
-    if (unit.starts_at_title_boundary && current.length) flush();
+    const currentText = current.map((item) => item.text).join('\n');
+    const titleBoundary = unit.starts_at_title_boundary
+      && currentText.length >= Math.floor(charLimit * 0.75);
+    const previousPage = current.at(-1)?.page;
+    const pageBoundary = current.length
+      && Number.isInteger(unit.page)
+      && Number.isInteger(previousPage)
+      && unit.page !== previousPage
+      && currentText.length >= Math.floor(charLimit * 0.85);
+    if (titleBoundary || pageBoundary) flush();
     const candidateText = [...current.map((item) => item.text), unit.text].join('\n');
     if (current.length && (candidateText.length > charLimit || estimateTokenCount(candidateText) > tokenLimit)) flush();
     current.push(unit);
@@ -128,7 +143,7 @@ export function chunkExtractedText({
   return chunks;
 }
 
-export function aggregateRequirementCandidates(chunkResults) {
+export function aggregateRequirementCandidates(chunkResults, { mandatoryScopeRules = [] } = {}) {
   const candidates = [];
   for (const chunkResult of chunkResults) {
     for (const candidate of chunkResult.candidates || []) {
@@ -139,6 +154,8 @@ export function aggregateRequirementCandidates(chunkResults) {
         source_text: String(candidate.source_text || candidate.source_excerpt || '').trim(),
         source_page: candidate.source_page ?? null,
         source_paragraph: candidate.source_paragraph ?? null,
+        source_section: candidate.source_section ?? null,
+        source_clause_id: candidate.source_clause_id ?? null,
         source_start_offset: candidate.source_start_offset ?? null,
         source_end_offset: candidate.source_end_offset ?? null,
         chunk_number: chunkResult.chunk_number
@@ -148,8 +165,9 @@ export function aggregateRequirementCandidates(chunkResults) {
     }
   }
   if (!candidates.length) {
-    throw Object.assign(new Error('所有分片均未汇总出有效候选需求。'), {
-      code: 'REQUIREMENT_AGGREGATION_FAILED'
+    throw Object.assign(new Error('所有可处理分片均未提取到候选需求。'), {
+      code: 'NO_REQUIREMENTS_EXTRACTED',
+      status: 422
     });
   }
   return candidates.map((entry, index) => enrichMandatoryRequirement({
@@ -159,7 +177,9 @@ export function aggregateRequirementCandidates(chunkResults) {
     source_text: entry.source.source_text,
     source_page: entry.source.source_page,
     source_paragraph: entry.source.source_paragraph,
+    source_section: entry.source.source_section,
+    source_clause_id: entry.source.source_clause_id,
     ordinal: index + 1,
     sources: [entry.source]
-  }));
+  }, { scopeRules: mandatoryScopeRules }));
 }

@@ -26,7 +26,9 @@ test('集中规则确定性识别 ★ 并完整保留原始条款和交叉引用
 test('mandatory 信息缺失或与 source_text 矛盾时拒绝', () => {
   assert.throws(
     () => assertMandatoryRequirementMetadata({
-      source_text: '★实质性要求。', is_mandatory: false, mandatory_marker: null
+      source_text: '★实质性要求。', is_mandatory: false, mandatory_marker: null,
+      mandatory_scope_source_text: null, mandatory_scope_section: null,
+      exception_clause_ids: []
     }),
     (error) => error.code === 'REQUIREMENT_MANDATORY_METADATA_CONFLICT'
   );
@@ -108,6 +110,9 @@ test('确认基线时 mandatory 信息缺失或矛盾会被阻止', async () => 
         candidates: [{
           req_id: 'REQ-013', content: '必须满足安全要求。', source_excerpt: '★必须满足安全要求。',
           source_text: '★必须满足安全要求。', is_mandatory: false, mandatory_marker: null,
+          source_section: '项目要求和有关说明', source_clause_id: '5.2.1',
+          mandatory_scope_source_text: null, mandatory_scope_section: null,
+          exception_clause_ids: [],
           source_page: null, source_paragraph: 13, ordinal: 13
         }]
       }),

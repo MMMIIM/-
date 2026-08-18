@@ -52,9 +52,8 @@ export function validateRequirementExtractionEnvelope(gatewayResponse) {
     );
   }
   if (Object.keys(envelope.data).some((key) => key !== 'requirements')
-    || !Array.isArray(envelope.data.requirements)
-    || envelope.data.requirements.length === 0) {
-    throw contractError(audit, 'data 必须且只能包含非空 requirements 数组。');
+    || !Array.isArray(envelope.data.requirements)) {
+    throw contractError(audit, 'data 必须且只能包含 requirements 数组。');
   }
 
   const candidates = envelope.data.requirements.map((candidate, originalIndex) => {
@@ -109,13 +108,16 @@ export function createRequirementExtractionGateway(client) {
           text,
           segments: paragraphs.map(({
             paragraph, page, text: segmentText, source_start_offset: sourceStartOffset,
-            source_end_offset: sourceEndOffset
+            source_end_offset: sourceEndOffset, source_section: sourceSection,
+            source_clause_id: sourceClauseId
           }) => ({
             paragraph,
             page,
             text: segmentText,
             source_start_offset: sourceStartOffset,
-            source_end_offset: sourceEndOffset
+            source_end_offset: sourceEndOffset,
+            source_section: sourceSection,
+            source_clause_id: sourceClauseId
           }))
         })
       });

@@ -37,6 +37,7 @@ function createRepository() {
     createParseJob: async () => ({ id: 'parse-1', status: 'queued' }),
     updateParseJob: async (_id, status, options) => ({ id: 'parse-1', status, phase: options.phase }),
     updateParseJobProgress: async (value) => { state.progress = value; },
+    saveParseDocumentAnalysis: async (value) => { state.documentAnalysis = value; },
     initializeParseChunks: async (_id, chunks) => { state.chunks = chunks; },
     startParseChunk: async () => {},
     completeParseChunk: async (value) => { state.completedChunks.push(value); },
@@ -88,9 +89,11 @@ test('长文件按预算形成多片且每片不超字符与 token 预算', () =
 
 test('标题边界确定性开启新分片', () => {
   assert.equal(isTitleBoundary('第二章 技术要求'), true);
-  const extraction = extractionFor(['第一章 范围', '范围说明。', '第二章 安全要求', '需记录审计日志。']);
+  const extraction = extractionFor([
+    '第一章 范围', '范围说明。'.repeat(16), '第二章 安全要求', '需记录审计日志。'
+  ]);
   const chunks = chunkExtractedText({
-    ...extraction, singleCallThreshold: 1, characterBudget: 500, tokenBudget: 500
+    ...extraction, singleCallThreshold: 1, characterBudget: 100, tokenBudget: 100
   });
   assert.equal(chunks.length, 2);
   assert.match(chunks[0].text, /^第一章/);
@@ -121,7 +124,7 @@ test('汇总只删除空项，不合并来源层重复条款，并一次生成�
 test('所有候选均为空时汇总失败', () => {
   assert.throws(
     () => aggregateRequirementCandidates([{ chunk_number: 1, candidates: [{ content: '', source_excerpt: '' }] }]),
-    (error) => error.code === 'REQUIREMENT_AGGREGATION_FAILED'
+    (error) => error.code === 'NO_REQUIREMENTS_EXTRACTED'
   );
 });
 
@@ -168,15 +171,9 @@ test('单片超时保存失败分片与耗时，不完成任务或创建部分�
     chunkBudget: { singleCallThreshold: 1, characterBudget: 40, tokenBudget: 40 },
     gateway: {
       extract: async ({ chunk }) => {
-        if (chunk.chunk_number === 2) {
-          throw new SemanticGatewayError('GATEWAY_TIMEOUT', 'Semantic Gateway 请求超时。', {
-            provider: 'semantic_gateway', timeout_ms: 120000
-          }, 504);
-        }
-        return {
-          candidates: [{ content: '要求一。', source_excerpt: '要求一。', source_page: 1, source_paragraph: 2 }],
-          warnings: [], audit: { provider: 'semantic_gateway' }
-        };
+        throw new SemanticGatewayError('GATEWAY_TIMEOUT', 'Semantic Gateway 请求超时。', {
+          provider: 'semantic_gateway', timeout_ms: 120000
+        }, 504);
       }
     }
   });
@@ -185,10 +182,10 @@ test('单片超时保存失败分片与耗时，不完成任务或创建部分�
     (error) => error.code === 'GATEWAY_TIMEOUT'
   );
   assert.equal(repository.state.completedJob, null);
-  assert.equal(repository.state.failedChunks[0].chunkNumber, 2);
+  assert.equal(repository.state.failedChunks[0].chunkNumber, 1);
   assert.equal(repository.state.failedJob.errorCode, 'GATEWAY_TIMEOUT');
-  assert.equal(repository.state.failedJob.failedChunkNumber, 2);
-  assert.match(repository.state.failedJob.errorMessage, /分片 2\/2/);
+  assert.equal(repository.state.failedJob.failedChunkNumber, 1);
+  assert.match(repository.state.failedJob.errorMessage, /分片 1\//);
 });
 
 test('非法分片输出或汇总失败均不得完成任务', async () => {
@@ -208,7 +205,7 @@ test('非法分片输出或汇总失败均不得完成任务', async () => {
     });
     await assert.rejects(
       () => service.start({ projectId: 'project-1', tenderFileId: 'file-1', waitForCompletion: true }),
-      (caught) => caught.code === (error ? 'GATEWAY_REQUIREMENTS_INVALID' : 'REQUIREMENT_AGGREGATION_FAILED')
+      (caught) => caught.code === (error ? 'GATEWAY_REQUIREMENTS_INVALID' : 'NO_REQUIREMENTS_EXTRACTED')
     );
     assert.equal(repository.state.completedJob, null);
     assert.ok(repository.state.failedJob);

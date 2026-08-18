@@ -2,7 +2,11 @@ import { createHash } from 'node:crypto';
 import { sanitizeAuditJson } from './audit.js';
 import { AppError } from './errors.js';
 import { routeRequirement } from './pipeline/chapter-router.js';
-import { assertMandatoryRequirementMetadata } from './pipeline/mandatory-requirement.js';
+import {
+  assertMandatoryRequirementMetadata,
+  detectMandatoryScopeRules
+} from './pipeline/mandatory-requirement.js';
+import { classifyTenderSections } from './pipeline/tender-section-classifier.js';
 import {
   aggregateRequirementCandidates,
   chunkExtractedText,
@@ -39,13 +43,15 @@ function locateCandidateSource(candidate, chunk) {
   )) || chunk.segments.find((segment) => (
     candidate.source_page && segment.page === candidate.source_page
   ));
-  const relativeIndex = chunk.text.indexOf(candidate.source_excerpt);
-  const sourceStartOffset = relativeIndex >= 0
-    ? chunk.source_start_offset + relativeIndex
+  const relativeIndex = matchingSegment?.text.indexOf(candidate.source_excerpt) ?? -1;
+  const sourceStartOffset = relativeIndex >= 0 && matchingSegment
+    ? matchingSegment.source_start_offset + relativeIndex
     : matchingSegment?.source_start_offset ?? chunk.source_start_offset;
   return {
     ...candidate,
     source_text: matchingSegment?.text ?? candidate.source_excerpt,
+    source_section: matchingSegment?.source_section ?? null,
+    source_clause_id: matchingSegment?.source_clause_id ?? null,
     source_page: candidate.source_page ?? matchingSegment?.page ?? null,
     source_paragraph: candidate.source_paragraph ?? matchingSegment?.paragraph ?? null,
     source_start_offset: sourceStartOffset,
@@ -111,6 +117,8 @@ export class RequirementParseService {
   async processJob({ job, tenderFile }) {
     const startedAt = Date.now();
     let extraction;
+    let sectionAnalysis;
+    let mandatoryScopeRules = [];
     let chunks = [];
     let failedChunkNumber = null;
     try {
@@ -127,11 +135,28 @@ export class RequirementParseService {
       }
 
       const extractedTextSha256 = sha256(extraction.text);
+      await this.repository.updateParseJobProgress({
+        jobId: job.id,
+        phase: 'section_classification',
+        extractedTextSha256,
+        extractedCharacterCount: extraction.text.length
+      });
+      sectionAnalysis = classifyTenderSections(extraction);
+      mandatoryScopeRules = detectMandatoryScopeRules(sectionAnalysis.technicalSection);
+      await this.repository.saveParseDocumentAnalysis({
+        jobId: job.id,
+        sections: sectionAnalysis.sections,
+        mandatoryScopeRules
+      });
+      const extractionScope = sectionAnalysis.technicalSection;
       const extractionSummary = {
         file_name: tenderFile.original_name,
         page_count: extraction.pages.length || null,
         paragraph_count: extraction.paragraphs.length,
-        character_count: extraction.text.length
+        character_count: extraction.text.length,
+        extraction_section: extractionScope.title,
+        extraction_section_character_count: extractionScope.character_count,
+        used_fulltext_fallback: sectionAnalysis.usedFullTextFallback
       };
       await this.repository.updateParseJobProgress({
         jobId: job.id, phase: 'chunking', summary: extractionSummary,
@@ -139,8 +164,8 @@ export class RequirementParseService {
       });
 
       chunks = chunkExtractedText({
-        text: extraction.text,
-        paragraphs: extraction.paragraphs,
+        text: extractionScope.content_text,
+        paragraphs: extractionScope.paragraphs,
         singleCallThreshold: this.chunkBudget.singleCallThreshold,
         characterBudget: this.chunkBudget.characterBudget,
         tokenBudget: this.chunkBudget.tokenBudget
@@ -148,7 +173,7 @@ export class RequirementParseService {
       await this.repository.initializeParseChunks(job.id, chunks);
 
       const chunkResults = [];
-      const warnings = [...extraction.warnings];
+      const warnings = [...extraction.warnings, ...sectionAnalysis.warnings];
       for (const chunk of chunks) {
         failedChunkNumber = chunk.chunk_number;
         await this.repository.startParseChunk(job.id, chunk.chunk_number);
@@ -188,7 +213,7 @@ export class RequirementParseService {
         jobId: job.id, phase: 'aggregating',
         totalChunks: chunks.length, completedChunks: chunks.length
       });
-      const candidates = aggregateRequirementCandidates(chunkResults);
+      const candidates = aggregateRequirementCandidates(chunkResults, { mandatoryScopeRules });
       return await this.repository.completeParseJob({
         jobId: job.id,
         candidates,
@@ -197,6 +222,7 @@ export class RequirementParseService {
           single_call_threshold: this.chunkBudget.singleCallThreshold,
           character_budget: this.chunkBudget.characterBudget,
           token_budget: this.chunkBudget.tokenBudget,
+          empty_chunk_count: chunkResults.filter((result) => result.candidates.length === 0).length,
           requirement_count: candidates.length
         },
         warnings,
@@ -217,7 +243,8 @@ export class RequirementParseService {
       try {
         await this.repository.failParseJob({
           jobId: job.id, errorCode: error.code, errorMessage: safeMessage,
-          warnings: extraction?.warnings || [], gatewayAudit: sanitizeAuditJson(caught?.audit),
+          warnings: [...(extraction?.warnings || []), ...(sectionAnalysis?.warnings || [])],
+          gatewayAudit: sanitizeAuditJson(caught?.audit),
           extractedTextSha256: extraction?.text ? sha256(extraction.text) : null,
           extractedCharacterCount: extraction?.text?.length ?? null,
           runtimeMs: Date.now() - startedAt,

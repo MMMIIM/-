@@ -21,7 +21,12 @@ export function assertRequirementIdsUnchanged(baseline, candidate) {
     assertMandatoryRequirementMetadata(candidate[index]);
     if (requirement.source_text !== candidate[index].source_text
       || requirement.is_mandatory !== candidate[index].is_mandatory
-      || requirement.mandatory_marker !== candidate[index].mandatory_marker) {
+      || requirement.mandatory_marker !== candidate[index].mandatory_marker
+      || requirement.source_section !== candidate[index].source_section
+      || requirement.source_clause_id !== candidate[index].source_clause_id
+      || requirement.mandatory_scope_source_text !== candidate[index].mandatory_scope_source_text
+      || requirement.mandatory_scope_section !== candidate[index].mandatory_scope_section
+      || JSON.stringify(requirement.exception_clause_ids) !== JSON.stringify(candidate[index].exception_clause_ids)) {
       throw ruleError('REQUIREMENT_MANDATORY_METADATA_MUTATED', 'Requirement mandatory 元数据不得修改。');
     }
   });
@@ -59,7 +64,16 @@ export function canonicalizeRequirements(rawRequirements, router = routeRequirem
     const hasProvidedMetadata = Object.hasOwn(raw, 'is_mandatory')
       || Object.hasOwn(raw, 'mandatory_marker');
     const mandatoryRequirement = hasProvidedMetadata
-      ? { source_text: sourceText, is_mandatory: raw.is_mandatory, mandatory_marker: raw.mandatory_marker }
+      ? {
+        source_text: sourceText,
+        source_section: raw.source_section ?? null,
+        source_clause_id: raw.source_clause_id ?? null,
+        is_mandatory: raw.is_mandatory,
+        mandatory_marker: raw.mandatory_marker,
+        mandatory_scope_source_text: raw.mandatory_scope_source_text ?? null,
+        mandatory_scope_section: raw.mandatory_scope_section ?? null,
+        exception_clause_ids: raw.exception_clause_ids ?? []
+      }
       : enrichMandatoryRequirement({}, { sourceText });
     assertMandatoryRequirementMetadata(mandatoryRequirement);
 
@@ -70,6 +84,11 @@ export function canonicalizeRequirements(rawRequirements, router = routeRequirem
       source_text: mandatoryRequirement.source_text,
       is_mandatory: mandatoryRequirement.is_mandatory,
       mandatory_marker: mandatoryRequirement.mandatory_marker,
+      source_section: mandatoryRequirement.source_section ?? null,
+      source_clause_id: mandatoryRequirement.source_clause_id ?? null,
+      mandatory_scope_source_text: mandatoryRequirement.mandatory_scope_source_text,
+      mandatory_scope_section: mandatoryRequirement.mandatory_scope_section,
+      exception_clause_ids: [...mandatoryRequirement.exception_clause_ids],
       target_sections: [...new Set(targetSections)]
     };
   });

@@ -9,7 +9,8 @@ WHERE source_text IS NULL OR btrim(source_text) = '';
 
 UPDATE requirement_candidates
 SET is_mandatory = position('★' in source_text) > 0,
-    mandatory_marker = CASE WHEN position('★' in source_text) > 0 THEN '★' ELSE NULL END;
+    mandatory_marker = CASE WHEN position('★' in source_text) > 0 THEN '★' ELSE NULL END
+WHERE is_mandatory IS NULL;
 
 ALTER TABLE requirement_candidates
   ALTER COLUMN source_text SET NOT NULL,
@@ -20,8 +21,7 @@ ALTER TABLE requirement_candidates
   DROP CONSTRAINT IF EXISTS requirement_candidates_mandatory_consistent;
 ALTER TABLE requirement_candidates
   ADD CONSTRAINT requirement_candidates_mandatory_consistent CHECK (
-    (is_mandatory AND mandatory_marker IS NOT NULL AND position(mandatory_marker in source_text) > 0)
-    OR (NOT is_mandatory AND mandatory_marker IS NULL)
+    is_mandatory OR mandatory_marker IS NULL
   );
 
 ALTER TABLE requirements
@@ -37,7 +37,8 @@ WHERE source_text IS NULL OR btrim(source_text) = '';
 
 UPDATE requirements
 SET is_mandatory = position('★' in source_text) > 0,
-    mandatory_marker = CASE WHEN position('★' in source_text) > 0 THEN '★' ELSE NULL END;
+    mandatory_marker = CASE WHEN position('★' in source_text) > 0 THEN '★' ELSE NULL END
+WHERE is_mandatory IS NULL;
 
 ALTER TABLE requirements ENABLE TRIGGER requirements_immutable;
 
@@ -50,6 +51,5 @@ ALTER TABLE requirements
   DROP CONSTRAINT IF EXISTS requirements_mandatory_consistent;
 ALTER TABLE requirements
   ADD CONSTRAINT requirements_mandatory_consistent CHECK (
-    (is_mandatory AND mandatory_marker IS NOT NULL AND position(mandatory_marker in source_text) > 0)
-    OR (NOT is_mandatory AND mandatory_marker IS NULL)
+    is_mandatory OR mandatory_marker IS NULL
   );

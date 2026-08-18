@@ -204,6 +204,7 @@ test('解析失败落审计且绝不创建或确认 Requirement 基线', async (
     createParseJob: async () => ({ id: 'parse-1' }),
     updateParseJob: async () => {},
     updateParseJobProgress: async () => {},
+    saveParseDocumentAnalysis: async () => {},
     initializeParseChunks: async () => {},
     startParseChunk: async () => {},
     completeParseChunk: async () => {},
@@ -240,6 +241,8 @@ test('确认服务只消费成功候选并由后端路由，已冻结基线拒�
       id: parseJobId, status: 'succeeded', candidates: [{
         req_id: 'REQ-001', content: '系统应提供安全审计日志。', source_excerpt: '提供安全审计日志。',
         source_text: '提供安全审计日志。', is_mandatory: false, mandatory_marker: null,
+        source_section: null, source_clause_id: null,
+        mandatory_scope_source_text: null, mandatory_scope_section: null, exception_clause_ids: [],
         source_page: 1, source_paragraph: 2, ordinal: 1
       }]
     }),
@@ -410,6 +413,7 @@ test('完整 tender parse service 使用 V43 网关地址且忽略旧 DIFY 配�
     createParseJob: async () => ({ id: parseJobId }),
     updateParseJob: async () => {},
     updateParseJobProgress: async () => {},
+    saveParseDocumentAnalysis: async () => {},
     initializeParseChunks: async () => {},
     startParseChunk: async () => {},
     completeParseChunk: async () => {},

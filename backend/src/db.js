@@ -146,6 +146,46 @@ export class PgRepository {
     }
   }
 
+  async saveParseDocumentAnalysis({ jobId, sections, mandatoryScopeRules }) {
+    const client = await this.pool.connect();
+    try {
+      await client.query('BEGIN');
+      for (const section of sections) {
+        await client.query(`
+          INSERT INTO tender_document_sections (
+            parse_job_id, section_key, title, chapter_number, archive_role,
+            content_text, content_sha256, character_count,
+            source_start_page, source_end_page, source_start_paragraph, source_end_paragraph,
+            source_start_offset, source_end_offset
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+        `, [
+          jobId, section.section_key, section.title, section.chapter_number,
+          section.archive_role, section.content_text, section.content_sha256,
+          section.character_count, section.source_start_page, section.source_end_page,
+          section.source_start_paragraph, section.source_end_paragraph,
+          section.source_start_offset, section.source_end_offset
+        ]);
+      }
+      for (const rule of mandatoryScopeRules) {
+        await client.query(`
+          INSERT INTO tender_mandatory_scope_rules (
+            parse_job_id, mandatory_scope_source_text, mandatory_scope_section,
+            exception_clause_ids, source_page, source_paragraph
+          ) VALUES ($1, $2, $3, $4::jsonb, $5, $6)
+        `, [
+          jobId, rule.mandatory_scope_source_text, rule.mandatory_scope_section,
+          JSON.stringify(rule.exception_clause_ids), rule.source_page, rule.source_paragraph
+        ]);
+      }
+      await client.query('COMMIT');
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
   async startParseChunk(jobId, chunkNumber) {
     const { rows } = await this.pool.query(`
       UPDATE tender_parse_chunks
@@ -161,7 +201,8 @@ export class PgRepository {
       await client.query('BEGIN');
       await client.query(`
         UPDATE tender_parse_chunks
-        SET status = 'succeeded', candidate_count = $3, runtime_ms = $4,
+        SET status = CASE WHEN $3 = 0 THEN 'succeeded_empty' ELSE 'succeeded' END,
+          candidate_count = $3, runtime_ms = $4,
           gateway_audit_json = $5::jsonb, finished_at = now(), updated_at = now()
         WHERE parse_job_id = $1 AND chunk_number = $2
       `, [
@@ -230,13 +271,19 @@ export class PgRepository {
         await client.query(`
           INSERT INTO requirement_candidates
             (parse_job_id, req_id, content, source_excerpt, source_page, source_paragraph,
-             ordinal, sources_json, source_text, is_mandatory, mandatory_marker)
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9, $10, $11)
+             ordinal, sources_json, source_text, is_mandatory, mandatory_marker,
+             source_section, source_clause_id, mandatory_scope_source_text,
+             mandatory_scope_section, exception_clause_ids)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9, $10, $11,
+            $12, $13, $14, $15, $16::jsonb)
         `, [
           jobId, candidate.req_id, candidate.content, candidate.source_excerpt,
           candidate.source_page, candidate.source_paragraph, candidate.ordinal,
           JSON.stringify(candidate.sources || []), candidate.source_text,
-          candidate.is_mandatory, candidate.mandatory_marker
+          candidate.is_mandatory, candidate.mandatory_marker,
+          candidate.source_section, candidate.source_clause_id,
+          candidate.mandatory_scope_source_text, candidate.mandatory_scope_section,
+          JSON.stringify(candidate.exception_clause_ids || [])
         ]);
       }
       await client.query(`UPDATE projects SET status = 'requirements_review', updated_at = now() WHERE id = $1`, [
@@ -319,9 +366,11 @@ export class PgRepository {
       WHERE j.id = $1
     `, [id]);
     if (!rows[0]) return null;
-    const [candidates, chunks] = await Promise.all([this.pool.query(`
+    const [candidates, chunks, sections, scopeRules] = await Promise.all([this.pool.query(`
       SELECT id, req_id, content, source_excerpt, source_page, source_paragraph,
         source_text, is_mandatory, mandatory_marker,
+        source_section, source_clause_id, mandatory_scope_source_text,
+        mandatory_scope_section, exception_clause_ids,
         ordinal, status, sources_json, created_at
       FROM requirement_candidates WHERE parse_job_id = $1 ORDER BY ordinal
     `, [id]), this.pool.query(`
@@ -330,12 +379,22 @@ export class PgRepository {
         source_start_paragraph, source_end_paragraph, starts_at_title_boundary,
         candidate_count, runtime_ms, error_code, error_message, started_at, finished_at
       FROM tender_parse_chunks WHERE parse_job_id = $1 ORDER BY chunk_number
+    `, [id]), this.pool.query(`
+      SELECT section_key, title, chapter_number, archive_role, character_count,
+        source_start_page, source_end_page, source_start_paragraph, source_end_paragraph
+      FROM tender_document_sections WHERE parse_job_id = $1 ORDER BY chapter_number NULLS LAST
+    `, [id]), this.pool.query(`
+      SELECT mandatory_scope_source_text, mandatory_scope_section, exception_clause_ids,
+        source_page, source_paragraph
+      FROM tender_mandatory_scope_rules WHERE parse_job_id = $1 ORDER BY created_at
     `, [id])]);
     return {
       ...rows[0],
       file_name: normalizeUtf8FileName(rows[0].file_name),
       candidates: candidates.rows,
-      chunks: chunks.rows
+      chunks: chunks.rows,
+      document_sections: sections.rows,
+      mandatory_scope_rules: scopeRules.rows
     };
   }
 
@@ -348,6 +407,8 @@ export class PgRepository {
     const requirements = await this.pool.query(`
       SELECT id, req_id, content, source_excerpt, source_page, source_paragraph,
         source_text, is_mandatory, mandatory_marker,
+        source_section, source_clause_id, mandatory_scope_source_text,
+        mandatory_scope_section, exception_clause_ids,
         target_sections, ordinal, created_at
       FROM requirements WHERE baseline_id = $1 ORDER BY ordinal
     `, [rows[0].id]);
@@ -382,13 +443,18 @@ export class PgRepository {
           INSERT INTO requirements
             (baseline_id, project_id, req_id, content, source_excerpt,
              source_page, source_paragraph, target_sections, ordinal,
-             source_text, is_mandatory, mandatory_marker)
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9, $10, $11, $12)
+             source_text, is_mandatory, mandatory_marker, source_section, source_clause_id,
+             mandatory_scope_source_text, mandatory_scope_section, exception_clause_ids)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9, $10, $11, $12,
+            $13, $14, $15, $16, $17::jsonb)
         `, [
           baseline.id, job.project_id, requirement.req_id, requirement.content,
           requirement.source_excerpt, requirement.source_page, requirement.source_paragraph,
           JSON.stringify(requirement.target_sections), requirement.ordinal,
-          requirement.source_text, requirement.is_mandatory, requirement.mandatory_marker
+          requirement.source_text, requirement.is_mandatory, requirement.mandatory_marker,
+          requirement.source_section, requirement.source_clause_id,
+          requirement.mandatory_scope_source_text, requirement.mandatory_scope_section,
+          JSON.stringify(requirement.exception_clause_ids || [])
         ]);
       }
       const confirmed = await client.query(`

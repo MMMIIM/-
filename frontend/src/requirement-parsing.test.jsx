@@ -2,7 +2,12 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { request } from './api.js';
-import { RequirementParsing, formatRequirementLevel, formatTenderParsePhase } from './main.jsx';
+import {
+  RequirementParsing,
+  formatRequirementLevel,
+  formatRequirementSource,
+  formatTenderParsePhase
+} from './main.jsx';
 
 const file = {
   id: 'file-1',
@@ -53,6 +58,7 @@ describe('前端 tender parse API 错误契约', () => {
 describe('需求解析状态渲染', () => {
   it('展示文本提取、分片进度、汇总校验和失败分片', () => {
     expect(formatTenderParsePhase({ status: 'running', phase: 'text_extraction' })).toBe('文本提取');
+    expect(formatTenderParsePhase({ status: 'running', phase: 'section_classification' })).toBe('文档章节分类');
     expect(formatTenderParsePhase({
       status: 'running', phase: 'extracting', completed_chunks: 2, total_chunks: 5
     })).toBe('分片进度 2/5');
@@ -100,6 +106,31 @@ describe('需求解析状态渲染', () => {
   it('一般要求显示确定性等级文本', () => {
     expect(formatRequirementLevel({ is_mandatory: false, mandatory_marker: null })).toBe('一般要求');
     expect(formatRequirementLevel({ is_mandatory: true, mandatory_marker: '★' })).toBe('★ 实质性要求');
+    expect(formatRequirementLevel({
+      is_mandatory: true, mandatory_scope_source_text: '以下除5.2.6外，其余均为实质性要求。'
+    })).toBe('章节级实质性要求');
+    expect(formatRequirementSource({
+      source_section: '项目要求和有关说明', source_clause_id: '5.2.1', source_page: 16
+    })).toBe('项目要求和有关说明 · 5.2.1 · 第 16 页');
+  });
+
+  it('章节级实质性要求显示来源依据与条款路径', () => {
+    const scopeText = '以下除5.2.6外，其余均为实质性要求。';
+    const html = render({
+      id: 'job-scope', file_name: file.original_name, status: 'succeeded', warnings_json: [],
+      candidates: [{
+        req_id: 'REQ-013', content: '提供审计能力。', source_excerpt: '5.2.1 提供审计能力。',
+        source_text: '5.2.1 提供审计能力。', source_section: '项目要求和有关说明',
+        source_clause_id: '5.2.1', source_page: 16, source_paragraph: 434,
+        is_mandatory: true, mandatory_marker: null,
+        mandatory_scope_source_text: scopeText,
+        mandatory_scope_section: '项目要求和有关说明', exception_clause_ids: ['5.2.6'],
+        status: 'candidate'
+      }]
+    });
+    expect(html).toContain('章节级实质性要求');
+    expect(html).toContain(`依据：${scopeText}`);
+    expect(html).toContain('项目要求和有关说明 · 5.2.1 · 第 16 页');
   });
 
   it('confirmed 显示冻结状态且不允许重新解析', () => {

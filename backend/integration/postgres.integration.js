@@ -457,6 +457,76 @@ test('PostgreSQL 解析契约失败只创建 failed 解析审计，不创建 Req
   }
 });
 
+test('PostgreSQL 持久化章节、succeeded_empty 与章节级 mandatory scope', async () => {
+  assert.ok(process.env.DATABASE_URL, 'DATABASE_URL is required for PostgreSQL integration tests');
+  const pool = createPool();
+  const repository = new PgRepository(pool);
+  const project = await repository.createProject({ name: `PDF 章节集成测试 ${Date.now()}` });
+  const tenderFile = await repository.addTenderFile({
+    projectId: project.id,
+    originalName: 'section-fixture.pdf',
+    storageKey: `${project.id}/section-${Date.now()}.pdf`,
+    mimeType: 'application/pdf',
+    sizeBytes: 100
+  });
+  const values = [
+    '第一章 投标邀请', '邀请内容。',
+    '第二章 投标人须知前附表', '前附表。',
+    '第三章 投标人须知', '须知内容。',
+    '第四章 项目要求和有关说明',
+    '以下除5.2.6外，其余均为实质性要求。',
+    `5.2.1 ${'审计要求。'.repeat(35)}`,
+    `5.2.6 ${'例外要求。'.repeat(35)}`,
+    '第五章 评标方法和评标标准', '评标内容。',
+    '第六章 合同书（格式）', '合同内容。',
+    '第七章 投标文件的组成和格式', '格式内容。'
+  ];
+  const text = values.join('\n');
+  const paragraphs = values.map((value, index) => ({ paragraph: index + 1, page: index + 1, text: value }));
+  const service = new RequirementParseService({
+    repository,
+    storage: { read: async () => Buffer.from('fixture') },
+    textExtractor: async () => ({ text, paragraphs, pages: [], warnings: [] }),
+    chunkBudget: { singleCallThreshold: 1, characterBudget: 120, tokenBudget: 120 },
+    extractionGateway: {
+      extract: async ({ chunk }) => {
+        const requirements = [];
+        const mandatory = chunk.segments.find((segment) => segment.source_clause_id === '5.2.1');
+        const exception = chunk.segments.find((segment) => segment.source_clause_id === '5.2.6');
+        if (mandatory) requirements.push({
+          content: '提供审计能力。', source_excerpt: '5.2.1 审计要求。',
+          source_page: mandatory.page, source_paragraph: mandatory.paragraph
+        });
+        if (exception) requirements.push({
+          content: '提供例外能力。', source_excerpt: '5.2.6 例外要求。',
+          source_page: exception.page, source_paragraph: exception.paragraph
+        });
+        return { candidates: requirements, warnings: [], audit: { provider: 'semantic_gateway' } };
+      }
+    }
+  });
+
+  try {
+    const job = await service.start({
+      projectId: project.id, tenderFileId: tenderFile.id, waitForCompletion: true
+    });
+    assert.equal(job.status, 'succeeded');
+    assert.equal(job.document_sections.length, 6);
+    assert.equal(job.mandatory_scope_rules.length, 1);
+    assert.deepEqual(job.mandatory_scope_rules[0].exception_clause_ids, ['5.2.6']);
+    assert.ok(job.chunks.some((chunk) => chunk.status === 'succeeded_empty'));
+    const mandatory = job.candidates.find((candidate) => candidate.source_clause_id === '5.2.1');
+    const exception = job.candidates.find((candidate) => candidate.source_clause_id === '5.2.6');
+    assert.equal(mandatory.is_mandatory, true);
+    assert.equal(mandatory.mandatory_scope_section, '项目要求和有关说明');
+    assert.equal(exception.is_mandatory, false);
+    assert.equal(await repository.getRequirementBaseline(project.id), null);
+  } finally {
+    await pool.query(`DELETE FROM projects WHERE id = $1`, [project.id]);
+    await pool.end();
+  }
+});
+
 test('PostgreSQL 对历史 Latin-1 乱码文件名只修复 API 展示，不改持久化字段', async () => {
   assert.ok(process.env.DATABASE_URL, 'DATABASE_URL is required for PostgreSQL integration tests');
   const pool = createPool();
