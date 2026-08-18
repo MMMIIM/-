@@ -423,3 +423,31 @@ test('PostgreSQL 解析契约失败只创建 failed 解析审计，不创建 Req
     await pool.end();
   }
 });
+
+test('PostgreSQL 对历史 Latin-1 乱码文件名只修复 API 展示，不改持久化字段', async () => {
+  assert.ok(process.env.DATABASE_URL, 'DATABASE_URL is required for PostgreSQL integration tests');
+  const pool = createPool();
+  const repository = new PgRepository(pool);
+  const project = await repository.createProject({ name: `文件名编码集成测试 ${Date.now()}` });
+  const chineseName = '正常中文招标文件.docx';
+  const mojibakeName = Buffer.from(chineseName, 'utf8').toString('latin1');
+  const file = await repository.addTenderFile({
+    projectId: project.id,
+    originalName: mojibakeName,
+    storageKey: `${project.id}/filename-${Date.now()}.docx`,
+    mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    sizeBytes: 1
+  });
+
+  try {
+    const listed = await repository.listTenderFiles(project.id);
+    assert.equal(listed[0].original_name, chineseName);
+    const fetched = await repository.getTenderFile(file.id);
+    assert.equal(fetched.original_name, chineseName);
+    const { rows } = await pool.query(`SELECT original_name FROM tender_files WHERE id = $1`, [file.id]);
+    assert.equal(rows[0].original_name, mojibakeName);
+  } finally {
+    await pool.query(`DELETE FROM projects WHERE id = $1`, [project.id]);
+    await pool.end();
+  }
+});

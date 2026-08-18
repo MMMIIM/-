@@ -9,6 +9,8 @@ import {
 import { SemanticGatewayClient, SemanticGatewayError } from '../src/pipeline/semantic-gateway-client.js';
 import { RequirementParseService } from '../src/requirement-parse-service.js';
 import { createApp } from '../src/app.js';
+import { AppError } from '../src/errors.js';
+import { normalizeUtf8FileName } from '../src/file-name.js';
 
 async function createDocx(text) {
   const zip = new JSZip();
@@ -67,6 +69,14 @@ function semanticClient(fetchImpl) {
     timeoutMs: 100
   });
 }
+
+test('正常中文文件名保持不变，Latin-1 乱码文件名恢复为 UTF-8 中文', () => {
+  const chineseName = '综合极限回归测试招标文件.docx';
+  const mojibakeName = Buffer.from(chineseName, 'utf8').toString('latin1');
+  assert.equal(normalizeUtf8FileName(chineseName), chineseName);
+  assert.equal(normalizeUtf8FileName(mojibakeName), chineseName);
+  assert.equal(normalizeUtf8FileName('tender-café.docx'), 'tender-café.docx');
+});
 
 test('真实提取器支持 DOCX、文本型 PDF 和纯文本，且不修改输入 Buffer', async () => {
   const docx = await createDocx('Support security audit logs.');
@@ -263,22 +273,73 @@ test('解析、状态查询和基线确认 API 使用解析服务且不暴露内
       body: JSON.stringify({ tender_file_id: 'file-1' })
     });
     assert.equal(started.status, 201);
-    assert.equal((await started.json()).job.id, 'parse-1');
+    const startedPayload = await started.json();
+    assert.equal(startedPayload.ok, true);
+    assert.equal(startedPayload.job.id, 'parse-1');
 
     const queried = await fetch(`${base}/api/tender-parse-jobs/parse-1`);
     const queryPayload = await queried.json();
     assert.equal(queried.status, 200);
+    assert.equal(queryPayload.ok, true);
     assert.equal(queryPayload.job.id, 'parse-1');
     assert.equal('gateway_audit_json' in queryPayload.job, false);
 
     const confirmed = await fetch(`${base}/api/tender-parse-jobs/parse-1/confirm`, { method: 'POST' });
     assert.equal(confirmed.status, 201);
-    assert.equal((await confirmed.json()).baseline.status, 'confirmed');
+    const confirmedPayload = await confirmed.json();
+    assert.equal(confirmedPayload.ok, true);
+    assert.equal(confirmedPayload.baseline.status, 'confirmed');
+
+    const missing = await fetch(`${base}/api/not-a-real-route`);
+    assert.equal(missing.status, 404);
+    assert.deepEqual(await missing.json(), {
+      ok: false,
+      error: { code: 'API_NOT_FOUND', message: '请求的 API 不存在，请确认前后端版本一致。' },
+      code: 'API_NOT_FOUND',
+      message: '请求的 API 不存在，请确认前后端版本一致。'
+    });
     assert.deepEqual(calls, [
       ['start', { projectId: 'project-1', tenderFileId: 'file-1' }],
       ['get', 'parse-1'],
       ['confirm', 'parse-1']
     ]);
+  } finally {
+    await new Promise((resolve, reject) => server.close((error) => (error ? reject(error) : resolve())));
+  }
+});
+
+test('解析 API 合法失败统一返回安全 JSON error 契约', async () => {
+  const app = createApp({
+    repository: {},
+    storage: {},
+    generationService: {},
+    requirementParseService: {
+      start: async () => {
+        throw new AppError('GATEWAY_INVALID_JSON', '需求提取服务返回格式无效。', 422, {
+          raw_response_payload_json: 'never expose this raw response'
+        });
+      }
+    }
+  });
+  const server = await new Promise((resolve) => {
+    const listener = app.listen(0, '127.0.0.1', () => resolve(listener));
+  });
+  const { port } = server.address();
+  try {
+    const response = await fetch(`http://127.0.0.1:${port}/api/projects/project-1/tender-parse-jobs`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tender_file_id: 'file-1' })
+    });
+    const payload = await response.json();
+    assert.equal(response.status, 422);
+    assert.deepEqual(payload, {
+      ok: false,
+      error: { code: 'GATEWAY_INVALID_JSON', message: '需求提取服务返回格式无效。' },
+      code: 'GATEWAY_INVALID_JSON',
+      message: '需求提取服务返回格式无效。'
+    });
+    assert.doesNotMatch(JSON.stringify(payload), /raw response|stack|prompt/i);
   } finally {
     await new Promise((resolve, reject) => server.close((error) => (error ? reject(error) : resolve())));
   }

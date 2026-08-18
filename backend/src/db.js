@@ -1,5 +1,6 @@
 import pg from 'pg';
 import { sanitizeAuditJson, sanitizeAuditText } from './audit.js';
+import { normalizeTenderFileRecord, normalizeUtf8FileName } from './file-name.js';
 
 const { Pool } = pg;
 
@@ -52,14 +53,14 @@ export class PgRepository {
     const { rows } = await this.pool.query(
       `SELECT * FROM tender_files WHERE project_id = $1 ORDER BY created_at DESC`, [projectId]
     );
-    return rows;
+    return rows.map(normalizeTenderFileRecord);
   }
 
   async getTenderFile(id) {
     const { rows } = await this.pool.query(
       `SELECT * FROM tender_files WHERE id = $1`, [id]
     );
-    return rows[0] || null;
+    return normalizeTenderFileRecord(rows[0] || null);
   }
 
   async createParseJob({ projectId, tenderFileId }) {
@@ -180,7 +181,7 @@ export class PgRepository {
       GROUP BY j.id, f.original_name
       ORDER BY j.created_at DESC
     `, [projectId]);
-    return rows;
+    return rows.map((row) => ({ ...row, file_name: normalizeUtf8FileName(row.file_name) }));
   }
 
   async getParseJob(id) {
@@ -199,7 +200,11 @@ export class PgRepository {
         ordinal, status, created_at
       FROM requirement_candidates WHERE parse_job_id = $1 ORDER BY ordinal
     `, [id]);
-    return { ...rows[0], candidates: candidates.rows };
+    return {
+      ...rows[0],
+      file_name: normalizeUtf8FileName(rows[0].file_name),
+      candidates: candidates.rows
+    };
   }
 
   async getRequirementBaseline(projectId) {

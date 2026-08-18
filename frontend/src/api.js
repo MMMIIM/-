@@ -1,16 +1,28 @@
 const API_BASE = import.meta.env.VITE_API_BASE || '';
 
-async function request(path, options = {}) {
+export async function request(path, options = {}) {
   const headers = { ...(options.headers || {}) };
   if (options.body && !(options.body instanceof FormData)) headers['Content-Type'] = 'application/json';
   const response = await fetch(`${API_BASE}${path}`, { ...options, headers });
   const text = await response.text();
   let payload = {};
-  try { payload = text ? JSON.parse(text) : {}; }
-  catch (_error) { throw new Error('服务返回了非预期响应，请稍后重试。'); }
-  if (!response.ok) {
-    const error = new Error(payload.message || '请求失败，请稍后重试。');
-    error.code = payload.code;
+  try {
+    payload = text ? JSON.parse(text) : {};
+  } catch (_error) {
+    const code = response.ok ? 'API_RESPONSE_INVALID' : `HTTP_${response.status}`;
+    const message = response.ok
+      ? '服务响应格式无效，请确认前后端接口版本一致。'
+      : `后端接口不可用（HTTP ${response.status}），请确认前后端版本和 API 地址。`;
+    const error = new Error(message);
+    error.code = code;
+    error.status = response.status;
+    throw error;
+  }
+  if (!response.ok || payload.ok === false) {
+    const detail = payload.error && typeof payload.error === 'object' ? payload.error : payload;
+    const error = new Error(detail.message || '请求失败，请稍后重试。');
+    error.code = detail.code || `HTTP_${response.status}`;
+    error.status = response.status;
     throw error;
   }
   return payload;

@@ -93,11 +93,19 @@ function TenderFiles({ projectId, files, onChanged }) {
   return <section className="card"><div className="section-heading"><div><h2>招标文件</h2><p>文件内容保存在后端存储，不进入版本库。</p></div><div className="upload-actions"><input type="file" onChange={(event) => setState({ ...state, file: event.target.files?.[0] || null, error: '' })} /><button className="primary-inline" onClick={uploadFile} disabled={state.loading}><FilePlus2 size={16} />上传</button></div></div>{state.error ? <Notice kind="error">{state.error}</Notice> : null}{files.length ? <div className="file-list">{files.map((file) => <div key={file.id}><strong>{file.original_name}</strong><span>{Math.ceil(Number(file.size_bytes) / 1024)} KB · {formatDate(file.created_at)}</span><Badge type={file.status}>{statusLabels[file.status] || file.status}</Badge></div>)}</div> : <Empty title="暂无招标文件" text="上传文件后会关联到当前项目。" />}</section>;
 }
 
-function RequirementParsing({ projectId, files, parseJobs, baseline, onChanged }) {
+export function formatTenderParseError(value) {
+  const code = value?.code || value?.error_code;
+  const message = value?.message || value?.error_message;
+  if (code && message) return `需求提取失败：${code} · ${message}`;
+  if (code) return `需求提取失败：${code}`;
+  return message ? `需求提取失败：${message}` : '需求提取失败，请稍后重试。';
+}
+
+export function RequirementParsing({ projectId, files, parseJobs, baseline, onChanged }) {
   const latestJob = parseJobs[0];
   const [selectedFileId, setSelectedFileId] = useState(files[0]?.id || '');
-  const [jobDetail, setJobDetail] = useState(null);
-  const [state, setState] = useState({ loading: false, error: '', message: '' });
+  const [jobDetail, setJobDetail] = useState(latestJob?.candidates ? latestJob : null);
+  const [state, setState] = useState({ loading: false, error: null, message: '' });
 
   useEffect(() => {
     if (!selectedFileId && files[0]?.id) setSelectedFileId(files[0].id);
@@ -108,40 +116,54 @@ function RequirementParsing({ projectId, files, parseJobs, baseline, onChanged }
     if (!latestJob?.id) { setJobDetail(null); return () => { active = false; }; }
     api.getTenderParseJob(latestJob.id)
       .then((payload) => { if (active) setJobDetail(payload.job); })
-      .catch((error) => { if (active) setState((current) => ({ ...current, error: error.message })); });
+      .catch((error) => { if (active) setState((current) => ({ ...current, error })); });
     return () => { active = false; };
   }, [latestJob?.id, latestJob?.updated_at]);
 
   async function startParse() {
-    if (!selectedFileId) return setState({ loading: false, error: '请先上传并选择招标文件。', message: '' });
-    setState({ loading: true, error: '', message: '' });
+    if (!selectedFileId) return setState({ loading: false, error: { message: '请先上传并选择招标文件。' }, message: '' });
+    setState({ loading: true, error: null, message: '' });
     try {
       const payload = await api.startTenderParse(projectId, selectedFileId);
       setJobDetail(payload.job);
-      setState({ loading: false, error: '', message: '需求解析完成，请核对候选需求后确认基线。' });
+      setState({
+        loading: false,
+        error: null,
+        message: payload.job.status === 'succeeded'
+          ? '需求解析完成，请核对候选需求后确认基线。'
+          : '需求解析任务已创建，请等待状态更新。'
+      });
       await onChanged();
     } catch (error) {
-      setState({ loading: false, error: error.message, message: '' });
+      setState({ loading: false, error, message: '' });
       await onChanged();
     }
   }
 
   async function confirmBaseline() {
     if (!jobDetail?.id) return;
-    setState({ loading: true, error: '', message: '' });
+    setState({ loading: true, error: null, message: '' });
     try {
       await api.confirmRequirementBaseline(jobDetail.id);
-      setState({ loading: false, error: '', message: '需求基线已确认并冻结。' });
+      setState({ loading: false, error: null, message: '需求基线已确认并冻结。' });
       await onChanged();
     } catch (error) {
-      setState({ loading: false, error: error.message, message: '' });
+      setState({ loading: false, error, message: '' });
     }
   }
 
   const displayJob = jobDetail || latestJob;
-  const candidates = baseline?.requirements || jobDetail?.candidates || [];
   const isConfirmed = Boolean(baseline);
-  return <section className="card requirement-panel"><div className="section-heading"><div><h2>需求解析与基线确认</h2><p>语义网关只提取候选内容；REQ-ID、章节路由与冻结由后端完成。</p></div><div className="parse-actions"><select value={selectedFileId} onChange={(event) => setSelectedFileId(event.target.value)} disabled={isConfirmed || state.loading}><option value="">选择招标文件</option>{files.map((file) => <option value={file.id} key={file.id}>{file.original_name}</option>)}</select><button className="primary-inline" onClick={startParse} disabled={isConfirmed || state.loading || !files.length}>{state.loading ? <Loader2 className="spin" size={16} /> : <FileSearch size={16} />}{displayJob ? '返回重新解析' : '发起需求解析'}</button></div></div>{state.error ? <Notice kind="error">{state.error}</Notice> : null}{state.message ? <Notice kind="success">{state.message}</Notice> : null}{displayJob ? <div className="parse-summary"><Stat label="文件名" value={displayJob.file_name || '—'} /><Stat label="解析状态" value={isConfirmed ? '基线已确认' : statusLabels[displayJob.status] || displayJob.status} /><Stat label="需求数量" value={`${candidates.length || displayJob.requirement_count || 0} 条`} /><Stat label="解析警告" value={`${displayJob.warnings_json?.length || 0} 条`} /></div> : null}{displayJob?.error_message ? <Notice kind="error">{displayJob.error_message}</Notice> : null}{displayJob?.warnings_json?.map((warning, index) => <Notice kind="warning" key={index}>{warning.message || String(warning)}</Notice>)}{candidates.length ? <><div className="table-scroll"><table className="data-table requirement-table"><thead><tr><th>REQ-ID</th><th>需求内容</th><th>来源片段</th><th>来源位置</th><th>状态</th></tr></thead><tbody>{candidates.map((candidate) => <tr key={candidate.req_id}><td><strong>{candidate.req_id}</strong></td><td>{candidate.content}</td><td>{candidate.source_excerpt}</td><td>{candidate.source_page ? `第 ${candidate.source_page} 页` : candidate.source_paragraph ? `第 ${candidate.source_paragraph} 段` : '未标注'}</td><td><Badge type={isConfirmed ? 'confirmed' : candidate.status}>{isConfirmed ? '已确认' : statusLabels[candidate.status] || '候选'}</Badge></td></tr>)}</tbody></table></div><div className="baseline-actions"><p>{isConfirmed ? '该基线已冻结，不可增删改或合并 REQ-ID。' : '确认前请核对候选需求；本阶段不支持自由编辑 REQ-ID。'}</p><button className="primary-inline" onClick={confirmBaseline} disabled={isConfirmed || state.loading || displayJob?.status !== 'succeeded'}><CheckCircle2 size={16} />{isConfirmed ? '需求基线已确认' : '确认需求基线'}</button></div></> : <Empty title="暂无候选需求" text={files.length ? '选择招标文件并发起需求解析。' : '请先在“招标文件”页上传 DOCX、文本型 PDF 或纯文本文件。'} />}</section>;
+  const isLoading = state.loading || ['queued', 'running'].includes(displayJob?.status);
+  const candidates = isConfirmed
+    ? baseline.requirements || []
+    : displayJob?.status === 'succeeded' ? jobDetail?.candidates || [] : [];
+  const status = isConfirmed ? 'confirmed' : isLoading ? 'loading' : displayJob?.status;
+  const actionLabel = isConfirmed ? '基线已冻结' : isLoading ? '解析中…' : displayJob ? '重新解析' : '发起需求解析';
+  const emptyText = status === 'failed'
+    ? '本次解析失败，检查安全错误信息后可重新解析。'
+    : files.length ? '选择招标文件并发起需求解析。' : '请先在“招标文件”页上传 DOCX、文本型 PDF 或纯文本文件。';
+  return <section className="card requirement-panel"><div className="section-heading"><div><h2>需求解析与基线确认</h2><p>语义网关只提取候选内容；REQ-ID、章节路由与冻结由后端完成。</p></div><div className="parse-actions"><select value={selectedFileId} onChange={(event) => setSelectedFileId(event.target.value)} disabled={isConfirmed || isLoading}><option value="">选择招标文件</option>{files.map((file) => <option value={file.id} key={file.id}>{file.original_name}</option>)}</select><button className="primary-inline" onClick={startParse} disabled={isConfirmed || isLoading || !files.length}>{isLoading ? <Loader2 className="spin" size={16} /> : <FileSearch size={16} />}{actionLabel}</button></div></div>{state.error ? <Notice kind="error">{formatTenderParseError(state.error)}</Notice> : null}{state.message ? <Notice kind="success">{state.message}</Notice> : null}{displayJob ? <div className="parse-summary"><Stat label="文件名" value={displayJob.file_name || '—'} /><Stat label="解析状态" value={status === 'confirmed' ? '基线已确认' : status === 'loading' ? '解析中' : statusLabels[status] || status} /><Stat label="需求数量" value={`${candidates.length || displayJob.requirement_count || 0} 条`} /><Stat label="解析警告" value={`${displayJob.warnings_json?.length || 0} 条`} /></div> : null}{displayJob?.status === 'failed' && !state.error ? <Notice kind="error">{formatTenderParseError(displayJob)}</Notice> : null}{displayJob?.warnings_json?.map((warning, index) => <Notice kind="warning" key={index}>{warning.message || String(warning)}</Notice>)}{candidates.length ? <><div className="table-scroll"><table className="data-table requirement-table"><thead><tr><th>REQ-ID</th><th>需求内容</th><th>来源片段</th><th>来源位置</th><th>状态</th></tr></thead><tbody>{candidates.map((candidate) => <tr key={candidate.req_id}><td><strong>{candidate.req_id}</strong></td><td>{candidate.content}</td><td>{candidate.source_excerpt}</td><td>{candidate.source_page ? `第 ${candidate.source_page} 页` : candidate.source_paragraph ? `第 ${candidate.source_paragraph} 段` : '未标注'}</td><td><Badge type={isConfirmed ? 'confirmed' : candidate.status}>{isConfirmed ? '已确认' : statusLabels[candidate.status] || '候选'}</Badge></td></tr>)}</tbody></table></div><div className="baseline-actions"><p>{isConfirmed ? '该基线已冻结，不可增删改或合并 REQ-ID。' : '确认前请核对候选需求；本阶段不支持自由编辑 REQ-ID。'}</p><button className="primary-inline" onClick={confirmBaseline} disabled={isConfirmed || isLoading || displayJob?.status !== 'succeeded'}><CheckCircle2 size={16} />{isConfirmed ? '需求基线已确认' : '确认需求基线'}</button></div></> : <Empty title="暂无候选需求" text={emptyText} />}</section>;
 }
 
 function BidDocument({ project, version, onGenerated }) {
@@ -180,4 +202,6 @@ function App() {
   return <ProjectList onCreate={() => setRoute({ page: 'create' })} onOpen={(projectId) => setRoute({ page: 'workspace', projectId })} />;
 }
 
-createRoot(document.getElementById('root')).render(<App />);
+if (typeof document !== 'undefined') {
+  createRoot(document.getElementById('root')).render(<App />);
+}

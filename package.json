@@ -14,7 +14,7 @@
     "build": "npm run build -w frontend",
     "start": "npm run start -w backend",
     "db:migrate": "npm run db:migrate -w backend",
-    "test": "npm run test -w backend",
+    "test": "npm run test -w backend && npm run test -w frontend",
     "lint": "npm run lint --if-present -w backend && npm run lint --if-present -w frontend"
   },
   "dependencies": {

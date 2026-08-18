@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import multer from 'multer';
 import { AppError, ERROR_MESSAGES } from './errors.js';
+import { normalizeUtf8FileName } from './file-name.js';
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024, files: 1 } });
 
@@ -32,9 +33,10 @@ export function createApp({ repository, storage, generationService, requirementP
       });
       let tenderFile = null;
       if (req.file) {
-        const storageKey = await storage.save({ projectId: project.id, originalName: req.file.originalname, buffer: req.file.buffer });
+        const originalName = normalizeUtf8FileName(req.file.originalname);
+        const storageKey = await storage.save({ projectId: project.id, originalName, buffer: req.file.buffer });
         tenderFile = await repository.addTenderFile({
-          projectId: project.id, originalName: req.file.originalname, storageKey,
+          projectId: project.id, originalName, storageKey,
           mimeType: req.file.mimetype || 'application/octet-stream', sizeBytes: req.file.size
         });
       }
@@ -64,9 +66,10 @@ export function createApp({ repository, storage, generationService, requirementP
       const project = await repository.getProject(req.params.projectId);
       if (!project) throw new AppError('PROJECT_NOT_FOUND', ERROR_MESSAGES.PROJECT_NOT_FOUND, 404);
       if (!req.file) throw new AppError('VALIDATION_ERROR', '请选择要上传的招标文件。', 400);
-      const storageKey = await storage.save({ projectId: project.id, originalName: req.file.originalname, buffer: req.file.buffer });
+      const originalName = normalizeUtf8FileName(req.file.originalname);
+      const storageKey = await storage.save({ projectId: project.id, originalName, buffer: req.file.buffer });
       const file = await repository.addTenderFile({
-        projectId: project.id, originalName: req.file.originalname, storageKey,
+        projectId: project.id, originalName, storageKey,
         mimeType: req.file.mimetype || 'application/octet-stream', sizeBytes: req.file.size
       });
       res.status(201).json({ file });
@@ -97,7 +100,7 @@ export function createApp({ repository, storage, generationService, requirementP
         projectId: req.params.projectId,
         tenderFileId
       });
-      res.status(201).json({ job });
+      res.status(201).json({ ok: true, job });
     } catch (error) { next(error); }
   });
 
@@ -105,17 +108,17 @@ export function createApp({ repository, storage, generationService, requirementP
     try {
       const project = await repository.getProject(req.params.projectId);
       if (!project) throw new AppError('PROJECT_NOT_FOUND', ERROR_MESSAGES.PROJECT_NOT_FOUND, 404);
-      res.json({ jobs: await repository.listParseJobs(project.id) });
+      res.json({ ok: true, jobs: await repository.listParseJobs(project.id) });
     } catch (error) { next(error); }
   });
 
   app.get('/api/tender-parse-jobs/:jobId', async (req, res, next) => {
-    try { res.json({ job: await requirementParseService.get(req.params.jobId) }); }
+    try { res.json({ ok: true, job: await requirementParseService.get(req.params.jobId) }); }
     catch (error) { next(error); }
   });
 
   app.post('/api/tender-parse-jobs/:jobId/confirm', async (req, res, next) => {
-    try { res.status(201).json(await requirementParseService.confirm(req.params.jobId)); }
+    try { res.status(201).json({ ok: true, ...(await requirementParseService.confirm(req.params.jobId)) }); }
     catch (error) { next(error); }
   });
 
@@ -142,12 +145,19 @@ export function createApp({ repository, storage, generationService, requirementP
     } catch (error) { next(error); }
   });
 
+  app.use('/api', (_req, res) => {
+    const notFound = { code: 'API_NOT_FOUND', message: '请求的 API 不存在，请确认前后端版本一致。' };
+    res.status(404).json({ ok: false, error: notFound, ...notFound });
+  });
+
   app.use((error, _req, res, _next) => {
     if (error instanceof multer.MulterError) {
-      return res.status(400).json({ code: 'UPLOAD_INVALID', message: '文件上传失败，请确认文件不超过 50 MB。' });
+      const uploadError = { code: 'UPLOAD_INVALID', message: '文件上传失败，请确认文件不超过 50 MB。' };
+      return res.status(400).json({ ok: false, error: uploadError, ...uploadError });
     }
     const appError = error instanceof AppError ? error : new AppError('INTERNAL_ERROR', '服务暂时不可用，请稍后重试。', 500);
-    return res.status(appError.status).json({ code: appError.code, message: appError.message });
+    const safeError = { code: appError.code, message: appError.message };
+    return res.status(appError.status).json({ ok: false, error: safeError, ...safeError });
   });
 
   return app;
