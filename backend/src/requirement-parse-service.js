@@ -139,6 +139,7 @@ export class RequirementParseService {
       chunks = chunkExtractedText({
         text: extraction.text,
         paragraphs: extraction.paragraphs,
+        singleCallThreshold: this.chunkBudget.singleCallThreshold,
         characterBudget: this.chunkBudget.characterBudget,
         tokenBudget: this.chunkBudget.tokenBudget
       }).map((chunk) => ({ ...chunk, content_sha256: sha256(chunk.text) }));
@@ -191,6 +192,7 @@ export class RequirementParseService {
         candidates,
         summary: {
           ...extractionSummary, chunk_count: chunks.length,
+          single_call_threshold: this.chunkBudget.singleCallThreshold,
           character_budget: this.chunkBudget.characterBudget,
           token_budget: this.chunkBudget.tokenBudget,
           requirement_count: candidates.length

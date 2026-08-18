@@ -7,7 +7,11 @@ import {
   resolveRequirementChunkBudget
 } from '../src/pipeline/requirement-chunker.js';
 import { RequirementParseService } from '../src/requirement-parse-service.js';
-import { SemanticGatewayError, parseSemanticGatewayConfig } from '../src/pipeline/semantic-gateway-client.js';
+import {
+  SemanticGatewayError,
+  createSemanticGatewayClientFromEnv,
+  parseSemanticGatewayConfig
+} from '../src/pipeline/semantic-gateway-client.js';
 
 function extractionFor(paragraphTexts) {
   return {
@@ -74,7 +78,9 @@ test('短文件稳定形成单片并保留页码、段落和 source offsets', ()
 
 test('长文件按预算形成多片且每片不超字符与 token 预算', () => {
   const extraction = extractionFor(Array.from({ length: 8 }, (_, index) => `要求${index + 1}：${'安全审计'.repeat(8)}`));
-  const chunks = chunkExtractedText({ ...extraction, characterBudget: 55, tokenBudget: 55 });
+  const chunks = chunkExtractedText({
+    ...extraction, singleCallThreshold: 1, characterBudget: 55, tokenBudget: 55
+  });
   assert.ok(chunks.length > 1);
   assert.ok(chunks.every((chunk) => chunk.character_count <= 55));
   assert.ok(chunks.every((chunk) => chunk.estimated_token_count <= 55));
@@ -83,7 +89,9 @@ test('长文件按预算形成多片且每片不超字符与 token 预算', () =
 test('标题边界确定性开启新分片', () => {
   assert.equal(isTitleBoundary('第二章 技术要求'), true);
   const extraction = extractionFor(['第一章 范围', '范围说明。', '第二章 安全要求', '需记录审计日志。']);
-  const chunks = chunkExtractedText({ ...extraction, characterBudget: 500, tokenBudget: 500 });
+  const chunks = chunkExtractedText({
+    ...extraction, singleCallThreshold: 1, characterBudget: 500, tokenBudget: 500
+  });
   assert.equal(chunks.length, 2);
   assert.match(chunks[0].text, /^第一章/);
   assert.match(chunks[1].text, /^第二章/);
@@ -124,7 +132,7 @@ test('长文件串行处理所有分片并在最终汇总后生成稳定基线�
   let maxActive = 0;
   const { service, repository } = serviceFor({
     extraction,
-    chunkBudget: { characterBudget: 35, tokenBudget: 35 },
+    chunkBudget: { singleCallThreshold: 1, characterBudget: 35, tokenBudget: 35 },
     gateway: {
       extract: async ({ chunk }) => {
         active += 1;
@@ -155,7 +163,7 @@ test('单片超时保存失败分片与耗时，不完成任务或创建部分�
   const extraction = extractionFor(['第一章 范围', '要求一。', '第二章 安全', '要求二。']);
   const { service, repository } = serviceFor({
     extraction,
-    chunkBudget: { characterBudget: 40, tokenBudget: 40 },
+    chunkBudget: { singleCallThreshold: 1, characterBudget: 40, tokenBudget: 40 },
     gateway: {
       extract: async ({ chunk }) => {
         if (chunk.chunk_number === 2) {
@@ -188,7 +196,7 @@ test('非法分片输出或汇总失败均不得完成任务', async () => {
   ]) {
     const { service, repository } = serviceFor({
       extraction: extractionFor(['要求一。']),
-      chunkBudget: { characterBudget: 100, tokenBudget: 100 },
+      chunkBudget: { singleCallThreshold: 1, characterBudget: 100, tokenBudget: 100 },
       gateway: {
         extract: async () => {
           if (error) throw error;
@@ -222,7 +230,38 @@ test('解析 API 默认立即返回 running，后台任务由调度器接管', a
   assert.equal(repository.state.completedJob, null);
 });
 
-test('task_type 使用独立 timeout，healthcheck 与需求提取不共用短等待值', () => {
+test('5,610 中文字符与 134 段仍只形成一个 chunk', () => {
+  const paragraphTexts = [
+    ...Array.from({ length: 133 }, () => '中'.repeat(40)),
+    '中'.repeat(157)
+  ];
+  const extraction = extractionFor(paragraphTexts);
+  assert.equal(extraction.text.length, 5610);
+  assert.equal(extraction.paragraphs.length, 134);
+  const chunks = chunkExtractedText({
+    ...extraction,
+    singleCallThreshold: 12000,
+    characterBudget: 8000,
+    tokenBudget: 8000
+  });
+  assert.equal(chunks.length, 1);
+  assert.equal(chunks[0].character_count, 5610);
+});
+
+test('超过 12,000 字符才启用 8,000 字符确定性分片', () => {
+  const below = extractionFor(['中'.repeat(12000)]);
+  const above = extractionFor(['中'.repeat(6000), '中'.repeat(6001)]);
+  assert.equal(chunkExtractedText({
+    ...below, singleCallThreshold: 12000, characterBudget: 8000, tokenBudget: 8000
+  }).length, 1);
+  const chunks = chunkExtractedText({
+    ...above, singleCallThreshold: 12000, characterBudget: 8000, tokenBudget: 8000
+  });
+  assert.ok(chunks.length > 1);
+  assert.ok(chunks.every((chunk) => chunk.character_count <= 8000));
+});
+
+test('task_type timeout 配置确实传入 SemanticGatewayClient', () => {
   const config = parseSemanticGatewayConfig({
     V43_GATEWAY_TIMEOUT_MS: '30000',
     V43_GATEWAY_HEALTHCHECK_TIMEOUT_MS: '5000',
@@ -231,7 +270,20 @@ test('task_type 使用独立 timeout，healthcheck 与需求提取不共用短�
   assert.equal(config.taskTimeouts.healthcheck, 5000);
   assert.equal(config.taskTimeouts.requirement_extraction, 120000);
   assert.notEqual(config.taskTimeouts.healthcheck, config.taskTimeouts.requirement_extraction);
+  const client = createSemanticGatewayClientFromEnv({
+    env: {
+      V43_GATEWAY_API_BASE: 'http://127.0.0.1:18080/v1',
+      V43_GATEWAY_API_KEY: 'test-only',
+      V43_GATEWAY_USER: 'test-user',
+      V43_GATEWAY_HEALTHCHECK_TIMEOUT_MS: '15000',
+      V43_GATEWAY_REQUIREMENT_EXTRACTION_TIMEOUT_MS: '120000'
+    },
+    fetchImpl: async () => { throw new Error('must not call'); }
+  });
+  assert.equal(client.taskTimeouts.healthcheck, 15000);
+  assert.equal(client.taskTimeouts.requirement_extraction, 120000);
   assert.deepEqual(resolveRequirementChunkBudget({
-    REQUIREMENT_CHUNK_CHAR_BUDGET: '4000', REQUIREMENT_CHUNK_TOKEN_BUDGET: '3200'
-  }), { characterBudget: 4000, tokenBudget: 3200 });
+    REQUIREMENT_SINGLE_CALL_CHAR_THRESHOLD: '12000',
+    REQUIREMENT_CHUNK_CHAR_BUDGET: '8000', REQUIREMENT_CHUNK_TOKEN_BUDGET: '8000'
+  }), { singleCallThreshold: 12000, characterBudget: 8000, tokenBudget: 8000 });
 });

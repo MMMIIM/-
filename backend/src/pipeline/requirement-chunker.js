@@ -1,5 +1,6 @@
-const DEFAULT_CHARACTER_BUDGET = 4_000;
-const DEFAULT_TOKEN_BUDGET = 3_200;
+const DEFAULT_SINGLE_CALL_THRESHOLD = 12_000;
+const DEFAULT_CHARACTER_BUDGET = 8_000;
+const DEFAULT_TOKEN_BUDGET = 8_000;
 
 function positiveInteger(value, fallback) {
   const parsed = Number(value);
@@ -8,6 +9,10 @@ function positiveInteger(value, fallback) {
 
 export function resolveRequirementChunkBudget(env = {}) {
   return Object.freeze({
+    singleCallThreshold: positiveInteger(
+      env.REQUIREMENT_SINGLE_CALL_CHAR_THRESHOLD,
+      DEFAULT_SINGLE_CALL_THRESHOLD
+    ),
     characterBudget: positiveInteger(env.REQUIREMENT_CHUNK_CHAR_BUDGET, DEFAULT_CHARACTER_BUDGET),
     tokenBudget: positiveInteger(env.REQUIREMENT_CHUNK_TOKEN_BUDGET, DEFAULT_TOKEN_BUDGET)
   });
@@ -89,12 +94,20 @@ function buildChunk(units, chunkNumber) {
   };
 }
 
-export function chunkExtractedText({ text, paragraphs, characterBudget, tokenBudget }) {
+export function chunkExtractedText({
+  text,
+  paragraphs,
+  singleCallThreshold,
+  characterBudget,
+  tokenBudget
+}) {
   const content = String(text || '');
+  const singleCallLimit = positiveInteger(singleCallThreshold, DEFAULT_SINGLE_CALL_THRESHOLD);
   const charLimit = positiveInteger(characterBudget, DEFAULT_CHARACTER_BUDGET);
   const tokenLimit = positiveInteger(tokenBudget, DEFAULT_TOKEN_BUDGET);
   const located = locateParagraphs(content, Array.isArray(paragraphs) ? paragraphs : []);
   if (!located.length) throw Object.assign(new Error('提取文本没有可分片段落。'), { code: 'REQUIREMENT_CHUNKING_FAILED' });
+  if (content.length <= singleCallLimit) return [buildChunk(located, 1)];
   const units = located.flatMap((unit) => splitOversizedUnit(unit, charLimit, tokenLimit));
   const chunks = [];
   let current = [];
