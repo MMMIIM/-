@@ -1,0 +1,237 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {
+  aggregateRequirementCandidates,
+  chunkExtractedText,
+  isTitleBoundary,
+  resolveRequirementChunkBudget
+} from '../src/pipeline/requirement-chunker.js';
+import { RequirementParseService } from '../src/requirement-parse-service.js';
+import { SemanticGatewayError, parseSemanticGatewayConfig } from '../src/pipeline/semantic-gateway-client.js';
+
+function extractionFor(paragraphTexts) {
+  return {
+    text: paragraphTexts.join('\n'),
+    paragraphs: paragraphTexts.map((text, index) => ({
+      paragraph: index + 1, page: Math.floor(index / 2) + 1, text
+    })),
+    pages: [],
+    warnings: []
+  };
+}
+
+function createRepository() {
+  const state = { chunks: [], completedChunks: [], failedChunks: [], completedJob: null, failedJob: null };
+  return {
+    state,
+    getProject: async () => ({ id: 'project-1' }),
+    getRequirementBaseline: async () => null,
+    getTenderFile: async () => ({
+      id: 'file-1', project_id: 'project-1', storage_key: 'project-1/tender.txt',
+      original_name: 'tender.txt', mime_type: 'text/plain'
+    }),
+    createParseJob: async () => ({ id: 'parse-1', status: 'queued' }),
+    updateParseJob: async (_id, status, options) => ({ id: 'parse-1', status, phase: options.phase }),
+    updateParseJobProgress: async (value) => { state.progress = value; },
+    initializeParseChunks: async (_id, chunks) => { state.chunks = chunks; },
+    startParseChunk: async () => {},
+    completeParseChunk: async (value) => { state.completedChunks.push(value); },
+    failParseChunk: async (value) => { state.failedChunks.push(value); },
+    completeParseJob: async (value) => {
+      state.completedJob = value;
+      return { id: value.jobId, status: 'succeeded', phase: 'succeeded', candidates: value.candidates };
+    },
+    failParseJob: async (value) => { state.failedJob = value; return value; }
+  };
+}
+
+function serviceFor({ extraction, gateway, chunkBudget }) {
+  const repository = createRepository();
+  return {
+    repository,
+    service: new RequirementParseService({
+      repository,
+      storage: { read: async () => Buffer.from('test') },
+      textExtractor: async () => extraction,
+      extractionGateway: gateway,
+      chunkBudget,
+      logger: { error: () => {} }
+    })
+  };
+}
+
+test('短文件稳定形成单片并保留页码、段落和 source offsets', () => {
+  const extraction = extractionFor(['第一章 范围', '系统应提供审计日志。']);
+  const chunks = chunkExtractedText({
+    ...extraction, characterBudget: 200, tokenBudget: 200
+  });
+  assert.equal(chunks.length, 1);
+  assert.equal(chunks[0].source_start_page, 1);
+  assert.equal(chunks[0].source_end_paragraph, 2);
+  assert.equal(chunks[0].source_start_offset, 0);
+  assert.equal(chunks[0].source_end_offset, extraction.text.length);
+});
+
+test('长文件按预算形成多片且每片不超字符与 token 预算', () => {
+  const extraction = extractionFor(Array.from({ length: 8 }, (_, index) => `要求${index + 1}：${'安全审计'.repeat(8)}`));
+  const chunks = chunkExtractedText({ ...extraction, characterBudget: 55, tokenBudget: 55 });
+  assert.ok(chunks.length > 1);
+  assert.ok(chunks.every((chunk) => chunk.character_count <= 55));
+  assert.ok(chunks.every((chunk) => chunk.estimated_token_count <= 55));
+});
+
+test('标题边界确定性开启新分片', () => {
+  assert.equal(isTitleBoundary('第二章 技术要求'), true);
+  const extraction = extractionFor(['第一章 范围', '范围说明。', '第二章 安全要求', '需记录审计日志。']);
+  const chunks = chunkExtractedText({ ...extraction, characterBudget: 500, tokenBudget: 500 });
+  assert.equal(chunks.length, 2);
+  assert.match(chunks[0].text, /^第一章/);
+  assert.match(chunks[1].text, /^第二章/);
+  assert.equal(chunks[1].starts_at_title_boundary, true);
+});
+
+test('汇总确定性删除空项与跨片重复，保留全部来源后一次生成 REQ-ID', () => {
+  const candidates = aggregateRequirementCandidates([
+    { chunk_number: 1, candidates: [
+      { content: '', source_excerpt: '' },
+      { content: '提供审计日志。', source_excerpt: '来源一', source_page: 1, source_paragraph: 2 }
+    ] },
+    { chunk_number: 2, candidates: [
+      { content: ' 提供审计日志。 ', source_excerpt: '来源二', source_page: 2, source_paragraph: 5 },
+      { content: '支持标准接口。', source_excerpt: '来源三', source_page: 2, source_paragraph: 6 }
+    ] }
+  ]);
+  assert.deepEqual(candidates.map(({ req_id, content }) => ({ req_id, content })), [
+    { req_id: 'REQ-001', content: '提供审计日志。' },
+    { req_id: 'REQ-002', content: '支持标准接口。' }
+  ]);
+  assert.equal(candidates[0].sources.length, 2);
+});
+
+test('所有候选均为空时汇总失败', () => {
+  assert.throws(
+    () => aggregateRequirementCandidates([{ chunk_number: 1, candidates: [{ content: '', source_excerpt: '' }] }]),
+    (error) => error.code === 'REQUIREMENT_AGGREGATION_FAILED'
+  );
+});
+
+test('长文件串行处理所有分片并在最终汇总后生成稳定基线候选', async () => {
+  const extraction = extractionFor([
+    '第一章 范围', '系统应提供审计日志。',
+    '第二章 接口', '系统应提供审计日志。', '支持标准接口。'
+  ]);
+  let active = 0;
+  let maxActive = 0;
+  const { service, repository } = serviceFor({
+    extraction,
+    chunkBudget: { characterBudget: 35, tokenBudget: 35 },
+    gateway: {
+      extract: async ({ chunk }) => {
+        active += 1;
+        maxActive = Math.max(maxActive, active);
+        await Promise.resolve();
+        active -= 1;
+        return {
+          candidates: chunk.chunk_number === 1
+            ? [{ content: '提供审计日志。', source_excerpt: '系统应提供审计日志。', source_page: 1, source_paragraph: 2 }]
+            : [
+              { content: '提供审计日志。', source_excerpt: '系统应提供审计日志。', source_page: 2, source_paragraph: 4 },
+              { content: '支持标准接口。', source_excerpt: '支持标准接口。', source_page: 3, source_paragraph: 5 }
+            ],
+          warnings: [], audit: { provider: 'semantic_gateway' }
+        };
+      }
+    }
+  });
+  const result = await service.start({ projectId: 'project-1', tenderFileId: 'file-1', waitForCompletion: true });
+  assert.equal(maxActive, 1);
+  assert.ok(repository.state.chunks.length >= 2);
+  assert.deepEqual(result.candidates.map((candidate) => candidate.req_id), ['REQ-001', 'REQ-002']);
+  assert.equal(repository.state.completedChunks.length, repository.state.chunks.length);
+  assert.equal(repository.state.failedJob, null);
+});
+
+test('单片超时保存失败分片与耗时，不完成任务或创建部分基线', async () => {
+  const extraction = extractionFor(['第一章 范围', '要求一。', '第二章 安全', '要求二。']);
+  const { service, repository } = serviceFor({
+    extraction,
+    chunkBudget: { characterBudget: 40, tokenBudget: 40 },
+    gateway: {
+      extract: async ({ chunk }) => {
+        if (chunk.chunk_number === 2) {
+          throw new SemanticGatewayError('GATEWAY_TIMEOUT', 'Semantic Gateway 请求超时。', {
+            provider: 'semantic_gateway', timeout_ms: 120000
+          }, 504);
+        }
+        return {
+          candidates: [{ content: '要求一。', source_excerpt: '要求一。', source_page: 1, source_paragraph: 2 }],
+          warnings: [], audit: { provider: 'semantic_gateway' }
+        };
+      }
+    }
+  });
+  await assert.rejects(
+    () => service.start({ projectId: 'project-1', tenderFileId: 'file-1', waitForCompletion: true }),
+    (error) => error.code === 'GATEWAY_TIMEOUT'
+  );
+  assert.equal(repository.state.completedJob, null);
+  assert.equal(repository.state.failedChunks[0].chunkNumber, 2);
+  assert.equal(repository.state.failedJob.errorCode, 'GATEWAY_TIMEOUT');
+  assert.equal(repository.state.failedJob.failedChunkNumber, 2);
+  assert.match(repository.state.failedJob.errorMessage, /分片 2\/2/);
+});
+
+test('非法分片输出或汇总失败均不得完成任务', async () => {
+  for (const error of [
+    new SemanticGatewayError('GATEWAY_REQUIREMENTS_INVALID', '候选需求输出契约无效。', {}, 422),
+    null
+  ]) {
+    const { service, repository } = serviceFor({
+      extraction: extractionFor(['要求一。']),
+      chunkBudget: { characterBudget: 100, tokenBudget: 100 },
+      gateway: {
+        extract: async () => {
+          if (error) throw error;
+          return { candidates: [{ content: '', source_excerpt: '' }], warnings: [], audit: {} };
+        }
+      }
+    });
+    await assert.rejects(
+      () => service.start({ projectId: 'project-1', tenderFileId: 'file-1', waitForCompletion: true }),
+      (caught) => caught.code === (error ? 'GATEWAY_REQUIREMENTS_INVALID' : 'REQUIREMENT_AGGREGATION_FAILED')
+    );
+    assert.equal(repository.state.completedJob, null);
+    assert.ok(repository.state.failedJob);
+  }
+});
+
+test('解析 API 默认立即返回 running，后台任务由调度器接管', async () => {
+  let scheduled;
+  const repository = createRepository();
+  const service = new RequirementParseService({
+    repository,
+    scheduler: (task) => { scheduled = task; },
+    storage: { read: async () => Buffer.from('test') },
+    textExtractor: async () => extractionFor(['要求一。']),
+    extractionGateway: { extract: async () => ({ candidates: [], warnings: [], audit: {} }) }
+  });
+  const result = await service.start({ projectId: 'project-1', tenderFileId: 'file-1' });
+  assert.equal(result.status, 'running');
+  assert.equal(result.phase, 'text_extraction');
+  assert.equal(typeof scheduled, 'function');
+  assert.equal(repository.state.completedJob, null);
+});
+
+test('task_type 使用独立 timeout，healthcheck 与需求提取不共用短等待值', () => {
+  const config = parseSemanticGatewayConfig({
+    V43_GATEWAY_TIMEOUT_MS: '30000',
+    V43_GATEWAY_HEALTHCHECK_TIMEOUT_MS: '5000',
+    V43_GATEWAY_REQUIREMENT_EXTRACTION_TIMEOUT_MS: '120000'
+  });
+  assert.equal(config.taskTimeouts.healthcheck, 5000);
+  assert.equal(config.taskTimeouts.requirement_extraction, 120000);
+  assert.notEqual(config.taskTimeouts.healthcheck, config.taskTimeouts.requirement_extraction);
+  assert.deepEqual(resolveRequirementChunkBudget({
+    REQUIREMENT_CHUNK_CHAR_BUDGET: '4000', REQUIREMENT_CHUNK_TOKEN_BUDGET: '3200'
+  }), { characterBudget: 4000, tokenBudget: 3200 });
+});

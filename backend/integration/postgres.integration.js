@@ -326,9 +326,9 @@ test('PostgreSQL 确认 Requirement 基线后禁止增删改合并', async () =>
     extractionGateway: {
       extract: async () => ({
         candidates: [{
-          req_id: 'REQ-001', content: '系统应支持标准接口并提供安全审计。',
+          content: '系统应支持标准接口并提供安全审计。',
           source_excerpt: '支持标准接口并提供安全审计', source_page: null,
-          source_paragraph: 1, ordinal: 1
+          source_paragraph: 1
         }],
         warnings: [],
         audit: { provider: 'semantic_gateway', task_type: 'requirement_extraction' }
@@ -337,9 +337,14 @@ test('PostgreSQL 确认 Requirement 基线后禁止增删改合并', async () =>
   });
 
   try {
-    const parseJob = await service.start({ projectId: project.id, tenderFileId: tenderFile.id });
+    const parseJob = await service.start({
+      projectId: project.id, tenderFileId: tenderFile.id, waitForCompletion: true
+    });
     assert.equal(parseJob.status, 'succeeded');
     assert.equal(parseJob.candidates[0].req_id, 'REQ-001');
+    assert.equal(parseJob.phase, 'succeeded');
+    assert.equal(parseJob.total_chunks, 1);
+    assert.equal(parseJob.chunks[0].status, 'succeeded');
     const confirmed = await service.confirm(parseJob.id);
     assert.equal(confirmed.baseline.status, 'confirmed');
     const baseline = await repository.getRequirementBaseline(project.id);
@@ -410,13 +415,20 @@ test('PostgreSQL 解析契约失败只创建 failed 解析审计，不创建 Req
 
   try {
     await assert.rejects(
-      () => service.start({ projectId: project.id, tenderFileId: tenderFile.id }),
+      () => service.start({
+        projectId: project.id, tenderFileId: tenderFile.id, waitForCompletion: true
+      }),
       (error) => error.code === 'GATEWAY_REQUIREMENTS_INVALID'
     );
     const jobs = await repository.listParseJobs(project.id);
     assert.equal(jobs[0].status, 'failed');
+    assert.equal(jobs[0].phase, 'failed');
     assert.equal(jobs[0].error_code, 'GATEWAY_REQUIREMENTS_INVALID');
+    assert.equal(jobs[0].failed_chunk_number, 1);
     assert.equal(jobs[0].requirement_count, 0);
+    const failedJob = await repository.getParseJob(jobs[0].id);
+    assert.equal(failedJob.chunks[0].status, 'failed');
+    assert.equal(failedJob.chunks[0].error_code, 'GATEWAY_REQUIREMENTS_INVALID');
     assert.equal(await repository.getRequirementBaseline(project.id), null);
   } finally {
     await pool.query(`DELETE FROM projects WHERE id = $1`, [project.id]);

@@ -112,7 +112,7 @@ test('无法提取、损坏文件和不支持类型返回可读错误码', async
   );
 });
 
-test('requirement_extraction 通过 think transport 并由后端稳定生成 REQ-ID', async () => {
+test('requirement_extraction 通过 think transport 且模型候选不包含 REQ-ID', async () => {
   let inputs;
   const envelope = {
     schema_version: '4.3-gateway',
@@ -140,10 +140,10 @@ test('requirement_extraction 通过 think transport 并由后端稳定生成 REQ
 
   assert.equal(inputs.task_type, 'requirement_extraction');
   assert.equal(typeof inputs.task_payload_json, 'string');
-  assert.deepEqual(result.candidates.map(({ req_id, content }) => ({ req_id, content })), [
-    { req_id: 'REQ-001', content: '支持标准接口。' },
-    { req_id: 'REQ-002', content: '提供审计日志。' }
+  assert.deepEqual(result.candidates.map(({ content }) => content), [
+    '提供审计日志。', '支持标准接口。'
   ]);
+  assert.equal(result.candidates.some((candidate) => 'req_id' in candidate), false);
   assert.equal(result.audit.raw_response_payload_json, raw);
 });
 
@@ -162,14 +162,9 @@ test('缺失唯一允许字段时不读取 result/text/answer', async () => {
   );
 });
 
-test('非法网关候选：缺失字段、空需求、重复需求和模型生成 REQ-ID 均被拒绝', () => {
+test('非法网关候选拒绝缺失字段和模型生成 REQ-ID，空项与重复项交给后端汇总', () => {
   const invalidData = [
     {},
-    { requirements: [{ content: '', source_excerpt: 'source' }] },
-    { requirements: [
-      { content: 'same', source_excerpt: 'one' },
-      { content: ' same ', source_excerpt: 'two' }
-    ] },
     { requirements: [{ req_id: 'REQ-999', content: 'content', source_excerpt: 'source' }] }
   ];
   invalidData.forEach((data) => {
@@ -181,6 +176,18 @@ test('非法网关候选：缺失字段、空需求、重复需求和模型生�
       audit: { provider: 'semantic_gateway' }
     }), (error) => error.code === 'GATEWAY_REQUIREMENTS_INVALID');
   });
+  const validForAggregation = validateRequirementExtractionEnvelope({
+    envelope: {
+      schema_version: '4.3-gateway', task_type: 'requirement_extraction', status: 'success',
+      data: { requirements: [
+        { content: '', source_excerpt: '' },
+        { content: 'same', source_excerpt: 'one' },
+        { content: ' same ', source_excerpt: 'two' }
+      ] }, warnings: []
+    },
+    audit: { provider: 'semantic_gateway' }
+  });
+  assert.equal(validForAggregation.candidates.length, 3);
 });
 
 test('解析失败落审计且绝不创建或确认 Requirement 基线', async () => {
@@ -196,6 +203,11 @@ test('解析失败落审计且绝不创建或确认 Requirement 基线', async (
     }),
     createParseJob: async () => ({ id: 'parse-1' }),
     updateParseJob: async () => {},
+    updateParseJobProgress: async () => {},
+    initializeParseChunks: async () => {},
+    startParseChunk: async () => {},
+    completeParseChunk: async () => {},
+    failParseChunk: async () => {},
     completeParseJob: async () => { completed = true; },
     failParseJob: async (audit) => { failedAudit = audit; },
     confirmRequirementBaseline: async () => { confirmed = true; }
@@ -211,7 +223,7 @@ test('解析失败落审计且绝不创建或确认 Requirement 基线', async (
   });
 
   await assert.rejects(
-    () => service.start({ projectId: 'project-1', tenderFileId: 'file-1' }),
+    () => service.start({ projectId: 'project-1', tenderFileId: 'file-1', waitForCompletion: true }),
     (error) => error.code === 'GATEWAY_REQUIREMENTS_INVALID'
   );
   assert.equal(completed, false);
@@ -396,6 +408,11 @@ test('完整 tender parse service 使用 V43 网关地址且忽略旧 DIFY 配�
     }),
     createParseJob: async () => ({ id: parseJobId }),
     updateParseJob: async () => {},
+    updateParseJobProgress: async () => {},
+    initializeParseChunks: async () => {},
+    startParseChunk: async () => {},
+    completeParseChunk: async () => {},
+    failParseChunk: async () => {},
     completeParseJob: async (value) => {
       persisted = value;
       return { id: parseJobId, status: 'succeeded', candidates: value.candidates };
@@ -414,7 +431,7 @@ test('完整 tender parse service 使用 V43 网关地址且忽略旧 DIFY 配�
     extractionGateway: createRequirementExtractionGateway(gatewayClient)
   });
 
-  const result = await service.start({ projectId, tenderFileId });
+  const result = await service.start({ projectId, tenderFileId, waitForCompletion: true });
   assert.equal(result.status, 'succeeded');
   assert.equal(requestedUrl, 'http://127.0.0.1:18080/v1/workflows/run');
   assert.doesNotMatch(requestedUrl, /api\.dify\.invalid/);

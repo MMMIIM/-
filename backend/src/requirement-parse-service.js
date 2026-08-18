@@ -2,6 +2,11 @@ import { createHash } from 'node:crypto';
 import { sanitizeAuditJson } from './audit.js';
 import { AppError } from './errors.js';
 import { routeRequirement } from './pipeline/chapter-router.js';
+import {
+  aggregateRequirementCandidates,
+  chunkExtractedText,
+  resolveRequirementChunkBudget
+} from './pipeline/requirement-chunker.js';
 
 const MAX_EXTRACTED_CHARACTERS = 300_000;
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -16,21 +21,63 @@ export function assertValidParseJobId(jobId) {
 function normalizeError(error) {
   if (error instanceof AppError) return error;
   if (error?.code && typeof error.message === 'string') {
-    return new AppError(error.code, error.message, Number(error.status) || 502, error);
+    const normalized = new AppError(error.code, error.message, Number(error.status) || 502, error);
+    normalized.audit = error.audit;
+    return normalized;
   }
   return new AppError('TENDER_PARSE_FAILED', '招标需求解析失败，请稍后重试。', 500, error);
 }
 
+function sha256(value) {
+  return createHash('sha256').update(value).digest('hex');
+}
+
+function locateCandidateSource(candidate, chunk) {
+  const matchingSegment = chunk.segments.find((segment) => (
+    candidate.source_paragraph && segment.paragraph === candidate.source_paragraph
+  )) || chunk.segments.find((segment) => (
+    candidate.source_page && segment.page === candidate.source_page
+  ));
+  const relativeIndex = chunk.text.indexOf(candidate.source_excerpt);
+  const sourceStartOffset = relativeIndex >= 0
+    ? chunk.source_start_offset + relativeIndex
+    : matchingSegment?.source_start_offset ?? chunk.source_start_offset;
+  return {
+    ...candidate,
+    source_page: candidate.source_page ?? matchingSegment?.page ?? null,
+    source_paragraph: candidate.source_paragraph ?? matchingSegment?.paragraph ?? null,
+    source_start_offset: sourceStartOffset,
+    source_end_offset: relativeIndex >= 0
+      ? sourceStartOffset + candidate.source_excerpt.length
+      : matchingSegment?.source_end_offset ?? chunk.source_end_offset
+  };
+}
+
+function scheduleImmediately(task) {
+  setImmediate(task);
+}
+
 export class RequirementParseService {
-  constructor({ repository, storage, textExtractor, extractionGateway, logger = console }) {
+  constructor({
+    repository,
+    storage,
+    textExtractor,
+    extractionGateway,
+    logger = console,
+    env = process.env,
+    chunkBudget = resolveRequirementChunkBudget(env),
+    scheduler = scheduleImmediately
+  }) {
     this.repository = repository;
     this.storage = storage;
     this.textExtractor = textExtractor;
     this.extractionGateway = extractionGateway;
     this.logger = logger;
+    this.chunkBudget = chunkBudget;
+    this.scheduler = scheduler;
   }
 
-  async start({ projectId, tenderFileId }) {
+  async start({ projectId, tenderFileId, waitForCompletion = false }) {
     const project = await this.repository.getProject(projectId);
     if (!project) throw new AppError('PROJECT_NOT_FOUND', '项目不存在。', 404);
     if (await this.repository.getRequirementBaseline(projectId)) {
@@ -42,15 +89,32 @@ export class RequirementParseService {
     }
 
     const job = await this.repository.createParseJob({ projectId, tenderFileId });
-    await this.repository.updateParseJob(job.id, 'running');
+    const runningJob = await this.repository.updateParseJob(job.id, 'running', { phase: 'text_extraction' });
+    if (waitForCompletion) return this.processJob({ job: runningJob || job, tenderFile });
+
+    this.scheduler(() => {
+      this.processJob({ job: runningJob || job, tenderFile }).catch((error) => {
+        this.logger.error('Tender parse background task failed', {
+          parseJobId: job.id,
+          errorCode: error?.code || 'TENDER_PARSE_FAILED'
+        });
+      });
+    });
+    return {
+      ...(runningJob || job), status: 'running', phase: 'text_extraction',
+      file_name: tenderFile.original_name, total_chunks: 0, completed_chunks: 0
+    };
+  }
+
+  async processJob({ job, tenderFile }) {
     const startedAt = Date.now();
     let extraction;
+    let chunks = [];
+    let failedChunkNumber = null;
     try {
       const buffer = await this.storage.read(tenderFile.storage_key);
       extraction = await this.textExtractor({
-        fileName: tenderFile.original_name,
-        mimeType: tenderFile.mime_type,
-        buffer
+        fileName: tenderFile.original_name, mimeType: tenderFile.mime_type, buffer
       });
       if (extraction.text.length > MAX_EXTRACTED_CHARACTERS) {
         throw new AppError(
@@ -59,46 +123,110 @@ export class RequirementParseService {
           422
         );
       }
-      const gatewayResult = await this.extractionGateway.extract({
-        fileName: tenderFile.original_name,
-        text: extraction.text,
-        paragraphs: extraction.paragraphs
+
+      const extractedTextSha256 = sha256(extraction.text);
+      const extractionSummary = {
+        file_name: tenderFile.original_name,
+        page_count: extraction.pages.length || null,
+        paragraph_count: extraction.paragraphs.length,
+        character_count: extraction.text.length
+      };
+      await this.repository.updateParseJobProgress({
+        jobId: job.id, phase: 'chunking', summary: extractionSummary,
+        extractedTextSha256, extractedCharacterCount: extraction.text.length
       });
-      const warnings = [...extraction.warnings, ...gatewayResult.warnings];
+
+      chunks = chunkExtractedText({
+        text: extraction.text,
+        paragraphs: extraction.paragraphs,
+        characterBudget: this.chunkBudget.characterBudget,
+        tokenBudget: this.chunkBudget.tokenBudget
+      }).map((chunk) => ({ ...chunk, content_sha256: sha256(chunk.text) }));
+      await this.repository.initializeParseChunks(job.id, chunks);
+
+      const chunkResults = [];
+      const warnings = [...extraction.warnings];
+      for (const chunk of chunks) {
+        failedChunkNumber = chunk.chunk_number;
+        await this.repository.startParseChunk(job.id, chunk.chunk_number);
+        const chunkStartedAt = Date.now();
+        try {
+          const gatewayResult = await this.extractionGateway.extract({
+            fileName: tenderFile.original_name, text: chunk.text,
+            paragraphs: chunk.segments, chunk
+          });
+          const candidates = gatewayResult.candidates.map((candidate) => locateCandidateSource(candidate, chunk));
+          const runtimeMs = Date.now() - chunkStartedAt;
+          await this.repository.completeParseChunk({
+            jobId: job.id, chunkNumber: chunk.chunk_number,
+            candidateCount: candidates.length, runtimeMs,
+            gatewayAudit: sanitizeAuditJson(gatewayResult.audit)
+          });
+          warnings.push(...gatewayResult.warnings.map((warning) => ({
+            ...warning, chunk_number: chunk.chunk_number
+          })));
+          chunkResults.push({ chunk_number: chunk.chunk_number, candidates });
+        } catch (caught) {
+          const error = normalizeError(caught);
+          const runtimeMs = Date.now() - chunkStartedAt;
+          await this.repository.failParseChunk({
+            jobId: job.id, chunkNumber: chunk.chunk_number,
+            errorCode: error.code, errorMessage: error.message, runtimeMs,
+            gatewayAudit: sanitizeAuditJson(caught?.audit)
+          });
+          error.failedChunkNumber = chunk.chunk_number;
+          error.chunkRuntimeMs = runtimeMs;
+          throw error;
+        }
+      }
+
+      failedChunkNumber = null;
+      await this.repository.updateParseJobProgress({
+        jobId: job.id, phase: 'aggregating',
+        totalChunks: chunks.length, completedChunks: chunks.length
+      });
+      const candidates = aggregateRequirementCandidates(chunkResults);
       return await this.repository.completeParseJob({
         jobId: job.id,
-        candidates: gatewayResult.candidates,
+        candidates,
         summary: {
-          file_name: tenderFile.original_name,
-          requirement_count: gatewayResult.candidates.length,
-          page_count: extraction.pages.length || null,
-          paragraph_count: extraction.paragraphs.length
+          ...extractionSummary, chunk_count: chunks.length,
+          character_budget: this.chunkBudget.characterBudget,
+          token_budget: this.chunkBudget.tokenBudget,
+          requirement_count: candidates.length
         },
         warnings,
-        gatewayAudit: sanitizeAuditJson(gatewayResult.audit),
-        extractedTextSha256: createHash('sha256').update(extraction.text).digest('hex'),
+        gatewayAudit: {
+          provider: 'semantic_gateway', task_type: 'requirement_extraction',
+          processing: 'serial_chunks', chunk_count: chunks.length
+        },
+        extractedTextSha256,
         extractedCharacterCount: extraction.text.length,
         runtimeMs: Date.now() - startedAt
       });
     } catch (caught) {
       const error = normalizeError(caught);
+      const actualFailedChunk = error.failedChunkNumber ?? failedChunkNumber;
+      const safeMessage = actualFailedChunk
+        ? `分片 ${actualFailedChunk}/${chunks.length} 处理失败：${error.message}`
+        : error.message;
       try {
         await this.repository.failParseJob({
-          jobId: job.id,
-          errorCode: error.code,
-          errorMessage: error.message,
-          warnings: extraction?.warnings || [],
-          gatewayAudit: sanitizeAuditJson(caught?.audit),
-          extractedTextSha256: extraction?.text
-            ? createHash('sha256').update(extraction.text).digest('hex')
-            : null,
+          jobId: job.id, errorCode: error.code, errorMessage: safeMessage,
+          warnings: extraction?.warnings || [], gatewayAudit: sanitizeAuditJson(caught?.audit),
+          extractedTextSha256: extraction?.text ? sha256(extraction.text) : null,
           extractedCharacterCount: extraction?.text?.length ?? null,
-          runtimeMs: Date.now() - startedAt
+          runtimeMs: Date.now() - startedAt,
+          failedChunkNumber: actualFailedChunk,
+          summary: {
+            chunk_count: chunks.length, failed_chunk_number: actualFailedChunk,
+            failed_chunk_runtime_ms: error.chunkRuntimeMs ?? null
+          }
         });
       } catch (auditError) {
         this.logger.error('Failed to persist tender parse audit', {
-          parseJobId: job.id,
-          error: auditError instanceof Error ? auditError.message : String(auditError)
+          parseJobId: job.id, errorCode: error.code,
+          auditError: auditError instanceof Error ? auditError.message : String(auditError)
         });
       }
       throw error;
@@ -117,7 +245,7 @@ export class RequirementParseService {
     const job = await this.repository.getParseJob(jobId);
     if (!job) throw new AppError('TENDER_PARSE_JOB_NOT_FOUND', '需求解析任务不存在。', 404);
     if (job.status !== 'succeeded') {
-      throw new AppError('TENDER_PARSE_NOT_READY', '仅成功完成的解析任务可以确认需求基线。', 409);
+      throw new AppError('TENDER_PARSE_NOT_READY', '仅全部分片成功并完成汇总校验的解析任务可以确认需求基线。', 409);
     }
     if (!job.candidates?.length) {
       throw new AppError('REQUIREMENTS_REQUIRED', '解析任务没有可确认的候选需求。', 422);

@@ -57,7 +57,6 @@ export function validateRequirementExtractionEnvelope(gatewayResponse) {
     throw contractError(audit, 'data 必须且只能包含非空 requirements 数组。');
   }
 
-  const seen = new Set();
   const candidates = envelope.data.requirements.map((candidate, originalIndex) => {
     if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) {
       throw contractError(audit, 'requirements 项必须为对象。');
@@ -66,39 +65,25 @@ export function validateRequirementExtractionEnvelope(gatewayResponse) {
     if (Object.keys(candidate).some((key) => !allowedKeys.has(key))) {
       throw contractError(audit, 'requirements 项包含禁止字段（REQ-ID 必须由后端生成）。');
     }
-    const content = typeof candidate.content === 'string' ? candidate.content.trim() : '';
+    if (typeof candidate.content !== 'string' || typeof candidate.source_excerpt !== 'string') {
+      throw contractError(audit, '需求内容与来源片段必须为字符串。');
+    }
+    const content = candidate.content.trim();
     const sourceExcerpt = typeof candidate.source_excerpt === 'string'
       ? candidate.source_excerpt.trim()
       : '';
-    if (!content) throw contractError(audit, '需求内容不能为空。');
-    if (!sourceExcerpt) throw contractError(audit, '来源片段不能为空。');
-    const duplicateKey = content.replace(/\s+/g, '').toLocaleLowerCase('zh-CN');
-    if (seen.has(duplicateKey)) throw contractError(audit, '需求内容不得重复。');
-    seen.add(duplicateKey);
+    if (content && !sourceExcerpt) throw contractError(audit, '非空需求必须提供来源片段。');
     return {
       content,
       source_excerpt: sourceExcerpt,
       source_page: optionalPositiveInteger(candidate.source_page, 'source_page', audit),
       source_paragraph: optionalPositiveInteger(candidate.source_paragraph, 'source_paragraph', audit),
-      originalIndex
+      candidate_index: originalIndex + 1
     };
   });
 
-  candidates.sort((left, right) => (
-    (left.source_page ?? Number.MAX_SAFE_INTEGER) - (right.source_page ?? Number.MAX_SAFE_INTEGER)
-    || (left.source_paragraph ?? Number.MAX_SAFE_INTEGER) - (right.source_paragraph ?? Number.MAX_SAFE_INTEGER)
-    || left.originalIndex - right.originalIndex
-  ));
-
   return {
-    candidates: candidates.map((candidate, index) => ({
-      req_id: `REQ-${String(index + 1).padStart(3, '0')}`,
-      content: candidate.content,
-      source_excerpt: candidate.source_excerpt,
-      source_page: candidate.source_page,
-      source_paragraph: candidate.source_paragraph,
-      ordinal: index + 1
-    })),
+    candidates,
     warnings: normalizeWarnings(envelope.warnings, audit),
     audit
   };
@@ -106,17 +91,31 @@ export function validateRequirementExtractionEnvelope(gatewayResponse) {
 
 export function createRequirementExtractionGateway(client) {
   return {
-    async extract({ fileName, text, paragraphs }) {
+    async extract({ fileName, text, paragraphs, chunk }) {
       const gatewayResponse = await client.run({
         task_type: REQUIREMENT_EXTRACTION_TASK_TYPE,
         task_instruction: REQUIREMENT_EXTRACTION_INSTRUCTION,
         task_payload_json: JSON.stringify({
           file_name: fileName,
+          chunk: chunk ? {
+            chunk_number: chunk.chunk_number,
+            source_start_offset: chunk.source_start_offset,
+            source_end_offset: chunk.source_end_offset,
+            source_start_page: chunk.source_start_page,
+            source_end_page: chunk.source_end_page,
+            source_start_paragraph: chunk.source_start_paragraph,
+            source_end_paragraph: chunk.source_end_paragraph
+          } : undefined,
           text,
-          segments: paragraphs.map(({ paragraph, page, text: segmentText }) => ({
+          segments: paragraphs.map(({
+            paragraph, page, text: segmentText, source_start_offset: sourceStartOffset,
+            source_end_offset: sourceEndOffset
+          }) => ({
             paragraph,
             page,
-            text: segmentText
+            text: segmentText,
+            source_start_offset: sourceStartOffset,
+            source_end_offset: sourceEndOffset
           }))
         })
       });

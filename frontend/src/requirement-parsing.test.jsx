@@ -2,7 +2,7 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { request } from './api.js';
-import { RequirementParsing } from './main.jsx';
+import { RequirementParsing, formatTenderParsePhase } from './main.jsx';
 
 const file = {
   id: 'file-1',
@@ -51,6 +51,22 @@ describe('前端 tender parse API 错误契约', () => {
 });
 
 describe('需求解析状态渲染', () => {
+  it('展示文本提取、分片进度、汇总校验和失败分片', () => {
+    expect(formatTenderParsePhase({ status: 'running', phase: 'text_extraction' })).toBe('文本提取');
+    expect(formatTenderParsePhase({
+      status: 'running', phase: 'extracting', completed_chunks: 2, total_chunks: 5
+    })).toBe('分片进度 2/5');
+    expect(formatTenderParsePhase({ status: 'running', phase: 'aggregating' })).toBe('汇总校验');
+    expect(formatTenderParsePhase({
+      status: 'failed', failed_chunk_number: 3, total_chunks: 5
+    })).toBe('分片 3/5 失败');
+    const html = render({
+      id: 'job-progress', file_name: file.original_name, status: 'running',
+      phase: 'extracting', completed_chunks: 2, total_chunks: 5, warnings_json: []
+    });
+    expect(html).toContain('分片进度 2/5');
+  });
+
   it('failed 显示错误码和安全消息，允许重新解析但不显示确认按钮', () => {
     const html = render({
       id: 'job-1', file_name: file.original_name, status: 'failed',

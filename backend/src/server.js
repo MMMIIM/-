@@ -29,7 +29,8 @@ const requirementParseService = new RequirementParseService({
   repository,
   storage,
   textExtractor: extractTenderText,
-  extractionGateway: createRequirementExtractionGateway(runtime.createSemanticGatewayClient())
+  extractionGateway: createRequirementExtractionGateway(runtime.createSemanticGatewayClient()),
+  env: runtimeEnv
 });
 const app = createApp({
   repository,

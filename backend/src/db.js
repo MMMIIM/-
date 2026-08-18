@@ -72,16 +72,125 @@ export class PgRepository {
     return rows[0];
   }
 
-  async updateParseJob(id, status) {
+  async updateParseJob(id, status, { phase } = {}) {
     const { rows } = await this.pool.query(`
       UPDATE tender_parse_jobs
-      SET status = $2,
+      SET status = $2, phase = COALESCE($3, phase),
         started_at = CASE WHEN $2 = 'running' THEN COALESCE(started_at, now()) ELSE started_at END,
         finished_at = CASE WHEN $2 IN ('succeeded', 'failed') THEN now() ELSE finished_at END,
         updated_at = now()
       WHERE id = $1 RETURNING *
-    `, [id, status]);
+    `, [id, status, phase || null]);
     return rows[0] || null;
+  }
+
+  async updateParseJobProgress({
+    jobId,
+    phase,
+    totalChunks,
+    completedChunks,
+    summary,
+    extractedTextSha256,
+    extractedCharacterCount
+  }) {
+    const { rows } = await this.pool.query(`
+      UPDATE tender_parse_jobs
+      SET phase = $2,
+        total_chunks = COALESCE($3, total_chunks),
+        completed_chunks = COALESCE($4, completed_chunks),
+        summary_json = summary_json || COALESCE($5::jsonb, '{}'::jsonb),
+        extracted_text_sha256 = COALESCE($6, extracted_text_sha256),
+        extracted_character_count = COALESCE($7, extracted_character_count),
+        updated_at = now()
+      WHERE id = $1 RETURNING *
+    `, [
+      jobId, phase, totalChunks ?? null, completedChunks ?? null,
+      summary === undefined ? null : JSON.stringify(summary),
+      extractedTextSha256 ?? null, extractedCharacterCount ?? null
+    ]);
+    return rows[0] || null;
+  }
+
+  async initializeParseChunks(jobId, chunks) {
+    const client = await this.pool.connect();
+    try {
+      await client.query('BEGIN');
+      for (const chunk of chunks) {
+        await client.query(`
+          INSERT INTO tender_parse_chunks (
+            parse_job_id, chunk_number, character_count, estimated_token_count,
+            source_start_offset, source_end_offset, source_start_page, source_end_page,
+            source_start_paragraph, source_end_paragraph, starts_at_title_boundary,
+            content_sha256
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        `, [
+          jobId, chunk.chunk_number, chunk.character_count, chunk.estimated_token_count,
+          chunk.source_start_offset, chunk.source_end_offset,
+          chunk.source_start_page, chunk.source_end_page,
+          chunk.source_start_paragraph, chunk.source_end_paragraph,
+          chunk.starts_at_title_boundary, chunk.content_sha256
+        ]);
+      }
+      await client.query(`
+        UPDATE tender_parse_jobs
+        SET phase = 'extracting', total_chunks = $2, completed_chunks = 0, updated_at = now()
+        WHERE id = $1
+      `, [jobId, chunks.length]);
+      await client.query('COMMIT');
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  async startParseChunk(jobId, chunkNumber) {
+    const { rows } = await this.pool.query(`
+      UPDATE tender_parse_chunks
+      SET status = 'running', started_at = now(), updated_at = now()
+      WHERE parse_job_id = $1 AND chunk_number = $2 RETURNING *
+    `, [jobId, chunkNumber]);
+    return rows[0] || null;
+  }
+
+  async completeParseChunk({ jobId, chunkNumber, candidateCount, runtimeMs, gatewayAudit }) {
+    const client = await this.pool.connect();
+    try {
+      await client.query('BEGIN');
+      await client.query(`
+        UPDATE tender_parse_chunks
+        SET status = 'succeeded', candidate_count = $3, runtime_ms = $4,
+          gateway_audit_json = $5::jsonb, finished_at = now(), updated_at = now()
+        WHERE parse_job_id = $1 AND chunk_number = $2
+      `, [
+        jobId, chunkNumber, candidateCount, runtimeMs,
+        gatewayAudit === undefined ? null : JSON.stringify(gatewayAudit)
+      ]);
+      await client.query(`
+        UPDATE tender_parse_jobs
+        SET completed_chunks = completed_chunks + 1, updated_at = now()
+        WHERE id = $1
+      `, [jobId]);
+      await client.query('COMMIT');
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  async failParseChunk({ jobId, chunkNumber, errorCode, errorMessage, runtimeMs, gatewayAudit }) {
+    await this.pool.query(`
+      UPDATE tender_parse_chunks
+      SET status = 'failed', error_code = $3, error_message = $4, runtime_ms = $5,
+        gateway_audit_json = $6::jsonb, finished_at = now(), updated_at = now()
+      WHERE parse_job_id = $1 AND chunk_number = $2
+    `, [
+      jobId, chunkNumber, errorCode, errorMessage, runtimeMs,
+      gatewayAudit === undefined ? null : JSON.stringify(gatewayAudit)
+    ]);
   }
 
   async completeParseJob({
@@ -99,7 +208,8 @@ export class PgRepository {
       await client.query('BEGIN');
       const jobResult = await client.query(`
         UPDATE tender_parse_jobs
-        SET status = 'succeeded', summary_json = $2::jsonb, warnings_json = $3::jsonb,
+        SET status = 'succeeded', phase = 'succeeded', completed_chunks = total_chunks,
+          summary_json = $2::jsonb, warnings_json = $3::jsonb,
           gateway_audit_json = $4::jsonb, extracted_text_sha256 = $5,
           extracted_character_count = $6, runtime_ms = $7,
           finished_at = now(), updated_at = now()
@@ -118,11 +228,13 @@ export class PgRepository {
       for (const candidate of candidates) {
         await client.query(`
           INSERT INTO requirement_candidates
-            (parse_job_id, req_id, content, source_excerpt, source_page, source_paragraph, ordinal)
-          VALUES ($1, $2, $3, $4, $5, $6, $7)
+            (parse_job_id, req_id, content, source_excerpt, source_page, source_paragraph,
+             ordinal, sources_json)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb)
         `, [
           jobId, candidate.req_id, candidate.content, candidate.source_excerpt,
-          candidate.source_page, candidate.source_paragraph, candidate.ordinal
+          candidate.source_page, candidate.source_paragraph, candidate.ordinal,
+          JSON.stringify(candidate.sources || [])
         ]);
       }
       await client.query(`UPDATE projects SET status = 'requirements_review', updated_at = now() WHERE id = $1`, [
@@ -146,13 +258,19 @@ export class PgRepository {
     gatewayAudit,
     extractedTextSha256,
     extractedCharacterCount,
-    runtimeMs
+    runtimeMs,
+    failedChunkNumber,
+    summary
   }) {
     const { rows } = await this.pool.query(`
       UPDATE tender_parse_jobs
-      SET status = 'failed', warnings_json = $2::jsonb, gateway_audit_json = $3::jsonb,
-        extracted_text_sha256 = $4, extracted_character_count = $5, runtime_ms = $6,
-        error_code = $7, error_message = $8, finished_at = now(), updated_at = now()
+      SET status = 'failed', phase = 'failed', warnings_json = $2::jsonb,
+        gateway_audit_json = $3::jsonb,
+        extracted_text_sha256 = COALESCE($4, extracted_text_sha256),
+        extracted_character_count = COALESCE($5, extracted_character_count), runtime_ms = $6,
+        error_code = $7, error_message = $8, failed_chunk_number = $9,
+        summary_json = summary_json || COALESCE($10::jsonb, '{}'::jsonb),
+        finished_at = now(), updated_at = now()
       WHERE id = $1 RETURNING *
     `, [
       jobId,
@@ -162,7 +280,9 @@ export class PgRepository {
       extractedCharacterCount,
       runtimeMs,
       errorCode,
-      errorMessage
+      errorMessage,
+      failedChunkNumber ?? null,
+      summary === undefined ? null : JSON.stringify(summary)
     ]);
     if (rows[0]?.project_id) await this.touchProject(rows[0].project_id);
     return rows[0] || null;
@@ -171,7 +291,8 @@ export class PgRepository {
   async listParseJobs(projectId) {
     const { rows } = await this.pool.query(`
       SELECT j.id, j.project_id, j.tender_file_id, f.original_name AS file_name,
-        j.status, j.summary_json, j.warnings_json, j.runtime_ms,
+        j.status, j.phase, j.total_chunks, j.completed_chunks, j.failed_chunk_number,
+        j.summary_json, j.warnings_json, j.runtime_ms,
         j.error_code, j.error_message, j.started_at, j.finished_at,
         j.created_at, j.updated_at, count(c.id)::int AS requirement_count
       FROM tender_parse_jobs j
@@ -187,7 +308,8 @@ export class PgRepository {
   async getParseJob(id) {
     const { rows } = await this.pool.query(`
       SELECT j.id, j.project_id, j.tender_file_id, f.original_name AS file_name,
-        j.status, j.summary_json, j.warnings_json, j.runtime_ms,
+        j.status, j.phase, j.total_chunks, j.completed_chunks, j.failed_chunk_number,
+        j.summary_json, j.warnings_json, j.runtime_ms,
         j.error_code, j.error_message, j.started_at, j.finished_at,
         j.created_at, j.updated_at
       FROM tender_parse_jobs j
@@ -195,15 +317,22 @@ export class PgRepository {
       WHERE j.id = $1
     `, [id]);
     if (!rows[0]) return null;
-    const candidates = await this.pool.query(`
+    const [candidates, chunks] = await Promise.all([this.pool.query(`
       SELECT id, req_id, content, source_excerpt, source_page, source_paragraph,
-        ordinal, status, created_at
+        ordinal, status, sources_json, created_at
       FROM requirement_candidates WHERE parse_job_id = $1 ORDER BY ordinal
-    `, [id]);
+    `, [id]), this.pool.query(`
+      SELECT chunk_number, status, character_count, estimated_token_count,
+        source_start_offset, source_end_offset, source_start_page, source_end_page,
+        source_start_paragraph, source_end_paragraph, starts_at_title_boundary,
+        candidate_count, runtime_ms, error_code, error_message, started_at, finished_at
+      FROM tender_parse_chunks WHERE parse_job_id = $1 ORDER BY chunk_number
+    `, [id])]);
     return {
       ...rows[0],
       file_name: normalizeUtf8FileName(rows[0].file_name),
-      candidates: candidates.rows
+      candidates: candidates.rows,
+      chunks: chunks.rows
     };
   }
 
