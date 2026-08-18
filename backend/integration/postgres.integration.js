@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { createPool, PgRepository } from '../src/db.js';
 import { createDifyClient } from '../src/dify.js';
 import { GenerationService } from '../src/service.js';
+import { DeterministicPipelineService } from '../src/pipeline/generation-audit.js';
 
 const directory = dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: resolve(directory, '../.env') });
@@ -166,6 +167,133 @@ test('PostgreSQL 持久化合法 Dify 外层审计并创建 DocumentVersion', as
     assert.equal(generations.length, 1);
     assert.equal(generations[0].has_response_payload_json, true);
     assert.equal(generations[0].has_raw_dify_response_json, true);
+  } finally {
+    await pool.query(`DELETE FROM projects WHERE id = $1`, [project.id]);
+    await pool.end();
+  }
+});
+
+const pipelineRequirements = [
+  { req_id: 'REQ-001', text: '支持通过标准接口完成第三方系统数据接入。' },
+  { req_id: 'REQ-002', text: '方案应说明访问权限控制和安全审计机制。' }
+];
+
+test('4.3 critical 终检持久化 failed Generation 且不创建 DocumentVersion', async () => {
+  assert.ok(process.env.DATABASE_URL, 'DATABASE_URL is required for PostgreSQL integration tests');
+  const pool = createPool();
+  const repository = new PgRepository(pool);
+  const project = await repository.createProject({ name: `4.3 critical 集成测试 ${Date.now()}` });
+  const service = new DeterministicPipelineService({
+    repository,
+    writer: {
+      async write() {
+        return [{
+          id: 'data-integration',
+          title: '数据接入与集成',
+          requirement_ids: ['REQ-001'],
+          draft_text: '平台支持通过标准接口完成第三方系统数据接入。'
+        }];
+      }
+    },
+    logger: { error: () => {} }
+  });
+
+  try {
+    await assert.rejects(
+      () => service.generate({ projectId: project.id, requirements: pipelineRequirements }),
+      (error) => error.code === 'DOCUMENT_VALIDATION_FAILED'
+    );
+    const { rows } = await pool.query(`
+      SELECT g.status, g.error_code, g.workflow_version, g.response_payload_json,
+        (SELECT count(*)::int FROM document_versions v WHERE v.generation_id = g.id) AS version_count
+      FROM generations g
+      WHERE g.project_id = $1
+      ORDER BY g.created_at DESC
+      LIMIT 1
+    `, [project.id]);
+    const audit = rows[0];
+    assert.equal(audit.status, 'failed');
+    assert.equal(audit.error_code, 'DOCUMENT_VALIDATION_FAILED');
+    assert.equal(audit.workflow_version, '4.3');
+    assert.equal(audit.response_payload_json.schema_version, '4.3');
+    assert.equal(audit.response_payload_json.risk_status, 'critical');
+    assert.equal(audit.response_payload_json.generation_audit.state, 'failed');
+    assert.equal(audit.version_count, 0);
+  } finally {
+    await pool.query(`DELETE FROM projects WHERE id = $1`, [project.id]);
+    await pool.end();
+  }
+});
+
+test('4.3 writer 阶段失败必须落库审计', async () => {
+  assert.ok(process.env.DATABASE_URL, 'DATABASE_URL is required for PostgreSQL integration tests');
+  const pool = createPool();
+  const repository = new PgRepository(pool);
+  const project = await repository.createProject({ name: `4.3 writer 失败审计 ${Date.now()}` });
+  const service = new DeterministicPipelineService({
+    repository,
+    writer: { async write() { throw Object.assign(new Error('mock writer failed'), { code: 'WRITER_FAILED' }); } },
+    logger: { error: () => {} }
+  });
+
+  try {
+    await assert.rejects(
+      () => service.generate({ projectId: project.id, requirements: [pipelineRequirements[0]] }),
+      (error) => error.code === 'WRITER_FAILED'
+    );
+    const { rows } = await pool.query(`
+      SELECT status, error_code, workflow_version, response_payload_json
+      FROM generations WHERE project_id = $1 ORDER BY created_at DESC LIMIT 1
+    `, [project.id]);
+    assert.equal(rows[0].status, 'failed');
+    assert.equal(rows[0].error_code, 'WRITER_FAILED');
+    assert.equal(rows[0].workflow_version, '4.3');
+    assert.deepEqual(
+      rows[0].response_payload_json.generation_audit.events.map((event) => event.state),
+      ['created', 'canonicalized', 'planned', 'claims_gated', 'failed']
+    );
+  } finally {
+    await pool.query(`DELETE FROM projects WHERE id = $1`, [project.id]);
+    await pool.end();
+  }
+});
+
+test('4.3 合法 envelope 持久化 Generation 并创建 DocumentVersion', async () => {
+  assert.ok(process.env.DATABASE_URL, 'DATABASE_URL is required for PostgreSQL integration tests');
+  const pool = createPool();
+  const repository = new PgRepository(pool);
+  const project = await repository.createProject({ name: `4.3 成功归档 ${Date.now()}` });
+  const service = new DeterministicPipelineService({
+    repository,
+    writer: {
+      async write() {
+        return [
+          {
+            id: 'data-integration', title: '数据接入与集成', requirement_ids: ['REQ-001'],
+            draft_text: '平台支持通过标准接口完成第三方系统数据接入。'
+          },
+          {
+            id: 'security-compliance', title: '安全与合规', requirement_ids: ['REQ-002'],
+            draft_text: '平台采用最小权限原则，并记录关键操作审计日志。'
+          }
+        ];
+      }
+    }
+  });
+
+  try {
+    const result = await service.generate({ projectId: project.id, requirements: pipelineRequirements });
+    assert.equal(result.generation.status, 'succeeded');
+    assert.equal(result.version.risk_status, 'pass');
+    assert.equal(result.envelope.schema_version, '4.3');
+    assert.equal(result.envelope.generation_audit.state, 'finalized');
+    const { rows } = await pool.query(`
+      SELECT response_payload_json, workflow_version
+      FROM generations WHERE id = $1
+    `, [result.generation.id]);
+    assert.equal(rows[0].workflow_version, '4.3');
+    assert.equal(rows[0].response_payload_json.schema_version, '4.3');
+    assert.ok(rows[0].response_payload_json.document.markdown.includes('第三方系统数据接入'));
   } finally {
     await pool.query(`DELETE FROM projects WHERE id = $1`, [project.id]);
     await pool.end();

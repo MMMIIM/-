@@ -1,0 +1,27 @@
+{
+  "requirements": [
+    {
+      "req_id": "REQ-001",
+      "text": "支持通过标准接口完成第三方系统数据接入。",
+      "target_sections": ["client-supplied-section"]
+    },
+    {
+      "req_id": "REQ-002",
+      "text": "方案应说明访问权限控制和安全审计机制。"
+    }
+  ],
+  "sections": [
+    {
+      "id": "data-integration",
+      "title": "数据接入与集成",
+      "requirement_ids": ["REQ-001"],
+      "draft_text": "平台支持通过标准接口完成第三方系统数据接入。"
+    },
+    {
+      "id": "security-compliance",
+      "title": "安全与合规",
+      "requirement_ids": ["REQ-002"],
+      "draft_text": "平台采用最小权限原则，并记录关键操作审计日志。"
+    }
+  ]
+}
