@@ -10,7 +10,10 @@ export class ProductionBetaService {
     const requirements = await this.repository.getFormalRequirements(projectId);
     if (!requirements.length) throw Object.assign(new Error('项目尚无已确认 Requirement 基线。'), { code: 'REQUIREMENT_BASELINE_REQUIRED', status: 409 });
     try {
-      const evidenceCatalog = new EvidenceCatalogService(input.evidence);
+      const persistedEvidence = typeof this.repository.listApprovedEvidence === 'function'
+        ? await this.repository.listApprovedEvidence(projectId)
+        : input.evidence;
+      const evidenceCatalog = new EvidenceCatalogService(persistedEvidence);
       const plans = new ResponsePlanValidator({ requirements, evidenceCatalog }).validate(input.response_plans);
       const claimGate = new ClaimGateService({ requirements, evidenceCatalog });
       const evaluatedClaims = claimGate.evaluate(input.claims);

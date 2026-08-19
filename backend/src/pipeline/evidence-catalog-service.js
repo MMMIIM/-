@@ -12,8 +12,10 @@ export class EvidenceCatalogService {
     const normalized = cleanIds(ids);
     const missing = normalized.filter((id) => !this.byId.has(id));
     if (missing.length) throw Object.assign(new Error(`Evidence 不存在：${missing.join(', ')}`), { code: 'EVIDENCE_NOT_FOUND', missing_ids: missing });
+    const unavailable = normalized.filter((id) => this.byId.get(id)?.approval_status !== 'approved');
+    if (unavailable.length) throw Object.assign(new Error(`Evidence 尚未批准：${unavailable.join(', ')}`), { code: 'EVIDENCE_NOT_APPROVED', unavailable_ids: unavailable });
     return normalized;
   }
 
-  list() { return this.evidence.map((item) => ({ ...item })); }
+  list() { return this.evidence.filter((item) => item.approval_status === 'approved').map((item) => ({ ...item })); }
 }

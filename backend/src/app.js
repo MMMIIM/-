@@ -12,7 +12,11 @@ function requireText(value, fieldName) {
   return normalized;
 }
 
-export function createApp({ repository, storage, generationService, requirementParseService, requirementSourceService, productionBetaService, corsOrigin }) {
+function sendData(res, data, status = 200) {
+  return res.status(status).json({ ok: true, data });
+}
+
+export function createApp({ repository, storage, generationService, requirementParseService, requirementSourceService, productionBetaService, companyMaterialService, evidenceService, corsOrigin }) {
   const app = express();
   app.use(cors({ origin: corsOrigin || 'http://localhost:5173' }));
   app.use(express.json({ limit: '2mb' }));
@@ -113,17 +117,32 @@ export function createApp({ repository, storage, generationService, requirementP
   });
 
   app.get('/api/tender-parse-jobs/:jobId', async (req, res, next) => {
-    try { res.json({ ok: true, job: await requirementParseService.get(req.params.jobId) }); }
+    try { sendData(res, { job: await requirementParseService.get(req.params.jobId) }); }
+    catch (error) { next(error); }
+  });
+
+  app.get('/api/tender-parse-jobs/:jobId/requirement-candidates', async (req, res, next) => {
+    try { sendData(res, await requirementSourceService.listCandidates(req.params.jobId, req.query)); }
+    catch (error) { next(error); }
+  });
+
+  app.get('/api/tender-parse-jobs/:jobId/confirmation-risk', async (req, res, next) => {
+    try { sendData(res, await requirementSourceService.getConfirmationRisk(req.params.jobId)); }
     catch (error) { next(error); }
   });
 
   app.post('/api/tender-parse-jobs/:jobId/confirm', async (req, res, next) => {
-    try { res.status(201).json({ ok: true, ...(await requirementParseService.confirm(req.params.jobId, req.body || {})) }); }
+    try { sendData(res, await requirementParseService.confirm(req.params.jobId, req.body || {}), 201); }
     catch (error) { next(error); }
   });
 
   app.post('/api/tender-parse-jobs/:jobId/provisional-decisions', async (req, res, next) => {
-    try { res.json({ ok: true, ...(await requirementSourceService.includeProvisionalBatch(req.params.jobId, req.body || {})) }); }
+    try { sendData(res, await requirementSourceService.includeProvisionalBatch(req.params.jobId, req.body || {})); }
+    catch (error) { next(error); }
+  });
+
+  app.post('/api/tender-parse-jobs/:jobId/confirm-provisional', async (req, res, next) => {
+    try { sendData(res, await requirementSourceService.includeProvisionalBatch(req.params.jobId, req.body || {})); }
     catch (error) { next(error); }
   });
 
@@ -133,7 +152,62 @@ export function createApp({ repository, storage, generationService, requirementP
   });
 
   app.post('/api/requirement-candidates/:candidateId/source-decision', async (req, res, next) => {
-    try { res.json({ ok: true, candidate: await requirementSourceService.decideCandidateSource(req.params.candidateId, req.body || {}) }); }
+    try { sendData(res, { candidate: await requirementSourceService.decideCandidateSource(req.params.candidateId, req.body || {}) }); }
+    catch (error) { next(error); }
+  });
+
+  app.patch('/api/requirement-candidates/:candidateId/source-status', async (req, res, next) => {
+    try { sendData(res, { candidate: await requirementSourceService.setCandidateStatus(req.params.candidateId, req.body || {}) }); }
+    catch (error) { next(error); }
+  });
+
+  app.post('/api/requirement-candidates/:candidateId/confirm-provisional', async (req, res, next) => {
+    try { sendData(res, { candidate: await requirementSourceService.confirmProvisional(req.params.candidateId, req.body || {}) }); }
+    catch (error) { next(error); }
+  });
+
+  app.post('/api/requirement-candidates/:candidateId/exclude', async (req, res, next) => {
+    try { sendData(res, { candidate: await requirementSourceService.excludeCandidate(req.params.candidateId, req.body || {}) }); }
+    catch (error) { next(error); }
+  });
+
+  app.post('/api/requirement-candidates/:candidateId/restore', async (req, res, next) => {
+    try { sendData(res, { candidate: await requirementSourceService.restoreCandidate(req.params.candidateId) }); }
+    catch (error) { next(error); }
+  });
+
+  app.patch('/api/requirement-candidates/:candidateId/classification', async (req, res, next) => {
+    try { sendData(res, { candidate: await requirementSourceService.updateClassification(req.params.candidateId, req.body || {}) }); }
+    catch (error) { next(error); }
+  });
+
+  app.get('/api/projects/:projectId/company-materials', async (req, res, next) => {
+    try { sendData(res, await companyMaterialService.list(req.params.projectId)); }
+    catch (error) { next(error); }
+  });
+
+  app.post('/api/projects/:projectId/company-materials', upload.single('file'), async (req, res, next) => {
+    try { sendData(res, { material: await companyMaterialService.upload({ projectId:req.params.projectId, file:req.file, materialType:String(req.body?.material_type || '') }) }, 201); }
+    catch (error) { next(error); }
+  });
+
+  app.get('/api/projects/:projectId/evidences', async (req, res, next) => {
+    try { sendData(res, await evidenceService.list(req.params.projectId)); }
+    catch (error) { next(error); }
+  });
+
+  app.post('/api/projects/:projectId/evidences', async (req, res, next) => {
+    try { sendData(res, { evidence: await evidenceService.create(req.params.projectId, req.body || {}) }, 201); }
+    catch (error) { next(error); }
+  });
+
+  app.post('/api/evidences/:evidenceId/approve', async (req, res, next) => {
+    try { sendData(res, { evidence: await evidenceService.decide(req.params.evidenceId, 'approved', req.body || {}) }); }
+    catch (error) { next(error); }
+  });
+
+  app.post('/api/evidences/:evidenceId/reject', async (req, res, next) => {
+    try { sendData(res, { evidence: await evidenceService.decide(req.params.evidenceId, 'rejected', req.body || {}) }); }
     catch (error) { next(error); }
   });
 
@@ -172,19 +246,19 @@ export function createApp({ repository, storage, generationService, requirementP
 
   app.use('/api', (_req, res) => {
     const notFound = { code: 'API_NOT_FOUND', message: '请求的 API 不存在，请确认前后端版本一致。' };
-    res.status(404).json({ ok: false, error: notFound, ...notFound });
+    res.status(404).json({ ok: false, error: notFound });
   });
 
   app.use((error, _req, res, _next) => {
     if (error instanceof multer.MulterError) {
       const uploadError = { code: 'UPLOAD_INVALID', message: '文件上传失败，请确认文件不超过 50 MB。' };
-      return res.status(400).json({ ok: false, error: uploadError, ...uploadError });
+      return res.status(400).json({ ok: false, error: uploadError });
     }
-    const appError = error instanceof AppError ? error : error?.code
-      ? new AppError(error.code, error.message, error.status || 422)
+    const appError = error instanceof AppError ? error : error?.code && Number.isInteger(error?.status)
+      ? new AppError(error.code, error.message, error.status)
       : new AppError('INTERNAL_ERROR', '服务暂时不可用，请稍后重试。', 500);
     const safeError = { code: appError.code, message: appError.message };
-    return res.status(appError.status).json({ ok: false, error: safeError, ...safeError });
+    return res.status(appError.status).json({ ok: false, error: safeError });
   });
 
   return app;

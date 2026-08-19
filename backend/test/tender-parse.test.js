@@ -299,22 +299,20 @@ test('解析、状态查询和基线确认 API 使用解析服务且不暴露内
     const queryPayload = await queried.json();
     assert.equal(queried.status, 200);
     assert.equal(queryPayload.ok, true);
-    assert.equal(queryPayload.job.id, 'parse-1');
-    assert.equal('gateway_audit_json' in queryPayload.job, false);
+    assert.equal(queryPayload.data.job.id, 'parse-1');
+    assert.equal('gateway_audit_json' in queryPayload.data.job, false);
 
     const confirmed = await fetch(`${base}/api/tender-parse-jobs/parse-1/confirm`, { method: 'POST' });
     assert.equal(confirmed.status, 201);
     const confirmedPayload = await confirmed.json();
     assert.equal(confirmedPayload.ok, true);
-    assert.equal(confirmedPayload.baseline.status, 'confirmed');
+    assert.equal(confirmedPayload.data.baseline.status, 'confirmed');
 
     const missing = await fetch(`${base}/api/not-a-real-route`);
     assert.equal(missing.status, 404);
     assert.deepEqual(await missing.json(), {
       ok: false,
-      error: { code: 'API_NOT_FOUND', message: '请求的 API 不存在，请确认前后端版本一致。' },
-      code: 'API_NOT_FOUND',
-      message: '请求的 API 不存在，请确认前后端版本一致。'
+      error: { code: 'API_NOT_FOUND', message: '请求的 API 不存在，请确认前后端版本一致。' }
     });
     assert.deepEqual(calls, [
       ['start', { projectId: 'project-1', tenderFileId: 'file-1' }],
@@ -353,9 +351,7 @@ test('解析 API 合法失败统一返回安全 JSON error 契约', async () => 
     assert.equal(response.status, 422);
     assert.deepEqual(payload, {
       ok: false,
-      error: { code: 'GATEWAY_INVALID_JSON', message: '需求提取服务返回格式无效。' },
-      code: 'GATEWAY_INVALID_JSON',
-      message: '需求提取服务返回格式无效。'
+      error: { code: 'GATEWAY_INVALID_JSON', message: '需求提取服务返回格式无效。' }
     });
     assert.doesNotMatch(JSON.stringify(payload), /raw response|stack|prompt/i);
   } finally {

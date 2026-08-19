@@ -25,7 +25,7 @@ export async function request(path, options = {}) {
     error.status = response.status;
     throw error;
   }
-  return payload;
+  return payload.ok === true && payload.data && typeof payload.data === 'object' ? payload.data : payload;
 }
 
 export const api = {
@@ -51,11 +51,49 @@ export const api = {
   getTenderParseJob(jobId) {
     return request(`/api/tender-parse-jobs/${jobId}`);
   },
+  listRequirementCandidates(jobId, sourceStatus = '') {
+    const query = sourceStatus ? `?source_status=${encodeURIComponent(sourceStatus)}` : '';
+    return request(`/api/tender-parse-jobs/${jobId}/requirement-candidates${query}`);
+  },
+  getRequirementConfirmationRisk(jobId) {
+    return request(`/api/tender-parse-jobs/${jobId}/confirmation-risk`);
+  },
   confirmRequirementBaseline(jobId, confirmedBy = 'current_user') {
     return request(`/api/tender-parse-jobs/${jobId}/confirm`, { method: 'POST', body: JSON.stringify({ confirmed_by: confirmedBy }) });
   },
   includeProvisionalBatch(jobId, confirmedBy = 'current_user') {
-    return request(`/api/tender-parse-jobs/${jobId}/provisional-decisions`, { method: 'POST', body: JSON.stringify({ confirmed_by: confirmedBy }) });
+    return request(`/api/tender-parse-jobs/${jobId}/confirm-provisional`, { method: 'POST', body: JSON.stringify({ confirmed_by: confirmedBy }) });
+  },
+  confirmProvisionalCandidate(candidateId, confirmedBy = 'current_user') {
+    return request(`/api/requirement-candidates/${candidateId}/confirm-provisional`, { method: 'POST', body: JSON.stringify({ confirmed_by: confirmedBy }) });
+  },
+  excludeRequirementCandidate(candidateId, confirmedBy = 'current_user') {
+    return request(`/api/requirement-candidates/${candidateId}/exclude`, { method: 'POST', body: JSON.stringify({ confirmed_by: confirmedBy }) });
+  },
+  restoreRequirementCandidate(candidateId) {
+    return request(`/api/requirement-candidates/${candidateId}/restore`, { method: 'POST', body: '{}' });
+  },
+  setRequirementSourceStatus(candidateId, sourceStatus, confirmedBy = 'current_user') {
+    return request(`/api/requirement-candidates/${candidateId}/source-status`, { method: 'PATCH', body: JSON.stringify({ source_status: sourceStatus, confirmed_by: confirmedBy }) });
+  },
+  updateRequirementClassification(candidateId, requirementCategory) {
+    return request(`/api/requirement-candidates/${candidateId}/classification`, { method: 'PATCH', body: JSON.stringify({ requirement_category: requirementCategory }) });
+  },
+  listCompanyMaterials(projectId) {
+    return request(`/api/projects/${projectId}/company-materials`);
+  },
+  uploadCompanyMaterial(projectId, file, materialType) {
+    const body = new FormData(); body.append('file', file); body.append('material_type', materialType);
+    return request(`/api/projects/${projectId}/company-materials`, { method:'POST', body });
+  },
+  listEvidences(projectId) {
+    return request(`/api/projects/${projectId}/evidences`);
+  },
+  createEvidence(projectId, input) {
+    return request(`/api/projects/${projectId}/evidences`, { method:'POST', body:JSON.stringify(input) });
+  },
+  decideEvidence(evidenceId, decision, decidedBy = 'current_user') {
+    return request(`/api/evidences/${evidenceId}/${decision}`, { method:'POST', body:JSON.stringify({ decided_by:decidedBy }) });
   },
   getCandidateSourceReview(candidateId) {
     return request(`/api/requirement-candidates/${candidateId}/source-review`);

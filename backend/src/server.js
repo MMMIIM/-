@@ -11,6 +11,8 @@ import { createRequirementExtractionGateway } from './pipeline/requirement-extra
 import { createBackendRuntime } from './backend-runtime.js';
 import { ProductionBetaService } from './pipeline/production-beta-service.js';
 import { RequirementSourceService } from './requirement-source-service.js';
+import { CompanyMaterialService } from './company-material-service.js';
+import { EvidenceService } from './evidence-service.js';
 
 const directory = dirname(fileURLToPath(import.meta.url));
 const runtime = createBackendRuntime();
@@ -36,6 +38,8 @@ const requirementParseService = new RequirementParseService({
 });
 const productionBetaService = new ProductionBetaService({ repository });
 const requirementSourceService = new RequirementSourceService({ repository, storage, textExtractor: extractTenderText });
+const companyMaterialService = new CompanyMaterialService({ repository, storage, textExtractor: extractTenderText });
+const evidenceService = new EvidenceService({ repository });
 const app = createApp({
   repository,
   storage,
@@ -43,6 +47,8 @@ const app = createApp({
   requirementParseService,
   productionBetaService,
   requirementSourceService,
+  companyMaterialService,
+  evidenceService,
   corsOrigin: runtimeEnv.CORS_ORIGIN
 });
 

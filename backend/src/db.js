@@ -65,6 +65,66 @@ export class PgRepository {
     return normalizeTenderFileRecord(rows[0] || null);
   }
 
+  async findCompanyMaterialByHash(projectId, fileHash) {
+    const { rows } = await this.pool.query(`SELECT * FROM company_materials WHERE project_id=$1 AND file_hash=$2`, [projectId,fileHash]);
+    return rows[0] || null;
+  }
+
+  async createCompanyMaterial(material) {
+    const { rows } = await this.pool.query(`INSERT INTO company_materials(project_id,original_name,storage_key,material_type,mime_type,size_bytes,file_hash) VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING *`, [material.projectId,material.originalName,material.storageKey,material.materialType,material.mimeType,material.sizeBytes,material.fileHash]);
+    return rows[0];
+  }
+
+  async completeCompanyMaterialExtraction(id, extractedText) {
+    const { rows } = await this.pool.query(`UPDATE company_materials SET extraction_status='succeeded',extracted_text=$2,extraction_error_code=NULL,extraction_error_message=NULL,updated_at=now() WHERE id=$1 RETURNING *`, [id,extractedText]);
+    return rows[0];
+  }
+
+  async failCompanyMaterialExtraction(id, error) {
+    const { rows } = await this.pool.query(`UPDATE company_materials SET extraction_status=$2,extracted_text=NULL,extraction_error_code=$3,extraction_error_message=$4,updated_at=now() WHERE id=$1 RETURNING *`, [id,error.status,error.code,error.message]);
+    return rows[0];
+  }
+
+  async listCompanyMaterials(projectId) {
+    const { rows } = await this.pool.query(`SELECT * FROM company_materials WHERE project_id=$1 ORDER BY created_at DESC`, [projectId]);
+    return rows;
+  }
+
+  async getCompanyMaterial(id) {
+    const { rows } = await this.pool.query(`SELECT * FROM company_materials WHERE id=$1`, [id]);
+    return rows[0] || null;
+  }
+
+  async findInvalidConfirmedRequirementIds(projectId, requirementIds) {
+    if (!requirementIds.length) return [];
+    const { rows } = await this.pool.query(`SELECT req_id FROM requirements r JOIN requirement_baselines b ON b.id=r.baseline_id WHERE r.project_id=$1 AND b.status='confirmed' AND r.req_id=ANY($2::text[])`, [projectId,requirementIds]);
+    const found = new Set(rows.map((item) => item.req_id));
+    return requirementIds.filter((id) => !found.has(id));
+  }
+
+  async createEvidenceRecord(evidence) {
+    const { rows } = await this.pool.query(`INSERT INTO evidences(evidence_id,project_id,material_id,source_type,source_roles,module,content,source_page,source_hash,evidence_level,commitment_level,evidence_type,title,source_text,source_paragraph,approval_status,applicable_requirement_ids,usage_scope,risk_notes) VALUES($1,$2,$3,$4,'[]'::jsonb,$5,$6,$7,$8,'draft','reference_only',$4,$9,$10,$11,'draft',$12::jsonb,$13,$14) RETURNING *`, [evidence.evidenceId,evidence.projectId,evidence.materialId,evidence.evidenceType,evidence.usageScope || 'general',evidence.content,evidence.sourcePage,evidence.sourceHash,evidence.title,evidence.sourceText,evidence.sourceParagraph,JSON.stringify(evidence.applicableRequirementIds),evidence.usageScope,evidence.riskNotes]);
+    return rows[0];
+  }
+
+  async decideEvidence({ id, decision, decidedBy, riskNotes }) {
+    const { rows } = await this.pool.query(`UPDATE evidences SET approval_status=$2,approved_by=CASE WHEN $2='approved' THEN $3 ELSE NULL END,approved_at=CASE WHEN $2='approved' THEN now() ELSE NULL END,evidence_level=$2,risk_notes=COALESCE($4,risk_notes),updated_at=now() WHERE id=$1 RETURNING *`, [id,decision,decidedBy,riskNotes]);
+    return rows[0] || null;
+  }
+
+  async listEvidenceCatalog(projectId) {
+    const [evidences, counts] = await Promise.all([
+      this.pool.query(`SELECT e.*,m.original_name AS material_name,m.material_type FROM evidences e LEFT JOIN company_materials m ON m.id::text=e.material_id WHERE e.project_id=$1 ORDER BY e.created_at DESC`, [projectId]),
+      this.pool.query(`SELECT count(*) FILTER(WHERE approval_status='draft')::int draft,count(*) FILTER(WHERE approval_status='approved')::int approved,count(*) FILTER(WHERE approval_status='rejected')::int rejected FROM evidences WHERE project_id=$1`, [projectId])
+    ]);
+    return { evidences:evidences.rows, counts:counts.rows[0] };
+  }
+
+  async listApprovedEvidence(projectId) {
+    const { rows } = await this.pool.query(`SELECT evidence_id,project_id,material_id,COALESCE(evidence_type,source_type) AS source_type,source_roles,COALESCE(usage_scope,module,'general') AS module,content,source_page,source_hash,'approved' AS evidence_level,commitment_level,approval_status,applicable_requirement_ids FROM evidences WHERE project_id=$1 AND approval_status='approved' ORDER BY created_at`, [projectId]);
+    return rows;
+  }
+
   async createParseJob({ projectId, tenderFileId }) {
     const { rows } = await this.pool.query(`
       INSERT INTO tender_parse_jobs (project_id, tender_file_id, status)
@@ -413,6 +473,7 @@ export class PgRepository {
         source_resolution_status, source_resolution_method, source_resolved_at,
         source_verified, candidate_decision, decision_reason, decided_at,
         source_status, confirmed_by, confirmed_at, confirmation_type,
+        requirement_category, writer_eligible, classification_review_required, atomicity_review_required,
         ordinal, status, sources_json, created_at
       FROM requirement_candidates WHERE parse_job_id = $1 ORDER BY ordinal
     `, [id]), this.pool.query(`
@@ -438,6 +499,88 @@ export class PgRepository {
       document_sections: sections.rows,
       mandatory_scope_rules: scopeRules.rows
     };
+  }
+
+  async listRequirementCandidates(parseJobId, sourceStatus) {
+    const params = [parseJobId];
+    const filter = sourceStatus ? ' AND source_status = $2' : '';
+    if (sourceStatus) params.push(sourceStatus);
+    const job = (await this.pool.query(`SELECT id,project_id,status,phase FROM tender_parse_jobs WHERE id=$1`, [parseJobId])).rows[0];
+    if (!job) return null;
+    const { rows } = await this.pool.query(`SELECT * FROM requirement_candidates WHERE parse_job_id=$1${filter} ORDER BY ordinal`, params);
+    return { job, candidates: rows };
+  }
+
+  async getRequirementConfirmationRisk(parseJobId) {
+    const job = (await this.pool.query(`SELECT id,project_id,status,phase FROM tender_parse_jobs WHERE id=$1`, [parseJobId])).rows[0];
+    if (!job) return null;
+    const counts = (await this.pool.query(`
+      SELECT count(*)::int total,
+        count(*) FILTER(WHERE source_status='verified')::int verified,
+        count(*) FILTER(WHERE source_status='provisional')::int provisional,
+        count(*) FILTER(WHERE source_status='excluded')::int excluded,
+        count(*) FILTER(WHERE source_status='provisional' AND candidate_decision='pending')::int provisional_pending,
+        count(*) FILTER(WHERE source_status='provisional' AND candidate_decision='pending' AND is_mandatory)::int mandatory_provisional_pending,
+        count(*) FILTER(WHERE classification_review_required)::int classification_review_required,
+        count(*) FILTER(WHERE atomicity_review_required)::int atomicity_review_required
+      FROM requirement_candidates WHERE parse_job_id=$1
+    `, [parseJobId])).rows[0];
+    const mandatory = (await this.pool.query(`SELECT id,req_id,content FROM requirement_candidates WHERE parse_job_id=$1 AND source_status='provisional' AND candidate_decision='pending' AND is_mandatory ORDER BY ordinal`, [parseJobId])).rows;
+    return { job, ...counts, mandatory_provisional_requirements: mandatory,
+      can_confirm: job.status === 'succeeded' && counts.provisional_pending === 0 && counts.total > counts.excluded };
+  }
+
+  async setCandidateSourceStatus({ candidateId, sourceStatus, confirmedBy }) {
+    const client = await this.pool.connect();
+    try {
+      await client.query('BEGIN');
+      const previous = (await client.query(`SELECT * FROM requirement_candidates WHERE id=$1 FOR UPDATE`, [candidateId])).rows[0];
+      if (!previous) throw Object.assign(new Error('候选需求不存在。'), { code: 'REQUIREMENT_CANDIDATE_NOT_FOUND', status: 404 });
+      if (previous.status === 'confirmed') throw Object.assign(new Error('需求基线已确认，候选不可修改。'), { code: 'REQUIREMENT_BASELINE_FROZEN', status: 409 });
+      if (sourceStatus === 'verified' && !(previous.source_verified && previous.source_hash && (previous.source_page || previous.source_paragraph))) {
+        throw Object.assign(new Error('候选没有可核验的来源位置，不能标记为 verified。'), { code: 'VERIFIED_SOURCE_REQUIRED', status: 422 });
+      }
+      let result;
+      if (sourceStatus === 'excluded') {
+        result = await client.query(`UPDATE requirement_candidates SET exclusion_previous_state_json=jsonb_build_object('source_status',source_status,'candidate_decision',candidate_decision,'confirmed_by',confirmed_by,'confirmed_at',confirmed_at,'confirmation_type',confirmation_type),source_status='excluded',candidate_decision='exclude',decision_reason='manual_exclusion',decided_at=now(),confirmed_by=$2,confirmed_at=now(),confirmation_type='excluded' WHERE id=$1 RETURNING *`, [candidateId,confirmedBy]);
+      } else if (sourceStatus === 'provisional') {
+        result = await client.query(`UPDATE requirement_candidates SET source_status='provisional',source_verified=false,source_page=NULL,source_paragraph=NULL,source_page_start=NULL,source_page_end=NULL,source_paragraph_start=NULL,source_paragraph_end=NULL,source_paragraphs_json='[]'::jsonb,source_hash=NULL,source_match_type=NULL,source_match_score=NULL,source_resolution_method=NULL,candidate_decision='pending',decision_reason='manual_source_status_change',decided_at=now(),confirmed_by=NULL,confirmed_at=NULL,confirmation_type=NULL WHERE id=$1 RETURNING *`, [candidateId]);
+      } else {
+        result = await client.query(`UPDATE requirement_candidates SET source_status='verified',candidate_decision='include',decision_reason='manual_verified_status',decided_at=now(),confirmed_by=$2,confirmed_at=now(),confirmation_type='verified' WHERE id=$1 RETURNING *`, [candidateId,confirmedBy]);
+      }
+      await client.query(`INSERT INTO requirement_source_decision_audits(parse_job_id,candidate_id,action,previous_state_json,new_state_json,reason) VALUES($1,$2,'set_source_status',$3::jsonb,$4::jsonb,'manual_source_status_change')`, [previous.parse_job_id,candidateId,JSON.stringify({source_status:previous.source_status,candidate_decision:previous.candidate_decision}),JSON.stringify({source_status:result.rows[0].source_status,candidate_decision:result.rows[0].candidate_decision,confirmed_by:confirmedBy})]);
+      await client.query('COMMIT'); return result.rows[0];
+    } catch (error) { await client.query('ROLLBACK'); throw error; } finally { client.release(); }
+  }
+
+  async restoreCandidate(candidateId) {
+    const client = await this.pool.connect();
+    try {
+      await client.query('BEGIN');
+      const previous = (await client.query(`SELECT * FROM requirement_candidates WHERE id=$1 FOR UPDATE`, [candidateId])).rows[0];
+      if (!previous) throw Object.assign(new Error('候选需求不存在。'), { code: 'REQUIREMENT_CANDIDATE_NOT_FOUND', status: 404 });
+      if (previous.status === 'confirmed') throw Object.assign(new Error('需求基线已确认，候选不可修改。'), { code: 'REQUIREMENT_BASELINE_FROZEN', status: 409 });
+      if (previous.source_status !== 'excluded') throw Object.assign(new Error('只有 excluded 候选可以恢复。'), { code: 'CANDIDATE_NOT_EXCLUDED', status: 409 });
+      const state = previous.exclusion_previous_state_json || {};
+      const restoredStatus = state.source_status === 'verified' && previous.source_verified ? 'verified' : 'provisional';
+      const restoredDecision = restoredStatus === 'verified' ? 'include' : (state.candidate_decision === 'include' ? 'include' : 'pending');
+      const result = await client.query(`UPDATE requirement_candidates SET source_status=$2,candidate_decision=$3,confirmed_by=$4,confirmed_at=$5,confirmation_type=$6,decision_reason='manual_restore',decided_at=now(),exclusion_previous_state_json=NULL WHERE id=$1 RETURNING *`, [candidateId,restoredStatus,restoredDecision,state.confirmed_by || null,state.confirmed_at || null,state.confirmation_type === 'excluded' ? null : state.confirmation_type || null]);
+      await client.query(`INSERT INTO requirement_source_decision_audits(parse_job_id,candidate_id,action,previous_state_json,new_state_json,reason) VALUES($1,$2,'restore',$3::jsonb,$4::jsonb,'manual_restore')`, [previous.parse_job_id,candidateId,JSON.stringify({source_status:'excluded'}),JSON.stringify({source_status:restoredStatus,candidate_decision:restoredDecision})]);
+      await client.query('COMMIT'); return result.rows[0];
+    } catch (error) { await client.query('ROLLBACK'); throw error; } finally { client.release(); }
+  }
+
+  async updateCandidateClassification({ candidateId, requirementCategory, writerEligible }) {
+    const client = await this.pool.connect();
+    try {
+      await client.query('BEGIN');
+      const current = (await client.query(`SELECT status FROM requirement_candidates WHERE id=$1 FOR UPDATE`, [candidateId])).rows[0];
+      if (!current) throw Object.assign(new Error('候选需求不存在。'), { code:'REQUIREMENT_CANDIDATE_NOT_FOUND', status:404 });
+      if (current.status !== 'candidate') throw Object.assign(new Error('需求基线已确认，候选不可修改。'), { code:'REQUIREMENT_BASELINE_FROZEN', status:409 });
+      const result = await client.query(`UPDATE requirement_candidates SET requirement_category=$2,writer_eligible=$3,classification_review_required=false,classification_method='manual' WHERE id=$1 RETURNING *`, [candidateId,requirementCategory,writerEligible]);
+      await client.query('COMMIT');
+      return result.rows[0];
+    } catch (error) { await client.query('ROLLBACK'); throw error; } finally { client.release(); }
   }
 
   async getSourceReconciliationContext(parseJobId) {
@@ -539,8 +682,9 @@ export class PgRepository {
       const previous = (await client.query(`SELECT * FROM requirement_candidates WHERE id=$1 FOR UPDATE`, [candidateId])).rows[0];
       if (!previous) throw Object.assign(new Error('候选需求不存在。'), { code: 'REQUIREMENT_CANDIDATE_NOT_FOUND', status: 404 });
       const result = action === 'exclude'
-        ? await client.query(`UPDATE requirement_candidates SET candidate_decision='exclude',source_status='excluded',decision_reason=$2,decided_at=now(),confirmed_by=$3,confirmed_at=now(),confirmation_type='excluded' WHERE id=$1 RETURNING *`, [candidateId,reason,confirmedBy])
+        ? await client.query(`UPDATE requirement_candidates SET exclusion_previous_state_json=jsonb_build_object('source_status',source_status,'candidate_decision',candidate_decision,'confirmed_by',confirmed_by,'confirmed_at',confirmed_at,'confirmation_type',confirmation_type),candidate_decision='exclude',source_status='excluded',decision_reason=$2,decided_at=now(),confirmed_by=$3,confirmed_at=now(),confirmation_type='excluded' WHERE id=$1 AND status='candidate' RETURNING *`, [candidateId,reason,confirmedBy])
         : await client.query(`UPDATE requirement_candidates SET source_page=$2,source_paragraph=$3,source_page_start=$4,source_page_end=$5,source_paragraph_start=$6,source_paragraph_end=$7,source_paragraphs_json=$8::jsonb,source_hash=$9,source_match_type=$10,source_match_score=$11,source_resolution_status='verified',source_resolution_method='manual',source_verified=true,source_resolved_at=now(),source_status='verified',candidate_decision='include',decision_reason=$12,decided_at=now(),confirmed_by=$13,confirmed_at=now(),confirmation_type='verified' WHERE id=$1 RETURNING *`, [candidateId,location.source_page,location.source_paragraph,location.source_page_start,location.source_page_end,location.source_paragraph_start,location.source_paragraph_end,JSON.stringify(location.source_paragraphs_json),location.source_hash,location.source_match_type,location.source_match_score,reason,confirmedBy]);
+      if (!result.rows[0]) throw Object.assign(new Error('需求基线已确认，候选不可修改。'), { code: 'REQUIREMENT_BASELINE_FROZEN', status: 409 });
       await client.query(`INSERT INTO requirement_source_decision_audits(parse_job_id,candidate_id,action,previous_state_json,new_state_json,reason) VALUES($1,$2,$3,$4::jsonb,$5::jsonb,$6)`, [previous.parse_job_id,candidateId,action,JSON.stringify({decision:previous.candidate_decision,status:previous.source_resolution_status}),JSON.stringify({decision:result.rows[0].candidate_decision,status:result.rows[0].source_resolution_status}),reason]);
       await client.query('COMMIT'); return result.rows[0];
     } catch (error) { await client.query('ROLLBACK'); throw error; } finally { client.release(); }
@@ -552,6 +696,8 @@ export class PgRepository {
       await client.query('BEGIN');
       const previous = (await client.query(`SELECT * FROM requirement_candidates WHERE id=$1 FOR UPDATE`, [candidateId])).rows[0];
       if (!previous || previous.candidate_decision === 'exclude') throw Object.assign(new Error('候选需求不存在或已排除。'), { code: 'REQUIREMENT_CANDIDATE_NOT_FOUND', status: 404 });
+      if (previous.status === 'confirmed') throw Object.assign(new Error('需求基线已确认，候选不可修改。'), { code: 'REQUIREMENT_BASELINE_FROZEN', status: 409 });
+      if (previous.source_status !== 'provisional') throw Object.assign(new Error('只有 provisional 候选可以执行暂定确认。'), { code: 'CANDIDATE_NOT_PROVISIONAL', status: 409 });
       const result = await client.query(`
         UPDATE requirement_candidates SET candidate_decision='include', source_status='provisional',
           source_page=NULL, source_paragraph=NULL, source_page_start=NULL, source_page_end=NULL,
@@ -575,6 +721,8 @@ export class PgRepository {
       const job = (await client.query(`SELECT status FROM tender_parse_jobs WHERE id=$1 FOR UPDATE`, [parseJobId])).rows[0];
       if (!job) throw Object.assign(new Error('需求解析任务不存在。'), { code: 'TENDER_PARSE_JOB_NOT_FOUND', status: 404 });
       if (job.status !== 'succeeded') throw Object.assign(new Error('需求解析任务尚未完成。'), { code: 'TENDER_PARSE_NOT_READY', status: 409 });
+      const baseline = await client.query(`SELECT id FROM requirement_baselines WHERE parse_job_id=$1`, [parseJobId]);
+      if (baseline.rows[0]) throw Object.assign(new Error('需求基线已确认，候选不可修改。'), { code: 'REQUIREMENT_BASELINE_FROZEN', status: 409 });
       const result = await client.query(`
         UPDATE requirement_candidates SET candidate_decision='include', source_status='provisional',
           source_page=NULL,source_paragraph=NULL,source_page_start=NULL,source_page_end=NULL,
@@ -606,6 +754,7 @@ export class PgRepository {
         source_paragraph_start, source_paragraph_end, source_paragraphs_json,
         source_match_type, source_match_score, source_resolution_method, source_verified,
         source_status, confirmed_by, confirmed_at, confirmation_type,
+        requirement_category, writer_eligible, classification_review_required, atomicity_review_required, classification_method,
         target_sections, ordinal, created_at
       FROM requirements WHERE baseline_id = $1 ORDER BY ordinal
     `, [rows[0].id]);
@@ -646,11 +795,12 @@ export class PgRepository {
              source_page_start, source_page_end, source_paragraph_start, source_paragraph_end,
              source_paragraphs_json, source_match_type, source_match_score,
              source_resolution_method, source_verified, source_status,
-             confirmed_by, confirmed_at, confirmation_type)
+             confirmed_by, confirmed_at, confirmation_type, requirement_category,
+             writer_eligible, classification_review_required, atomicity_review_required, classification_method)
           VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9, $10, $11, $12,
             $13, $14, $15, $16, $17::jsonb, $18, $19, $20, $21,
             $22, $23, $24, $25, $26::jsonb, $27, $28, $29, $30,
-            $31, $32, $33, $34)
+            $31, $32, $33, $34, $35, $36, $37, $38, $39)
         `, [
           baseline.id, job.project_id, requirement.req_id, requirement.content,
           requirement.source_excerpt, requirement.source_page, requirement.source_paragraph,
@@ -667,7 +817,9 @@ export class PgRepository {
           requirement.source_match_score, requirement.source_resolution_method,
           requirement.source_verified === true, requirement.source_status,
           requirement.confirmed_by || confirmedBy, requirement.confirmed_at || new Date(),
-          requirement.confirmation_type || 'verified'
+          requirement.confirmation_type || 'verified', requirement.requirement_category || null,
+          requirement.writer_eligible === true, requirement.classification_review_required !== false,
+          requirement.atomicity_review_required !== false, requirement.classification_method || 'automatic'
         ]);
       }
       const confirmed = await client.query(`
@@ -858,7 +1010,7 @@ export class PgRepository {
   }
 
   async getFormalRequirements(projectId) {
-    const { rows } = await this.pool.query(`SELECT id, req_id, content AS text, is_mandatory, target_sections, source_status, confirmed_by, confirmed_at, confirmation_type FROM requirements WHERE project_id=$1 AND source_status IN ('verified','provisional') ORDER BY ordinal`, [projectId]);
+    const { rows } = await this.pool.query(`SELECT id, req_id, content AS text, is_mandatory, target_sections, source_status, confirmed_by, confirmed_at, confirmation_type, requirement_category, writer_eligible, classification_review_required, atomicity_review_required FROM requirements WHERE project_id=$1 AND source_status IN ('verified','provisional') AND (writer_eligible=true OR requirement_category='contractual' OR requirement_category IS NULL) ORDER BY ordinal`, [projectId]);
     return rows;
   }
 

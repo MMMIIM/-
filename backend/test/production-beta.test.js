@@ -5,8 +5,8 @@ import { ResponsePlanValidator } from '../src/pipeline/response-plan-validator.j
 import { ClaimGateService } from '../src/pipeline/claim-gate-service.js';
 import { CoverageValidator } from '../src/pipeline/coverage-validator.js';
 
-const requirements=[{req_id:'REQ-001',text:'系统应支持数据接入',is_mandatory:true,source_status:'verified'},{req_id:'REQ-002',text:'提供实施计划',is_mandatory:false,source_status:'provisional'}];
-const evidence=[{evidence_id:'EVI-001',project_id:'p',material_id:'m',source_type:'company_material',source_roles:['capability'],module:'integration',content:'已有接入能力',source_page:1,source_hash:'sha256:x',evidence_level:'verified',commitment_level:'capability'}];
+const requirements=[{req_id:'REQ-001',text:'系统应支持数据接入',is_mandatory:true,source_status:'verified',writer_eligible:true},{req_id:'REQ-002',text:'提供实施计划',is_mandatory:false,source_status:'provisional',writer_eligible:true}];
+const evidence=[{evidence_id:'EVI-001',project_id:'p',material_id:'m',source_type:'company_material',source_roles:['capability'],module:'integration',content:'已有接入能力',source_page:1,source_hash:'sha256:x',evidence_level:'verified',commitment_level:'capability',approval_status:'approved'}];
 const plan=(id,extra={})=>({requirement_id:id,response_status:'full',response_summary:'响应',implementation_actions:[],optional_design:null,deliverables:[],acceptance_methods:[],conditions:[],supporting_evidence_ids:['EVI-001'],capability_gap:null,...extra});
 
 test('每个正式 REQ 必须且只能有一条 Plan，target_sections 由后端生成',()=>{

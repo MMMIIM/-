@@ -6,6 +6,9 @@ import { hashSource, SourceLocationResolver } from './pipeline/source-location-r
 export const TENDER_EXTRACTOR_VERSION = 'tender-text-extractor/pdf-parse-2.4.5/v1';
 const sha256 = (value) => createHash('sha256').update(value).digest('hex');
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const SOURCE_STATUSES = new Set(['verified', 'provisional', 'excluded']);
+const REQUIREMENT_CATEGORIES = new Set(['technical','performance','implementation','delivery','service','contractual','commercial','qualification','context']);
+const WRITER_CATEGORIES = new Set(['technical','performance','implementation','delivery','service']);
 
 function assertUuid(value, code, message) {
   if (!UUID_PATTERN.test(String(value || ''))) throw new AppError(code, message, 400);
@@ -100,6 +103,53 @@ export class RequirementSourceService {
     const context = await this.repository.getCandidateSourceReview(candidateId);
     if (!context) throw new AppError('REQUIREMENT_CANDIDATE_NOT_FOUND', '候选需求不存在。', 404);
     return context;
+  }
+
+  async listCandidates(parseJobId, input = {}) {
+    assertUuid(parseJobId, 'INVALID_JOB_ID', '需求解析任务 ID 格式无效。');
+    const sourceStatus = input.source_status ? String(input.source_status) : null;
+    if (sourceStatus && !SOURCE_STATUSES.has(sourceStatus)) throw new AppError('SOURCE_STATUS_INVALID', '来源状态筛选值无效。', 400);
+    const result = await this.repository.listRequirementCandidates(parseJobId, sourceStatus);
+    if (!result) throw new AppError('TENDER_PARSE_JOB_NOT_FOUND', '需求解析任务不存在。', 404);
+    return result;
+  }
+
+  async getConfirmationRisk(parseJobId) {
+    assertUuid(parseJobId, 'INVALID_JOB_ID', '需求解析任务 ID 格式无效。');
+    const result = await this.repository.getRequirementConfirmationRisk(parseJobId);
+    if (!result) throw new AppError('TENDER_PARSE_JOB_NOT_FOUND', '需求解析任务不存在。', 404);
+    return result;
+  }
+
+  async setCandidateStatus(candidateId, input = {}) {
+    assertUuid(candidateId, 'INVALID_CANDIDATE_ID', '候选需求 ID 格式无效。');
+    const sourceStatus = String(input.source_status || '');
+    if (!SOURCE_STATUSES.has(sourceStatus)) throw new AppError('SOURCE_STATUS_INVALID', 'source_status 必须为 verified、provisional 或 excluded。', 422);
+    return this.repository.setCandidateSourceStatus({ candidateId, sourceStatus, confirmedBy: String(input.confirmed_by || '').trim() || 'current_user' });
+  }
+
+  async confirmProvisional(candidateId, input = {}) {
+    assertUuid(candidateId, 'INVALID_CANDIDATE_ID', '候选需求 ID 格式无效。');
+    return this.repository.saveCandidateProvisionalDecision({ candidateId, confirmedBy: String(input.confirmed_by || '').trim() || 'current_user' });
+  }
+
+  async excludeCandidate(candidateId, input = {}) {
+    assertUuid(candidateId, 'INVALID_CANDIDATE_ID', '候选需求 ID 格式无效。');
+    return this.repository.saveCandidateSourceDecision({ candidateId, action: 'exclude', reason: String(input.reason || '').trim() || '人工排除', confirmedBy: String(input.confirmed_by || '').trim() || 'current_user' });
+  }
+
+  async restoreCandidate(candidateId) {
+    assertUuid(candidateId, 'INVALID_CANDIDATE_ID', '候选需求 ID 格式无效。');
+    return this.repository.restoreCandidate(candidateId);
+  }
+
+  async updateClassification(candidateId, input = {}) {
+    assertUuid(candidateId, 'INVALID_CANDIDATE_ID', '候选需求 ID 格式无效。');
+    const category = String(input.requirement_category || '');
+    if (!REQUIREMENT_CATEGORIES.has(category)) throw new AppError('REQUIREMENT_CATEGORY_INVALID', '需求用途分类无效。', 422);
+    const result = await this.repository.updateCandidateClassification({ candidateId, requirementCategory: category, writerEligible: WRITER_CATEGORIES.has(category) });
+    if (!result) throw new AppError('REQUIREMENT_CANDIDATE_NOT_FOUND', '候选需求不存在或基线已冻结。', 404);
+    return result;
   }
 
   async decideCandidateSource(candidateId, input) {

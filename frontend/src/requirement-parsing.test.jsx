@@ -1,10 +1,11 @@
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { request } from './api.js';
+import { api, request } from './api.js';
 import {
   RequirementParsing,
   RiskReview,
+  CompanyMaterials,
   formatRequirementLevel,
   formatRequirementSource,
   formatTenderParsePhase,
@@ -183,5 +184,25 @@ describe('风险复核暂定基线', () => {
     expect(html).toContain('provisional 需求 1 条');
     expect(html).toContain('暂定接口需求');
     expect(html).not.toContain('已定位需求');
+  });
+});
+
+describe('企业材料与 Evidence 页面', () => {
+  it('展示上传、材料分类、Evidence 创建和审批计数入口', () => {
+    const html=renderToStaticMarkup(<CompanyMaterials projectId="project-1" baseline={{requirements:[{req_id:'REQ-001',content:'接口需求'}]}} />);
+    expect(html).toContain('企业材料'); expect(html).toContain('company_profile'); expect(html).toContain('上传并解析');
+    expect(html).toContain('Evidence Catalog'); expect(html).toContain('创建 draft Evidence'); expect(html).toContain('approved'); expect(html).toContain('rejected');
+  });
+
+  it('批准、拒绝与上传 API 使用固定路径和 method', async () => {
+    const calls=[];
+    vi.stubGlobal('fetch',vi.fn(async (url,options={})=>{calls.push({url,options}); return new Response(JSON.stringify({ok:true,data:{}}),{status:200,headers:{'Content-Type':'application/json'}});}));
+    await api.uploadCompanyMaterial('p',new Blob(['x']),'case');
+    await api.decideEvidence('e-1','approve','reviewer');
+    await api.decideEvidence('e-1','reject','reviewer');
+    expect(calls.map((item)=>[item.url,item.options.method])).toEqual([
+      ['/api/projects/p/company-materials','POST'],['/api/evidences/e-1/approve','POST'],['/api/evidences/e-1/reject','POST']
+    ]);
+    expect(calls[0].options.body).toBeInstanceOf(FormData);
   });
 });
