@@ -1,2 +1,2 @@
 import {describe,it,expect} from 'vitest';import {readFileSync} from 'node:fs';
-describe('确定性响应规划界面',()=>{it('使用保守骨架文案并提供人工编辑审核',()=>{const source=readFileSync(new URL('./main.jsx',import.meta.url),'utf8');expect(source).toContain('建立响应计划');expect(source).toContain('系统根据已确认需求建立保守响应骨架');expect(source).toContain('基础声明由需求原文确定性生成');expect(source).toContain('提交人工审核');expect(source).not.toContain('AI生成响应计划');});});
+describe('确定性响应规划界面',()=>{it('使用保守骨架文案并提供人工编辑审核',()=>{const source=readFileSync(new URL('./main.jsx',import.meta.url),'utf8');expect(source).toContain('建立响应计划');expect(source).toContain('系统依据已确认需求建立保守响应骨架');expect(source).toContain('基础声明由需求原文确定性建立');expect(source).toContain('提交人工审核');expect(source).not.toContain('AI生成响应计划');});});

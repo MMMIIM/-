@@ -22,3 +22,15 @@ test('确定性 Plan 编辑保存 PostgreSQL 快照且 anchor 不可改',async()
   await assert.rejects(()=>service.editPlan(project.id,'REQ-001',{requirement_anchor:'篡改',edited_by:'x',edit_reason:'x'}),(e)=>e.code==='RESPONSE_PLAN_IMMUTABLE_FIELD');
  }finally{await pool.query(`DELETE FROM projects WHERE id=$1`,[project.id]);await pool.end();}
 });
+
+test('Batch 生成模式与规则版本持久化且旧记录默认兼容',async()=>{
+ const pool=createPool();const repository=new PgRepository(pool);const project=await repository.createProject({name:`Batch mode ${Date.now()}`});
+ try{
+  const generation=await repository.createDocumentGeneration(project.id,{coverage:{},requirements:[],claims:[],evidence:[]},{batch_generation:'4.3-batch-routing-1'});
+  const batch={chapter_id:'chapter-06',batch_index:0,claim_ids:['CLM-1'],input:{approved_claims:[]}};
+  await repository.createDocumentTasks(generation.id,[batch]);
+  let task=(await repository.getDocumentGeneration(generation.id)).tasks[0];assert.equal(task.generation_mode,'semantic_gateway');assert.equal(task.generation_rule_version,'4.3-batch-routing-1');
+  await repository.finishDocumentTask(generation.id,batch,'succeeded',{output_markdown:'固定模板',generation_mode:'deterministic_template',generation_rule_version:'4.3-batch-routing-1'});
+  task=(await repository.getDocumentGeneration(generation.id)).tasks[0];assert.equal(task.generation_mode,'deterministic_template');assert.equal(task.generation_rule_version,'4.3-batch-routing-1');
+ }finally{await pool.query(`DELETE FROM projects WHERE id=$1`,[project.id]);await pool.end();}
+});
