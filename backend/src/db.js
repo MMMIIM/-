@@ -353,7 +353,9 @@ export class PgRepository {
              source_page_start, source_page_end, source_paragraph_start, source_paragraph_end,
              source_paragraphs_json, source_match_type, source_match_score,
              source_resolution_status, source_resolution_method, source_resolved_at,
-             source_verified, candidate_decision, decision_reason, decided_at, source_status)
+             source_verified, candidate_decision, decision_reason, decided_at, source_status,
+             confirmation_reasons, risk_flags, source_evidence_json, deduplication_json, canonical_rule_version,
+             requirement_category, writer_eligible, classification_review_required, classification_method)
           VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9, $10, $11,
             $12, $13, $14, $15, $16::jsonb, $17, $18, $19, $20, $21,
             $22, $23, $24, $25, $26::jsonb, $27, $28, $29, $30,
@@ -361,7 +363,8 @@ export class PgRepository {
             CASE WHEN $31 THEN 'include' ELSE 'pending' END,
             CASE WHEN $31 THEN 'deterministic_source_resolution' ELSE NULL END,
             CASE WHEN $31 THEN now() ELSE NULL END,
-            CASE WHEN $31 THEN 'verified' ELSE 'provisional' END)
+            CASE WHEN $31 THEN 'verified' ELSE 'provisional' END,
+            $32::jsonb,$33::jsonb,$34::jsonb,$35::jsonb,$36,$37,$38,$39,$40)
         `, [
           jobId, candidate.req_id, candidate.content, candidate.source_excerpt,
           candidate.source_page, candidate.source_paragraph, candidate.ordinal,
@@ -379,7 +382,12 @@ export class PgRepository {
           JSON.stringify(candidate.source_paragraphs_json || []), candidate.source_match_type || null,
           candidate.source_match_score ?? null, candidate.source_resolution_status || (candidate.source_hash ? 'verified' : 'unresolved'),
           candidate.source_resolution_method || (candidate.source_hash ? 'automatic' : null),
-          candidate.source_verified === true || Boolean(candidate.source_hash)
+          candidate.source_verified === true || Boolean(candidate.source_hash),
+          JSON.stringify(candidate.confirmation_reasons || []), JSON.stringify(candidate.risk_flags || []),
+          JSON.stringify(candidate.source_evidence || {}), JSON.stringify(candidate.deduplication || {}),
+          candidate.deduplication?.rule_version || null, candidate.requirement_category || null,
+          candidate.writer_eligible === true, candidate.classification_review_required !== false,
+          candidate.classification_method || 'automatic'
         ]);
       }
       await client.query(`UPDATE projects SET status = 'requirements_review', updated_at = now() WHERE id = $1`, [
@@ -474,6 +482,8 @@ export class PgRepository {
         source_verified, candidate_decision, decision_reason, decided_at,
         source_status, confirmed_by, confirmed_at, confirmation_type,
         requirement_category, writer_eligible, classification_review_required, atomicity_review_required,
+        confirmation_reasons, risk_flags, source_evidence_json AS source_evidence,
+        deduplication_json AS deduplication, canonical_rule_version,
         ordinal, status, sources_json, created_at
       FROM requirement_candidates WHERE parse_job_id = $1 ORDER BY ordinal
     `, [id]), this.pool.query(`
@@ -755,6 +765,8 @@ export class PgRepository {
         source_match_type, source_match_score, source_resolution_method, source_verified,
         source_status, confirmed_by, confirmed_at, confirmation_type,
         requirement_category, writer_eligible, classification_review_required, atomicity_review_required, classification_method,
+        confirmation_reasons, risk_flags, source_evidence_json AS source_evidence,
+        deduplication_json AS deduplication, canonical_rule_version,
         target_sections, ordinal, created_at
       FROM requirements WHERE baseline_id = $1 ORDER BY ordinal
     `, [rows[0].id]);
@@ -796,11 +808,13 @@ export class PgRepository {
              source_paragraphs_json, source_match_type, source_match_score,
              source_resolution_method, source_verified, source_status,
              confirmed_by, confirmed_at, confirmation_type, requirement_category,
-             writer_eligible, classification_review_required, atomicity_review_required, classification_method)
+             writer_eligible, classification_review_required, atomicity_review_required, classification_method,
+             confirmation_reasons, risk_flags, source_evidence_json, deduplication_json, canonical_rule_version)
           VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9, $10, $11, $12,
             $13, $14, $15, $16, $17::jsonb, $18, $19, $20, $21,
             $22, $23, $24, $25, $26::jsonb, $27, $28, $29, $30,
-            $31, $32, $33, $34, $35, $36, $37, $38, $39)
+            $31, $32, $33, $34, $35, $36, $37, $38, $39,
+            $40::jsonb,$41::jsonb,$42::jsonb,$43::jsonb,$44)
         `, [
           baseline.id, job.project_id, requirement.req_id, requirement.content,
           requirement.source_excerpt, requirement.source_page, requirement.source_paragraph,
@@ -819,7 +833,10 @@ export class PgRepository {
           requirement.confirmed_by || confirmedBy, requirement.confirmed_at || new Date(),
           requirement.confirmation_type || 'verified', requirement.requirement_category || null,
           requirement.writer_eligible === true, requirement.classification_review_required !== false,
-          requirement.atomicity_review_required !== false, requirement.classification_method || 'automatic'
+          requirement.atomicity_review_required !== false, requirement.classification_method || 'automatic',
+          JSON.stringify(requirement.confirmation_reasons || []), JSON.stringify(requirement.risk_flags || []),
+          JSON.stringify(requirement.source_evidence || {}), JSON.stringify(requirement.deduplication || {}),
+          requirement.deduplication?.rule_version || requirement.canonical_rule_version || null
         ]);
       }
       const confirmed = await client.query(`
@@ -1010,7 +1027,7 @@ export class PgRepository {
   }
 
   async getFormalRequirements(projectId) {
-    const { rows } = await this.pool.query(`SELECT id,req_id,content AS text,is_mandatory,target_sections,source_status,confirmed_by,confirmed_at,confirmation_type,requirement_category,writer_eligible,classification_review_required,atomicity_review_required,conditions,ordinal FROM requirements WHERE project_id=$1 AND source_status IN ('verified','provisional') ORDER BY ordinal`, [projectId]);
+    const { rows } = await this.pool.query(`SELECT id,req_id,content AS text,is_mandatory,target_sections,source_status,confirmed_by,confirmed_at,confirmation_type,requirement_category,writer_eligible,classification_review_required,atomicity_review_required,conditions,confirmation_reasons,risk_flags,source_evidence_json AS source_evidence,deduplication_json AS deduplication,canonical_rule_version,ordinal FROM requirements WHERE project_id=$1 AND source_status IN ('verified','provisional') ORDER BY ordinal`, [projectId]);
     return rows;
   }
 

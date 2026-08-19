@@ -1,4 +1,4 @@
-import { enrichMandatoryRequirement } from './mandatory-requirement.js';
+import { buildCanonicalRequirements } from './canonical-requirements.js';
 
 const DEFAULT_SINGLE_CALL_THRESHOLD = 12_000;
 const DEFAULT_CHARACTER_BUDGET = 8_000;
@@ -143,7 +143,7 @@ export function chunkExtractedText({
   return chunks;
 }
 
-export function aggregateRequirementCandidates(chunkResults, { mandatoryScopeRules = [] } = {}) {
+export function aggregateRequirementCandidates(chunkResults, { mandatoryScopeRules = [], documentText = null } = {}) {
   const candidates = [];
   for (const chunkResult of chunkResults) {
     for (const candidate of chunkResult.candidates || []) {
@@ -158,6 +158,17 @@ export function aggregateRequirementCandidates(chunkResults, { mandatoryScopeRul
         source_clause_id: candidate.source_clause_id ?? null,
         source_hash: candidate.source_hash ?? null,
         source_chunk_id: candidate.source_chunk_id ?? null,
+        source_context_text: candidate.source_context_text ?? null,
+        source_verified: candidate.source_verified === true,
+        source_resolution_status: candidate.source_resolution_status ?? 'unresolved',
+        source_resolution_method: candidate.source_resolution_method ?? null,
+        source_match_type: candidate.source_match_type ?? null,
+        source_match_score: candidate.source_match_score ?? null,
+        source_page_start: candidate.source_page_start ?? candidate.source_page ?? null,
+        source_page_end: candidate.source_page_end ?? candidate.source_page ?? null,
+        source_paragraph_start: candidate.source_paragraph_start ?? candidate.source_paragraph ?? null,
+        source_paragraph_end: candidate.source_paragraph_end ?? candidate.source_paragraph ?? null,
+        source_paragraphs_json: candidate.source_paragraphs_json ?? [],
         category: candidate.category ?? null,
         mandatory_observed: candidate.mandatory_observed === true,
         requires_confirmation: candidate.requires_confirmation === true,
@@ -175,21 +186,9 @@ export function aggregateRequirementCandidates(chunkResults, { mandatoryScopeRul
       status: 422
     });
   }
-  return candidates.map((entry, index) => enrichMandatoryRequirement({
-    req_id: `REQ-${String(index + 1).padStart(3, '0')}`,
+  return buildCanonicalRequirements(candidates.map((entry) => ({
     content: entry.content,
-    source_excerpt: entry.source.source_excerpt,
-    source_text: entry.source.source_text,
-    source_page: entry.source.source_page,
-    source_paragraph: entry.source.source_paragraph,
-    source_section: entry.source.source_section,
-    source_clause_id: entry.source.source_clause_id,
-    source_hash: entry.source.source_hash,
-    source_chunk_id: entry.source.source_chunk_id,
-    category: entry.source.category,
-    mandatory_observed: entry.source.mandatory_observed,
-    requires_confirmation: entry.source.requires_confirmation,
-    ordinal: index + 1,
+    ...entry.source,
     sources: [entry.source]
-  }, { scopeRules: mandatoryScopeRules }));
+  })), { mandatoryScopeRules, documentText });
 }

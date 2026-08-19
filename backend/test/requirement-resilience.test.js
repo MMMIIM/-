@@ -101,7 +101,7 @@ test('标题边界确定性开启新分片', () => {
   assert.equal(chunks[1].starts_at_title_boundary, true);
 });
 
-test('汇总只删除空项，不合并来源层重复条款，并一次生成稳定 REQ-ID', () => {
+test('汇总在分配 REQ-ID 前只合并完全重复候选', () => {
   const candidates = aggregateRequirementCandidates([
     { chunk_number: 1, candidates: [
       { content: '', source_excerpt: '' },
@@ -159,7 +159,8 @@ test('长文件串行处理所有分片并在最终汇总后生成稳定基线�
   const result = await service.start({ projectId: 'project-1', tenderFileId: 'file-1', waitForCompletion: true });
   assert.equal(maxActive, 1);
   assert.ok(repository.state.chunks.length >= 2);
-  assert.deepEqual(result.candidates.map((candidate) => candidate.req_id), ['REQ-001', 'REQ-002', 'REQ-003']);
+  assert.deepEqual(result.candidates.map((candidate) => candidate.req_id), ['REQ-001', 'REQ-002']);
+  assert.equal(result.candidates[0].deduplication.merged_candidate_count, 2);
   assert.equal(repository.state.completedChunks.length, repository.state.chunks.length);
   assert.equal(repository.state.failedJob, null);
 });

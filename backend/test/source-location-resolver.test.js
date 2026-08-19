@@ -35,6 +35,8 @@ test('唯一 source_text 匹配由后端生成真实页码、段落和 hash，�
   assert.equal(result.location.source_chunk_id, chunk.id);
 });
 
+test('唯一来源解析保留同条款连续证据上下文供 confirmation policy 使用',()=>{const local={...chunk,segments:[{text:'系统应支持数据同步。',page:2,paragraph:5,source_clause_id:'5.1',source_start_offset:0,source_end_offset:10},{text:'备注：平台名称、接口方式和数据范围由实施阶段双方确认。',page:2,paragraph:6,source_clause_id:'5.1',source_start_offset:11,source_end_offset:40}]};const result=new SourceLocationResolver().resolve({source_text:'系统应支持数据同步。',source_clause:'5.1'},local);assert.equal(result.location.source_verified,true);assert.match(result.location.source_context_text,/实施阶段双方确认/);});
+
 test('重复匹配无法唯一消歧时不伪造位置并产生 SOURCE_LOCATION_AMBIGUOUS', () => {
   const result = new SourceLocationResolver().resolve({ source_text: '重复来源条款。' }, chunk);
   assert.equal(result.location.source_paragraph, null);
