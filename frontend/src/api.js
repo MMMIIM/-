@@ -112,6 +112,13 @@ export const api = {
   generateClaims(projectId) { return request(`/api/projects/${projectId}/claims/generate`, { method:'POST', body:'{}' }); },
   getCoverage(projectId) { return request(`/api/projects/${projectId}/coverage`); },
   decideClaim(claimId, decision, decidedBy='current_user') { return request(`/api/claims/${claimId}/${decision}`, { method:'POST', body:JSON.stringify({decided_by:decidedBy}) }); },
+  createDocumentGeneration(projectId){return request(`/api/projects/${projectId}/document-generations`,{method:'POST',body:'{}'});},
+  getDocumentGeneration(id){return request(`/api/document-generations/${id}`);},
+  retryDocumentBatches(id){return request(`/api/document-generations/${id}/retry-batches`,{method:'POST',body:'{}'});},
+  listDocumentVersions(projectId){return request(`/api/projects/${projectId}/document-versions`);},
+  getDocumentVersion(id){return request(`/api/document-versions/${id}`);},
+  confirmDocumentVersion(id,text=''){return request(`/api/document-versions/${id}/confirm`,{method:'POST',body:JSON.stringify({confirmation_text:text})});},
+  regenerateChapter(id,chapterId){return request(`/api/document-versions/${id}/chapters/${chapterId}/regenerate`,{method:'POST',body:'{}'});},
   generate(projectId, inputs) {
     return request(`/api/projects/${projectId}/generation-jobs`, { method: 'POST', body: JSON.stringify(inputs) });
   },

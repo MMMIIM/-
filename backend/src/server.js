@@ -14,6 +14,8 @@ import { RequirementSourceService } from './requirement-source-service.js';
 import { CompanyMaterialService } from './company-material-service.js';
 import { EvidenceService } from './evidence-service.js';
 import { createProductionTaskProvider } from './pipeline/production-task-provider.js';
+import { createWriterProvider } from './pipeline/writer-provider.js';
+import { DocumentGenerationService } from './pipeline/document-generation-service.js';
 
 const directory = dirname(fileURLToPath(import.meta.url));
 const runtime = createBackendRuntime();
@@ -41,6 +43,7 @@ const productionBetaService = new ProductionBetaService({ repository, provider:c
 const requirementSourceService = new RequirementSourceService({ repository, storage, textExtractor: extractTenderText });
 const companyMaterialService = new CompanyMaterialService({ repository, storage, textExtractor: extractTenderText });
 const evidenceService = new EvidenceService({ repository });
+const documentGenerationService = new DocumentGenerationService({ repository, provider:createWriterProvider({env:runtimeEnv}), concurrency:runtimeEnv.V43_WRITER_CONCURRENCY || 2 });
 const app = createApp({
   repository,
   storage,
@@ -50,6 +53,7 @@ const app = createApp({
   requirementSourceService,
   companyMaterialService,
   evidenceService,
+  documentGenerationService,
   corsOrigin: runtimeEnv.CORS_ORIGIN
 });
 

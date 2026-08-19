@@ -16,7 +16,7 @@ function sendData(res, data, status = 200) {
   return res.status(status).json({ ok: true, data });
 }
 
-export function createApp({ repository, storage, generationService, requirementParseService, requirementSourceService, productionBetaService, companyMaterialService, evidenceService, corsOrigin }) {
+export function createApp({ repository, storage, generationService, requirementParseService, requirementSourceService, productionBetaService, companyMaterialService, evidenceService, documentGenerationService, corsOrigin }) {
   const app = express();
   app.use(cors({ origin: corsOrigin || 'http://localhost:5173' }));
   app.use(express.json({ limit: '2mb' }));
@@ -242,6 +242,13 @@ export function createApp({ repository, storage, generationService, requirementP
   app.post('/api/claims/:claimId/reject',async(req,res,next)=>{
     try{sendData(res,await productionBetaService.decideClaim(req.params.claimId,'rejected',req.body||{}));}catch(error){next(error);}
   });
+  app.post('/api/projects/:projectId/document-generations',async(req,res,next)=>{try{sendData(res,await documentGenerationService.generate(req.params.projectId),201);}catch(error){next(error);}});
+  app.get('/api/document-generations/:generationId',async(req,res,next)=>{try{const value=await repository.getDocumentGeneration(req.params.generationId);if(!value)throw new AppError('DOCUMENT_GENERATION_NOT_FOUND','正文生成任务不存在。',404);sendData(res,value);}catch(error){next(error);}});
+  app.post('/api/document-generations/:generationId/retry-batches',async(req,res,next)=>{try{sendData(res,await documentGenerationService.retry(req.params.generationId));}catch(error){next(error);}});
+  app.get('/api/projects/:projectId/document-versions',async(req,res,next)=>{try{sendData(res,{versions:await repository.listVersions(req.params.projectId),generations:await repository.listDocumentGenerations(req.params.projectId)});}catch(error){next(error);}});
+  app.get('/api/document-versions/:versionId',async(req,res,next)=>{try{const value=await repository.getPipelineDocumentVersion(req.params.versionId);if(!value)throw new AppError('VERSION_NOT_FOUND','文档版本不存在。',404);sendData(res,{version:value});}catch(error){next(error);}});
+  app.post('/api/document-versions/:versionId/confirm',async(req,res,next)=>{try{const version=await repository.getVersion(req.params.versionId);if(!version)throw new AppError('VERSION_NOT_FOUND','文档版本不存在。',404);if(version.risk_status==='critical')throw new AppError('CRITICAL_RISK','严重风险版本禁止确认。',409);sendData(res,await repository.confirmVersion(version,req.body?.confirmation_text));}catch(error){next(error);}});
+  app.post('/api/document-versions/:versionId/chapters/:chapterId/regenerate',async(req,res,next)=>{try{sendData(res,{version:await documentGenerationService.regenerate(req.params.versionId,req.params.chapterId)},201);}catch(error){next(error);}});
 
   app.get('/api/projects/:projectId/generation-jobs', async (req, res, next) => {
     try { res.json({ jobs: await repository.listJobs(req.params.projectId) }); } catch (error) { next(error); }

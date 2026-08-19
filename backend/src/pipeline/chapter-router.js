@@ -1,33 +1,6 @@
-const CHAPTERS = [
-  { id: 'project-understanding', title: '项目理解', keywords: ['背景', '目标', '范围', '现状'] },
-  { id: 'data-integration', title: '数据接入与集成', keywords: ['数据', '接口', '接入', '对接', '第三方'] },
-  { id: 'solution-design', title: '技术方案', keywords: ['功能', '架构', '平台', '系统', '技术'] },
-  { id: 'implementation-plan', title: '实施计划', keywords: ['实施', '交付', '工期', '进度', '上线'] },
-  { id: 'security-compliance', title: '安全与合规', keywords: ['安全', '合规', '保密', '等保', '权限'] },
-  { id: 'service-commitment', title: '服务与运维', keywords: ['服务', '运维', '响应', 'SLA', '保障'] }
-];
-
-const DEFAULT_CHAPTER = { id: 'solution-design', title: '技术方案' };
-
-export function routeRequirement(requirement) {
-  const text = String(requirement?.text || '');
-  const matched = CHAPTERS
-    .filter((chapter) => chapter.keywords.some((keyword) => text.includes(keyword)))
-    .map((chapter) => chapter.id);
-  return matched.length ? matched : [DEFAULT_CHAPTER.id];
-}
-
-export function planChapters(requirements) {
-  const selected = new Set(requirements.flatMap((requirement) => requirement.target_sections));
-  return CHAPTERS
-    .filter((chapter) => selected.has(chapter.id))
-    .map(({ id, title }) => ({
-      id,
-      title,
-      requirement_ids: requirements
-        .filter((requirement) => requirement.target_sections.includes(id))
-        .map((requirement) => requirement.req_id)
-    }));
-}
-
-export const chapterCatalog = CHAPTERS.map(({ id, title }) => ({ id, title }));
+import { chapterConfig } from './chapter-config.js';
+const RULES=[['chapter-06',['安全','权限','保密','数据管理','系统管理','等保']],['chapter-07',['实施','交付','工期','进度','上线','部署']],['chapter-08',['运维','服务','响应时间','SLA','保障']],['chapter-09',['测试','验收','检验']],['chapter-05',['功能','性能','接口','数据','并发']],['chapter-04',['架构','平台','系统','技术','方案']]];
+const DEFAULTS={technical:'chapter-05',performance:'chapter-05',implementation:'chapter-07',delivery:'chapter-07',service:'chapter-08'};
+export function routeRequirement(r){const text=String(r?.text||r?.content||'');const category=r?.requirement_category;if(!category){const legacy=[['project-understanding',['背景','目标','范围','现状']],['data-integration',['数据','接口','接入','对接','第三方']],['solution-design',['功能','架构','平台','系统','技术']],['implementation-plan',['实施','交付','工期','进度','上线']],['security-compliance',['安全','合规','保密','等保','权限']],['service-commitment',['服务','运维','响应','SLA','保障']]];const matched=legacy.filter(([,words])=>words.some((w)=>text.includes(w))).map(([id])=>id);return matched.length?matched:['solution-design'];}const ids=RULES.filter(([,words])=>words.some((w)=>text.includes(w))).map(([id])=>id).filter((id)=>chapterConfig.find((c)=>c.chapter_id===id)?.allowed_requirement_categories.includes(category));return [...new Set(ids.length?ids:[DEFAULTS[category]||'chapter-04'])];}
+export function planChapters(rs){return chapterConfig.map((c)=>({id:c.chapter_id,title:c.title,requirement_ids:rs.filter((r)=>(r.target_sections||[]).includes(c.chapter_id)).map((r)=>r.req_id)})).filter((c)=>c.requirement_ids.length);}
+export const chapterCatalog=chapterConfig.map(({chapter_id:id,title,order})=>({id,title,order}));

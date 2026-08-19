@@ -1,0 +1,2 @@
+import {createWriterProvider} from '../src/pipeline/writer-provider.js';
+const type=process.argv[2]||'section_drafting';const provider=createWriterProvider({env:{GENERATION_PROVIDER:'mock'}});const result=type==='targeted_revision'?await provider.revise({chapter_id:'chapter-05',paragraph:'预计提供功能。'}):await provider.draft({chapter_id:'chapter-05',input:{approved_claims:[{text:'提供已批准功能。'}]}});console.log(JSON.stringify({ok:true,provider:'mock',task_type:type,content_nonempty:Boolean(result.content)}));
