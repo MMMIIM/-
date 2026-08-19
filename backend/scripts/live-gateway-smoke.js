@@ -1,0 +1,2 @@
+import dotenv from 'dotenv';import {dirname,resolve} from 'node:path';import {fileURLToPath} from 'node:url';import {smokeLiveGateway} from '../src/pipeline/live-gateway-tools.js';
+dotenv.config({path:resolve(dirname(fileURLToPath(import.meta.url)),'../.env')});const task=process.argv[2];if(process.env.ALLOW_LIVE_MODEL_SMOKE!=='true')console.error('提示：该命令会产生真实模型费用；默认已阻断。');try{console.log(JSON.stringify(await smokeLiveGateway(task)));}catch(error){console.error(JSON.stringify({ok:false,task_type:task,error_code:error.code||'GATEWAY_SMOKE_FAILED'}));process.exitCode=1;}

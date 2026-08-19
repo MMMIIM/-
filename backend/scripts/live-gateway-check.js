@@ -1,0 +1,2 @@
+import dotenv from 'dotenv';import {dirname,resolve} from 'node:path';import {fileURLToPath} from 'node:url';import {checkLiveGateway} from '../src/pipeline/live-gateway-tools.js';
+dotenv.config({path:resolve(dirname(fileURLToPath(import.meta.url)),'../.env')});const task=process.argv[2];try{console.log(JSON.stringify(await checkLiveGateway(task)));}catch(error){console.error(JSON.stringify({ok:false,task_type:task,error_code:error.code||'GATEWAY_CHECK_FAILED'}));process.exitCode=1;}

@@ -103,8 +103,8 @@ function validateGatewayEnvelope(value, requestedTaskType, rawResponsePayloadJso
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     throw new SemanticGatewayError('GATEWAY_ENVELOPE_INVALID', '网关 envelope 必须是对象。', audit);
   }
-  const expectedSchemaVersion = requestedTaskType === 'requirement_extraction' ? '4.3-requirement-extraction'
-    : ['section_drafting','targeted_revision'].includes(requestedTaskType) ? '4.3-section-drafting' : '4.3-gateway';
+  const schemas={requirement_extraction:'4.3-requirement-extraction',response_planning:'4.3-response-planning',claim_generation:'4.3-claim-generation',section_drafting:'4.3-section-drafting',targeted_revision:'4.3-targeted-revision'};
+  const expectedSchemaVersion=schemas[requestedTaskType]||'4.3-gateway';
   if (value.schema_version !== expectedSchemaVersion) {
     throw new SemanticGatewayError('GATEWAY_ENVELOPE_INVALID', '网关 schema_version 无效。', audit);
   }
