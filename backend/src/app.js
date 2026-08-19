@@ -118,7 +118,12 @@ export function createApp({ repository, storage, generationService, requirementP
   });
 
   app.post('/api/tender-parse-jobs/:jobId/confirm', async (req, res, next) => {
-    try { res.status(201).json({ ok: true, ...(await requirementParseService.confirm(req.params.jobId)) }); }
+    try { res.status(201).json({ ok: true, ...(await requirementParseService.confirm(req.params.jobId, req.body || {})) }); }
+    catch (error) { next(error); }
+  });
+
+  app.post('/api/tender-parse-jobs/:jobId/provisional-decisions', async (req, res, next) => {
+    try { res.json({ ok: true, ...(await requirementSourceService.includeProvisionalBatch(req.params.jobId, req.body || {})) }); }
     catch (error) { next(error); }
   });
 

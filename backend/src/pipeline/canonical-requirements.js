@@ -26,6 +26,7 @@ export function assertRequirementIdsUnchanged(baseline, candidate) {
       || requirement.source_clause_id !== candidate[index].source_clause_id
       || requirement.mandatory_scope_source_text !== candidate[index].mandatory_scope_source_text
       || requirement.mandatory_scope_section !== candidate[index].mandatory_scope_section
+      || (requirement.source_status || 'verified') !== (candidate[index].source_status || 'verified')
       || JSON.stringify(requirement.exception_clause_ids) !== JSON.stringify(candidate[index].exception_clause_ids)) {
       throw ruleError('REQUIREMENT_MANDATORY_METADATA_MUTATED', 'Requirement mandatory 元数据不得修改。');
     }
@@ -89,6 +90,7 @@ export function canonicalizeRequirements(rawRequirements, router = routeRequirem
       mandatory_scope_source_text: mandatoryRequirement.mandatory_scope_source_text,
       mandatory_scope_section: mandatoryRequirement.mandatory_scope_section,
       exception_clause_ids: [...mandatoryRequirement.exception_clause_ids],
+      source_status: raw.source_status === 'provisional' ? 'provisional' : 'verified',
       target_sections: [...new Set(targetSections)]
     };
   });

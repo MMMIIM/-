@@ -3,6 +3,7 @@ const HIGH_RISK_TYPES = new Set(['quantitative', 'deliverable', 'scope_exclusion
 export class ClaimGateService {
   constructor({ requirements, evidenceCatalog }) {
     this.requirementIds = new Set(requirements.map((item) => item.req_id));
+    this.requirementSourceStatuses = new Map(requirements.map((item) => [item.req_id, item.source_status || 'verified']));
     this.evidenceCatalog = evidenceCatalog;
   }
 
@@ -19,7 +20,8 @@ export class ClaimGateService {
       if (HIGH_RISK_TYPES.has(claim.claim_type) && !evidenceIds.length) reason = `HIGH_RISK_${claim.claim_type.toUpperCase()}_UNSUPPORTED`;
       const decision = reason ? 'rejected' : 'approved';
       return {
-        claim: { ...claim, basis_requirement_ids: requirementIds, basis_evidence_ids: evidenceIds },
+        claim: { ...claim, basis_requirement_ids: requirementIds, basis_evidence_ids: evidenceIds,
+          basis_requirement_source_statuses: Object.fromEntries(requirementIds.map((id) => [id, this.requirementSourceStatuses.get(id)])) },
         decision: { claim_id: claim.claim_id, decision, reason_code: reason }
       };
     });

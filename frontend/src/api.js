@@ -51,8 +51,11 @@ export const api = {
   getTenderParseJob(jobId) {
     return request(`/api/tender-parse-jobs/${jobId}`);
   },
-  confirmRequirementBaseline(jobId) {
-    return request(`/api/tender-parse-jobs/${jobId}/confirm`, { method: 'POST' });
+  confirmRequirementBaseline(jobId, confirmedBy = 'current_user') {
+    return request(`/api/tender-parse-jobs/${jobId}/confirm`, { method: 'POST', body: JSON.stringify({ confirmed_by: confirmedBy }) });
+  },
+  includeProvisionalBatch(jobId, confirmedBy = 'current_user') {
+    return request(`/api/tender-parse-jobs/${jobId}/provisional-decisions`, { method: 'POST', body: JSON.stringify({ confirmed_by: confirmedBy }) });
   },
   getCandidateSourceReview(candidateId) {
     return request(`/api/requirement-candidates/${candidateId}/source-review`);

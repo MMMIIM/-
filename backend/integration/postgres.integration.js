@@ -145,6 +145,10 @@ test('PostgreSQL 持久化 Production Beta Plan、Claim 决策、Coverage 与失
     const evidence={evidence_id:`EVI-${Date.now()}`,material_id:'fixture',source_type:'material',source_roles:['capability'],module:'data',content:'能力依据',source_page:1,source_hash:'sha256:fixture',evidence_level:'verified',commitment_level:'capability'};
     const result=await service.process(project.id,{evidence:[evidence],response_plans:[{requirement_id:'REQ-001',response_status:'full',response_summary:'响应',supporting_evidence_ids:[evidence.evidence_id]}],claims:[{claim_id:`CLM-${Date.now()}`,requirement_id:'REQ-001',claim_type:'statement',text:'支持数据接入',basis_requirement_ids:['REQ-001'],basis_evidence_ids:[evidence.evidence_id]}]});
     assert.equal(result.run.status,'succeeded'); assert.equal(result.coverage.valid,true); assert.equal(result.writer_input.length,1);
+    const persisted = await service.get(project.id);
+    assert.equal(persisted.plans[0].source_status, 'verified');
+    assert.equal(persisted.claims[0].basis_requirement_source_statuses['REQ-001'], 'verified');
+    assert.equal(persisted.coverage[0].source_status, 'verified');
     await assert.rejects(()=>service.process(project.id,{evidence:[],response_plans:[],claims:[]}));
     const {rows}=await pool.query(`SELECT status,error_code FROM production_beta_runs WHERE project_id=$1 ORDER BY created_at DESC LIMIT 1`,[project.id]); assert.equal(rows[0].status,'failed'); assert.equal(rows[0].error_code,'RESPONSE_PLAN_MISSING');
   } finally { await pool.query(`DELETE FROM projects WHERE id=$1`,[project.id]); await pool.end(); }
@@ -591,5 +595,35 @@ test('PostgreSQL 持久化人工来源范围、排除决定与审计', async () 
     assert.equal(excluded.candidate_decision, 'exclude');
     const audit = await pool.query(`SELECT action FROM requirement_source_decision_audits WHERE candidate_id=$1 ORDER BY created_at`, [candidate.id]);
     assert.deepEqual(audit.rows.map((item) => item.action), ['associate', 'exclude']);
+  } finally { await pool.query(`DELETE FROM projects WHERE id=$1`, [project.id]); await pool.end(); }
+});
+
+test('PostgreSQL 暂定基线批量跳过 mandatory 并幂等保存确认元数据', async () => {
+  assert.ok(process.env.DATABASE_URL, 'DATABASE_URL is required for PostgreSQL integration tests');
+  const pool = createPool(); const repository = new PgRepository(pool);
+  const project = await repository.createProject({ name: `暂定基线集成测试 ${Date.now()}` });
+  const file = await repository.addTenderFile({ projectId: project.id, originalName: 'provisional.txt', storageKey: `${project.id}/provisional.txt`, mimeType: 'text/plain', sizeBytes: 10 });
+  const job = await repository.createParseJob({ projectId: project.id, tenderFileId: file.id });
+  try {
+    await pool.query(`UPDATE tender_parse_jobs SET status='succeeded' WHERE id=$1`, [job.id]);
+    await pool.query(`INSERT INTO requirement_candidates(parse_job_id,req_id,content,source_excerpt,source_text,ordinal,is_mandatory,mandatory_marker,candidate_decision,source_status,source_verified) VALUES
+      ($1,'REQ-001','已定位需求','已定位原文','已定位原文',1,false,NULL,'include','verified',true),
+      ($1,'REQ-002','普通暂定需求','普通暂定原文','普通暂定原文',2,false,NULL,'pending','provisional',false),
+      ($1,'REQ-003','强制暂定需求','★强制暂定原文','★强制暂定原文',3,true,'★','pending','provisional',false)`, [job.id]);
+    const batch = await repository.includeProvisionalCandidates({ parseJobId: job.id, confirmedBy: 'batch-reviewer' });
+    assert.equal(batch.included_count, 1);
+    assert.deepEqual(batch.mandatory_manual_required.map((item) => item.req_id), ['REQ-003']);
+    const mandatoryId = batch.mandatory_manual_required[0].id;
+    await repository.saveCandidateProvisionalDecision({ candidateId: mandatoryId, confirmedBy: 'mandatory-reviewer' });
+    const service = new RequirementParseService({ repository });
+    const confirmed = await service.confirm(job.id, { confirmed_by: 'baseline-owner' });
+    assert.equal(confirmed.baseline.confirmed_by, 'baseline-owner');
+    assert.equal(confirmed.baseline.confirmation_type, 'mixed_provisional');
+    const baseline = await repository.getRequirementBaseline(project.id);
+    assert.deepEqual(baseline.requirements.map((item) => item.source_status), ['verified', 'provisional', 'provisional']);
+    assert.equal(baseline.requirements[1].confirmation_type, 'provisional_bulk');
+    assert.equal(baseline.requirements[2].confirmation_type, 'provisional_individual');
+    assert.equal(baseline.requirements[1].source_page, null);
+    assert.equal(baseline.requirements[2].source_paragraph, null);
   } finally { await pool.query(`DELETE FROM projects WHERE id=$1`, [project.id]); await pool.end(); }
 });

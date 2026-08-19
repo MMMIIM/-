@@ -44,6 +44,7 @@ test('合法正文生成 schema_version=4.3 且完成完整状态链', async () 
   assert.deepEqual(result.envelope.requirements.map((item) => item.req_id), ['REQ-001', 'REQ-002']);
   assert.notDeepEqual(result.envelope.requirements[0].target_sections, ['client-supplied-section']);
   assert.ok(result.envelope.traceability_matrix.every((item) => item.status === 'covered'));
+  assert.ok(result.envelope.traceability_matrix.every((item) => item.source_status === 'verified'));
 });
 
 test('第三方数据接入是合法正文，不被 sanitizer 删除', () => {
@@ -162,4 +163,15 @@ test('writer 无法修改 canonical Requirement 基线', async () => {
   assert.equal(result.ok, false);
   assert.equal(result.envelope.generation_audit.state, 'failed');
   assert.deepEqual(result.envelope.requirements.map((item) => item.req_id), ['REQ-001']);
+});
+
+test('正式正文拒绝展示内部 REQ-ID 或来源未定位字样', () => {
+  const requirements = canonicalizeRequirements([fixture.requirements[0]]);
+  const gate = createClaimGate(requirements);
+  for (const text of ['响应 REQ-001 的接口要求。', '该项来源未定位，但可暂定响应。']) {
+    const sections = [{ ...section(text), final_text: text, sanitization_events: [] }];
+    const result = validateDocument({ baselineRequirements: requirements, requirements, sections, claimGate: gate });
+    assert.equal(result.valid, false);
+    assert.ok(result.errors.some((item) => item.code === 'INTERNAL_REQUIREMENT_METADATA_EXPOSED'));
+  }
 });

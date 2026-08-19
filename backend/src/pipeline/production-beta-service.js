@@ -15,7 +15,10 @@ export class ProductionBetaService {
       const claimGate = new ClaimGateService({ requirements, evidenceCatalog });
       const evaluatedClaims = claimGate.evaluate(input.claims);
       const coverage = new CoverageValidator().validate({ requirements, evaluatedClaims });
-      const result = { evidence: evidenceCatalog.list(), plans, evaluatedClaims, coverage, writer_input: claimGate.writerInput(evaluatedClaims) };
+      const provisionalRequirements = requirements.filter((item) => item.source_status === 'provisional');
+      const result = { evidence: evidenceCatalog.list(), plans, evaluatedClaims, coverage,
+        writer_input: claimGate.writerInput(evaluatedClaims),
+        provisional_requirements: provisionalRequirements.map((item) => ({ req_id: item.req_id, text: item.text, is_mandatory: item.is_mandatory })) };
       return await this.repository.saveProductionBetaResult(projectId, result);
     } catch (error) {
       try { await this.repository.saveProductionBetaFailure(projectId, error); }

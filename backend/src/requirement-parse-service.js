@@ -15,6 +15,7 @@ import {
 import { SourceLocationResolver } from './pipeline/source-location-resolver.js';
 import { summarizeSourceReadiness } from './requirement-source-service.js';
 import { DocumentCapabilityDetector } from './pipeline/document-capability-detector.js';
+import { clearUnverifiedLocation, deriveCandidateSourceStatus } from './pipeline/requirement-source-status.js';
 
 const MAX_EXTRACTED_CHARACTERS = 300_000;
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -289,7 +290,7 @@ export class RequirementParseService {
     return job;
   }
 
-  async confirm(jobId) {
+  async confirm(jobId, input = {}) {
     assertValidParseJobId(jobId);
     const job = await this.repository.getParseJob(jobId);
     if (!job) throw new AppError('TENDER_PARSE_JOB_NOT_FOUND', '需求解析任务不存在。', 404);
@@ -300,24 +301,29 @@ export class RequirementParseService {
       throw new AppError('REQUIREMENTS_REQUIRED', '解析任务没有可确认的候选需求。', 422);
     }
     const readiness = summarizeSourceReadiness(job.candidates);
-    if (readiness.mandatory_unverified) {
-      throw new AppError('MANDATORY_SOURCE_UNVERIFIED', `仍有 ${readiness.mandatory_unverified} 条实质性要求未验证来源，禁止确认基线。`, 422);
+    if (readiness.mandatory_provisional_pending) {
+      throw new AppError('MANDATORY_PROVISIONAL_CONFIRMATION_REQUIRED', `仍有 ${readiness.mandatory_provisional_pending} 条来源未定位的实质性要求，必须逐条人工确认或排除。`, 422);
     }
     if (readiness.pending) {
       throw new AppError('CANDIDATE_DECISIONS_PENDING', `仍有 ${readiness.pending} 条候选尚未人工处理，不能确认基线。`, 422);
     }
-    if (readiness.included_unverified) {
-      throw new AppError('INCLUDED_SOURCE_UNVERIFIED', `仍有 ${readiness.included_unverified} 条拟纳入候选缺少已验证来源。`, 422);
-    }
     if (!readiness.included) {
-      throw new AppError('INCLUDED_REQUIREMENTS_REQUIRED', '至少需要保留一条已验证来源的候选需求。', 422);
+      throw new AppError('INCLUDED_REQUIREMENTS_REQUIRED', '至少需要保留一条候选需求。', 422);
     }
+    const confirmedBy = String(input.confirmed_by || '').trim() || 'current_user';
     let requirements;
     try {
       requirements = job.candidates.filter((candidate) => candidate.candidate_decision === undefined || candidate.candidate_decision === 'include').map((candidate) => {
         assertMandatoryRequirementMetadata(candidate);
+        const sourceStatus = deriveCandidateSourceStatus(candidate);
+        if (sourceStatus === 'provisional' && !candidate.confirmed_at) {
+          throw new AppError('PROVISIONAL_CONFIRMATION_REQUIRED', `${candidate.req_id} 必须明确确认后才能进入暂定基线。`, 422);
+        }
+        if (candidate.is_mandatory && sourceStatus === 'provisional' && candidate.confirmation_type !== 'provisional_individual') {
+          throw new AppError('MANDATORY_PROVISIONAL_CONFIRMATION_REQUIRED', `${candidate.req_id} 为实质性要求，必须逐条人工确认。`, 422);
+        }
         return {
-          ...candidate,
+          ...clearUnverifiedLocation(candidate), source_status: sourceStatus,
           target_sections: routeRequirement({ req_id: candidate.req_id, text: candidate.content })
         };
       });
@@ -330,7 +336,7 @@ export class RequirementParseService {
       );
     }
     try {
-      return await this.repository.confirmRequirementBaseline({ jobId, requirements });
+      return await this.repository.confirmRequirementBaseline({ jobId, requirements, confirmedBy });
     } catch (error) {
       if (error?.code === 'REQUIREMENT_BASELINE_FROZEN' || error?.code === '23505') {
         throw new AppError('REQUIREMENT_BASELINE_FROZEN', '需求基线已经确认，不能增删改合并。', 409);

@@ -293,14 +293,15 @@ export class PgRepository {
              source_page_start, source_page_end, source_paragraph_start, source_paragraph_end,
              source_paragraphs_json, source_match_type, source_match_score,
              source_resolution_status, source_resolution_method, source_resolved_at,
-             source_verified, candidate_decision, decision_reason, decided_at)
+             source_verified, candidate_decision, decision_reason, decided_at, source_status)
           VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9, $10, $11,
             $12, $13, $14, $15, $16::jsonb, $17, $18, $19, $20, $21,
             $22, $23, $24, $25, $26::jsonb, $27, $28, $29, $30,
             CASE WHEN $31 THEN now() ELSE NULL END, $31,
             CASE WHEN $31 THEN 'include' ELSE 'pending' END,
             CASE WHEN $31 THEN 'deterministic_source_resolution' ELSE NULL END,
-            CASE WHEN $31 THEN now() ELSE NULL END)
+            CASE WHEN $31 THEN now() ELSE NULL END,
+            CASE WHEN $31 THEN 'verified' ELSE 'provisional' END)
         `, [
           jobId, candidate.req_id, candidate.content, candidate.source_excerpt,
           candidate.source_page, candidate.source_paragraph, candidate.ordinal,
@@ -411,6 +412,7 @@ export class PgRepository {
         source_paragraphs_json, source_match_type, source_match_score,
         source_resolution_status, source_resolution_method, source_resolved_at,
         source_verified, candidate_decision, decision_reason, decided_at,
+        source_status, confirmed_by, confirmed_at, confirmation_type,
         ordinal, status, sources_json, created_at
       FROM requirement_candidates WHERE parse_job_id = $1 ORDER BY ordinal
     `, [id]), this.pool.query(`
@@ -481,6 +483,7 @@ export class PgRepository {
           source_paragraph_start=$6,source_paragraph_end=$7,source_paragraphs_json=$8::jsonb,
           source_hash=$9,source_match_type=$10,source_match_score=$11,
           source_resolution_status=$12,source_resolution_method=$13,source_verified=$14,
+          source_status=CASE WHEN $14 THEN 'verified' ELSE 'provisional' END,
           source_resolved_at=CASE WHEN $14 THEN now() ELSE NULL END,
           candidate_decision=$15,decision_reason=$16,decided_at=CASE WHEN $15='include' THEN now() ELSE decided_at END
         WHERE id=$1
@@ -529,17 +532,62 @@ export class PgRepository {
     return rows;
   }
 
-  async saveCandidateSourceDecision({ candidateId, action, reason, location }) {
+  async saveCandidateSourceDecision({ candidateId, action, reason, location, confirmedBy = 'current_user' }) {
     const client = await this.pool.connect();
     try {
       await client.query('BEGIN');
       const previous = (await client.query(`SELECT * FROM requirement_candidates WHERE id=$1 FOR UPDATE`, [candidateId])).rows[0];
       if (!previous) throw Object.assign(new Error('候选需求不存在。'), { code: 'REQUIREMENT_CANDIDATE_NOT_FOUND', status: 404 });
       const result = action === 'exclude'
-        ? await client.query(`UPDATE requirement_candidates SET candidate_decision='exclude',decision_reason=$2,decided_at=now() WHERE id=$1 RETURNING *`, [candidateId,reason])
-        : await client.query(`UPDATE requirement_candidates SET source_page=$2,source_paragraph=$3,source_page_start=$4,source_page_end=$5,source_paragraph_start=$6,source_paragraph_end=$7,source_paragraphs_json=$8::jsonb,source_hash=$9,source_match_type=$10,source_match_score=$11,source_resolution_status='verified',source_resolution_method='manual',source_verified=true,source_resolved_at=now(),candidate_decision='include',decision_reason=$12,decided_at=now() WHERE id=$1 RETURNING *`, [candidateId,location.source_page,location.source_paragraph,location.source_page_start,location.source_page_end,location.source_paragraph_start,location.source_paragraph_end,JSON.stringify(location.source_paragraphs_json),location.source_hash,location.source_match_type,location.source_match_score,reason]);
+        ? await client.query(`UPDATE requirement_candidates SET candidate_decision='exclude',source_status='excluded',decision_reason=$2,decided_at=now(),confirmed_by=$3,confirmed_at=now(),confirmation_type='excluded' WHERE id=$1 RETURNING *`, [candidateId,reason,confirmedBy])
+        : await client.query(`UPDATE requirement_candidates SET source_page=$2,source_paragraph=$3,source_page_start=$4,source_page_end=$5,source_paragraph_start=$6,source_paragraph_end=$7,source_paragraphs_json=$8::jsonb,source_hash=$9,source_match_type=$10,source_match_score=$11,source_resolution_status='verified',source_resolution_method='manual',source_verified=true,source_resolved_at=now(),source_status='verified',candidate_decision='include',decision_reason=$12,decided_at=now(),confirmed_by=$13,confirmed_at=now(),confirmation_type='verified' WHERE id=$1 RETURNING *`, [candidateId,location.source_page,location.source_paragraph,location.source_page_start,location.source_page_end,location.source_paragraph_start,location.source_paragraph_end,JSON.stringify(location.source_paragraphs_json),location.source_hash,location.source_match_type,location.source_match_score,reason,confirmedBy]);
       await client.query(`INSERT INTO requirement_source_decision_audits(parse_job_id,candidate_id,action,previous_state_json,new_state_json,reason) VALUES($1,$2,$3,$4::jsonb,$5::jsonb,$6)`, [previous.parse_job_id,candidateId,action,JSON.stringify({decision:previous.candidate_decision,status:previous.source_resolution_status}),JSON.stringify({decision:result.rows[0].candidate_decision,status:result.rows[0].source_resolution_status}),reason]);
       await client.query('COMMIT'); return result.rows[0];
+    } catch (error) { await client.query('ROLLBACK'); throw error; } finally { client.release(); }
+  }
+
+  async saveCandidateProvisionalDecision({ candidateId, confirmedBy }) {
+    const client = await this.pool.connect();
+    try {
+      await client.query('BEGIN');
+      const previous = (await client.query(`SELECT * FROM requirement_candidates WHERE id=$1 FOR UPDATE`, [candidateId])).rows[0];
+      if (!previous || previous.candidate_decision === 'exclude') throw Object.assign(new Error('候选需求不存在或已排除。'), { code: 'REQUIREMENT_CANDIDATE_NOT_FOUND', status: 404 });
+      const result = await client.query(`
+        UPDATE requirement_candidates SET candidate_decision='include', source_status='provisional',
+          source_page=NULL, source_paragraph=NULL, source_page_start=NULL, source_page_end=NULL,
+          source_paragraph_start=NULL, source_paragraph_end=NULL, source_paragraphs_json='[]'::jsonb,
+          source_hash=NULL, source_match_type=NULL, source_match_score=NULL,
+          source_resolution_method=NULL, source_verified=false,
+          decision_reason='provisional_individual_confirmation', decided_at=now(),
+          confirmed_by=$2, confirmed_at=now(), confirmation_type='provisional_individual'
+        WHERE id=$1 RETURNING *
+      `, [candidateId, confirmedBy]);
+      await client.query(`INSERT INTO requirement_source_decision_audits(parse_job_id,candidate_id,action,previous_state_json,new_state_json,reason) VALUES($1,$2,'include_provisional',$3::jsonb,$4::jsonb,'provisional_individual_confirmation')`, [previous.parse_job_id,candidateId,JSON.stringify({decision:previous.candidate_decision,source_status:previous.source_status}),JSON.stringify({decision:'include',source_status:'provisional',confirmed_by:confirmedBy})]);
+      await client.query('COMMIT');
+      return result.rows[0];
+    } catch (error) { await client.query('ROLLBACK'); throw error; } finally { client.release(); }
+  }
+
+  async includeProvisionalCandidates({ parseJobId, confirmedBy }) {
+    const client = await this.pool.connect();
+    try {
+      await client.query('BEGIN');
+      const job = (await client.query(`SELECT status FROM tender_parse_jobs WHERE id=$1 FOR UPDATE`, [parseJobId])).rows[0];
+      if (!job) throw Object.assign(new Error('需求解析任务不存在。'), { code: 'TENDER_PARSE_JOB_NOT_FOUND', status: 404 });
+      if (job.status !== 'succeeded') throw Object.assign(new Error('需求解析任务尚未完成。'), { code: 'TENDER_PARSE_NOT_READY', status: 409 });
+      const result = await client.query(`
+        UPDATE requirement_candidates SET candidate_decision='include', source_status='provisional',
+          source_page=NULL,source_paragraph=NULL,source_page_start=NULL,source_page_end=NULL,
+          source_paragraph_start=NULL,source_paragraph_end=NULL,source_paragraphs_json='[]'::jsonb,
+          source_hash=NULL,source_match_type=NULL,source_match_score=NULL,source_resolution_method=NULL,source_verified=false,
+          decision_reason='provisional_bulk_confirmation',decided_at=now(),confirmed_by=$2,confirmed_at=now(),confirmation_type='provisional_bulk'
+        WHERE parse_job_id=$1 AND source_status='provisional' AND candidate_decision='pending' AND is_mandatory=false
+        RETURNING id
+      `, [parseJobId, confirmedBy]);
+      const mandatory = await client.query(`SELECT id,req_id FROM requirement_candidates WHERE parse_job_id=$1 AND source_status='provisional' AND candidate_decision='pending' AND is_mandatory=true ORDER BY ordinal`, [parseJobId]);
+      await client.query(`INSERT INTO requirement_source_decision_audits(parse_job_id,candidate_id,action,previous_state_json,new_state_json,reason) SELECT $1,id,'include_provisional_bulk','{"decision":"pending","source_status":"provisional"}'::jsonb,jsonb_build_object('decision','include','source_status','provisional','confirmed_by',$2::text),'provisional_bulk_confirmation' FROM requirement_candidates WHERE id=ANY($3::uuid[])`, [parseJobId,confirmedBy,result.rows.map((item) => item.id)]);
+      await client.query('COMMIT');
+      return { included_count: result.rowCount, mandatory_manual_required: mandatory.rows };
     } catch (error) { await client.query('ROLLBACK'); throw error; } finally { client.release(); }
   }
 
@@ -557,13 +605,14 @@ export class PgRepository {
         category, requires_confirmation, source_page_start, source_page_end,
         source_paragraph_start, source_paragraph_end, source_paragraphs_json,
         source_match_type, source_match_score, source_resolution_method, source_verified,
+        source_status, confirmed_by, confirmed_at, confirmation_type,
         target_sections, ordinal, created_at
       FROM requirements WHERE baseline_id = $1 ORDER BY ordinal
     `, [rows[0].id]);
     return { ...rows[0], requirements: requirements.rows };
   }
 
-  async confirmRequirementBaseline({ jobId, requirements }) {
+  async confirmRequirementBaseline({ jobId, requirements, confirmedBy }) {
     const client = await this.pool.connect();
     try {
       await client.query('BEGIN');
@@ -596,10 +645,12 @@ export class PgRepository {
              source_hash, source_chunk_id, category, requires_confirmation,
              source_page_start, source_page_end, source_paragraph_start, source_paragraph_end,
              source_paragraphs_json, source_match_type, source_match_score,
-             source_resolution_method, source_verified)
+             source_resolution_method, source_verified, source_status,
+             confirmed_by, confirmed_at, confirmation_type)
           VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9, $10, $11, $12,
             $13, $14, $15, $16, $17::jsonb, $18, $19, $20, $21,
-            $22, $23, $24, $25, $26::jsonb, $27, $28, $29, $30)
+            $22, $23, $24, $25, $26::jsonb, $27, $28, $29, $30,
+            $31, $32, $33, $34)
         `, [
           baseline.id, job.project_id, requirement.req_id, requirement.content,
           requirement.source_excerpt, requirement.source_page, requirement.source_paragraph,
@@ -614,14 +665,17 @@ export class PgRepository {
           requirement.source_paragraph_start, requirement.source_paragraph_end,
           JSON.stringify(requirement.source_paragraphs_json || []), requirement.source_match_type,
           requirement.source_match_score, requirement.source_resolution_method,
-          requirement.source_verified === true
+          requirement.source_verified === true, requirement.source_status,
+          requirement.confirmed_by || confirmedBy, requirement.confirmed_at || new Date(),
+          requirement.confirmation_type || 'verified'
         ]);
       }
       const confirmed = await client.query(`
         UPDATE requirement_baselines
-        SET status = 'confirmed', confirmed_at = now()
+        SET status = 'confirmed', confirmed_at = now(), confirmed_by = $2,
+          confirmation_type = CASE WHEN EXISTS(SELECT 1 FROM requirements WHERE baseline_id=$1 AND source_status='provisional') THEN 'mixed_provisional' ELSE 'verified' END
         WHERE id = $1 RETURNING *
-      `, [baseline.id]);
+      `, [baseline.id, confirmedBy]);
       await client.query(`
         UPDATE requirement_candidates SET status = 'confirmed' WHERE parse_job_id = $1
       `, [job.id]);
@@ -804,7 +858,7 @@ export class PgRepository {
   }
 
   async getFormalRequirements(projectId) {
-    const { rows } = await this.pool.query(`SELECT id, req_id, content AS text, is_mandatory, target_sections FROM requirements WHERE project_id=$1 ORDER BY ordinal`, [projectId]);
+    const { rows } = await this.pool.query(`SELECT id, req_id, content AS text, is_mandatory, target_sections, source_status, confirmed_by, confirmed_at, confirmation_type FROM requirements WHERE project_id=$1 AND source_status IN ('verified','provisional') ORDER BY ordinal`, [projectId]);
     return rows;
   }
 
@@ -812,12 +866,12 @@ export class PgRepository {
     const client = await this.pool.connect();
     try {
       await client.query('BEGIN');
-      const run = (await client.query(`INSERT INTO production_beta_runs(project_id,status,audit_json) VALUES($1,'succeeded',$2::jsonb) RETURNING *`, [projectId, JSON.stringify({ writer_claim_count: result.writer_input.length })])).rows[0];
+      const run = (await client.query(`INSERT INTO production_beta_runs(project_id,status,audit_json) VALUES($1,'succeeded',$2::jsonb) RETURNING *`, [projectId, JSON.stringify({ writer_claim_count: result.writer_input.length, provisional_count: result.provisional_requirements?.length || 0, provisional_requirements: result.provisional_requirements || [] })])).rows[0];
       for (const evidence of result.evidence) await client.query(`INSERT INTO evidences(evidence_id,project_id,material_id,source_type,source_roles,module,content,source_page,source_hash,evidence_level,commitment_level) VALUES($1,$2,$3,$4,$5::jsonb,$6,$7,$8,$9,$10,$11) ON CONFLICT(evidence_id) DO NOTHING`, [evidence.evidence_id, projectId, evidence.material_id || null, evidence.source_type, JSON.stringify(evidence.source_roles || []), evidence.module, evidence.content, evidence.source_page || null, evidence.source_hash, evidence.evidence_level, evidence.commitment_level]);
       const requirements = await client.query(`SELECT id,req_id FROM requirements WHERE project_id=$1`, [projectId]);
       const requirementIds = new Map(requirements.rows.map((item) => [item.req_id, item.id]));
       for (const plan of result.plans) await client.query(`INSERT INTO response_plans(project_id,requirement_id,response_status,response_summary,implementation_actions,optional_design,deliverables,acceptance_methods,conditions,supporting_evidence_ids,capability_gap,target_sections) VALUES($1,$2,$3,$4,$5::jsonb,$6::jsonb,$7::jsonb,$8::jsonb,$9::jsonb,$10::jsonb,$11,$12::jsonb) ON CONFLICT(project_id,requirement_id) DO UPDATE SET response_status=excluded.response_status,response_summary=excluded.response_summary,supporting_evidence_ids=excluded.supporting_evidence_ids,capability_gap=excluded.capability_gap,target_sections=excluded.target_sections`, [projectId, requirementIds.get(plan.requirement_id), plan.response_status, plan.response_summary, JSON.stringify(plan.implementation_actions || []), JSON.stringify(plan.optional_design || null), JSON.stringify(plan.deliverables || []), JSON.stringify(plan.acceptance_methods || []), JSON.stringify(plan.conditions || []), JSON.stringify(plan.supporting_evidence_ids || []), plan.capability_gap || null, JSON.stringify(plan.target_sections)]);
-      for (const item of result.evaluatedClaims) { const claim=(await client.query(`INSERT INTO claims(claim_id,project_id,requirement_id,claim_type,text,basis_requirement_ids,basis_evidence_ids,requested_commitment,target_sections) VALUES($1,$2,$3,$4,$5,$6::jsonb,$7::jsonb,$8,$9::jsonb) ON CONFLICT(claim_id) DO UPDATE SET text=excluded.text RETURNING id`, [item.claim.claim_id,projectId,requirementIds.get(item.claim.requirement_id)||null,item.claim.claim_type,item.claim.text,JSON.stringify(item.claim.basis_requirement_ids||[]),JSON.stringify(item.claim.basis_evidence_ids||[]),item.claim.requested_commitment||null,JSON.stringify(item.claim.target_sections||[])])).rows[0]; await client.query(`INSERT INTO claim_decisions(claim_id,decision,reason_code) VALUES($1,$2,$3) ON CONFLICT(claim_id) DO UPDATE SET decision=excluded.decision,reason_code=excluded.reason_code`,[claim.id,item.decision.decision,item.decision.reason_code]); }
+      for (const item of result.evaluatedClaims) { const claim=(await client.query(`INSERT INTO claims(claim_id,project_id,requirement_id,claim_type,text,basis_requirement_ids,basis_evidence_ids,requested_commitment,target_sections,basis_requirement_source_statuses) VALUES($1,$2,$3,$4,$5,$6::jsonb,$7::jsonb,$8,$9::jsonb,$10::jsonb) ON CONFLICT(claim_id) DO UPDATE SET text=excluded.text,basis_requirement_source_statuses=excluded.basis_requirement_source_statuses RETURNING id`, [item.claim.claim_id,projectId,requirementIds.get(item.claim.requirement_id)||null,item.claim.claim_type,item.claim.text,JSON.stringify(item.claim.basis_requirement_ids||[]),JSON.stringify(item.claim.basis_evidence_ids||[]),item.claim.requested_commitment||null,JSON.stringify(item.claim.target_sections||[]),JSON.stringify(item.claim.basis_requirement_source_statuses||{})])).rows[0]; await client.query(`INSERT INTO claim_decisions(claim_id,decision,reason_code) VALUES($1,$2,$3) ON CONFLICT(claim_id) DO UPDATE SET decision=excluded.decision,reason_code=excluded.reason_code`,[claim.id,item.decision.decision,item.decision.reason_code]); }
       for (const item of result.coverage.coverage) await client.query(`INSERT INTO requirement_coverages(project_id,requirement_id,covered,approved_claim_ids) VALUES($1,$2,$3,$4::jsonb) ON CONFLICT(project_id,requirement_id) DO UPDATE SET covered=excluded.covered,approved_claim_ids=excluded.approved_claim_ids`,[projectId,requirementIds.get(item.requirement_id),item.covered,JSON.stringify(item.approved_claim_ids)]);
       await client.query('COMMIT');
       return { run, ...result };
@@ -830,12 +884,16 @@ export class PgRepository {
 
   async getProductionBetaResult(projectId) {
     const [runs, plans, claims, coverage] = await Promise.all([
-      this.pool.query(`SELECT id,status,error_code,error_message,created_at,updated_at FROM production_beta_runs WHERE project_id=$1 ORDER BY created_at DESC LIMIT 1`,[projectId]),
-      this.pool.query(`SELECT rp.*,r.req_id AS requirement_id FROM response_plans rp JOIN requirements r ON r.id=rp.requirement_id WHERE rp.project_id=$1 ORDER BY r.ordinal`,[projectId]),
-      this.pool.query(`SELECT c.claim_id,c.requirement_id,c.claim_type,c.text,c.basis_requirement_ids,c.basis_evidence_ids,c.requested_commitment,c.target_sections,cd.decision,cd.reason_code FROM claims c JOIN claim_decisions cd ON cd.claim_id=c.id WHERE c.project_id=$1 ORDER BY c.created_at`,[projectId]),
-      this.pool.query(`SELECT r.req_id AS requirement_id,rc.covered,rc.approved_claim_ids FROM requirement_coverages rc JOIN requirements r ON r.id=rc.requirement_id WHERE rc.project_id=$1 ORDER BY r.ordinal`,[projectId])
+      this.pool.query(`SELECT id,status,error_code,error_message,audit_json,created_at,updated_at FROM production_beta_runs WHERE project_id=$1 ORDER BY created_at DESC LIMIT 1`,[projectId]),
+      this.pool.query(`SELECT rp.*,r.req_id AS requirement_id,r.source_status FROM response_plans rp JOIN requirements r ON r.id=rp.requirement_id WHERE rp.project_id=$1 ORDER BY r.ordinal`,[projectId]),
+      this.pool.query(`SELECT c.claim_id,c.requirement_id,c.claim_type,c.text,c.basis_requirement_ids,c.basis_evidence_ids,c.basis_requirement_source_statuses,c.requested_commitment,c.target_sections,cd.decision,cd.reason_code,r.source_status FROM claims c JOIN claim_decisions cd ON cd.claim_id=c.id LEFT JOIN requirements r ON r.id=c.requirement_id WHERE c.project_id=$1 ORDER BY c.created_at`,[projectId]),
+      this.pool.query(`SELECT r.req_id AS requirement_id,r.source_status,rc.covered,rc.approved_claim_ids FROM requirement_coverages rc JOIN requirements r ON r.id=rc.requirement_id WHERE rc.project_id=$1 ORDER BY r.ordinal`,[projectId])
     ]);
-    return { run:runs.rows[0]||null, plans:plans.rows, claims:claims.rows, coverage:coverage.rows, uncovered_requirement_ids:coverage.rows.filter((item)=>!item.covered).map((item)=>item.requirement_id) };
+    const run = runs.rows[0] || null;
+    return { run, plans:plans.rows, claims:claims.rows, coverage:coverage.rows,
+      provisional_requirements:run?.audit_json?.provisional_requirements || [],
+      provisional_count:Number(run?.audit_json?.provisional_count || 0),
+      uncovered_requirement_ids:coverage.rows.filter((item)=>!item.covered).map((item)=>item.requirement_id) };
   }
 
   async touchProject(id) {

@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { request } from './api.js';
 import {
   RequirementParsing,
+  RiskReview,
   formatRequirementLevel,
   formatRequirementSource,
   formatTenderParsePhase,
@@ -63,7 +64,7 @@ describe('需求解析状态渲染', () => {
       { source_verified: false, source_resolution_status: 'suggested', candidate_decision: 'pending' },
       { source_verified: false, source_resolution_status: 'unresolved', candidate_decision: 'pending' },
       { source_verified: false, candidate_decision: 'exclude' }
-    ])).toEqual({ total: 4, verified: 1, suggested: 1, unresolved: 1, excluded: 1, pending: 2 });
+    ])).toEqual({ total: 4, verified: 1, provisional: 2, suggested: 1, unresolved: 1, excluded: 1, pending: 2 });
   });
   it('展示文本提取、分片进度、汇总校验和失败分片', () => {
     expect(formatTenderParsePhase({ status: 'running', phase: 'text_extraction' })).toBe('文本提取');
@@ -157,5 +158,30 @@ describe('需求解析状态渲染', () => {
     expect(html).toContain('不可增删改或合并 REQ-ID');
     expect(html).toContain('基线已冻结');
     expect(html).not.toContain('重新解析');
+  });
+
+  it('provisional 展示三态数量、批量纳入、逐条确认和确认前风险摘要', () => {
+    const html = render({ id: 'job-provisional', file_name: file.original_name, status: 'succeeded', warnings_json: [], candidates: [
+      { id: 'c1', req_id: 'REQ-001', content: '一般暂定需求', source_excerpt: '原文', source_status: 'provisional', source_verified: false, candidate_decision: 'pending', is_mandatory: false },
+      { id: 'c2', req_id: 'REQ-002', content: '强制暂定需求', source_excerpt: '★原文', source_text: '★原文', source_status: 'provisional', source_verified: false, candidate_decision: 'pending', is_mandatory: true, mandatory_marker: '★' }
+    ] });
+    expect(html).toContain('provisional');
+    expect(html).toContain('2 条');
+    expect(html).toContain('批量纳入 provisional');
+    expect(html).toContain('逐条确认纳入');
+    expect(html).toContain('mandatory 暂定需求禁止自动确认');
+    expect(html).not.toContain('第 99 页');
+  });
+});
+
+describe('风险复核暂定基线', () => {
+  it('没有正文版本时仍展示 provisional 数量与清单', () => {
+    const html = renderToStaticMarkup(<RiskReview version={null} baseline={{ requirements: [
+      { req_id: 'REQ-001', content: '暂定接口需求', source_status: 'provisional', is_mandatory: false },
+      { req_id: 'REQ-002', content: '已定位需求', source_status: 'verified', is_mandatory: false }
+    ] }} onConfirmed={async () => {}} />);
+    expect(html).toContain('provisional 需求 1 条');
+    expect(html).toContain('暂定接口需求');
+    expect(html).not.toContain('已定位需求');
   });
 });

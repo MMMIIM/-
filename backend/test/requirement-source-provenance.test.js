@@ -51,7 +51,7 @@ test('生产确认门禁阻止 mandatory 未定位及 pending，并允许全部�
     { is_mandatory: true, source_verified: true, candidate_decision: 'include' },
     { is_mandatory: false, source_verified: false, candidate_decision: 'exclude' }
   ]);
-  assert.deepEqual(ready, { pending: 0, included: 1, excluded: 1, mandatory_unverified: 0, included_unverified: 0 });
+  assert.deepEqual(ready, { pending: 0, included: 1, excluded: 1, mandatory_unverified: 0, mandatory_provisional_pending: 0, included_unverified: 0 });
 });
 
 function reconciliationFixture({ previousFileHash = null, extractedHash } = {}) {

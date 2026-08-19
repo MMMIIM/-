@@ -35,6 +35,9 @@ export function validateDocument({ baselineRequirements, requirements, sections 
       errors.push({ code: 'SECTION_FINAL_TEXT_EMPTY', message: `${section.id || 'unknown'} 缺少 final_text。` });
       continue;
     }
+    if (/\bREQ-[A-Z0-9_-]+\b/i.test(section.final_text) || section.final_text.includes('来源未定位')) {
+      errors.push({ code: 'INTERNAL_REQUIREMENT_METADATA_EXPOSED', message: `${section.id || 'unknown'} 的正文包含内部需求标识或来源状态。` });
+    }
     const sectionRequirementIds = Array.isArray(section.requirement_ids) ? section.requirement_ids : [];
     if (!Array.isArray(section.requirement_ids)) {
       errors.push({ code: 'SECTION_REQUIREMENT_IDS_INVALID', message: `${section.id || 'unknown'} 缺少 requirement_ids。` });

@@ -27,7 +27,7 @@ function sourceUpdate(candidate, resolution) {
   const location = resolution.location;
   const verified = location.source_verified === true;
   return {
-    id: candidate.id, ...location,
+    id: candidate.id, ...location, source_status: verified ? 'verified' : 'provisional',
     candidate_decision: verified ? 'include' : (candidate.candidate_decision === 'exclude' ? 'exclude' : 'pending'),
     decision_reason: verified ? 'deterministic_source_reconciliation' : candidate.decision_reason,
     warning: resolution.warning
@@ -105,7 +105,10 @@ export class RequirementSourceService {
   async decideCandidateSource(candidateId, input) {
     assertUuid(candidateId, 'INVALID_CANDIDATE_ID', '候选需求 ID 格式无效。');
     if (input.action === 'exclude') {
-      return this.repository.saveCandidateSourceDecision({ candidateId, action: 'exclude', reason: String(input.reason || '').trim() || '人工排除' });
+      return this.repository.saveCandidateSourceDecision({ candidateId, action: 'exclude', reason: String(input.reason || '').trim() || '人工排除', confirmedBy: String(input.confirmed_by || '').trim() || 'current_user' });
+    }
+    if (input.action === 'include_provisional') {
+      return this.repository.saveCandidateProvisionalDecision({ candidateId, confirmedBy: String(input.confirmed_by || '').trim() || 'current_user' });
     }
     if (input.action !== 'associate') throw new AppError('SOURCE_DECISION_INVALID', '来源处理动作无效。', 400);
     const start = Number(input.source_paragraph_start); const end = Number(input.source_paragraph_end);
@@ -118,7 +121,7 @@ export class RequirementSourceService {
     }
     const original = paragraphs.map((item) => item.text).join('\n');
     return this.repository.saveCandidateSourceDecision({
-      candidateId, action: 'associate', reason: String(input.reason || '').trim() || '人工关联来源',
+      candidateId, action: 'associate', reason: String(input.reason || '').trim() || '人工关联来源', confirmedBy: String(input.confirmed_by || '').trim() || 'current_user',
       location: {
         source_page: paragraphs[0].page_number, source_paragraph: start,
         source_page_start: paragraphs[0].page_number, source_page_end: paragraphs.at(-1).page_number,
@@ -128,6 +131,12 @@ export class RequirementSourceService {
         source_resolution_status: 'verified', source_resolution_method: 'manual', source_verified: true
       }
     });
+  }
+
+  async includeProvisionalBatch(parseJobId, input) {
+    assertUuid(parseJobId, 'INVALID_JOB_ID', '需求解析任务 ID 格式无效。');
+    const confirmedBy = String(input.confirmed_by || '').trim() || 'current_user';
+    return this.repository.includeProvisionalCandidates({ parseJobId, confirmedBy });
   }
 }
 
@@ -139,7 +148,8 @@ export function summarizeSourceReadiness(candidates) {
     pending: candidates.filter((item) => decision(item) === 'pending').length,
     included: included.length,
     excluded: candidates.filter((item) => decision(item) === 'exclude').length,
-    mandatory_unverified: candidates.filter((item) => item.is_mandatory && !verified(item)).length,
+    mandatory_unverified: candidates.filter((item) => item.is_mandatory && !verified(item) && decision(item) !== 'exclude').length,
+    mandatory_provisional_pending: candidates.filter((item) => item.is_mandatory && !verified(item) && decision(item) === 'pending').length,
     included_unverified: included.filter((item) => !verified(item)).length
   };
 }

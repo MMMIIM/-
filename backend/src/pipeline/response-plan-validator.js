@@ -24,6 +24,7 @@ export class ResponsePlanValidator {
       byRequirement.set(plan.requirement_id, {
         ...plan,
         supporting_evidence_ids: evidenceIds,
+        source_status: requirement.source_status || 'verified',
         target_sections: routeRequirement(requirement)
       });
     }
