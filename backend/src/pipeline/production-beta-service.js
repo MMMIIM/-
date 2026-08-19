@@ -1,34 +1,26 @@
+import { AppError } from '../errors.js';
 import { EvidenceCatalogService } from './evidence-catalog-service.js';
-import { ResponsePlanValidator } from './response-plan-validator.js';
+import { ResponsePlanValidator,isWriterEligible } from './response-plan-validator.js';
 import { ClaimGateService } from './claim-gate-service.js';
 import { CoverageValidator } from './coverage-validator.js';
 
-export class ProductionBetaService {
-  constructor({ repository }) { this.repository = repository; }
+const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function projectId(value){if(!UUID.test(String(value||'')))throw new AppError('INVALID_PROJECT_ID','项目 ID 格式无效。',400);return value;}
+function normalizeRequirements(items){return(items||[]).map((r)=>({...r,text:r.text||r.content}));}
+function constraints(requirements){return requirements.filter((r)=>r.requirement_category==='contractual').map((r)=>({requirement_id:r.req_id,summary:r.text,source_status:r.source_status,confirmation_type:r.confirmation_type,conditions:['仅用于风险与责任边界控制，不形成企业能力承诺。']}));}
+function summary(requirements,plans=[],claims=[],coverage=null){return{baseline_requirement_count:requirements.length,writer_eligible_requirement_count:requirements.filter(isWriterEligible).length,plan_count:plans.length,full_count:plans.filter((p)=>p.response_status==='full').length,partial_count:plans.filter((p)=>p.response_status==='partial').length,confirm_count:plans.filter((p)=>p.response_status==='confirm').length,approved_claim_count:claims.filter((c)=>c.decision==='approved').length,rejected_claim_count:claims.filter((c)=>c.decision==='rejected').length,mandatory_uncovered_ids:coverage?.mandatory_uncovered_ids||[],uncovered_requirement_ids:coverage?.uncovered_requirement_ids||[],provisional_requirement_count:requirements.filter((r)=>r.source_status==='provisional').length,classification_review_count:requirements.filter((r)=>r.classification_review_required).length,atomicity_review_count:requirements.filter((r)=>r.atomicity_review_required).length};}
 
-  async process(projectId, input = {}) {
-    const requirements = await this.repository.getFormalRequirements(projectId);
-    if (!requirements.length) throw Object.assign(new Error('项目尚无已确认 Requirement 基线。'), { code: 'REQUIREMENT_BASELINE_REQUIRED', status: 409 });
-    try {
-      const persistedEvidence = typeof this.repository.listApprovedEvidence === 'function'
-        ? await this.repository.listApprovedEvidence(projectId)
-        : input.evidence;
-      const evidenceCatalog = new EvidenceCatalogService(persistedEvidence);
-      const plans = new ResponsePlanValidator({ requirements, evidenceCatalog }).validate(input.response_plans);
-      const claimGate = new ClaimGateService({ requirements, evidenceCatalog });
-      const evaluatedClaims = claimGate.evaluate(input.claims);
-      const coverage = new CoverageValidator().validate({ requirements, evaluatedClaims });
-      const provisionalRequirements = requirements.filter((item) => item.source_status === 'provisional');
-      const result = { evidence: evidenceCatalog.list(), plans, evaluatedClaims, coverage,
-        writer_input: claimGate.writerInput(evaluatedClaims),
-        provisional_requirements: provisionalRequirements.map((item) => ({ req_id: item.req_id, text: item.text, is_mandatory: item.is_mandatory })) };
-      return await this.repository.saveProductionBetaResult(projectId, result);
-    } catch (error) {
-      try { await this.repository.saveProductionBetaFailure(projectId, error); }
-      catch (auditError) { error.audit_persistence_error = auditError?.code || 'AUDIT_PERSISTENCE_FAILED'; }
-      throw error;
-    }
-  }
-
-  async get(projectId) { return this.repository.getProductionBetaResult(projectId); }
+export class ProductionBetaService{
+  constructor({repository,provider,ordinaryUncoveredSeverity='warning'}){this.repository=repository;this.provider=provider;this.coverageValidator=new CoverageValidator({ordinaryUncoveredSeverity});}
+  async context(id,{requireBaseline=true}={}){projectId(id);if(!await this.repository.getProject(id))throw new AppError('PROJECT_NOT_FOUND','项目不存在。',404);const baseline=await this.repository.getRequirementBaseline(id);if(!baseline){if(requireBaseline)throw new AppError('REQUIREMENT_BASELINE_REQUIRED','请先确认 Requirement Baseline，再运行响应规划。',409);return{baseline:null,requirements:[]};}const requirements=normalizeRequirements(await this.repository.getFormalRequirements(id));if(requireBaseline&&!requirements.length)throw new AppError('REQUIREMENT_BASELINE_EMPTY','已确认 Requirement Baseline 为空，不能运行响应规划。',409);return{baseline,requirements};}
+  async generatePlans(id){const{requirements}=await this.context(id);const evidence=await this.repository.listApprovedEvidence(id);const catalog=new EvidenceCatalogService(evidence);try{const generated=await this.provider.responsePlanning({requirements:requirements.filter(isWriterEligible),approved_evidence:evidence});const validated=new ResponsePlanValidator({requirements,evidenceCatalog:catalog}).validate(generated.items,generated.warnings);await this.repository.replaceResponsePlans(id,{plans:validated.plans,constraints:constraints(requirements),provider:generated.provider,warnings:validated.warnings});return this.getPlans(id);}catch(error){await this.safeFailure(id,error,'response_planning');throw error;}}
+  async getPlans(id){const{baseline,requirements}=await this.context(id,{requireBaseline:false});if(!baseline)return{has_confirmed_baseline:false,plans:[],constraint_records:[],summary:summary([],[])};const stored=await this.repository.listResponsePlans(id);return{has_confirmed_baseline:true,...stored,summary:summary(requirements,stored.plans)};}
+  async generateClaims(id){const{requirements}=await this.context(id);const stored=await this.repository.listResponsePlans(id);const eligible=requirements.filter(isWriterEligible);if(!stored.plans.length&&eligible.length)throw new AppError('RESPONSE_PLANS_REQUIRED','请先生成完整 ResponsePlan。',409);if(stored.plans.length!==eligible.length)throw new AppError('RESPONSE_PLANS_INCOMPLETE','ResponsePlan 数量与 writer eligible Requirement 不一致，请重新运行规划。',409);const evidence=await this.repository.listApprovedEvidence(id);const catalog=new EvidenceCatalogService(evidence);try{const generated=await this.provider.claimGeneration({requirements:eligible,plans:stored.plans,approved_evidence:evidence});const gate=new ClaimGateService({projectId:id,requirements,evidenceCatalog:catalog,plans:stored.plans});const gated=gate.evaluate(generated.items,generated.warnings);const coverage=this.coverageValidator.validate({requirements,plans:stored.plans,evaluatedClaims:gated.evaluated});await this.repository.replaceClaimsAndCoverage(id,{evaluatedClaims:gated.evaluated,coverage,provider:generated.provider,warnings:gated.warnings});return this.getClaims(id);}catch(error){await this.safeFailure(id,error,'claim_generation');throw error;}}
+  async getClaims(id){const{baseline,requirements}=await this.context(id,{requireBaseline:false});if(!baseline)return{has_confirmed_baseline:false,claims:[],approved_claims:[],rejected_claims:[],claim_decisions:[],claim_warnings:[],summary:summary([])};const claims=await this.repository.listClaims(id);const coverage=await this.coverage(id);return{has_confirmed_baseline:true,claims,approved_claims:claims.filter((c)=>c.decision==='approved'),rejected_claims:claims.filter((c)=>c.decision==='rejected'),claim_decisions:claims.map((c)=>({claim_id:c.claim_id,decision:c.decision,reason_code:c.reason_code,reason_message:c.reason_message,rule_version:c.rule_version,decided_at:c.decided_at})),claim_warnings:[...new Map(claims.flatMap((c)=>c.provider_warnings||[]).map((w)=>[`${w.code}:${w.message}`,w])).values()],summary:summary(requirements,await this.plansOnly(id),claims,coverage)};}
+  async plansOnly(id){return(await this.repository.listResponsePlans(id)).plans;}
+  async coverage(id){const{baseline,requirements}=await this.context(id,{requireBaseline:false});if(!baseline)return{has_confirmed_baseline:false,coverage:[],...this.coverageValidator.validate({requirements:[],plans:[],evaluatedClaims:[]})};const plans=await this.plansOnly(id);const claims=await this.repository.listClaims(id);const evaluated=claims.map((c)=>({claim:c,decision:{decision:c.decision}}));return{has_confirmed_baseline:true,...this.coverageValidator.validate({requirements,plans,evaluatedClaims:evaluated})};}
+  async decideClaim(claimId,decision,input={}){if(!/^CLM-[A-F0-9]{16}$/.test(String(claimId||'')))throw new AppError('INVALID_CLAIM_ID','Claim ID 格式无效。',400);const decidedBy=String(input.decided_by||'').trim();if(!decidedBy)throw new AppError('CLAIM_DECIDED_BY_REQUIRED','处理人不能为空。',422);const result=await this.repository.decideClaim(claimId,decision,decidedBy);const coverage=await this.coverage(result.project_id);await this.repository.replaceCoverage(result.project_id,coverage);return{decision:result.decision,coverage};}
+  async safeFailure(id,error,taskType){try{await this.repository.saveProductionBetaFailure(id,Object.assign(error,{task_type:taskType}));}catch(_error){}}
+  async process(id,input={}){try{const{requirements}=await this.context(id);const evidence=typeof this.repository.listApprovedEvidence==='function'?await this.repository.listApprovedEvidence(id):input.evidence;const catalog=new EvidenceCatalogService(evidence);const validated=new ResponsePlanValidator({requirements,evidenceCatalog:catalog}).validate(input.response_plans);const gate=new ClaimGateService({projectId:id,requirements,evidenceCatalog:catalog,plans:validated.plans});const gated=gate.evaluate(input.claims);const coverage=this.coverageValidator.validate({requirements,plans:validated.plans,evaluatedClaims:gated.evaluated});const result={evidence:catalog.list(),plans:validated.plans,evaluatedClaims:gated.evaluated,coverage,writer_input:gate.writerInput(gated.evaluated),provisional_requirements:requirements.filter((r)=>r.source_status==='provisional').map((r)=>({req_id:r.req_id,text:r.text,is_mandatory:r.is_mandatory}))};return await this.repository.saveProductionBetaResult(id,result);}catch(error){await this.safeFailure(id,error,'legacy_production_beta');throw error;}}
+  async get(id){return this.repository.getProductionBetaResult(id);}
 }

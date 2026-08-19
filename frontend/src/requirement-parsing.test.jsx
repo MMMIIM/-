@@ -6,6 +6,7 @@ import {
   RequirementParsing,
   RiskReview,
   CompanyMaterials,
+  ProductionBeta,
   formatRequirementLevel,
   formatRequirementSource,
   formatTenderParsePhase,
@@ -204,5 +205,17 @@ describe('企业材料与 Evidence 页面', () => {
       ['/api/projects/p/company-materials','POST'],['/api/evidences/e-1/approve','POST'],['/api/evidences/e-1/reject','POST']
     ]);
     expect(calls[0].options.body).toBeInstanceOf(FormData);
+  });
+});
+
+describe('ResponsePlan 与 Claim Gate 页面',()=>{
+  it('加载态明确说明 Coverage，不生成正文',()=>{
+    const html=renderToStaticMarkup(<ProductionBeta projectId="project-1" baseline={null}/>);
+    expect(html).toContain('正在读取响应规划');expect(html).toContain('Claim Gate');expect(html).toContain('Coverage');
+  });
+  it('规划、Claim、Coverage 与人工决策 API 路径和 method 固定',async()=>{
+    const calls=[];vi.stubGlobal('fetch',vi.fn(async(url,options={})=>{calls.push([url,options.method||'GET']);return new Response(JSON.stringify({ok:true,data:{}}),{status:200,headers:{'Content-Type':'application/json'}});}));
+    await api.getResponsePlans('p');await api.generateResponsePlans('p');await api.getClaims('p');await api.generateClaims('p');await api.getCoverage('p');await api.decideClaim('CLM-ABC','approve','reviewer');await api.decideClaim('CLM-ABC','reject','reviewer');
+    expect(calls).toEqual([['/api/projects/p/response-plans','GET'],['/api/projects/p/response-plans/generate','POST'],['/api/projects/p/claims','GET'],['/api/projects/p/claims/generate','POST'],['/api/projects/p/coverage','GET'],['/api/claims/CLM-ABC/approve','POST'],['/api/claims/CLM-ABC/reject','POST']]);
   });
 });

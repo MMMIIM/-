@@ -106,6 +106,12 @@ export const api = {
   getProductionBeta(projectId) {
     return request(`/api/projects/${projectId}/production-beta`);
   },
+  getResponsePlans(projectId) { return request(`/api/projects/${projectId}/response-plans`); },
+  generateResponsePlans(projectId) { return request(`/api/projects/${projectId}/response-plans/generate`, { method:'POST', body:'{}' }); },
+  getClaims(projectId) { return request(`/api/projects/${projectId}/claims`); },
+  generateClaims(projectId) { return request(`/api/projects/${projectId}/claims/generate`, { method:'POST', body:'{}' }); },
+  getCoverage(projectId) { return request(`/api/projects/${projectId}/coverage`); },
+  decideClaim(claimId, decision, decidedBy='current_user') { return request(`/api/claims/${claimId}/${decision}`, { method:'POST', body:JSON.stringify({decided_by:decidedBy}) }); },
   generate(projectId, inputs) {
     return request(`/api/projects/${projectId}/generation-jobs`, { method: 'POST', body: JSON.stringify(inputs) });
   },

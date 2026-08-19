@@ -212,13 +212,35 @@ export function createApp({ repository, storage, generationService, requirementP
   });
 
   app.get('/api/projects/:projectId/production-beta', async (req, res, next) => {
-    try { res.json({ ok: true, ...(await productionBetaService.get(req.params.projectId)) }); }
+    try { sendData(res, await productionBetaService.get(req.params.projectId)); }
     catch (error) { next(error); }
   });
 
   app.post('/api/projects/:projectId/production-beta', async (req, res, next) => {
-    try { res.status(201).json({ ok: true, ...(await productionBetaService.process(req.params.projectId, req.body)) }); }
+    try { sendData(res, await productionBetaService.process(req.params.projectId, req.body), 201); }
     catch (error) { next(error); }
+  });
+
+  app.post('/api/projects/:projectId/response-plans/generate', async (req,res,next)=>{
+    try{sendData(res,await productionBetaService.generatePlans(req.params.projectId),201);}catch(error){next(error);}
+  });
+  app.get('/api/projects/:projectId/response-plans',async(req,res,next)=>{
+    try{sendData(res,await productionBetaService.getPlans(req.params.projectId));}catch(error){next(error);}
+  });
+  app.post('/api/projects/:projectId/claims/generate',async(req,res,next)=>{
+    try{sendData(res,await productionBetaService.generateClaims(req.params.projectId),201);}catch(error){next(error);}
+  });
+  app.get('/api/projects/:projectId/claims',async(req,res,next)=>{
+    try{sendData(res,await productionBetaService.getClaims(req.params.projectId));}catch(error){next(error);}
+  });
+  app.get('/api/projects/:projectId/coverage',async(req,res,next)=>{
+    try{sendData(res,await productionBetaService.coverage(req.params.projectId));}catch(error){next(error);}
+  });
+  app.post('/api/claims/:claimId/approve',async(req,res,next)=>{
+    try{sendData(res,await productionBetaService.decideClaim(req.params.claimId,'approved',req.body||{}));}catch(error){next(error);}
+  });
+  app.post('/api/claims/:claimId/reject',async(req,res,next)=>{
+    try{sendData(res,await productionBetaService.decideClaim(req.params.claimId,'rejected',req.body||{}));}catch(error){next(error);}
   });
 
   app.get('/api/projects/:projectId/generation-jobs', async (req, res, next) => {

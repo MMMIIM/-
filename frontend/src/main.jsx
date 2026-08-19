@@ -71,30 +71,24 @@ function Workspace({ projectId, onBack }) {
   if (!data && !error) return <Loading text="正在加载项目工作台" full />;
   if (!data) return <PageShell title="项目工作台" onBack={onBack}><Notice kind="error">{error}</Notice></PageShell>;
   const latestVersion = data.versions?.[0];
-  return <PageShell title={data.project.name} subtitle={`项目工作台 · ${statusLabels[data.project.status] || data.project.status}`} onBack={onBack}><nav className="tabs">{tabs.map((tab) => <button className={activeTab === tab ? 'active' : ''} key={tab} onClick={() => setActiveTab(tab)}>{tab}</button>)}</nav>{error ? <Notice kind="error">{error}</Notice> : null}{activeTab === '概览' ? <Overview data={data} /> : null}{activeTab === '招标文件' ? <TenderFiles projectId={projectId} files={data.tenderFiles} onChanged={load} /> : null}{activeTab === '需求解析' ? <RequirementParsing projectId={projectId} files={data.tenderFiles} parseJobs={data.parseJobs || []} baseline={data.requirementBaseline} onChanged={load} /> : null}{activeTab === '响应规划' ? <ProductionBeta projectId={projectId} /> : null}{activeTab === '企业材料' ? <CompanyMaterials projectId={projectId} baseline={data.requirementBaseline} /> : null}{activeTab === '标书' ? <BidDocument project={data.project} version={latestVersion} onGenerated={load} /> : null}{activeTab === '风险复核' ? <RiskReview version={latestVersion} baseline={data.requirementBaseline} onConfirmed={load} /> : null}{activeTab === '版本记录' ? <Versions versions={data.versions} /> : null}</PageShell>;
+  return <PageShell title={data.project.name} subtitle={`项目工作台 · ${statusLabels[data.project.status] || data.project.status}`} onBack={onBack}><nav className="tabs">{tabs.map((tab) => <button className={activeTab === tab ? 'active' : ''} key={tab} onClick={() => setActiveTab(tab)}>{tab}</button>)}</nav>{error ? <Notice kind="error">{error}</Notice> : null}{activeTab === '概览' ? <Overview data={data} /> : null}{activeTab === '招标文件' ? <TenderFiles projectId={projectId} files={data.tenderFiles} onChanged={load} /> : null}{activeTab === '需求解析' ? <RequirementParsing projectId={projectId} files={data.tenderFiles} parseJobs={data.parseJobs || []} baseline={data.requirementBaseline} onChanged={load} /> : null}{activeTab === '响应规划' ? <ProductionBeta projectId={projectId} baseline={data.requirementBaseline} /> : null}{activeTab === '企业材料' ? <CompanyMaterials projectId={projectId} baseline={data.requirementBaseline} /> : null}{activeTab === '标书' ? <BidDocument project={data.project} version={latestVersion} onGenerated={load} /> : null}{activeTab === '风险复核' ? <RiskReview version={latestVersion} baseline={data.requirementBaseline} onConfirmed={load} /> : null}{activeTab === '版本记录' ? <Versions versions={data.versions} /> : null}</PageShell>;
 }
 
-function ProductionBeta({ projectId }) {
-  const [state, setState] = useState({ loading: true, data: null, error: null });
-  useEffect(() => {
-    let active = true;
-    api.getProductionBeta(projectId)
-      .then((data) => { if (active) setState({ loading: false, data, error: null }); })
-      .catch((error) => { if (active) setState({ loading: false, data: null, error }); });
-    return () => { active = false; };
-  }, [projectId]);
-  if (state.loading) return <EmptyCard title="正在读取响应规划" text="加载处理状态、Claim 与覆盖矩阵。" />;
-  if (state.error) return <Notice kind="error">{state.error.code} · {state.error.message}</Notice>;
-  const data = state.data || {};
-  const approved = (data.claims || []).filter((item) => item.decision === 'approved');
-  const rejected = (data.claims || []).filter((item) => item.decision === 'rejected');
-  return <section className="card">
-    <div className="section-heading"><div><h2>Response Plan 与 Claim 门禁</h2><p>后端控制范围、依据、风险决策和覆盖；本阶段不生成正文。</p></div><Badge type={data.run?.status}>{data.run?.status || '尚未处理'}</Badge></div>
-    {data.run?.status === 'failed' ? <Notice kind="error">{data.run.error_code} · {data.run.error_message}</Notice> : null}
-    <div className="parse-summary"><Stat label="Response Plan" value={`${data.plans?.length || 0} 条`} /><Stat label="Approved Claim" value={`${approved.length} 条`} /><Stat label="Rejected Claim" value={`${rejected.length} 条`} /><Stat label="未覆盖 Requirement" value={`${data.uncovered_requirement_ids?.length || 0} 条`} /></div>
-    {data.uncovered_requirement_ids?.length ? <Notice kind="warning">未覆盖：{data.uncovered_requirement_ids.join('、')}</Notice> : null}
-    <div className="table-scroll"><table className="data-table"><thead><tr><th>Claim</th><th>类型</th><th>正文</th><th>门禁</th><th>原因</th></tr></thead><tbody>{(data.claims || []).map((claim) => <tr key={claim.claim_id}><td>{claim.claim_id}</td><td>{claim.claim_type}</td><td>{claim.text}</td><td><Badge type={claim.decision}>{claim.decision}</Badge></td><td>{claim.reason_code || '—'}</td></tr>)}</tbody></table></div>
-  </section>;
+export function ProductionBeta({ projectId, baseline }) {
+  const [state,setState]=useState({loading:true,running:false,plans:{plans:[],summary:{}},claims:{claims:[],summary:{}},coverage:{},error:null});
+  async function load(){try{const [plans,claims,coverage]=await Promise.all([api.getResponsePlans(projectId),api.getClaims(projectId),api.getCoverage(projectId)]);setState((current)=>({...current,loading:false,running:false,plans,claims,coverage,error:null}));}catch(error){setState((current)=>({...current,loading:false,running:false,error}));}}
+  useEffect(()=>{load();},[projectId]);
+  async function run(){setState((current)=>({...current,running:true,error:null}));try{await api.generateResponsePlans(projectId);await api.generateClaims(projectId);await load();}catch(error){setState((current)=>({...current,running:false,error}));}}
+  async function decide(claimId,decision){try{await api.decideClaim(claimId,decision);await load();}catch(error){setState((current)=>({...current,error}));}}
+  if(state.loading)return <EmptyCard title="正在读取响应规划" text="加载 ResponsePlan、Claim Gate 与 Coverage。" />;
+  const summary={...state.plans.summary,...state.claims.summary};const claims=state.claims.claims||[];const coverage=state.coverage||{};const confirmed=Boolean(baseline||state.plans.has_confirmed_baseline);
+  return <div className="document-layout"><section className="card">
+    <div className="section-heading"><div><h2>ResponsePlan → Claim → Coverage</h2><p>只消费已确认基线与 approved Evidence；本阶段不生成正文。</p></div><button className="primary-inline" disabled={!confirmed||state.running} onClick={run}>{state.running?'运行中…':'重新运行闭环'}</button></div>
+    {!confirmed?<Notice kind="warning">请先确认 Requirement Baseline，响应规划按钮已禁用。</Notice>:null}{state.error?<Notice kind="error">{state.error.code} · {state.error.message}</Notice>:null}
+    <div className="parse-summary"><Stat label="基线 Requirement" value={summary.baseline_requirement_count||0}/><Stat label="writer eligible" value={summary.writer_eligible_requirement_count||0}/><Stat label="Plan" value={summary.plan_count||0}/><Stat label="full / partial / confirm" value={`${summary.full_count||0} / ${summary.partial_count||0} / ${summary.confirm_count||0}`}/><Stat label="Approved / Rejected Claim" value={`${summary.approved_claim_count||0} / ${summary.rejected_claim_count||0}`}/><Stat label="mandatory uncovered" value={(coverage.mandatory_uncovered_ids||[]).length}/><Stat label="普通 uncovered" value={(coverage.uncovered_requirement_ids||[]).filter((id)=>!(coverage.mandatory_uncovered_ids||[]).includes(id)).length}/><Stat label="provisional" value={summary.provisional_requirement_count||0}/><Stat label="待分类" value={summary.classification_review_count||0}/><Stat label="待原子性复核" value={summary.atomicity_review_count||0}/></div>
+    {(coverage.mandatory_uncovered_ids||[]).length?<Notice kind="error">mandatory 未覆盖：{coverage.mandatory_uncovered_ids.join('、')}</Notice>:null}
+    <h3>ResponsePlan 明细</h3><div className="table-scroll"><table className="data-table"><thead><tr><th>Requirement</th><th>来源/分类</th><th>状态</th><th>摘要与条件</th><th>Evidence</th><th>章节</th></tr></thead><tbody>{(state.plans.plans||[]).map((plan)=><tr key={plan.requirement_id}><td>{plan.requirement_id}</td><td>{plan.source_status} · {plan.requirement_category}</td><td>{plan.response_status}</td><td>{plan.response_summary}{plan.conditions?.length?<small>条件：{plan.conditions.join('；')}</small>:null}</td><td>{plan.supporting_evidence_ids?.join('、')||'—'}</td><td>{plan.target_sections?.join('、')}</td></tr>)}</tbody></table></div>
+  </section><section className="card"><h2>Claim Gate 明细</h2><div className="table-scroll"><table className="data-table"><thead><tr><th>Claim</th><th>Requirement / Evidence</th><th>承诺</th><th>内容</th><th>决策与原因</th><th>人工处理</th></tr></thead><tbody>{claims.map((claim)=><tr key={claim.claim_id}><td>{claim.claim_id}</td><td>{claim.requirement_id}<small>{claim.basis_evidence_ids?.join('、')||'无 Evidence'}</small></td><td>{claim.requested_commitment}</td><td>{claim.text}</td><td><Badge type={claim.decision}>{claim.decision}</Badge><small>{claim.reason_code||'PASS'} · {claim.reason_message}</small></td><td><button disabled={claim.gate_decision==='rejected'} onClick={()=>decide(claim.claim_id,'approve')}>批准</button><button onClick={()=>decide(claim.claim_id,'reject')}>拒绝</button></td></tr>)}</tbody></table></div></section></div>;
 }
 
 function Overview({ data }) {

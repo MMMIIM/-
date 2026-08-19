@@ -1,14 +1,5 @@
-export class CoverageValidator {
-  validate({ requirements, evaluatedClaims }) {
-    const approved = evaluatedClaims.filter((item) => item.decision.decision === 'approved');
-    const covered = new Set(approved.flatMap((item) => item.claim.basis_requirement_ids || []));
-    const coverage = requirements.map((requirement) => ({
-      requirement_id: requirement.req_id,
-      is_mandatory: Boolean(requirement.is_mandatory),
-      covered: covered.has(requirement.req_id),
-      approved_claim_ids: approved.filter((item) => item.claim.basis_requirement_ids?.includes(requirement.req_id)).map((item) => item.claim.claim_id)
-    }));
-    const uncoveredMandatory = coverage.filter((item) => item.is_mandatory && !item.covered).map((item) => item.requirement_id);
-    return { coverage, uncovered_requirement_ids: coverage.filter((item) => !item.covered).map((item) => item.requirement_id), valid: uncoveredMandatory.length === 0, uncovered_mandatory_ids: uncoveredMandatory };
-  }
+import { isWriterEligible } from './response-plan-validator.js';
+export class CoverageValidator{
+  constructor({ordinaryUncoveredSeverity='warning'}={}){this.ordinaryUncoveredSeverity=ordinaryUncoveredSeverity==='critical'?'critical':'warning';}
+  validate({requirements,plans=[],evaluatedClaims=[]}){const eligible=requirements.filter(isWriterEligible);const planIds=new Set(plans.map((p)=>p.requirement_id));const approved=evaluatedClaims.filter((x)=>x.decision.decision==='approved');const covered=new Set(approved.flatMap((x)=>x.claim.basis_requirement_ids||[]));const coverage=eligible.map((r)=>{const ok=covered.has(r.req_id);return{requirement_id:r.req_id,is_mandatory:Boolean(r.is_mandatory),writer_eligible:true,source_status:r.source_status,requirement_category:r.requirement_category,covered:ok,severity:ok?'pass':(r.is_mandatory?'critical':this.ordinaryUncoveredSeverity),approved_claim_ids:approved.filter((x)=>x.claim.basis_requirement_ids?.includes(r.req_id)).map((x)=>x.claim.claim_id)};});const uncovered=coverage.filter((x)=>!x.covered).map((x)=>x.requirement_id);const mandatoryUncovered=coverage.filter((x)=>x.is_mandatory&&!x.covered).map((x)=>x.requirement_id);const counts={writer_eligible_requirement_count:eligible.length,planned_requirement_count:eligible.filter((r)=>planIds.has(r.req_id)).length,requirements_with_approved_claim_count:coverage.filter((x)=>x.covered).length,uncovered_requirement_ids:uncovered,mandatory_requirement_count:eligible.filter((r)=>r.is_mandatory).length,mandatory_uncovered_ids:mandatoryUncovered,provisional_requirement_count:eligible.filter((r)=>r.source_status==='provisional').length,classification_review_count:requirements.filter((r)=>r.classification_review_required).length,atomicity_review_count:requirements.filter((r)=>r.atomicity_review_required).length};const critical=coverage.some((x)=>x.severity==='critical');return{coverage,...counts,valid:!critical,risk_status:critical?'critical':uncovered.length?'warning':'pass'};}
 }

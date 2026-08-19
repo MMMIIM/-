@@ -12,6 +12,10 @@
     "reconcile:sources": "node scripts/reconcile-requirement-sources.js",
     "eval:requirements": "node scripts/eval-requirements.js",
     "eval:live": "node scripts/eval-live.js",
+    "check:response-planning": "node scripts/production-task-check.js response_planning",
+    "smoke:response-planning": "node scripts/production-task-smoke.js response_planning",
+    "check:claim-generation": "node scripts/production-task-check.js claim_generation",
+    "smoke:claim-generation": "node scripts/production-task-smoke.js claim_generation",
     "test": "node --test",
     "test:postgres": "node --test integration/postgres.integration.js"
   },

@@ -13,6 +13,7 @@ import { ProductionBetaService } from './pipeline/production-beta-service.js';
 import { RequirementSourceService } from './requirement-source-service.js';
 import { CompanyMaterialService } from './company-material-service.js';
 import { EvidenceService } from './evidence-service.js';
+import { createProductionTaskProvider } from './pipeline/production-task-provider.js';
 
 const directory = dirname(fileURLToPath(import.meta.url));
 const runtime = createBackendRuntime();
@@ -36,7 +37,7 @@ const requirementParseService = new RequirementParseService({
   extractionGateway: createRequirementExtractionGateway(runtime.createSemanticGatewayClient()),
   env: runtimeEnv
 });
-const productionBetaService = new ProductionBetaService({ repository });
+const productionBetaService = new ProductionBetaService({ repository, provider:createProductionTaskProvider({env:runtimeEnv}), ordinaryUncoveredSeverity:runtimeEnv.V43_ORDINARY_UNCOVERED_SEVERITY });
 const requirementSourceService = new RequirementSourceService({ repository, storage, textExtractor: extractTenderText });
 const companyMaterialService = new CompanyMaterialService({ repository, storage, textExtractor: extractTenderText });
 const evidenceService = new EvidenceService({ repository });

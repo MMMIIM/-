@@ -14,6 +14,7 @@ import { RequirementSourceService } from '../src/requirement-source-service.js';
 import { createApp } from '../src/app.js';
 import { CompanyMaterialService } from '../src/company-material-service.js';
 import { EvidenceService } from '../src/evidence-service.js';
+import { ProductionTaskProvider } from '../src/pipeline/production-task-provider.js';
 
 const directory = dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: resolve(directory, '../.env') });
@@ -720,4 +721,23 @@ test('B阶段企业材料与 Evidence Catalog PostgreSQL/HTTP 约束', async () 
     assert.equal(rejectedDecision.approved_by,null); assert.equal(rejectedDecision.approved_at,null);
     const catalog=await evidenceService.list(project.id); assert.deepEqual(catalog.counts,{draft:0,approved:1,rejected:1});
   } finally { if(server) await new Promise((resolve)=>server.close(resolve)); await pool.query(`DELETE FROM projects WHERE id=$1`,[project.id]); await pool.end(); }
+});
+
+test('V4.3 ResponsePlan、Claim Gate 与 Coverage HTTP 闭环',async()=>{
+  const pool=createPool();const repository=new PgRepository(pool);const project=await repository.createProject({name:`Planning loop ${Date.now()}`});const emptyProject=await repository.createProject({name:`Empty baseline ${Date.now()}`});let server;
+  try{
+    const productionBetaService=new ProductionBetaService({repository,provider:new ProductionTaskProvider({provider:'mock'})});
+    const app=createApp({repository,storage:{},generationService:{},requirementParseService:{},requirementSourceService:{},productionBetaService,companyMaterialService:{},evidenceService:{}});
+    server=await new Promise((resolve)=>{const listener=app.listen(0,'127.0.0.1',()=>resolve(listener));});const base=`http://127.0.0.1:${server.address().port}`;
+    let response=await fetch(`${base}/api/projects/${project.id}/response-plans`);let body=await response.json();assert.equal(response.status,200);assert.equal(body.data.has_confirmed_baseline,false);
+    response=await fetch(`${base}/api/projects/${project.id}/response-plans/generate`,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});body=await response.json();assert.equal(response.status,409);assert.equal(body.error.code,'REQUIREMENT_BASELINE_REQUIRED');
+    for(const target of [project,emptyProject]){const file=(await pool.query(`INSERT INTO tender_files(project_id,original_name,storage_key,mime_type,size_bytes) VALUES($1,'baseline.txt',$2,'text/plain',1) RETURNING *`,[target.id,`baseline-${target.id}`])).rows[0];const job=(await pool.query(`INSERT INTO tender_parse_jobs(project_id,tender_file_id,status,phase) VALUES($1,$2,'succeeded','succeeded') RETURNING *`,[target.id,file.id])).rows[0];const baseline=(await pool.query(`INSERT INTO requirement_baselines(project_id,parse_job_id,status) VALUES($1,$2,'building') RETURNING *`,[target.id,job.id])).rows[0];if(target.id===project.id){const rows=[['REQ-001','★必须支持审计日志',true,'verified','verified','technical',true],['REQ-002','提供实施计划',false,'provisional','provisional_individual','implementation',true],['REQ-003','报价不得超过预算',false,'verified','verified','commercial',false],['REQ-004','项目背景',false,'verified','verified','context',false]];for(let i=0;i<rows.length;i++){const r=rows[i];await pool.query(`INSERT INTO requirements(baseline_id,project_id,req_id,content,source_excerpt,source_text,is_mandatory,mandatory_marker,target_sections,ordinal,source_status,confirmation_type,requirement_category,writer_eligible,classification_review_required,atomicity_review_required) VALUES($1,$2,$3,$4,$4,$4,$5,CASE WHEN $5 THEN '★' ELSE NULL END,'[]'::jsonb,$6,$7,$8,$9,$10,false,true)`,[baseline.id,target.id,r[0],r[1],r[2],i+1,r[3],r[4],r[5],r[6]]);}}await pool.query(`UPDATE requirement_baselines SET status='confirmed',confirmed_at=now(),confirmed_by='test',confirmation_type='verified' WHERE id=$1`,[baseline.id]);}
+    response=await fetch(`${base}/api/projects/${emptyProject.id}/response-plans/generate`,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});body=await response.json();assert.equal(response.status,409);assert.equal(body.error.code,'REQUIREMENT_BASELINE_EMPTY');
+    response=await fetch(`${base}/api/projects/${project.id}/response-plans/generate`,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});body=await response.json();assert.equal(response.status,201);assert.equal(body.data.plans.length,2);assert.equal(body.data.constraint_records.length,0);assert.equal(body.data.plans[1].source_status,'provisional');assert.equal(body.data.plans.some((item)=>item.requirement_id==='REQ-003'),false);
+    response=await fetch(`${base}/api/projects/${project.id}/claims/generate`,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});body=await response.json();assert.equal(response.status,201);assert.equal(body.data.approved_claims.length,2);assert.equal(body.data.summary.writer_eligible_requirement_count,2);
+    response=await fetch(`${base}/api/projects/${project.id}/coverage`);body=await response.json();assert.equal(body.data.writer_eligible_requirement_count,2);assert.equal(body.data.requirements_with_approved_claim_count,2);assert.equal(body.data.provisional_requirement_count,1);assert.deepEqual(body.data.mandatory_uncovered_ids,[]);
+    const mandatoryClaim=(await repository.listClaims(project.id)).find((item)=>item.requirement_id==='REQ-001');
+    response=await fetch(`${base}/api/claims/${mandatoryClaim.claim_id}/reject`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({decided_by:'reviewer'})});body=await response.json();assert.equal(response.status,200);assert.deepEqual(body.data.coverage.mandatory_uncovered_ids,['REQ-001']);assert.equal(body.data.coverage.risk_status,'critical');
+    response=await fetch(`${base}/api/claims/${mandatoryClaim.claim_id}/approve`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({decided_by:'reviewer'})});body=await response.json();assert.equal(response.status,200);assert.deepEqual(body.data.coverage.mandatory_uncovered_ids,[]);
+  }finally{if(server)await new Promise((resolve)=>server.close(resolve));await pool.query(`DELETE FROM projects WHERE id=ANY($1::uuid[])`,[[project.id,emptyProject.id]]);await pool.end();}
 });
