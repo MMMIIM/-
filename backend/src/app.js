@@ -227,6 +227,7 @@ export function createApp({ repository, storage, generationService, requirementP
   app.get('/api/projects/:projectId/response-plans',async(req,res,next)=>{
     try{sendData(res,await productionBetaService.getPlans(req.params.projectId));}catch(error){next(error);}
   });
+  app.patch('/api/projects/:projectId/response-plans/:requirementId',async(req,res,next)=>{try{sendData(res,await productionBetaService.editPlan(req.params.projectId,req.params.requirementId,req.body||{}));}catch(error){next(error);}});
   app.post('/api/projects/:projectId/claims/generate',async(req,res,next)=>{
     try{sendData(res,await productionBetaService.generateClaims(req.params.projectId),201);}catch(error){next(error);}
   });

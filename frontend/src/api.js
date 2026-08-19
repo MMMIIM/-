@@ -108,6 +108,7 @@ export const api = {
   },
   getResponsePlans(projectId) { return request(`/api/projects/${projectId}/response-plans`); },
   generateResponsePlans(projectId) { return request(`/api/projects/${projectId}/response-plans/generate`, { method:'POST', body:'{}' }); },
+  editResponsePlan(projectId,requirementId,input){return request(`/api/projects/${projectId}/response-plans/${encodeURIComponent(requirementId)}`,{method:'PATCH',body:JSON.stringify(input)});},
   getClaims(projectId) { return request(`/api/projects/${projectId}/claims`); },
   generateClaims(projectId) { return request(`/api/projects/${projectId}/claims/generate`, { method:'POST', body:'{}' }); },
   getCoverage(projectId) { return request(`/api/projects/${projectId}/coverage`); },

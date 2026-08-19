@@ -30,7 +30,7 @@ export class ClaimGateService {
       const commitment=String(raw.requested_commitment||'reference_only'); const plan=this.planById.get(raw.requirement_id);
       if(!COMMITMENTS.has(commitment)){reasonCode='CLAIM_COMMITMENT_INVALID';reasonMessage='requested_commitment 无效。';}
       if(commitment==='confirmed'&&(primary?.source_status==='provisional'||plan?.conditions?.length)){reasonCode='CLAIM_CONDITION_REQUIRED';reasonMessage='暂定来源或带条件 Plan 只能形成 conditional/reference_only Claim。';}
-      if(commitment==='conditional'&&!String(raw.text||'').match(/条件|范围|为准|确认|前提|依据/)){reasonCode='CLAIM_CONDITION_MISSING';reasonMessage='conditional Claim 必须保留关键条件或前提。';}
+      if(commitment==='conditional'&&raw.claim_type!=='requirement_response'&&!String(raw.text||'').match(/条件|范围|为准|确认|前提|依据/)){reasonCode='CLAIM_CONDITION_MISSING';reasonMessage='conditional Claim 必须保留关键条件或前提。';}
       if(ENTERPRISE_TYPES.has(raw.claim_type)&&!evidenceIds.length){reasonCode='ENTERPRISE_EVIDENCE_REQUIRED';reasonMessage='案例、资质、人员或企业能力 Claim 必须有 approved Evidence。';}
       const basisText=basis.map((item)=>item.text).join('\n');
       if(tokens(raw.text).some((token)=>!basisText.includes(token))&&!evidenceIds.length){reasonCode='UNSUPPORTED_QUANTITATIVE_OR_PRODUCT_CLAIM';reasonMessage='Claim 含 Requirement/Evidence 未支持的指标、期限、数量或技术选型。';}

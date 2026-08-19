@@ -1,5 +1,7 @@
 # V4.3 四个 Dify Workflow 人工配置清单
 
+> 架构更新：生产只配置 Section Drafting 和可选 Targeted Revision。Response Planning、Claim Generation 以下内容仅作 deprecated/experimental 历史参考，不发布、不配置 Key、不执行其 check/smoke。
+
 ## 统一规则与顺序
 
 建议依次配置：Response Planning → Claim Generation → Section Drafting → Targeted Revision。每个应用都创建独立 Workflow API Key；Start 统一创建三个必填 String：`task_type`、`task_instruction`、`task_payload_json`。User Prompt 可直接复制：
