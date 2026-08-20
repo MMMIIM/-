@@ -56,6 +56,18 @@ export class EvidenceService {
       applicableRequirementIds:requirementIds, usageScope:String(input.usage_scope || '').trim() || null, riskNotes:String(input.risk_notes || '').trim() || null });
   }
 
+  async getRequirementReview(projectId,requirementId,input={}){
+    assertUuid(projectId,'INVALID_PROJECT_ID','项目 ID 格式无效。');const req=String(requirementId||'').trim();if(!req)throw new AppError('INVALID_REQUIREMENT_ID','Requirement ID 格式无效。',400);const runId=input.retrieval_run_id==null||String(input.retrieval_run_id).trim()===''?null:String(input.retrieval_run_id).trim();if(runId)assertUuid(runId,'INVALID_RETRIEVAL_RUN_ID','Retrieval Run ID 格式无效。');const result=await this.repository.getEvidenceReviewContext({projectId,requirementId:req,retrievalRunId:runId});if(!result)throw new AppError('EVIDENCE_REQUIREMENT_INVALID','Requirement 不存在或未确认。',404);if(runId&&!result.retrieval_run)throw new AppError('RETRIEVAL_RUN_NOT_FOUND','Retrieval Run 不存在或不属于该 Requirement。',404);return result;
+  }
+
+  async createFromRetrieval(projectId,requirementId,input={}){
+    assertUuid(projectId,'INVALID_PROJECT_ID','项目 ID 格式无效。');const req=String(requirementId||'').trim();const runId=String(input.retrieval_run_id||'').trim();assertUuid(runId,'INVALID_RETRIEVAL_RUN_ID','Retrieval Run ID 格式无效。');const chunkId=String(input.chunk_id||'').trim();if(!chunkId)throw new AppError('EVIDENCE_RETRIEVAL_CHUNK_REQUIRED','Retrieval Result Chunk 不能为空。',422);
+    for(const key of ['source_text','source_hash','source_page','source_paragraph','material_id','source_chunk_id','content','approval_status','validity_status','usable_for_claims','usage_scope','risk_notes'])if(Object.hasOwn(input,key))throw new AppError('EVIDENCE_RETRIEVAL_FIELD_FORBIDDEN',`客户端不得提供 ${key}。`,422);
+    const source=await this.repository.getRetrievalEvidenceSource({projectId,requirementId:req,retrievalRunId:runId,chunkId});if(!source)throw new AppError('EVIDENCE_RETRIEVAL_RESULT_INVALID','Retrieval Result 不存在、跨项目或与 Requirement 不一致。',422);if(source.status!=='succeeded')throw new AppError('EVIDENCE_RETRIEVAL_RUN_NOT_READY','Retrieval Run 尚未成功完成。',409);
+    const existing=await this.repository.findEvidenceBySourceChunk(projectId,chunkId);if(existing)return{evidence:existing,created:false};
+    const evidence=await this.create(projectId,{material_id:source.material_id,source_chunk_id:source.chunk_id,evidence_type:input.evidence_type||source.material_type,title:input.title||`${source.original_name} 来源证据`,content:source.source_text,evidence_scope:input.evidence_scope,capability_tags:input.capability_tags,metadata:input.metadata});return{evidence,created:true};
+  }
+
   async decide(evidenceId, decision, input = {}) {
     assertUuid(evidenceId, 'INVALID_EVIDENCE_ID', 'Evidence ID 格式无效。');
     if (!['approved','rejected'].includes(decision)) throw new AppError('EVIDENCE_DECISION_INVALID', 'Evidence 审批结论无效。', 422);
@@ -80,6 +92,7 @@ export class EvidenceService {
     if(source==='retrieval'){assertUuid(retrievalRunId,'INVALID_RETRIEVAL_RUN_ID','Retrieval Run ID 格式无效。');if(!retrievalChunkId)throw new AppError('EVIDENCE_RETRIEVAL_PROVENANCE_REQUIRED','Retrieval Mapping 必须提供 Retrieval Result 来源。',422);}else if(retrievalRunId||retrievalChunkId)throw new AppError('EVIDENCE_RETRIEVAL_PROVENANCE_NOT_ALLOWED','manual Mapping 不得携带 Retrieval provenance。',422);
     const invalid=await this.repository.findInvalidConfirmedRequirementIds(projectId,[String(input.requirement_id||'').trim()]);
     if(invalid.length)throw new AppError('EVIDENCE_REQUIREMENT_INVALID','Mapping 必须关联已确认 Requirement。',422);
+    const eligibility=await this.repository.validateEvidenceForMapping(projectId,input.evidence_id);if(!eligibility)throw new AppError('EVIDENCE_NOT_FOUND','Enterprise Evidence 不存在或不属于当前项目。',404);if(eligibility.approval_status!=='approved')throw new AppError('EVIDENCE_NOT_APPROVED','只有已批准 Enterprise Evidence 才能建立 Mapping。',409);if(eligibility.source_lineage_verified!==true)throw new AppError('EVIDENCE_SOURCE_LINEAGE_REQUIRED','Enterprise Evidence 缺少可信 Material/Chunk 来源。',422);
     if(source==='retrieval'&&!await this.repository.validateRetrievalMappingProvenance({projectId,requirementId:String(input.requirement_id).trim(),evidenceId:input.evidence_id,retrievalRunId,retrievalChunkId}))throw new AppError('EVIDENCE_RETRIEVAL_PROVENANCE_INVALID','Retrieval Result 不存在、跨项目或与 Requirement/Evidence 来源不一致。',422);
     const mapping=await this.repository.createRequirementEvidenceMapping({projectId,requirementId:String(input.requirement_id).trim(),evidenceId:input.evidence_id,mappingSource:source,supportLevel,reviewNotes,retrievalRunId,retrievalChunkId,createdBy});
     if(!mapping)throw new AppError('EVIDENCE_NOT_FOUND','Enterprise Evidence 不存在或不属于当前项目。',404); return mapping;
