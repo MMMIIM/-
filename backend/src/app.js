@@ -227,6 +227,9 @@ export function createApp({ repository, storage, generationService, requirementP
   app.post('/api/evidence-mappings/:mappingId/reject',async(req,res,next)=>{
     try{sendData(res,{mapping:await evidenceService.decideMapping(req.params.mappingId,'rejected',req.body||{})});}catch(error){next(error);}
   });
+  app.get('/api/projects/:projectId/requirements/:requirementId/evidence-mappings',async(req,res,next)=>{
+    try{sendData(res,await evidenceService.listMappings(req.params.projectId,req.params.requirementId));}catch(error){next(error);}
+  });
   app.get('/api/projects/:projectId/requirements/:requirementId/enterprise-evidence',async(req,res,next)=>{
     try{sendData(res,await evidenceService.listApprovedForRequirement(req.params.projectId,req.params.requirementId));}catch(error){next(error);}
   });
