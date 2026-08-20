@@ -46,8 +46,12 @@ test('完整 migration chain 支持 fresh、ambiguous existing 与连续重放',
     const run=async()=>{for(const file of files)await client.query(await readFile(resolve(migrationDirectory,file),'utf8'));};
     await run();
     const project=(await client.query(`INSERT INTO projects(name) VALUES('migration fresh') RETURNING id`)).rows[0];const tender=(await client.query(`INSERT INTO tender_files(project_id,original_name,storage_key,mime_type,size_bytes) VALUES($1,'x.txt',$2,'text/plain',1) RETURNING id`,[project.id,`${schema}/x.txt`])).rows[0];const job=(await client.query(`INSERT INTO tender_parse_jobs(project_id,tender_file_id) VALUES($1,$2) RETURNING id`,[project.id,tender.id])).rows[0];await client.query(`INSERT INTO requirement_candidates(parse_job_id,req_id,content,source_excerpt,source_text,ordinal,source_resolution_status) VALUES($1,'REQ-001','x','x','x',1,'ambiguous')`,[job.id]);
+    const materialTypes=['company_profile','qualification','case','project_case','product','product_documentation','personnel','technical_solution','technical_whitepaper','delivery_capability','historical_bid','other'];
+    for(const [index,materialType] of materialTypes.entries())await client.query(`INSERT INTO company_materials(project_id,original_name,storage_key,material_type,mime_type,size_bytes,file_hash) VALUES($1,$2,$3,$4,'text/plain',1,$5)`,[project.id,`${materialType}.txt`,`${schema}/${materialType}.txt`,materialType,`migration-hash-${index}`]);
     await run();await run();
     const status=await client.query(`SELECT source_resolution_status FROM requirement_candidates WHERE parse_job_id=$1`,[job.id]);assert.equal(status.rows[0].source_resolution_status,'ambiguous');
+    const persistedTypes=(await client.query(`SELECT material_type FROM company_materials WHERE project_id=$1 ORDER BY material_type`,[project.id])).rows.map((item)=>item.material_type);assert.deepEqual(persistedTypes,[...materialTypes].sort());
+    await assert.rejects(()=>client.query(`INSERT INTO company_materials(project_id,original_name,storage_key,material_type,mime_type,size_bytes,file_hash) VALUES($1,'invalid.txt','invalid.txt','invalid_material_type','text/plain',1,'invalid-hash')`,[project.id]),(error)=>error.code==='23514');
   }finally{await client.query('SET search_path TO public');await client.query(`DROP SCHEMA IF EXISTS ${quoted} CASCADE`);client.release();await pool.end();}
 });
 
