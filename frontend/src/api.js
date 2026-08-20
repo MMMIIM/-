@@ -95,6 +95,25 @@ export const api = {
   decideEvidence(evidenceId, decision, decidedBy = 'current_user') {
     return request(`/api/evidences/${evidenceId}/${decision}`, { method:'POST', body:JSON.stringify({ decided_by:decidedBy }) });
   },
+  reviewEvidenceValidity(evidenceId, validityStatus, reviewedBy='current_user') {
+    return request(`/api/evidences/${evidenceId}/validity`, { method:'PATCH', body:JSON.stringify({ validity_status:validityStatus, reviewed_by:reviewedBy }) });
+  },
+  getRequirementEvidenceReview(projectId,requirementId,retrievalRunId='') {
+    const query=retrievalRunId?`?retrieval_run_id=${encodeURIComponent(retrievalRunId)}`:'';
+    return request(`/api/projects/${projectId}/requirements/${encodeURIComponent(requirementId)}/evidence-review${query}`);
+  },
+  createEvidenceCandidateFromRetrieval(projectId,requirementId,input) {
+    return request(`/api/projects/${projectId}/requirements/${encodeURIComponent(requirementId)}/evidence-candidates/from-retrieval`,{method:'POST',body:JSON.stringify(input)});
+  },
+  proposeEvidenceMapping(projectId,input) {
+    return request(`/api/projects/${projectId}/evidence-mappings`,{method:'POST',body:JSON.stringify(input)});
+  },
+  listEvidenceMappings(projectId,requirementId) {
+    return request(`/api/projects/${projectId}/requirements/${encodeURIComponent(requirementId)}/evidence-mappings`);
+  },
+  decideEvidenceMapping(mappingId,decision,reviewedBy='current_user',input={}) {
+    return request(`/api/evidence-mappings/${mappingId}/${decision}`,{method:'POST',body:JSON.stringify({...input,reviewed_by:reviewedBy})});
+  },
   getCandidateSourceReview(candidateId) {
     return request(`/api/requirement-candidates/${candidateId}/source-review`);
   },

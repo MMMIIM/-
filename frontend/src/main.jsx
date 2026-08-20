@@ -3,15 +3,16 @@ import { createRoot } from 'react-dom/client';
 import { marked } from 'marked';
 import { ArrowLeft, CheckCircle2, Clipboard, Download, FilePlus2, FileSearch, FolderPlus, Loader2, RefreshCw, Sparkles } from 'lucide-react';
 import { api } from './api.js';
+import { EvidenceReview } from './evidence-review.jsx';
+import { MATERIAL_TYPES } from './material-types.js';
 import './styles.css';
 
-const tabs = ['概览', '招标文件', '需求解析', '响应规划', '企业材料', '标书', '风险复核', '版本记录'];
+const tabs = ['概览', '招标文件', '需求解析', '响应规划', '企业材料', '企业证据复核', '标书', '风险复核', '版本记录'];
 const projectTypes = ['智慧城市', '数据治理', '系统集成', '园区运营', '应急管理', 'AI 应用'];
 const outputModes = ['技术标初稿', '售前方案', '响应矩阵', '风险清单'];
 const statusLabels = { draft: '草稿', generating: '生成中', review: '待复核', requirements_review: '需求待确认', requirements_confirmed: '需求已确认', confirmed: '已确认', candidate: '候选', queued: '排队中', running: '进行中', succeeded: '成功', failed: '失败' };
 const riskLabels = { pass: '通过', warning: '警告', critical: '严重' };
 const requirementCategories = ['technical','performance','implementation','delivery','service','contractual','commercial','qualification','context'];
-const materialTypes = ['company_profile','qualification','case','product','personnel','technical_solution','delivery_capability','other'];
 
 function formatDate(value, fallback = '—') {
   return value ? new Intl.DateTimeFormat('zh-CN', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) : fallback;
@@ -71,7 +72,7 @@ function Workspace({ projectId, onBack }) {
   if (!data && !error) return <Loading text="正在加载项目工作台" full />;
   if (!data) return <PageShell title="项目工作台" onBack={onBack}><Notice kind="error">{error}</Notice></PageShell>;
   const latestVersion = data.versions?.[0];
-  return <PageShell title={data.project.name} subtitle={`项目工作台 · ${statusLabels[data.project.status] || data.project.status}`} onBack={onBack}><nav className="tabs">{tabs.map((tab) => <button className={activeTab === tab ? 'active' : ''} key={tab} onClick={() => setActiveTab(tab)}>{tab}</button>)}</nav>{error ? <Notice kind="error">{error}</Notice> : null}{activeTab === '概览' ? <Overview data={data} /> : null}{activeTab === '招标文件' ? <TenderFiles projectId={projectId} files={data.tenderFiles} onChanged={load} /> : null}{activeTab === '需求解析' ? <RequirementParsing projectId={projectId} files={data.tenderFiles} parseJobs={data.parseJobs || []} baseline={data.requirementBaseline} onChanged={load} /> : null}{activeTab === '响应规划' ? <ProductionBeta projectId={projectId} baseline={data.requirementBaseline} /> : null}{activeTab === '企业材料' ? <CompanyMaterials projectId={projectId} baseline={data.requirementBaseline} /> : null}{activeTab === '标书' ? <BidDocument project={data.project} version={latestVersion} onGenerated={load} /> : null}{activeTab === '风险复核' ? <RiskReview version={latestVersion} baseline={data.requirementBaseline} onConfirmed={load} /> : null}{activeTab === '版本记录' ? <Versions versions={data.versions} /> : null}</PageShell>;
+  return <PageShell title={data.project.name} subtitle={`项目工作台 · ${statusLabels[data.project.status] || data.project.status}`} onBack={onBack}><nav className="tabs">{tabs.map((tab) => <button className={activeTab === tab ? 'active' : ''} key={tab} onClick={() => setActiveTab(tab)}>{tab}</button>)}</nav>{error ? <Notice kind="error">{error}</Notice> : null}{activeTab === '概览' ? <Overview data={data} /> : null}{activeTab === '招标文件' ? <TenderFiles projectId={projectId} files={data.tenderFiles} onChanged={load} /> : null}{activeTab === '需求解析' ? <RequirementParsing projectId={projectId} files={data.tenderFiles} parseJobs={data.parseJobs || []} baseline={data.requirementBaseline} onChanged={load} /> : null}{activeTab === '响应规划' ? <ProductionBeta projectId={projectId} baseline={data.requirementBaseline} /> : null}{activeTab === '企业材料' ? <CompanyMaterials projectId={projectId} baseline={data.requirementBaseline} /> : null}{activeTab === '企业证据复核' ? <EvidenceReview projectId={projectId} requirements={data.requirementBaseline?.requirements||[]} /> : null}{activeTab === '标书' ? <BidDocument project={data.project} version={latestVersion} onGenerated={load} /> : null}{activeTab === '风险复核' ? <RiskReview version={latestVersion} baseline={data.requirementBaseline} onConfirmed={load} /> : null}{activeTab === '版本记录' ? <Versions versions={data.versions} /> : null}</PageShell>;
 }
 
 function PlanEditor({plan,onSave}){const [edit,setEdit]=useState(false);const [form,setForm]=useState({response_status:plan.response_status,implementation_actions:(plan.implementation_actions||[]).join('\n'),conditions:(plan.conditions||[]).join('\n'),capability_gap:plan.capability_gap||'',supporting_evidence_ids:(plan.supporting_evidence_ids||[]).join(','),edit_reason:''});if(!edit)return <button onClick={()=>setEdit(true)}>编辑</button>;const submit=()=>onSave(plan.requirement_id,{response_status:form.response_status,implementation_actions:form.implementation_actions.split('\n').map(x=>x.trim()).filter(Boolean),conditions:form.conditions.split('\n').map(x=>x.trim()).filter(Boolean),capability_gap:form.capability_gap,supporting_evidence_ids:form.supporting_evidence_ids.split(',').map(x=>x.trim()).filter(Boolean),edit_reason:form.edit_reason,edited_by:'current_user'}).then(()=>setEdit(false));return <div className="plan-editor"><select value={form.response_status} onChange={e=>setForm({...form,response_status:e.target.value})}><option>full</option><option>partial</option><option>confirm</option></select><textarea placeholder="实施动作，每行一项" value={form.implementation_actions} onChange={e=>setForm({...form,implementation_actions:e.target.value})}/><textarea placeholder="条件，每行一项" value={form.conditions} onChange={e=>setForm({...form,conditions:e.target.value})}/><input placeholder="capability gap" value={form.capability_gap} onChange={e=>setForm({...form,capability_gap:e.target.value})}/><input placeholder="approved Evidence ID，逗号分隔" value={form.supporting_evidence_ids} onChange={e=>setForm({...form,supporting_evidence_ids:e.target.value})}/><input placeholder="编辑原因" value={form.edit_reason} onChange={e=>setForm({...form,edit_reason:e.target.value})}/><button disabled={!form.edit_reason.trim()} onClick={submit}>提交人工审核</button><button onClick={()=>setEdit(false)}>取消</button></div>;}
@@ -117,6 +118,7 @@ function TenderFiles({ projectId, files, onChanged }) {
 }
 
 export function CompanyMaterials({ projectId, baseline }) {
+  const materialTypes = MATERIAL_TYPES;
   const [state, setState] = useState({ loading:true, error:'', materials:[], evidences:[], counts:{draft:0,approved:0,rejected:0} });
   const [upload, setUpload] = useState({ file:null, material_type:'company_profile' });
   const [form, setForm] = useState({ material_id:'', evidence_type:'technical_solution', title:'', content:'', source_text:'', source_page:'', source_paragraph:'', applicable_requirement_ids:[], usage_scope:'', risk_notes:'' });
