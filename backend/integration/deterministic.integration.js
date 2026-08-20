@@ -5,6 +5,8 @@ import {resolve} from 'node:path';
 import {createPool,PgRepository} from '../src/db.js';
 import {ProductionBetaService} from '../src/pipeline/production-beta-service.js';
 import {buildCanonicalRequirements} from '../src/pipeline/canonical-requirements.js';
+import {chunkEnterpriseMaterial} from '../src/pipeline/enterprise-material-chunker.js';
+import {EvidenceService} from '../src/evidence-service.js';
 dotenv.config({path:resolve('.env')});
 
 test('Requirement source resolution 四状态可持久化且非法状态仍被拒绝',async()=>{const pool=createPool();const repository=new PgRepository(pool);const project=await repository.createProject({name:`Source resolution states ${Date.now()}`});try{const file=(await pool.query(`INSERT INTO tender_files(project_id,original_name,storage_key,mime_type,size_bytes) VALUES($1,'states.txt',$2,'text/plain',1) RETURNING *`,[project.id,`states-${project.id}`])).rows[0];const job=await repository.createParseJob({projectId:project.id,tenderFileId:file.id});for(const [index,status] of ['verified','ambiguous','suggested','unresolved'].entries()){const inserted=await pool.query(`INSERT INTO requirement_candidates(parse_job_id,req_id,content,source_excerpt,source_text,ordinal,source_resolution_status,source_verified) VALUES($1,$2,$3,$3,$3,$4,$5,$6) RETURNING source_resolution_status,source_verified`,[job.id,`REQ-${String(index+1).padStart(3,'0')}`,`状态 ${status}`,index+1,status,status==='verified']);assert.equal(inserted.rows[0].source_resolution_status,status);assert.equal(inserted.rows[0].source_verified,status==='verified');}await assert.rejects(()=>pool.query(`INSERT INTO requirement_candidates(parse_job_id,req_id,content,source_excerpt,source_text,ordinal,source_resolution_status) VALUES($1,'REQ-999','非法状态','非法状态','非法状态',999,'resolved')`,[job.id]),(error)=>error.code==='23514'&&error.constraint==='requirement_candidates_source_resolution_status_check');}finally{await pool.query(`DELETE FROM projects WHERE id=$1`,[project.id]);await pool.end();}});
@@ -63,4 +65,22 @@ test('Claim Gate v2 Evaluation 追加保存历史、查询 latest 且隔离项�
   await assert.rejects(()=>pool.query(`UPDATE claim_gate_evaluations SET dimensions=jsonb_set(dimensions,'{scope_match}','"broad"') WHERE id=$1`,[first.id]),(error)=>error.code==='23514');
   await assert.rejects(()=>pool.query(`UPDATE claim_gate_evaluations SET reason_codes='["MEDICAL_RULE"]' WHERE id=$1`,[first.id]),(error)=>error.code==='23514');
  }finally{await pool.query(`DELETE FROM projects WHERE id=ANY($1::uuid[])`,[[project.id,other.id]]);await pool.end();}
+});
+
+test('approved Mapping 是 Enterprise Claim 与 v2 Evaluation 的正式持久化来源',async()=>{
+ const pool=createPool();const repository=new PgRepository(pool);const project=await repository.createProject({name:`Mapped enterprise claim ${Date.now()}`});
+ try{
+  const file=(await pool.query(`INSERT INTO tender_files(project_id,original_name,storage_key,mime_type,size_bytes) VALUES($1,'mapped.txt',$2,'text/plain',1) RETURNING *`,[project.id,`mapped-${project.id}`])).rows[0];
+  const job=(await pool.query(`INSERT INTO tender_parse_jobs(project_id,tender_file_id,status,phase) VALUES($1,$2,'succeeded','succeeded') RETURNING *`,[project.id,file.id])).rows[0];
+  const baseline=(await pool.query(`INSERT INTO requirement_baselines(project_id,parse_job_id,status) VALUES($1,$2,'building') RETURNING *`,[project.id,job.id])).rows[0];
+  const requirement=(await pool.query(`INSERT INTO requirements(baseline_id,project_id,req_id,content,source_excerpt,source_text,is_mandatory,target_sections,ordinal,source_status,confirmation_type,requirement_category,writer_eligible,classification_review_required,atomicity_review_required) VALUES($1,$2,'REQ-030','系统应支持数据交换。','系统应支持数据交换。','系统应支持数据交换。',false,'["chapter-05"]',1,'verified','verified','technical',true,false,false) RETURNING *`,[baseline.id,project.id])).rows[0];
+  await pool.query(`UPDATE requirement_baselines SET status='confirmed',confirmed_at=now(),confirmed_by='integration',confirmation_type='verified' WHERE id=$1`,[baseline.id]);
+  const material=await repository.createCompanyMaterial({projectId:project.id,originalName:'case.txt',storageKey:`mapped-${project.id}/case.txt`,materialType:'project_case',mimeType:'text/plain',sizeBytes:8,fileHash:`mapped-${project.id}`});const sourceText='公开公告证明已完成相关项目。';await repository.completeCompanyMaterialExtraction(material.id,sourceText);const chunks=chunkEnterpriseMaterial(material.id,sourceText);await repository.replaceMaterialChunks(material.id,chunks);
+  const evidenceService=new EvidenceService({repository});const evidence=await evidenceService.create(project.id,{material_id:material.id,source_chunk_id:chunks[0].chunk_id,evidence_type:'project_case',title:'项目公告',content:sourceText,applicable_requirement_ids:['REQ-030'],evidence_scope:['award_fact']});await evidenceService.setValidity(evidence.id,{validity_status:'active',reviewed_by:'integration'});await evidenceService.decide(evidence.id,'approved',{decided_by:'integration'});
+  const mapping=(await pool.query(`INSERT INTO requirement_evidence_mappings(requirement_id,evidence_id,mapping_source,mapping_status,support_level,created_by,reviewed_by,reviewed_at) VALUES($1,$2,'manual','approved','partial_support','integration','integration',now()) RETURNING *`,[requirement.id,evidence.id])).rows[0];
+  const service=new ProductionBetaService({repository});await service.generatePlans(project.id);await service.generateClaims(project.id);
+  const claims=await repository.listClaims(project.id);assert.deepEqual(claims.map((item)=>item.claim_type),['requirement_response','evidence_support']);assert.equal(claims[0].decision,'approved');assert.equal(claims[1].decision,'rejected');
+  const evaluation=await repository.getLatestClaimGateEvaluation(project.id,claims[1].claim_id);assert.equal(evaluation.decision,'needs_review');assert.equal(evaluation.writer_eligible,false);assert.deepEqual(evaluation.mapping_ids,[mapping.mapping_id]);assert.equal(evaluation.dimensions.support_sufficiency,'partial');
+  await pool.query(`DELETE FROM requirement_evidence_mappings WHERE mapping_id=$1`,[mapping.mapping_id]);await service.generateClaims(project.id);assert.deepEqual((await repository.listClaims(project.id)).map((item)=>item.claim_type),['requirement_response']);
+ }finally{await pool.query(`DELETE FROM projects WHERE id=$1`,[project.id]);await pool.end();}
 });
