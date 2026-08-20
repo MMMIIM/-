@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import { sanitizeAuditJson, sanitizeAuditText } from './audit.js';
 import { normalizeTenderFileRecord, normalizeUtf8FileName } from './file-name.js';
 import { assertMandatoryRequirementMetadata } from './pipeline/mandatory-requirement.js';
+import { createClaimGateEvaluationContract } from './pipeline/claim-gate-v2-contract.js';
 
 const { Pool } = pg;
 
@@ -1109,6 +1110,13 @@ export class PgRepository {
   }
 
   async listClaims(projectId){const {rows}=await this.pool.query(`SELECT c.claim_id,c.claim_type,c.text,c.basis_requirement_ids,c.basis_evidence_ids,c.basis_requirement_source_statuses,c.requested_commitment,c.target_sections,c.source_status,c.requirement_category,c.confirmation_type,c.classification_review_required,c.atomicity_review_required,c.provider,c.provider_warnings,cd.decision,cd.gate_decision,cd.manual_decision,cd.reason_code,cd.reason_message,cd.rule_version,cd.decided_at,cd.decided_by,r.req_id AS requirement_id FROM claims c JOIN claim_decisions cd ON cd.claim_id=c.id JOIN requirements r ON r.id=c.requirement_id WHERE c.project_id=$1 ORDER BY r.ordinal,c.created_at`,[projectId]);return rows;}
+
+  async createClaimGateEvaluation({projectId,claimId,requirementId,evaluation}){
+    const value=createClaimGateEvaluationContract(evaluation);const{rows}=await this.pool.query(`INSERT INTO claim_gate_evaluations(claim_id,project_id,requirement_id,decision,reason_codes,dimensions,allowed_scope,required_conditions,evidence_ids,mapping_ids,rule_version,deterministic_checks,semantic_assessment,semantic_assessment_used,human_review_required,writer_eligible,legacy_decision_projection,evaluated_by) SELECT c.id,c.project_id,r.id,$4,$5::jsonb,$6::jsonb,$7::jsonb,$8::jsonb,$9::jsonb,$10::jsonb,$11,$12::jsonb,$13::jsonb,$14,$15,$16,$17,$18 FROM claims c JOIN requirements r ON r.id=c.requirement_id WHERE c.claim_id=$2 AND c.project_id=$1 AND r.project_id=$1 AND r.req_id=$3 RETURNING *`,[projectId,claimId,requirementId,value.decision,JSON.stringify(value.reason_codes),JSON.stringify(value.dimensions),JSON.stringify(value.allowed_scope),JSON.stringify(value.required_conditions),JSON.stringify(value.evidence_ids),JSON.stringify(value.mapping_ids),value.rule_version,JSON.stringify(value.deterministic_checks),value.semantic_assessment===null?null:JSON.stringify(value.semantic_assessment),value.semantic_assessment_used,value.human_review_required,value.writer_eligible,value.legacy_decision_projection,value.evaluated_by]);if(!rows[0])throw Object.assign(new Error('Claim、Requirement 不存在或不属于同一项目。'),{code:'CLAIM_GATE_EVALUATION_TARGET_INVALID',status:422});return rows[0];
+  }
+  async getClaimGateEvaluation(evaluationId){const{rows}=await this.pool.query(`SELECT cge.*,c.claim_id AS claim_identifier,r.req_id AS requirement_identifier FROM claim_gate_evaluations cge JOIN claims c ON c.id=cge.claim_id JOIN requirements r ON r.id=cge.requirement_id WHERE cge.id=$1`,[evaluationId]);return rows[0]||null;}
+  async listClaimGateEvaluations(projectId,{claimId=null}={}){const{rows}=await this.pool.query(`SELECT cge.*,c.claim_id AS claim_identifier,r.req_id AS requirement_identifier FROM claim_gate_evaluations cge JOIN claims c ON c.id=cge.claim_id JOIN requirements r ON r.id=cge.requirement_id WHERE cge.project_id=$1 AND ($2::text IS NULL OR c.claim_id=$2) ORDER BY cge.evaluated_at,cge.created_at,cge.id`,[projectId,claimId]);return rows;}
+  async getLatestClaimGateEvaluation(projectId,claimId){const{rows}=await this.pool.query(`SELECT cge.*,c.claim_id AS claim_identifier,r.req_id AS requirement_identifier FROM claim_gate_evaluations cge JOIN claims c ON c.id=cge.claim_id JOIN requirements r ON r.id=cge.requirement_id WHERE cge.project_id=$1 AND c.claim_id=$2 ORDER BY cge.evaluated_at DESC,cge.created_at DESC,cge.id DESC LIMIT 1`,[projectId,claimId]);return rows[0]||null;}
 
   async listCoverage(projectId){const {rows}=await this.pool.query(`SELECT r.req_id AS requirement_id,rc.covered,rc.approved_claim_ids,rc.severity,rc.source_status,rc.requirement_category,rc.is_mandatory,rc.writer_eligible FROM requirement_coverages rc JOIN requirements r ON r.id=rc.requirement_id WHERE rc.project_id=$1 ORDER BY r.ordinal`,[projectId]);return rows;}
 

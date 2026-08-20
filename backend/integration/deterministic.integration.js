@@ -39,3 +39,28 @@ test('Batch 生成模式与规则版本持久化且旧记录默认兼容',async(
   task=(await repository.getDocumentGeneration(generation.id)).tasks[0];assert.equal(task.generation_mode,'deterministic_template');assert.equal(task.generation_rule_version,'4.3-batch-routing-1');
  }finally{await pool.query(`DELETE FROM projects WHERE id=$1`,[project.id]);await pool.end();}
 });
+
+test('Claim Gate v2 Evaluation 追加保存历史、查询 latest 且隔离项目',async()=>{
+ const pool=createPool();const repository=new PgRepository(pool);const project=await repository.createProject({name:`Claim Gate v2 ${Date.now()}`});const other=await repository.createProject({name:`Claim Gate v2 other ${Date.now()}`});
+ const dims={subject_match:'unknown',scope_match:'unknown',status_match:'unknown',quantitative_match:'not_applicable',entity_match:'unknown',validity_match:'unknown',support_sufficiency:'unknown',source_authority:'unknown'};
+ const evaluation=(decision,extra={})=>({decision,reason_codes:decision==='needs_review'?['HUMAN_REVIEW_REQUIRED']:[],dimensions:dims,allowed_scope:[],required_conditions:[],evidence_ids:[],mapping_ids:[],deterministic_checks:[{check:'contract_only',result:'unknown'}],semantic_assessment:null,semantic_assessment_used:false,human_review_required:decision==='needs_review',evaluated_by:'integration',...extra});
+ try{
+  const file=(await pool.query(`INSERT INTO tender_files(project_id,original_name,storage_key,mime_type,size_bytes) VALUES($1,'cg.txt',$2,'text/plain',1) RETURNING *`,[project.id,`claim-gate-${project.id}`])).rows[0];
+  const job=(await pool.query(`INSERT INTO tender_parse_jobs(project_id,tender_file_id,status,phase) VALUES($1,$2,'succeeded','succeeded') RETURNING *`,[project.id,file.id])).rows[0];
+  const baseline=(await pool.query(`INSERT INTO requirement_baselines(project_id,parse_job_id,status) VALUES($1,$2,'building') RETURNING *`,[project.id,job.id])).rows[0];
+  const requirement=(await pool.query(`INSERT INTO requirements(baseline_id,project_id,req_id,content,source_excerpt,source_text,is_mandatory,target_sections,ordinal,source_status,confirmation_type,requirement_category,writer_eligible) VALUES($1,$2,'REQ-001','通用需求','通用需求','通用需求',false,'[]',1,'verified','verified','technical',true) RETURNING *`,[baseline.id,project.id])).rows[0];
+  await pool.query(`UPDATE requirement_baselines SET status='confirmed',confirmed_at=now(),confirmed_by='integration',confirmation_type='verified' WHERE id=$1`,[baseline.id]);
+  const claim=(await pool.query(`INSERT INTO claims(claim_id,project_id,requirement_id,claim_type,text,basis_requirement_ids,basis_evidence_ids,target_sections) VALUES('CLM-1111111111111111',$1,$2,'requirement_response','通用需求','["REQ-001"]','[]','[]') RETURNING *`,[project.id,requirement.id])).rows[0];
+  await pool.query(`INSERT INTO claim_decisions(claim_id,decision,gate_decision) VALUES($1,'approved','approved')`,[claim.id]);
+  const first=await repository.createClaimGateEvaluation({projectId:project.id,claimId:claim.claim_id,requirementId:'REQ-001',evaluation:evaluation('allow')});assert.equal(first.writer_eligible,true);assert.equal(first.legacy_decision_projection,'approved');
+  const second=await repository.createClaimGateEvaluation({projectId:project.id,claimId:claim.claim_id,requirementId:'REQ-001',evaluation:evaluation('needs_review')});assert.equal(second.writer_eligible,false);assert.equal(second.legacy_decision_projection,null);
+  const third=await repository.createClaimGateEvaluation({projectId:project.id,claimId:claim.claim_id,requirementId:'REQ-001',evaluation:evaluation('reject')});assert.equal(third.legacy_decision_projection,'rejected');
+  const history=await repository.listClaimGateEvaluations(project.id,{claimId:claim.claim_id});assert.equal(history.length,3);assert.deepEqual(history.map((item)=>item.decision),['allow','needs_review','reject']);
+  const loaded=await repository.getClaimGateEvaluation(second.id);assert.equal(loaded.claim_identifier,claim.claim_id);assert.equal(loaded.requirement_identifier,'REQ-001');assert.deepEqual(loaded.dimensions,dims);
+  const latest=await repository.getLatestClaimGateEvaluation(project.id,claim.claim_id);assert.equal(latest.id,third.id);assert.equal(latest.decision,'reject');
+  await assert.rejects(()=>repository.createClaimGateEvaluation({projectId:other.id,claimId:claim.claim_id,requirementId:'REQ-001',evaluation:evaluation('allow')}),(error)=>error.code==='CLAIM_GATE_EVALUATION_TARGET_INVALID');
+  await assert.rejects(()=>pool.query(`UPDATE claim_gate_evaluations SET decision='approved' WHERE id=$1`,[first.id]),(error)=>error.code==='23514');
+  await assert.rejects(()=>pool.query(`UPDATE claim_gate_evaluations SET dimensions=jsonb_set(dimensions,'{scope_match}','"broad"') WHERE id=$1`,[first.id]),(error)=>error.code==='23514');
+  await assert.rejects(()=>pool.query(`UPDATE claim_gate_evaluations SET reason_codes='["MEDICAL_RULE"]' WHERE id=$1`,[first.id]),(error)=>error.code==='23514');
+ }finally{await pool.query(`DELETE FROM projects WHERE id=ANY($1::uuid[])`,[[project.id,other.id]]);await pool.end();}
+});
