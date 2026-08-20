@@ -9,6 +9,7 @@ function ids(values) { return [...new Set((values || []).map((value) => String(v
 const VALIDITY=new Set(['active','expired','revoked','unknown']);
 const MAPPING_SOURCES=new Set(['manual','retrieval']);
 const MAPPING_DECISIONS=new Set(['approved','rejected']);
+const SUPPORT_LEVELS=new Set(['full_support','partial_support','reference_only']);
 function object(value){return value&&typeof value==='object'&&!Array.isArray(value)?value:{};}
 function metadata(value){const input=object(value);const result=Object.fromEntries(['issuer','valid_from','valid_until','customer','product','version'].filter((key)=>input[key]!=null&&String(input[key]).trim()).map((key)=>[key,String(input[key]).trim()]));for(const key of ['valid_from','valid_until'])if(result[key]&&!/^\d{4}-\d{2}-\d{2}$/.test(result[key]))throw new AppError('EVIDENCE_METADATA_INVALID',`${key} 必须是 YYYY-MM-DD。`,422);return result;}
 
@@ -74,17 +75,24 @@ export class EvidenceService {
     assertUuid(projectId,'INVALID_PROJECT_ID','项目 ID 格式无效。'); assertUuid(input.evidence_id,'INVALID_EVIDENCE_ID','Evidence ID 格式无效。');
     const source=String(input.mapping_source||'manual'); if(!MAPPING_SOURCES.has(source))throw new AppError('EVIDENCE_MAPPING_SOURCE_INVALID','Mapping 来源无效。',422);
     const createdBy=String(input.created_by||'').trim(); if(!createdBy)throw new AppError('EVIDENCE_MAPPING_CREATED_BY_REQUIRED','Mapping 创建人不能为空。',422);
+    const supportLevel=input.support_level==null||String(input.support_level).trim()===''?null:String(input.support_level).trim();if(supportLevel&&!SUPPORT_LEVELS.has(supportLevel))throw new AppError('EVIDENCE_SUPPORT_LEVEL_INVALID','support_level 必须是 full_support、partial_support 或 reference_only。',422);
+    const reviewNotes=String(input.review_notes||'').trim()||null;const retrievalRunId=input.retrieval_run_id==null||String(input.retrieval_run_id).trim()===''?null:String(input.retrieval_run_id).trim();const retrievalChunkId=input.retrieval_chunk_id==null||String(input.retrieval_chunk_id).trim()===''?null:String(input.retrieval_chunk_id).trim();
+    if(source==='retrieval'){assertUuid(retrievalRunId,'INVALID_RETRIEVAL_RUN_ID','Retrieval Run ID 格式无效。');if(!retrievalChunkId)throw new AppError('EVIDENCE_RETRIEVAL_PROVENANCE_REQUIRED','Retrieval Mapping 必须提供 Retrieval Result 来源。',422);}else if(retrievalRunId||retrievalChunkId)throw new AppError('EVIDENCE_RETRIEVAL_PROVENANCE_NOT_ALLOWED','manual Mapping 不得携带 Retrieval provenance。',422);
     const invalid=await this.repository.findInvalidConfirmedRequirementIds(projectId,[String(input.requirement_id||'').trim()]);
     if(invalid.length)throw new AppError('EVIDENCE_REQUIREMENT_INVALID','Mapping 必须关联已确认 Requirement。',422);
-    const mapping=await this.repository.createRequirementEvidenceMapping({projectId,requirementId:String(input.requirement_id).trim(),evidenceId:input.evidence_id,mappingSource:source,createdBy});
+    if(source==='retrieval'&&!await this.repository.validateRetrievalMappingProvenance({projectId,requirementId:String(input.requirement_id).trim(),evidenceId:input.evidence_id,retrievalRunId,retrievalChunkId}))throw new AppError('EVIDENCE_RETRIEVAL_PROVENANCE_INVALID','Retrieval Result 不存在、跨项目或与 Requirement/Evidence 来源不一致。',422);
+    const mapping=await this.repository.createRequirementEvidenceMapping({projectId,requirementId:String(input.requirement_id).trim(),evidenceId:input.evidence_id,mappingSource:source,supportLevel,reviewNotes,retrievalRunId,retrievalChunkId,createdBy});
     if(!mapping)throw new AppError('EVIDENCE_NOT_FOUND','Enterprise Evidence 不存在或不属于当前项目。',404); return mapping;
   }
 
   async decideMapping(mappingId,decision,input={}){
     assertUuid(mappingId,'INVALID_MAPPING_ID','Mapping ID 格式无效。'); if(!MAPPING_DECISIONS.has(decision))throw new AppError('EVIDENCE_MAPPING_DECISION_INVALID','Mapping 审批结论无效。',422);
-    const reviewedBy=String(input.reviewed_by||'').trim(); if(!reviewedBy)throw new AppError('EVIDENCE_MAPPING_REVIEWER_REQUIRED','Mapping 审核人不能为空。',422);
-    const result=await this.repository.decideRequirementEvidenceMapping({mappingId,decision,reviewedBy}); if(!result)throw new AppError('EVIDENCE_MAPPING_NOT_FOUND','Requirement-Evidence Mapping 不存在。',404); return result;
+    const reviewedBy=String(input.reviewed_by||'').trim(); if(!reviewedBy)throw new AppError('EVIDENCE_MAPPING_REVIEWER_REQUIRED','Mapping 审核人不能为空。',422);const current=await this.repository.getRequirementEvidenceMapping(mappingId);if(!current)throw new AppError('EVIDENCE_MAPPING_NOT_FOUND','Requirement-Evidence Mapping 不存在。',404);
+    const requested=input.support_level==null||String(input.support_level).trim()===''?null:String(input.support_level).trim();if(requested&&!SUPPORT_LEVELS.has(requested))throw new AppError('EVIDENCE_SUPPORT_LEVEL_INVALID','support_level 必须是 full_support、partial_support 或 reference_only。',422);const supportLevel=requested||current.support_level;if(decision==='approved'&&!supportLevel)throw new AppError('EVIDENCE_SUPPORT_LEVEL_REQUIRED','批准 Mapping 前必须确定 support_level。',422);
+    const result=await this.repository.decideRequirementEvidenceMapping({mappingId,decision,supportLevel,reviewNotes:String(input.review_notes||'').trim()||null,reviewedBy}); return result;
   }
+
+  async listMappings(projectId,requirementId){assertUuid(projectId,'INVALID_PROJECT_ID','项目 ID 格式无效。');const req=String(requirementId||'').trim();const invalid=await this.repository.findInvalidConfirmedRequirementIds(projectId,[req]);if(invalid.length)throw new AppError('EVIDENCE_REQUIREMENT_INVALID','Requirement 不存在或未确认。',404);return{mappings:await this.repository.listRequirementEvidenceMappings(projectId,req)};}
 
   async listApprovedForRequirement(projectId,requirementId){
     assertUuid(projectId,'INVALID_PROJECT_ID','项目 ID 格式无效。'); const invalid=await this.repository.findInvalidConfirmedRequirementIds(projectId,[String(requirementId||'').trim()]);

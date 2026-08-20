@@ -119,7 +119,33 @@ test('approved + active 仍必须有可信 lineage，完整 project_case 才可�
 });
 
 test('Requirement-Evidence mapping proposed 需人工审批，rejected 不是正式关联',async()=>{
-  const events=[];const repository={findInvalidConfirmedRequirementIds:async()=>[],createRequirementEvidenceMapping:async(value)=>{events.push(value);return{mapping_status:'proposed',...value};},decideRequirementEvidenceMapping:async({decision,...value})=>({mapping_status:decision,...value}),listApprovedEnterpriseEvidenceForRequirement:async()=>[]};
-  const service=new EvidenceService({repository});const proposed=await service.proposeMapping(PROJECT_ID,{requirement_id:'REQ-001',evidence_id:MATERIAL_ID,mapping_source:'manual',created_by:'reviewer'});
-  assert.equal(proposed.mapping_status,'proposed');assert.equal((await service.decideMapping(PROJECT_ID,'rejected',{reviewed_by:'reviewer'})).mapping_status,'rejected');assert.equal((await service.listApprovedForRequirement(PROJECT_ID,'REQ-001')).evidences.length,0);assert.equal(events.length,1);
+  const events=[];const repository={findInvalidConfirmedRequirementIds:async()=>[],createRequirementEvidenceMapping:async(value)=>{events.push(value);return{mapping_status:'proposed',support_level:value.supportLevel,...value};},getRequirementEvidenceMapping:async()=>({mapping_id:MATERIAL_ID,support_level:'partial_support'}),decideRequirementEvidenceMapping:async({decision,supportLevel,...value})=>({mapping_status:decision,support_level:supportLevel,...value}),listApprovedEnterpriseEvidenceForRequirement:async()=>[]};
+  const service=new EvidenceService({repository});const proposed=await service.proposeMapping(PROJECT_ID,{requirement_id:'REQ-001',evidence_id:MATERIAL_ID,mapping_source:'manual',support_level:'partial_support',created_by:'reviewer'});
+  assert.equal(proposed.mapping_status,'proposed');assert.equal(proposed.support_level,'partial_support');const rejected=await service.decideMapping(MATERIAL_ID,'rejected',{reviewed_by:'reviewer'});assert.equal(rejected.mapping_status,'rejected');assert.equal(rejected.support_level,'partial_support');assert.equal((await service.listApprovedForRequirement(PROJECT_ID,'REQ-001')).evidences.length,0);assert.equal(events.length,1);
+});
+
+test('Mapping approval 只接受三种 support_level 且 approved 不允许 null',async()=>{
+  let current={mapping_id:MATERIAL_ID,support_level:null};const repository={getRequirementEvidenceMapping:async()=>current,decideRequirementEvidenceMapping:async(value)=>({...value,mapping_status:value.decision,support_level:value.supportLevel})};const service=new EvidenceService({repository});
+  await assert.rejects(()=>service.decideMapping(MATERIAL_ID,'approved',{reviewed_by:'reviewer'}),(error)=>error.code==='EVIDENCE_SUPPORT_LEVEL_REQUIRED');
+  await assert.rejects(()=>service.decideMapping(MATERIAL_ID,'approved',{reviewed_by:'reviewer',support_level:'rejected'}),(error)=>error.code==='EVIDENCE_SUPPORT_LEVEL_INVALID');
+  for(const support_level of ['full_support','partial_support','reference_only'])assert.equal((await service.decideMapping(MATERIAL_ID,'approved',{reviewed_by:'reviewer',support_level})).support_level,support_level);
+});
+
+test('Retrieval Mapping provenance 必须绑定同一 Requirement、Evidence 与 Chunk',async()=>{
+  let valid=false;const repository={findInvalidConfirmedRequirementIds:async()=>[],validateRetrievalMappingProvenance:async()=>valid,createRequirementEvidenceMapping:async(value)=>value};const service=new EvidenceService({repository});
+  const input={requirement_id:'REQ-001',evidence_id:MATERIAL_ID,mapping_source:'retrieval',support_level:'partial_support',created_by:'reviewer',retrieval_run_id:PROJECT_ID,retrieval_chunk_id:'MCH-1'};
+  await assert.rejects(()=>service.proposeMapping(PROJECT_ID,input),(error)=>error.code==='EVIDENCE_RETRIEVAL_PROVENANCE_INVALID');valid=true;assert.equal((await service.proposeMapping(PROJECT_ID,input)).retrievalChunkId,'MCH-1');
+});
+
+test('REQ-016 接口能力只保存 partial_support，不升级为量化性能支撑',async()=>{
+  const repository={findInvalidConfirmedRequirementIds:async()=>[],createRequirementEvidenceMapping:async(value)=>({requirement_id:value.requirementId,support_level:value.supportLevel,mapping_status:'proposed'})};const service=new EvidenceService({repository});const mapping=await service.proposeMapping(PROJECT_ID,{requirement_id:'REQ-016',evidence_id:MATERIAL_ID,mapping_source:'manual',support_level:'partial_support',review_notes:'仅证明接口集成能力，不证明响应时间≤1秒。',created_by:'reviewer'});assert.equal(mapping.support_level,'partial_support');
+});
+
+test('REQ-187 qualification 只保存 reference_only，不解释为指定检测报告',async()=>{
+  const repository={findInvalidConfirmedRequirementIds:async()=>[],createRequirementEvidenceMapping:async(value)=>({requirement_id:value.requirementId,support_level:value.supportLevel,mapping_status:'proposed'})};const service=new EvidenceService({repository});const mapping=await service.proposeMapping(PROJECT_ID,{requirement_id:'REQ-187',evidence_id:MATERIAL_ID,mapping_source:'manual',support_level:'reference_only',review_notes:'资质与安全检测主题相关，不等于指定报告已存在。',created_by:'reviewer'});assert.equal(mapping.support_level,'reference_only');
+});
+
+test('政府中标公告 Evidence scope 只保留公告事实边界',async()=>{
+  const source='供应商名称：东软集团股份有限公司；货物名称：数据共享交换平台管理中心软件。';const chunk={chunk_id:'MCH-AWARD',material_id:MATERIAL_ID,source_text:source,chunk_hash:'award-hash',char_start:0,char_end:source.length,page_start:null,page_end:null,paragraph_start:1,paragraph_end:1,section:null};let created;const repository={getCompanyMaterial:async()=>({id:MATERIAL_ID,project_id:PROJECT_ID,material_type:'project_case',extraction_status:'succeeded',extracted_text:source}),getMaterialChunk:async()=>chunk,findInvalidConfirmedRequirementIds:async()=>[],createEvidenceRecord:async(value)=>{created=value;return value;}};const service=new EvidenceService({repository});
+  await service.create(PROJECT_ID,{material_id:MATERIAL_ID,source_chunk_id:chunk.chunk_id,evidence_type:'project_case',title:'政府采购中标事实',content:'公告记录该企业中标相关软件。',evidence_scope:['award_fact']});assert.deepEqual(created.evidenceScope,['award_fact']);assert.equal(created.evidenceScope.includes('completed_project_experience'),false);
 });
