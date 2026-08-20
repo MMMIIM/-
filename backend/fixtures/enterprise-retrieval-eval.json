@@ -1,0 +1,27 @@
+{
+  "schema_version": "4.3-enterprise-retrieval-eval-v1",
+  "chunks": [
+    {"chunk_id":"CH-OS-01","label":"国产操作系统适配说明","vector":[1,0,0,0,0,0,0,0]},
+    {"chunk_id":"CH-OS-02","label":"国产化项目案例摘录","vector":[0.88,0.02,0,0,0.16,0,0,0]},
+    {"chunk_id":"CH-API-01","label":"标准接口集成说明","vector":[0,1,0,0,0,0,0,0]},
+    {"chunk_id":"CH-DATA-01","label":"数据治理能力说明","vector":[0,0,1,0,0,0,0,0]},
+    {"chunk_id":"CH-DATA-02","label":"数据分析产品说明","vector":[0,0,0.86,0,0,0.18,0,0]},
+    {"chunk_id":"CH-SEC-01","label":"信息安全体系说明","vector":[0,0,0,1,0,0,0,0]},
+    {"chunk_id":"CH-CASE-01","label":"项目交付案例事实","vector":[0,0,0,0,0.82,0.1,0,0]},
+    {"chunk_id":"CH-PRODUCT-01","label":"产品功能能力说明","vector":[0,0,0,0,0.08,1,0,0]},
+    {"chunk_id":"CH-QUAL-01","label":"企业资质证书摘录","vector":[0,0,0,0,0,0,1,0]},
+    {"chunk_id":"CH-OTHER-01","label":"办公场地与后勤介绍","vector":[0,0,0,0,0,0,0,1]},
+    {"chunk_id":"CH-SEC-02","label":"安全测评项目记录","vector":[0,0,0,0.84,0.12,0,0,0]},
+    {"chunk_id":"CH-HBID-01","label":"历史标书中的项目承诺","vector":[0,0,0,0,0.98,0,0,0]}
+  ],
+  "queries": [
+    {"query_id":"Q-OS","requirement":"支持国产操作系统环境部署","relevant_chunk_ids":["CH-OS-01","CH-OS-02"],"vector":[1,0,0,0,0,0,0,0]},
+    {"query_id":"Q-API","requirement":"支持第三方业务系统接口集成","relevant_chunk_ids":["CH-API-01"],"vector":[0,1,0,0,0,0,0,0]},
+    {"query_id":"Q-DATA","requirement":"具备数据治理与数据分析能力","relevant_chunk_ids":["CH-DATA-01","CH-DATA-02"],"vector":[0,0,1,0,0,0,0,0]},
+    {"query_id":"Q-SEC","requirement":"满足信息安全建设和测评要求","relevant_chunk_ids":["CH-SEC-01","CH-SEC-02"],"vector":[0,0,0,1,0,0,0,0]},
+    {"query_id":"Q-CASE","requirement":"提供同类项目实施案例","relevant_chunk_ids":["CH-CASE-01"],"vector":[0,0,0,0,1,0,0,0]},
+    {"query_id":"Q-PRODUCT","requirement":"产品应具备相应业务处理能力","relevant_chunk_ids":["CH-PRODUCT-01"],"vector":[0,0,0,0,0,1,0,0]},
+    {"query_id":"Q-QUAL","requirement":"提供有效企业资质证明","relevant_chunk_ids":["CH-QUAL-01"],"vector":[0,0,0,0,0,0,1,0]},
+    {"query_id":"Q-DELIVERY","requirement":"以既有项目经验和产品能力支撑实施交付","relevant_chunk_ids":["CH-CASE-01","CH-PRODUCT-01"],"vector":[0,0,0,0,0.7,0.7,0,0]}
+  ]
+}

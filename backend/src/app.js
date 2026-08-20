@@ -16,7 +16,7 @@ function sendData(res, data, status = 200) {
   return res.status(status).json({ ok: true, data });
 }
 
-export function createApp({ repository, storage, generationService, requirementParseService, requirementSourceService, productionBetaService, companyMaterialService, evidenceService, documentGenerationService, corsOrigin }) {
+export function createApp({ repository, storage, generationService, requirementParseService, requirementSourceService, productionBetaService, companyMaterialService, evidenceService, enterpriseRetrievalService, documentGenerationService, corsOrigin }) {
   const app = express();
   app.use(cors({ origin: corsOrigin || 'http://localhost:5173' }));
   app.use(express.json({ limit: '2mb' }));
@@ -229,6 +229,12 @@ export function createApp({ repository, storage, generationService, requirementP
   });
   app.get('/api/projects/:projectId/requirements/:requirementId/enterprise-evidence',async(req,res,next)=>{
     try{sendData(res,await evidenceService.listApprovedForRequirement(req.params.projectId,req.params.requirementId));}catch(error){next(error);}
+  });
+  app.post('/api/requirements/:requirementId/enterprise-retrieval',async(req,res,next)=>{
+    try{sendData(res,await enterpriseRetrievalService.retrieve(req.params.requirementId,req.body||{}),201);}catch(error){next(error);}
+  });
+  app.get('/api/enterprise-retrieval-runs/:runId',async(req,res,next)=>{
+    try{sendData(res,await enterpriseRetrievalService.get(req.params.runId));}catch(error){next(error);}
   });
 
   app.get('/api/projects/:projectId/production-beta', async (req, res, next) => {

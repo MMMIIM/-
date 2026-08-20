@@ -15,6 +15,8 @@ import { CompanyMaterialService } from './company-material-service.js';
 import { EvidenceService } from './evidence-service.js';
 import { createWriterProvider } from './pipeline/writer-provider.js';
 import { DocumentGenerationService } from './pipeline/document-generation-service.js';
+import { createEmbeddingClientFromEnv } from './pipeline/embedding-client.js';
+import { EnterpriseRetrievalService } from './pipeline/enterprise-retrieval-service.js';
 
 const directory = dirname(fileURLToPath(import.meta.url));
 const runtime = createBackendRuntime();
@@ -42,6 +44,7 @@ const productionBetaService = new ProductionBetaService({ repository, ordinaryUn
 const requirementSourceService = new RequirementSourceService({ repository, storage, textExtractor: extractTenderText });
 const companyMaterialService = new CompanyMaterialService({ repository, storage, textExtractor: extractTenderText });
 const evidenceService = new EvidenceService({ repository });
+const enterpriseRetrievalService = new EnterpriseRetrievalService({ repository, embeddingClient:createEmbeddingClientFromEnv({env:runtimeEnv}), defaultTopK:runtimeEnv.V43_RETRIEVAL_TOP_K || 5 });
 const documentGenerationService = new DocumentGenerationService({ repository, provider:createWriterProvider({env:runtimeEnv}), concurrency:runtimeEnv.V43_WRITER_CONCURRENCY || 2 });
 const app = createApp({
   repository,
@@ -52,6 +55,7 @@ const app = createApp({
   requirementSourceService,
   companyMaterialService,
   evidenceService,
+  enterpriseRetrievalService,
   documentGenerationService,
   corsOrigin: runtimeEnv.CORS_ORIGIN
 });
