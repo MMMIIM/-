@@ -29,7 +29,12 @@ function location(match, chunk, matchType, score = 1) {
   const last = match.segments.at(-1);
   const pages = match.segments.map((item) => item.page).filter(Number.isInteger);
   const original = match.segments.map((item) => item.text).join('\n');
+  const clauseIds = [...new Set(match.segments.map((item) => item.source_clause_id).filter(Boolean))];
+  const contextSegments = clauseIds.length === 1
+    ? (chunk.segments || []).filter((item) => item.source_clause_id === clauseIds[0])
+    : match.segments;
   return {
+    source_context_text: contextSegments.map((item) => item.text).join('\n'),
     source_page: pages[0] ?? null, source_paragraph: first.paragraph ?? null,
     source_page_start: pages[0] ?? null, source_page_end: pages.at(-1) ?? null,
     source_paragraph_start: first.paragraph ?? null, source_paragraph_end: last.paragraph ?? null,
@@ -138,7 +143,7 @@ export class SourceLocationResolver {
 
   unverified(sourceText, candidate, chunk, matchType, score, code, message) {
     return { location: {
-      source_text: sourceText, source_page: null, source_paragraph: null,
+      source_text: sourceText, source_context_text: null, source_page: null, source_paragraph: null,
       source_page_start: null, source_page_end: null, source_paragraph_start: null,
       source_paragraph_end: null, source_paragraphs_json: [], source_hash: null,
       source_start_offset: chunk.source_start_offset ?? null, source_end_offset: chunk.source_end_offset ?? null,

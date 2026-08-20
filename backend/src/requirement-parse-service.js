@@ -232,7 +232,7 @@ export class RequirementParseService {
         jobId: job.id, phase: 'aggregating',
         totalChunks: chunks.length, completedChunks: chunks.length
       });
-      const candidates = aggregateRequirementCandidates(chunkResults, { mandatoryScopeRules });
+      const candidates = aggregateRequirementCandidates(chunkResults, { mandatoryScopeRules, documentText: extraction.text });
       return await this.repository.completeParseJob({
         jobId: job.id,
         candidates,
@@ -242,7 +242,8 @@ export class RequirementParseService {
           character_budget: this.chunkBudget.characterBudget,
           token_budget: this.chunkBudget.tokenBudget,
           empty_chunk_count: chunkResults.filter((result) => result.candidates.length === 0).length,
-          requirement_count: candidates.length
+          requirement_count: candidates.length,
+          canonicalization_audit: candidates.audit
         },
         warnings,
         gatewayAudit: {

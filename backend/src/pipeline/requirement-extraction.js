@@ -62,6 +62,7 @@ export function validateRequirementExtractionEnvelope(gatewayResponse) {
     }
     const allowedKeys = new Set([
       'text', 'category', 'source_text', 'source_clause', 'mandatory_observed', 'requires_confirmation',
+      // TODO(v4.3-compat): remove these aliases after all published extraction apps use the six-field contract.
       'content', 'source_excerpt', 'source_page', 'source_paragraph'
     ]);
     if (Object.keys(candidate).some((key) => !allowedKeys.has(key))) {
