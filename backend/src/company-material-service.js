@@ -4,7 +4,7 @@ import { AppError } from './errors.js';
 import { chunkEnterpriseMaterial } from './pipeline/enterprise-material-chunker.js';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const MATERIAL_TYPES = new Set(['company_profile','qualification','case','product','personnel','technical_solution','delivery_capability','other']);
+const MATERIAL_TYPES = new Set(['company_profile','qualification','case','project_case','product','product_documentation','personnel','technical_solution','technical_whitepaper','delivery_capability','historical_bid','other']);
 const SUPPORTED_EXTENSIONS = new Set(['.docx','.pdf','.txt','.md']);
 
 function assertUuid(value, code, message) {

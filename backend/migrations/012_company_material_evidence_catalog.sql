@@ -18,7 +18,10 @@ CREATE TABLE IF NOT EXISTS company_materials (
 
 ALTER TABLE company_materials DROP CONSTRAINT IF EXISTS company_materials_material_type_check;
 ALTER TABLE company_materials ADD CONSTRAINT company_materials_material_type_check
-  CHECK(material_type IN ('company_profile','qualification','case','product','personnel','technical_solution','delivery_capability','other'));
+  CHECK(material_type IN (
+    'company_profile','qualification','case','project_case','product','product_documentation',
+    'personnel','technical_solution','technical_whitepaper','delivery_capability','historical_bid','other'
+  ));
 ALTER TABLE company_materials DROP CONSTRAINT IF EXISTS company_materials_extraction_status_check;
 ALTER TABLE company_materials ADD CONSTRAINT company_materials_extraction_status_check
   CHECK(extraction_status IN ('pending','succeeded','failed','ocr_required'));

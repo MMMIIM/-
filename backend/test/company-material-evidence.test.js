@@ -30,6 +30,15 @@ test('企业材料 DOCX、PDF、TXT、Markdown 走本地提取并保存 hash', a
   assert.equal(saved.length,4);
 });
 
+test('Company Material 上传接受 Enterprise Evidence Contract v1 新材料类型', async () => {
+  for (const materialType of ['project_case','product_documentation','technical_whitepaper','historical_bid']) {
+    const repository={getProject:async()=>({id:PROJECT_ID}),findCompanyMaterialByHash:async()=>null,createCompanyMaterial:async(value)=>({id:'material-'+materialType,...value}),completeCompanyMaterialExtraction:async(id,text)=>({id,extracted_text:text,extraction_status:'succeeded'}),replaceMaterialChunks:async()=>{}};
+    const service=new CompanyMaterialService({repository,storage:{save:async()=>('stored-'+materialType)},textExtractor:async()=>({text:'公开材料正文'})});
+    const result=await service.upload({projectId:PROJECT_ID,materialType,file:{originalname:materialType+'.md',mimetype:'text/markdown',buffer:Buffer.from('公开材料正文'),size:18}});
+    assert.equal(result.extraction_status,'succeeded');
+  }
+});
+
 test('Company Material 稳定切块且 source_text/hash/range 可回溯',()=>{
   const source='第一段企业能力。\n\n第二段项目案例。';
   const first=chunkEnterpriseMaterial(MATERIAL_ID,source,{maxChars:8}); const second=chunkEnterpriseMaterial(MATERIAL_ID,source,{maxChars:8});

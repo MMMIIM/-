@@ -11,6 +11,7 @@
     "smoke:gateway": "node scripts/gateway-smoke.js",
     "reconcile:sources": "node scripts/reconcile-requirement-sources.js",
     "eval:requirements": "node scripts/eval-requirements.js",
+    "eval:enterprise-retrieval": "node scripts/eval-enterprise-retrieval.js",
     "eval:live": "node scripts/eval-live.js",
     "check:response-planning": "node scripts/production-task-check.js response_planning",
     "smoke:response-planning": "node scripts/production-task-smoke.js response_planning",
