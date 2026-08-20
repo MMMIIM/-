@@ -16,7 +16,7 @@ function sendData(res, data, status = 200) {
   return res.status(status).json({ ok: true, data });
 }
 
-export function createApp({ repository, storage, generationService, requirementParseService, requirementSourceService, productionBetaService, companyMaterialService, evidenceService, enterpriseRetrievalService, documentGenerationService, corsOrigin }) {
+export function createApp({ repository, storage, generationService, requirementParseService, requirementSourceService, productionBetaService, companyMaterialService, evidenceService, evidenceFactService, enterpriseRetrievalService, documentGenerationService, corsOrigin }) {
   const app = express();
   app.use(cors({ origin: corsOrigin || 'http://localhost:5173' }));
   app.use(express.json({ limit: '2mb' }));
@@ -238,6 +238,27 @@ export function createApp({ repository, storage, generationService, requirementP
   });
   app.get('/api/projects/:projectId/requirements/:requirementId/enterprise-evidence',async(req,res,next)=>{
     try{sendData(res,await evidenceService.listApprovedForRequirement(req.params.projectId,req.params.requirementId));}catch(error){next(error);}
+  });
+  app.post('/api/projects/:projectId/evidences/:evidenceId/facts',async(req,res,next)=>{
+    try{sendData(res,{fact:await evidenceFactService.create(req.params.projectId,req.params.evidenceId,req.body||{})},201);}catch(error){next(error);}
+  });
+  app.get('/api/projects/:projectId/evidences/:evidenceId/facts',async(req,res,next)=>{
+    try{sendData(res,await evidenceFactService.list(req.params.projectId,req.params.evidenceId));}catch(error){next(error);}
+  });
+  app.get('/api/projects/:projectId/evidences/:evidenceId/facts/approved',async(req,res,next)=>{
+    try{sendData(res,await evidenceFactService.listApproved(req.params.projectId,req.params.evidenceId));}catch(error){next(error);}
+  });
+  app.get('/api/evidence-facts/:factId',async(req,res,next)=>{
+    try{sendData(res,{fact:await evidenceFactService.get(req.params.factId)});}catch(error){next(error);}
+  });
+  app.post('/api/evidence-facts/:factId/approve',async(req,res,next)=>{
+    try{sendData(res,{fact:await evidenceFactService.decide(req.params.factId,'approved',req.body||{})});}catch(error){next(error);}
+  });
+  app.post('/api/evidence-facts/:factId/reject',async(req,res,next)=>{
+    try{sendData(res,{fact:await evidenceFactService.decide(req.params.factId,'rejected',req.body||{})});}catch(error){next(error);}
+  });
+  app.post('/api/evidence-facts/:factId/supersede',async(req,res,next)=>{
+    try{sendData(res,{fact:await evidenceFactService.supersede(req.params.factId,req.body||{})},201);}catch(error){next(error);}
   });
   app.post('/api/requirements/:requirementId/enterprise-retrieval',async(req,res,next)=>{
     try{sendData(res,await enterpriseRetrievalService.retrieve(req.params.requirementId,req.body||{}),201);}catch(error){next(error);}
