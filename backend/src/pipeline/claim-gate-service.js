@@ -22,6 +22,7 @@ export class ClaimGateService {
       let evidenceIds=[]; let reasonCode=null; let reasonMessage='Claim 通过确定性门禁。';
       try { evidenceIds=this.evidenceCatalog.assertExisting(raw.basis_evidence_ids); }
       catch(error) { reasonCode=error.code; reasonMessage=error.message; }
+      if(evidenceIds.length){try{this.evidenceCatalog.assertSourceLineage(evidenceIds);}catch(error){reasonCode=error.code;reasonMessage=error.message;}}
       if(!basisIds.length){reasonCode='CLAIM_REQUIREMENT_BASIS_REQUIRED';reasonMessage='Claim 必须至少引用一个合法 Requirement。';}
       if(invalid.length){reasonCode='CLAIM_REQUIREMENT_BASIS_INVALID';reasonMessage=`Claim 引用了未知 Requirement：${invalid.join('、')}`;}
       const primary=this.byId.get(raw.requirement_id); const basis=basisIds.map((id)=>this.byId.get(id)).filter(Boolean);
@@ -32,6 +33,7 @@ export class ClaimGateService {
       if(commitment==='confirmed'&&(primary?.source_status==='provisional'||plan?.conditions?.length)){reasonCode='CLAIM_CONDITION_REQUIRED';reasonMessage='暂定来源或带条件 Plan 只能形成 conditional/reference_only Claim。';}
       if(commitment==='conditional'&&raw.claim_type!=='requirement_response'&&!String(raw.text||'').match(/条件|范围|为准|确认|前提|依据/)){reasonCode='CLAIM_CONDITION_MISSING';reasonMessage='conditional Claim 必须保留关键条件或前提。';}
       if(ENTERPRISE_TYPES.has(raw.claim_type)&&!evidenceIds.length){reasonCode='ENTERPRISE_EVIDENCE_REQUIRED';reasonMessage='案例、资质、人员或企业能力 Claim 必须有 approved Evidence。';}
+      if(ENTERPRISE_TYPES.has(raw.claim_type)&&evidenceIds.length&&!reasonCode){try{this.evidenceCatalog.assertUsableForClaimType(evidenceIds,raw.claim_type);}catch(error){reasonCode=error.code;reasonMessage=error.message;}}
       const basisText=basis.map((item)=>item.text).join('\n');
       if(tokens(raw.text).some((token)=>!basisText.includes(token))&&!evidenceIds.length){reasonCode='UNSUPPORTED_QUANTITATIVE_OR_PRODUCT_CLAIM';reasonMessage='Claim 含 Requirement/Evidence 未支持的指标、期限、数量或技术选型。';}
       if(HIGH_RISK_TYPES.has(raw.claim_type)&&!basisText.includes(String(raw.text||'').trim())&&!evidenceIds.length){reasonCode='HIGH_RISK_CLAIM_UNSUPPORTED';reasonMessage='责任转移、范围排除或产品选型必须被 Requirement 或 approved Evidence 明确支持。';}

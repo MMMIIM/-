@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { extname } from 'node:path';
 import { AppError } from './errors.js';
+import { chunkEnterpriseMaterial } from './pipeline/enterprise-material-chunker.js';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const MATERIAL_TYPES = new Set(['company_profile','qualification','case','product','personnel','technical_solution','delivery_capability','other']);
@@ -30,7 +31,9 @@ export class CompanyMaterialService {
       storageKey, materialType, mimeType: file.mimetype || 'application/octet-stream', sizeBytes: file.size ?? file.buffer.length, fileHash });
     try {
       const extraction = await this.textExtractor({ fileName: file.originalname, mimeType: file.mimetype, buffer: file.buffer });
-      return await this.repository.completeCompanyMaterialExtraction(material.id, extraction.text);
+      const completed = await this.repository.completeCompanyMaterialExtraction(material.id, extraction.text);
+      await this.repository.replaceMaterialChunks(material.id, chunkEnterpriseMaterial(material.id, extraction.text));
+      return completed;
     } catch (error) {
       const ocrRequired = extension === '.pdf' && ['TENDER_TEXT_EMPTY','TENDER_TEXT_EXTRACTION_FAILED'].includes(error?.code);
       const code = ocrRequired ? 'OCR_REQUIRED' : (error?.code || 'MATERIAL_EXTRACTION_FAILED');
@@ -44,6 +47,13 @@ export class CompanyMaterialService {
     assertUuid(projectId, 'INVALID_PROJECT_ID', '项目 ID 格式无效。');
     if (!await this.repository.getProject(projectId)) throw new AppError('PROJECT_NOT_FOUND', '项目不存在。', 404);
     return { materials: await this.repository.listCompanyMaterials(projectId) };
+  }
+
+  async listChunks(materialId) {
+    assertUuid(materialId, 'INVALID_MATERIAL_ID', '企业材料 ID 格式无效。');
+    const material=await this.repository.getCompanyMaterial(materialId);
+    if(!material) throw new AppError('MATERIAL_NOT_FOUND', '企业材料不存在。', 404);
+    return { material, chunks:await this.repository.listMaterialChunks(materialId) };
   }
 }
 
