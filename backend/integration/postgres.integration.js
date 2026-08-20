@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import dotenv from 'dotenv';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { readFile, readdir } from 'node:fs/promises';
 import { createPool, PgRepository } from '../src/db.js';
 import { createDifyClient } from '../src/dify.js';
 import { GenerationService } from '../src/service.js';
@@ -17,9 +18,35 @@ import { EvidenceService } from '../src/evidence-service.js';
 import { ProductionTaskProvider } from '../src/pipeline/production-task-provider.js';
 import { DocumentGenerationService } from '../src/pipeline/document-generation-service.js';
 import { WriterProvider } from '../src/pipeline/writer-provider.js';
+import { chunkEnterpriseMaterial } from '../src/pipeline/enterprise-material-chunker.js';
 
 const directory = dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: resolve(directory, '../.env') });
+
+test('019 Enterprise Evidence Contract migration 可重复执行',async()=>{
+  assert.ok(process.env.DATABASE_URL,'DATABASE_URL is required for PostgreSQL integration tests');
+  const pool=createPool();
+  try{
+    const sql=await readFile(resolve(directory,'../migrations/019_enterprise_evidence_contract.sql'),'utf8');
+    await pool.query(sql);await pool.query(sql);
+    const tables=await pool.query(`SELECT to_regclass('public.material_chunks') AS chunks,to_regclass('public.requirement_evidence_mappings') AS mappings`);
+    assert.equal(tables.rows[0].chunks,'material_chunks');assert.equal(tables.rows[0].mappings,'requirement_evidence_mappings');
+    const columns=await pool.query(`SELECT column_name FROM information_schema.columns WHERE table_name='evidences' AND column_name=ANY($1::text[])`,[['evidence_origin','source_document_id','source_chunk_id','source_location','evidence_scope','capability_tags','metadata','validity_status']]);
+    assert.equal(columns.rowCount,8);
+  }finally{await pool.end();}
+});
+
+test('完整 migration chain 支持 fresh、ambiguous existing 与连续重放',async()=>{
+  assert.ok(process.env.DATABASE_URL,'DATABASE_URL is required for PostgreSQL integration tests');const pool=createPool();const client=await pool.connect();const schema=`migration_freeze_${Date.now()}_${Math.floor(Math.random()*100000)}`;const quoted=`"${schema}"`;
+  try{
+    await client.query(`CREATE SCHEMA ${quoted}`);await client.query(`SET search_path TO ${quoted}, public`);const migrationDirectory=resolve(directory,'../migrations');const files=(await readdir(migrationDirectory)).filter((name)=>name.endsWith('.sql')).sort();
+    const run=async()=>{for(const file of files)await client.query(await readFile(resolve(migrationDirectory,file),'utf8'));};
+    await run();
+    const project=(await client.query(`INSERT INTO projects(name) VALUES('migration fresh') RETURNING id`)).rows[0];const tender=(await client.query(`INSERT INTO tender_files(project_id,original_name,storage_key,mime_type,size_bytes) VALUES($1,'x.txt',$2,'text/plain',1) RETURNING id`,[project.id,`${schema}/x.txt`])).rows[0];const job=(await client.query(`INSERT INTO tender_parse_jobs(project_id,tender_file_id) VALUES($1,$2) RETURNING id`,[project.id,tender.id])).rows[0];await client.query(`INSERT INTO requirement_candidates(parse_job_id,req_id,content,source_excerpt,source_text,ordinal,source_resolution_status) VALUES($1,'REQ-001','x','x','x',1,'ambiguous')`,[job.id]);
+    await run();await run();
+    const status=await client.query(`SELECT source_resolution_status FROM requirement_candidates WHERE parse_job_id=$1`,[job.id]);assert.equal(status.rows[0].source_resolution_status,'ambiguous');
+  }finally{await client.query('SET search_path TO public');await client.query(`DROP SCHEMA IF EXISTS ${quoted} CASCADE`);client.release();await pool.end();}
+});
 
 const inputs = {
   project_name: 'PostgreSQL 失败审计集成测试',
@@ -149,8 +176,7 @@ test('PostgreSQL 持久化 Production Beta Plan、Claim 决策、Coverage 与失
     await pool.query(`INSERT INTO requirements(baseline_id,project_id,req_id,content,source_excerpt,source_text,is_mandatory,mandatory_marker,target_sections,ordinal,requirement_category,writer_eligible,classification_review_required,atomicity_review_required) VALUES($1,$2,'REQ-001','数据接入','★数据接入','★数据接入',true,'★','["data-integration"]',1,'technical',true,false,true)`,[baseline.id,project.id]);
     await pool.query(`UPDATE requirement_baselines SET status='confirmed' WHERE id=$1`,[baseline.id]);
     const service=new ProductionBetaService({repository});
-    const evidence={evidence_id:`EVI-${Date.now()}`,material_id:'fixture',source_type:'material',source_roles:['capability'],module:'data',content:'能力依据',source_page:1,source_hash:'sha256:fixture',evidence_level:'verified',commitment_level:'capability'};
-    await pool.query(`INSERT INTO evidences(evidence_id,project_id,material_id,source_type,source_roles,module,content,source_page,source_hash,evidence_level,commitment_level,approval_status) VALUES($1,$2,$3,$4,$5::jsonb,$6,$7,$8,$9,$10,$11,'approved')`, [evidence.evidence_id,project.id,evidence.material_id,evidence.source_type,JSON.stringify(evidence.source_roles),evidence.module,evidence.content,evidence.source_page,evidence.source_hash,evidence.evidence_level,evidence.commitment_level]);
+    const material=await repository.createCompanyMaterial({projectId:project.id,originalName:'fixture.txt',storageKey:`evidence-${project.id}`,materialType:'project_case',mimeType:'text/plain',sizeBytes:4,fileHash:`hash-${project.id}`});const sourceText='能力依据';await repository.completeCompanyMaterialExtraction(material.id,sourceText);const chunks=chunkEnterpriseMaterial(material.id,sourceText);await repository.replaceMaterialChunks(material.id,chunks);const evidenceService=new EvidenceService({repository});const createdEvidence=await evidenceService.create(project.id,{material_id:material.id,source_chunk_id:chunks[0].chunk_id,evidence_type:'project_case',title:'能力依据',content:sourceText,applicable_requirement_ids:['REQ-001']});await evidenceService.setValidity(createdEvidence.id,{validity_status:'active',reviewed_by:'integration'});await evidenceService.decide(createdEvidence.id,'approved',{decided_by:'integration'});const evidence=(await repository.listApprovedEvidence(project.id))[0];
     const result=await service.process(project.id,{evidence:[evidence],response_plans:[{requirement_id:'REQ-001',response_status:'full',response_summary:'响应',supporting_evidence_ids:[evidence.evidence_id]}],claims:[{claim_id:`CLM-${Date.now()}`,requirement_id:'REQ-001',claim_type:'statement',text:'支持数据接入',basis_requirement_ids:['REQ-001'],basis_evidence_ids:[evidence.evidence_id]}]});
     assert.equal(result.run.status,'succeeded'); assert.equal(result.coverage.valid,true); assert.equal(result.writer_input.length,1);
     const persisted = await service.get(project.id);
@@ -707,21 +733,29 @@ test('B阶段企业材料与 Evidence Catalog PostgreSQL/HTTP 约束', async () 
     server=await new Promise((resolve)=>{const listener=app.listen(0,'127.0.0.1',()=>resolve(listener));}); const base=`http://127.0.0.1:${server.address().port}`;
     const uploadBody=new FormData(); uploadBody.append('material_type','case'); uploadBody.append('file',new Blob(['case material'],{type:'text/plain'}),'case.txt');
     let response=await fetch(`${base}/api/projects/${project.id}/company-materials`,{method:'POST',body:uploadBody}); let body=await response.json();
-    assert.equal(response.status,201); assert.equal(body.data.material.extraction_status,'succeeded'); const material=body.data.material;
+    assert.equal(response.status,201,JSON.stringify(body)); assert.equal(body.data.material.extraction_status,'succeeded'); const material=body.data.material;
+    response=await fetch(`${base}/api/company-materials/${material.id}/chunks`);body=await response.json();assert.equal(response.status,200);assert.equal(body.data.chunks.length,1);const chunk=body.data.chunks[0];assert.equal(body.data.material.extracted_text.slice(chunk.char_start,chunk.char_end),chunk.source_text);
     const duplicateBody=new FormData(); duplicateBody.append('material_type','case'); duplicateBody.append('file',new Blob(['case material'],{type:'text/plain'}),'duplicate.txt');
     response=await fetch(`${base}/api/projects/${project.id}/company-materials`,{method:'POST',body:duplicateBody}); body=await response.json();
     assert.equal(response.status,409); assert.equal(body.error.code,'MATERIAL_DUPLICATE');
     response=await fetch(`${base}/api/projects/${project.id}/evidences`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({material_id:material.id,evidence_type:'case',title:'非法关联',content:'案例',applicable_requirement_ids:['REQ-X']})}); body=await response.json();
     assert.equal(response.status,422); assert.equal(body.error.code,'EVIDENCE_REQUIREMENT_INVALID');
-    response=await fetch(`${base}/api/projects/${project.id}/evidences`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({material_id:material.id,evidence_type:'case',title:'有效案例',content:'案例能力',applicable_requirement_ids:['REQ-001']})}); body=await response.json();
-    assert.equal(response.status,201); const evidence=body.data.evidence; assert.equal(evidence.approval_status,'draft'); assert.equal(evidence.source_text,null); assert.equal(evidence.source_page,null); assert.equal(evidence.source_paragraph,null);
+    response=await fetch(`${base}/api/projects/${project.id}/evidences`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({material_id:material.id,source_chunk_id:chunk.chunk_id,evidence_type:'project_case',title:'有效案例',content:'案例能力',usable_for_claims:true})}); body=await response.json();
+    assert.equal(response.status,201,JSON.stringify(body)); const evidence=body.data.evidence; assert.equal(evidence.approval_status,'draft'); assert.equal(evidence.evidence_origin,'enterprise');assert.equal(evidence.source_text,chunk.source_text);assert.equal(evidence.source_hash,chunk.chunk_hash);assert.equal(Object.hasOwn(evidence,'usable_for_claims'),false);
+    response=await fetch(`${base}/api/evidences/${evidence.id}/validity`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({validity_status:'active',reviewed_by:'validity-reviewer'})});body=await response.json();assert.equal(body.data.evidence.validity_status,'active');assert.equal(body.data.evidence.validity_reviewed_by,'validity-reviewer');
     assert.equal((await repository.listApprovedEvidence(project.id)).length,0);
+    response=await fetch(`${base}/api/projects/${project.id}/evidence-mappings`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({requirement_id:'REQ-001',evidence_id:evidence.id,mapping_source:'manual',created_by:'mapper'})});body=await response.json();assert.equal(response.status,201);assert.equal(body.data.mapping.mapping_status,'proposed');const mapping=body.data.mapping;
+    response=await fetch(`${base}/api/projects/${project.id}/requirements/REQ-001/enterprise-evidence`);body=await response.json();assert.equal(body.data.evidences.length,0);
     response=await fetch(`${base}/api/evidences/${evidence.id}/approve`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({decided_by:'reviewer'})}); body=await response.json();
     assert.equal(body.data.evidence.approval_status,'approved'); assert.equal((await repository.listApprovedEvidence(project.id)).length,1);
+    response=await fetch(`${base}/api/evidences/${evidence.id}/validity`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({validity_status:'expired',reviewed_by:'validity-reviewer'})});await response.json();assert.equal((await repository.listApprovedEvidence(project.id)).length,0);response=await fetch(`${base}/api/evidences/${evidence.id}/validity`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({validity_status:'active',reviewed_by:'validity-reviewer'})});await response.json();
+    response=await fetch(`${base}/api/evidence-mappings/${mapping.mapping_id}/approve`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({reviewed_by:'reviewer'})});body=await response.json();assert.equal(body.data.mapping.mapping_status,'approved');response=await fetch(`${base}/api/projects/${project.id}/requirements/REQ-001/enterprise-evidence`);body=await response.json();assert.equal(body.data.evidences.length,1);assert.equal(body.data.evidences[0].usable_for_claims,true);
+    response=await fetch(`${base}/api/evidence-mappings/${mapping.mapping_id}/reject`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({reviewed_by:'reviewer'})});await response.json();assert.equal((await repository.listApprovedEvidence(project.id))[0].applicable_requirement_ids.includes('REQ-001'),false);response=await fetch(`${base}/api/evidence-mappings/${mapping.mapping_id}/approve`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({reviewed_by:'reviewer'})});await response.json();
+    const unknownSource=await evidenceService.create(project.id,{material_id:material.id,evidence_type:'project_case',title:'无来源案例',content:'不可用'});await evidenceService.setValidity(unknownSource.id,{validity_status:'active',reviewed_by:'validity-reviewer'});await evidenceService.decide(unknownSource.id,'approved',{decided_by:'reviewer'});const unknownCatalog=await evidenceService.list(project.id);assert.equal(unknownCatalog.evidences.find((item)=>item.id===unknownSource.id).usable_for_claims,false);assert.equal((await repository.listApprovedEvidence(project.id)).some((item)=>item.evidence_id===unknownSource.evidence_id),false);await evidenceService.decide(unknownSource.id,'rejected',{decided_by:'reviewer'});
     const rejected=await evidenceService.create(project.id,{material_id:material.id,evidence_type:'case',title:'拒绝案例',content:'不采用',applicable_requirement_ids:['REQ-001']});
     const rejectedDecision=await evidenceService.decide(rejected.id,'rejected',{decided_by:'reviewer'});
     assert.equal(rejectedDecision.approved_by,null); assert.equal(rejectedDecision.approved_at,null);
-    const catalog=await evidenceService.list(project.id); assert.deepEqual(catalog.counts,{draft:0,approved:1,rejected:1});
+    const catalog=await evidenceService.list(project.id); assert.deepEqual(catalog.counts,{draft:0,approved:1,rejected:2});
   } finally { if(server) await new Promise((resolve)=>server.close(resolve)); await pool.query(`DELETE FROM projects WHERE id=$1`,[project.id]); await pool.end(); }
 });
 

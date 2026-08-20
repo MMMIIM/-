@@ -95,6 +95,17 @@ export class PgRepository {
     return rows[0] || null;
   }
 
+  async replaceMaterialChunks(materialId,chunks) {
+    const client=await this.pool.connect();
+    try{await client.query('BEGIN');await client.query(`DELETE FROM material_chunks WHERE material_id=$1`,[materialId]);
+      for(const chunk of chunks)await client.query(`INSERT INTO material_chunks(chunk_id,material_id,chunk_index,source_text,char_start,char_end,page_start,page_end,paragraph_start,paragraph_end,section,chunk_hash,chunker_version) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,[chunk.chunk_id,materialId,chunk.chunk_index,chunk.source_text,chunk.char_start,chunk.char_end,chunk.page_start,chunk.page_end,chunk.paragraph_start,chunk.paragraph_end,chunk.section,chunk.chunk_hash,chunk.chunker_version]);
+      await client.query('COMMIT');return chunks;
+    }catch(error){await client.query('ROLLBACK');throw error;}finally{client.release();}
+  }
+
+  async listMaterialChunks(materialId){const{rows}=await this.pool.query(`SELECT * FROM material_chunks WHERE material_id=$1 ORDER BY chunk_index`,[materialId]);return rows;}
+  async getMaterialChunk(chunkId){const{rows}=await this.pool.query(`SELECT * FROM material_chunks WHERE chunk_id=$1`,[chunkId]);return rows[0]||null;}
+
   async findInvalidConfirmedRequirementIds(projectId, requirementIds) {
     if (!requirementIds.length) return [];
     const { rows } = await this.pool.query(`SELECT req_id FROM requirements r JOIN requirement_baselines b ON b.id=r.baseline_id WHERE r.project_id=$1 AND b.status='confirmed' AND r.req_id=ANY($2::text[])`, [projectId,requirementIds]);
@@ -103,7 +114,9 @@ export class PgRepository {
   }
 
   async createEvidenceRecord(evidence) {
-    const { rows } = await this.pool.query(`INSERT INTO evidences(evidence_id,project_id,material_id,source_type,source_roles,module,content,source_page,source_hash,evidence_level,commitment_level,evidence_type,title,source_text,source_paragraph,approval_status,applicable_requirement_ids,usage_scope,risk_notes) VALUES($1,$2,$3,$4,'[]'::jsonb,$5,$6,$7,$8,'draft','reference_only',$4,$9,$10,$11,'draft',$12::jsonb,$13,$14) RETURNING *`, [evidence.evidenceId,evidence.projectId,evidence.materialId,evidence.evidenceType,evidence.usageScope || 'general',evidence.content,evidence.sourcePage,evidence.sourceHash,evidence.title,evidence.sourceText,evidence.sourceParagraph,JSON.stringify(evidence.applicableRequirementIds),evidence.usageScope,evidence.riskNotes]);
+    const historical=evidence.evidenceType==='historical_bid';
+    const riskNotes=historical?[evidence.riskNotes,'HISTORICAL_BID_REFERENCE_ONLY'].filter(Boolean).join('; '):evidence.riskNotes;
+    const { rows } = await this.pool.query(`INSERT INTO evidences(evidence_id,project_id,material_id,source_type,source_roles,module,content,source_page,source_hash,evidence_level,commitment_level,evidence_type,title,source_text,source_paragraph,approval_status,applicable_requirement_ids,usage_scope,risk_notes,evidence_origin,source_document_id,source_chunk_id,source_location,evidence_scope,capability_tags,metadata,validity_status) VALUES($1,$2,$3::text,$4,'[]'::jsonb,$5,$6,$7,$8,'draft',$9,$4,$10,$11,$12,'draft',$13::jsonb,$14,$15,'enterprise',$3::uuid,$16,$17::jsonb,$18::jsonb,$19::jsonb,$20::jsonb,$21) RETURNING *`, [evidence.evidenceId,evidence.projectId,evidence.materialId,evidence.evidenceType,evidence.usageScope || 'general',evidence.content,evidence.sourcePage,evidence.sourceHash,'reference_only',evidence.title,evidence.sourceText,evidence.sourceParagraph,JSON.stringify(evidence.applicableRequirementIds),evidence.usageScope,riskNotes,evidence.sourceChunkId,JSON.stringify(evidence.sourceLocation),JSON.stringify(evidence.evidenceScope),JSON.stringify(evidence.capabilityTags),JSON.stringify(evidence.metadata),evidence.validityStatus]);
     return rows[0];
   }
 
@@ -112,18 +125,26 @@ export class PgRepository {
     return rows[0] || null;
   }
 
+  async updateEvidenceValidity({id,validityStatus,reviewedBy}){const{rows}=await this.pool.query(`UPDATE evidences SET validity_status=$2,validity_reviewed_by=$3,validity_reviewed_at=now(),updated_at=now() WHERE id=$1 RETURNING *`,[id,validityStatus,reviewedBy]);return rows[0]||null;}
+
   async listEvidenceCatalog(projectId) {
     const [evidences, counts] = await Promise.all([
-      this.pool.query(`SELECT e.*,m.original_name AS material_name,m.material_type FROM evidences e LEFT JOIN company_materials m ON m.id::text=e.material_id WHERE e.project_id=$1 ORDER BY e.created_at DESC`, [projectId]),
+      this.pool.query(`SELECT e.*,m.original_name AS material_name,m.material_type,(mc.chunk_id IS NOT NULL AND e.source_text=mc.source_text AND e.source_hash=mc.chunk_hash) AS source_lineage_verified,(e.approval_status='approved' AND e.evidence_origin='enterprise' AND e.validity_status NOT IN ('expired','revoked') AND (e.metadata->>'valid_until' IS NULL OR e.metadata->>'valid_until'>=CURRENT_DATE::text) AND mc.chunk_id IS NOT NULL AND e.source_text=mc.source_text AND e.source_hash=mc.chunk_hash AND m.material_type<>'historical_bid') AS usable_for_claims FROM evidences e LEFT JOIN company_materials m ON m.id=COALESCE(e.source_document_id,CASE WHEN e.material_id~*'^[0-9a-f-]{36}$' THEN e.material_id::uuid END) LEFT JOIN material_chunks mc ON mc.chunk_id=e.source_chunk_id AND mc.material_id=e.source_document_id WHERE e.project_id=$1 ORDER BY e.created_at DESC`, [projectId]),
       this.pool.query(`SELECT count(*) FILTER(WHERE approval_status='draft')::int draft,count(*) FILTER(WHERE approval_status='approved')::int approved,count(*) FILTER(WHERE approval_status='rejected')::int rejected FROM evidences WHERE project_id=$1`, [projectId])
     ]);
     return { evidences:evidences.rows, counts:counts.rows[0] };
   }
 
   async listApprovedEvidence(projectId) {
-    const { rows } = await this.pool.query(`SELECT evidence_id,project_id,material_id,COALESCE(evidence_type,source_type) AS source_type,source_roles,COALESCE(usage_scope,module,'general') AS module,content,source_page,source_hash,'approved' AS evidence_level,commitment_level,approval_status,applicable_requirement_ids FROM evidences WHERE project_id=$1 AND approval_status='approved' ORDER BY created_at`, [projectId]);
+    const { rows } = await this.pool.query(`SELECT e.evidence_id,e.project_id,e.material_id,COALESCE(e.evidence_type,e.source_type) AS source_type,e.source_roles,COALESCE(e.usage_scope,e.module,'general') AS module,e.content,e.source_page,e.source_hash,'approved' AS evidence_level,e.commitment_level,e.approval_status,e.applicable_requirement_ids,e.evidence_origin,e.validity_status,true AS source_lineage_verified,(COALESCE(m.material_type,'other')<>'historical_bid') AS usable_for_claims FROM evidences e JOIN company_materials m ON m.id=e.source_document_id JOIN material_chunks mc ON mc.chunk_id=e.source_chunk_id AND mc.material_id=e.source_document_id AND mc.source_text=e.source_text AND mc.chunk_hash=e.source_hash WHERE e.project_id=$1 AND e.approval_status='approved' AND e.evidence_origin='enterprise' AND e.validity_status NOT IN ('expired','revoked') AND (e.metadata->>'valid_until' IS NULL OR e.metadata->>'valid_until'>=CURRENT_DATE::text) ORDER BY e.created_at`, [projectId]);
     return rows;
   }
+
+  async createRequirementEvidenceMapping({projectId,requirementId,evidenceId,mappingSource,createdBy}){
+    const{rows}=await this.pool.query(`INSERT INTO requirement_evidence_mappings(requirement_id,evidence_id,mapping_source,mapping_status,created_by) SELECT r.id,e.id,$4,'proposed',$5 FROM requirements r JOIN requirement_baselines b ON b.id=r.baseline_id JOIN evidences e ON e.id=$3 AND e.project_id=$1 AND e.evidence_origin='enterprise' WHERE r.project_id=$1 AND r.req_id=$2 AND b.status='confirmed' ON CONFLICT(requirement_id,evidence_id) DO UPDATE SET mapping_source=EXCLUDED.mapping_source,mapping_status='proposed',created_by=EXCLUDED.created_by,reviewed_by=NULL,reviewed_at=NULL,updated_at=now() RETURNING *`,[projectId,requirementId,evidenceId,mappingSource,createdBy]);return rows[0]||null;
+  }
+  async decideRequirementEvidenceMapping({mappingId,decision,reviewedBy}){const{rows}=await this.pool.query(`WITH changed AS (UPDATE requirement_evidence_mappings SET mapping_status=$2,reviewed_by=$3,reviewed_at=now(),updated_at=now() WHERE mapping_id=$1 RETURNING *), linked AS (SELECT changed.*,r.req_id FROM changed JOIN requirements r ON r.id=changed.requirement_id), synced AS (UPDATE evidences e SET applicable_requirement_ids=CASE WHEN $2='approved' THEN (e.applicable_requirement_ids-linked.req_id)||jsonb_build_array(linked.req_id) ELSE e.applicable_requirement_ids-linked.req_id END,updated_at=now() FROM linked WHERE e.id=linked.evidence_id) SELECT mapping_id,requirement_id,evidence_id,mapping_source,mapping_status,created_by,reviewed_by,reviewed_at,created_at,updated_at FROM changed`,[mappingId,decision,reviewedBy]);return rows[0]||null;}
+  async listApprovedEnterpriseEvidenceForRequirement(projectId,requirementId){const{rows}=await this.pool.query(`SELECT e.*,m.original_name AS source_document_name,true AS source_lineage_verified,true AS usable_for_claims FROM requirement_evidence_mappings rem JOIN requirements r ON r.id=rem.requirement_id JOIN evidences e ON e.id=rem.evidence_id JOIN company_materials m ON m.id=e.source_document_id JOIN material_chunks mc ON mc.chunk_id=e.source_chunk_id AND mc.material_id=e.source_document_id AND mc.source_text=e.source_text AND mc.chunk_hash=e.source_hash WHERE r.project_id=$1 AND r.req_id=$2 AND rem.mapping_status='approved' AND e.approval_status='approved' AND e.evidence_origin='enterprise' AND e.validity_status NOT IN ('expired','revoked') AND (e.metadata->>'valid_until' IS NULL OR e.metadata->>'valid_until'>=CURRENT_DATE::text) AND m.material_type<>'historical_bid' ORDER BY rem.created_at`,[projectId,requirementId]);return rows;}
 
   async createParseJob({ projectId, tenderFileId }) {
     const { rows } = await this.pool.query(`

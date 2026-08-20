@@ -191,6 +191,10 @@ export function createApp({ repository, storage, generationService, requirementP
     catch (error) { next(error); }
   });
 
+  app.get('/api/company-materials/:materialId/chunks', async (req,res,next)=>{
+    try{sendData(res,await companyMaterialService.listChunks(req.params.materialId));}catch(error){next(error);}
+  });
+
   app.get('/api/projects/:projectId/evidences', async (req, res, next) => {
     try { sendData(res, await evidenceService.list(req.params.projectId)); }
     catch (error) { next(error); }
@@ -209,6 +213,22 @@ export function createApp({ repository, storage, generationService, requirementP
   app.post('/api/evidences/:evidenceId/reject', async (req, res, next) => {
     try { sendData(res, { evidence: await evidenceService.decide(req.params.evidenceId, 'rejected', req.body || {}) }); }
     catch (error) { next(error); }
+  });
+  app.patch('/api/evidences/:evidenceId/validity',async(req,res,next)=>{
+    try{sendData(res,{evidence:await evidenceService.setValidity(req.params.evidenceId,req.body||{})});}catch(error){next(error);}
+  });
+
+  app.post('/api/projects/:projectId/evidence-mappings',async(req,res,next)=>{
+    try{sendData(res,{mapping:await evidenceService.proposeMapping(req.params.projectId,req.body||{})},201);}catch(error){next(error);}
+  });
+  app.post('/api/evidence-mappings/:mappingId/approve',async(req,res,next)=>{
+    try{sendData(res,{mapping:await evidenceService.decideMapping(req.params.mappingId,'approved',req.body||{})});}catch(error){next(error);}
+  });
+  app.post('/api/evidence-mappings/:mappingId/reject',async(req,res,next)=>{
+    try{sendData(res,{mapping:await evidenceService.decideMapping(req.params.mappingId,'rejected',req.body||{})});}catch(error){next(error);}
+  });
+  app.get('/api/projects/:projectId/requirements/:requirementId/enterprise-evidence',async(req,res,next)=>{
+    try{sendData(res,await evidenceService.listApprovedForRequirement(req.params.projectId,req.params.requirementId));}catch(error){next(error);}
   });
 
   app.get('/api/projects/:projectId/production-beta', async (req, res, next) => {
