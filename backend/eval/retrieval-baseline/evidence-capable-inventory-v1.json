@@ -1,0 +1,3366 @@
+{
+  "version": "4.3-evidence-capable-inventory-v1",
+  "dataset": "representative_sme",
+  "chunker_version": "enterprise-material-v1",
+  "material_count": 20,
+  "chunk_count": 60,
+  "items": [
+    {
+      "inventory_item_id": "INV-MCH-A16A99EB9B4F78AA2C4C96A551573EA6",
+      "material_id": "SME-001",
+      "chunk_id": "MCH-A16A99EB9B4F78AA2C4C96A551573EA6",
+      "anchor_id": "MCH-A16A99EB9B4F78AA2C4C96A551573EA6",
+      "source_span": {
+        "char_start": 0,
+        "char_end": 90,
+        "text": "REPRESENTATIVE_SYNTHETIC\nNOT_REAL_CUSTOMER_DATA\nmaterial_id: SME-001\nsubject: 澄明数科（示范）有限公司"
+      },
+      "source_hash": "c7b966eb84cd1c3ab7430f33eaba42509829e7792ff980bc47bb2f0e5f39f0e0",
+      "content_role": "unknown",
+      "topics": [],
+      "evidence_capable": false,
+      "supports_evidence_needs": [],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "SOURCE_TOO_THIN or non-evidentiary content role."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen negative Gold sample."
+    },
+    {
+      "inventory_item_id": "INV-MCH-B749B272B1F63B660085DF743F962CC4",
+      "material_id": "SME-001",
+      "chunk_id": "MCH-B749B272B1F63B660085DF743F962CC4",
+      "anchor_id": "MCH-B749B272B1F63B660085DF743F962CC4",
+      "source_span": {
+        "char_start": 92,
+        "char_end": 100,
+        "text": "# 企业能力简介"
+      },
+      "source_hash": "558dfd8431193cea50ec7e7ab654058ab351951c82e6e4629a07817a50f8d269",
+      "content_role": "company_positioning",
+      "topics": [],
+      "evidence_capable": false,
+      "supports_evidence_needs": [],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "SOURCE_TOO_THIN or non-evidentiary content role."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen negative Gold sample."
+    },
+    {
+      "inventory_item_id": "INV-MCH-6DFCE134A82DC1634C2A437DB9FAB0CD",
+      "material_id": "SME-001",
+      "chunk_id": "MCH-6DFCE134A82DC1634C2A437DB9FAB0CD",
+      "anchor_id": "MCH-6DFCE134A82DC1634C2A437DB9FAB0CD",
+      "source_span": {
+        "char_start": 102,
+        "char_end": 183,
+        "text": "企业：澄明数科（示范）有限公司\n规模：100-300 人。\n业务范围：政企应用软件开发、数据交换与治理、系统集成、实施与运维服务。\n限制：本资料不构成项目承诺。\n"
+      },
+      "source_hash": "7a64eb598aa1843d7bfde8e563c9f9772772d30302aa3550e68fa0f41af1be60",
+      "content_role": "general_capability",
+      "topics": [],
+      "evidence_capable": false,
+      "supports_evidence_needs": [],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "SOURCE_TOO_THIN or non-evidentiary content role."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen negative Gold sample."
+    },
+    {
+      "inventory_item_id": "INV-MCH-50846BDB326E9319B9411E63FB5A6742",
+      "material_id": "SME-002",
+      "chunk_id": "MCH-50846BDB326E9319B9411E63FB5A6742",
+      "anchor_id": "MCH-50846BDB326E9319B9411E63FB5A6742",
+      "source_span": {
+        "char_start": 0,
+        "char_end": 90,
+        "text": "REPRESENTATIVE_SYNTHETIC\nNOT_REAL_CUSTOMER_DATA\nmaterial_id: SME-002\nsubject: 澄明数科（示范）有限公司"
+      },
+      "source_hash": "1efd2a2a6822e314d26f2b9ea5ad05f9f59d3720f6c971094f23d33b14ecf2da",
+      "content_role": "unknown",
+      "topics": [],
+      "evidence_capable": false,
+      "supports_evidence_needs": [],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [
+          "CM-DX-32"
+        ],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "SOURCE_TOO_THIN or non-evidentiary content role."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen negative Gold sample."
+    },
+    {
+      "inventory_item_id": "INV-MCH-BC800DA446D3AFC8A4818E0B5344E90D",
+      "material_id": "SME-002",
+      "chunk_id": "MCH-BC800DA446D3AFC8A4818E0B5344E90D",
+      "anchor_id": "MCH-BC800DA446D3AFC8A4818E0B5344E90D",
+      "source_span": {
+        "char_start": 92,
+        "char_end": 104,
+        "text": "# 数据交换平台产品说明"
+      },
+      "source_hash": "9110a1b3eaaa2a432da18e1b924c87ff11d5331af07da9ae5f5b0510dd9895d1",
+      "content_role": "product_capability",
+      "topics": [],
+      "evidence_capable": false,
+      "supports_evidence_needs": [],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [
+          "CM-DX-32"
+        ],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "SOURCE_TOO_THIN or non-evidentiary content role."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen negative Gold sample."
+    },
+    {
+      "inventory_item_id": "INV-MCH-702E509FB2C4F932CFD2DEC5108C1E6F",
+      "material_id": "SME-002",
+      "chunk_id": "MCH-702E509FB2C4F932CFD2DEC5108C1E6F",
+      "anchor_id": "MCH-702E509FB2C4F932CFD2DEC5108C1E6F",
+      "source_span": {
+        "char_start": 106,
+        "char_end": 176,
+        "text": "产品：澄明数据交换平台 V3.2\n能力：REST API 接入、数据目录、交换任务调度、运行日志。\n未声明未列出的协议、吞吐量或 SLA。\n"
+      },
+      "source_hash": "1c1688d6ebe0879f39737f01e1997e24563ebe69ee21c3a5052ff96f50c1cccb",
+      "content_role": "product_capability",
+      "topics": [],
+      "evidence_capable": true,
+      "supports_evidence_needs": [
+        "product_capability",
+        "technical_parameter"
+      ],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [
+          "CM-DX-32"
+        ],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "Human review is still required; retrieval does not imply claim support."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen representative SME Gold anchor."
+    },
+    {
+      "inventory_item_id": "INV-MCH-0903E7532531D7B1F026B1C552471AEE",
+      "material_id": "SME-003",
+      "chunk_id": "MCH-0903E7532531D7B1F026B1C552471AEE",
+      "anchor_id": "MCH-0903E7532531D7B1F026B1C552471AEE",
+      "source_span": {
+        "char_start": 0,
+        "char_end": 90,
+        "text": "REPRESENTATIVE_SYNTHETIC\nNOT_REAL_CUSTOMER_DATA\nmaterial_id: SME-003\nsubject: 澄明数科（示范）有限公司"
+      },
+      "source_hash": "fd8edf599237c8b93b1e13b66e5050ae51fbbf2744c76758380145c1f8ef7bda",
+      "content_role": "unknown",
+      "topics": [],
+      "evidence_capable": false,
+      "supports_evidence_needs": [],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [
+          "CM-COLLAB-24"
+        ],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "SOURCE_TOO_THIN or non-evidentiary content role."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen negative Gold sample."
+    },
+    {
+      "inventory_item_id": "INV-MCH-AF5488EC91F2CCFB3387AE5AF1547A3A",
+      "material_id": "SME-003",
+      "chunk_id": "MCH-AF5488EC91F2CCFB3387AE5AF1547A3A",
+      "anchor_id": "MCH-AF5488EC91F2CCFB3387AE5AF1547A3A",
+      "source_span": {
+        "char_start": 92,
+        "char_end": 104,
+        "text": "# 政务协同平台产品说明"
+      },
+      "source_hash": "5b1a9435e3f54cf6f981b73c3e7dac5434528ea9030a7b93b674b86f50fd912c",
+      "content_role": "product_capability",
+      "topics": [],
+      "evidence_capable": false,
+      "supports_evidence_needs": [],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [
+          "CM-COLLAB-24"
+        ],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "SOURCE_TOO_THIN or non-evidentiary content role."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen negative Gold sample."
+    },
+    {
+      "inventory_item_id": "INV-MCH-DF61DAB3FA06FD2696DCDA30FC5AF3FA",
+      "material_id": "SME-003",
+      "chunk_id": "MCH-DF61DAB3FA06FD2696DCDA30FC5AF3FA",
+      "anchor_id": "MCH-DF61DAB3FA06FD2696DCDA30FC5AF3FA",
+      "source_span": {
+        "char_start": 106,
+        "char_end": 142,
+        "text": "产品：澄明政务协同平台 V2.4\n能力：事项协同、角色权限、消息通知。\n"
+      },
+      "source_hash": "a58a4746cb9dbc9d3354db0c0f4b2ad601ad34ac5ccc9286fe5716018044b48a",
+      "content_role": "product_capability",
+      "topics": [],
+      "evidence_capable": true,
+      "supports_evidence_needs": [
+        "product_capability"
+      ],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [
+          "CM-COLLAB-24"
+        ],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "Human review is still required; retrieval does not imply claim support."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen representative SME Gold anchor."
+    },
+    {
+      "inventory_item_id": "INV-MCH-967A86162059B954D4645DEFBD88CA13",
+      "material_id": "SME-004",
+      "chunk_id": "MCH-967A86162059B954D4645DEFBD88CA13",
+      "anchor_id": "MCH-967A86162059B954D4645DEFBD88CA13",
+      "source_span": {
+        "char_start": 0,
+        "char_end": 90,
+        "text": "REPRESENTATIVE_SYNTHETIC\nNOT_REAL_CUSTOMER_DATA\nmaterial_id: SME-004\nsubject: 澄明数科（示范）有限公司"
+      },
+      "source_hash": "421e2b4a69e39fb4513d347d6912f1808b6e9acafe7bb14c8bd9cc70086a30e4",
+      "content_role": "unknown",
+      "topics": [],
+      "evidence_capable": false,
+      "supports_evidence_needs": [],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [
+          "CM-DX-32"
+        ],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [
+          {
+            "metric": "average_response_time",
+            "value": "1.4",
+            "unit": "second"
+          },
+          {
+            "metric": "p95_response_time",
+            "value": "1.9",
+            "unit": "second"
+          },
+          {
+            "metric": "concurrency",
+            "value": "50",
+            "unit": "user"
+          }
+        ],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "SOURCE_TOO_THIN or non-evidentiary content role."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen negative Gold sample."
+    },
+    {
+      "inventory_item_id": "INV-MCH-FA765982E467A148BCF0FE9453A55DC1",
+      "material_id": "SME-004",
+      "chunk_id": "MCH-FA765982E467A148BCF0FE9453A55DC1",
+      "anchor_id": "MCH-FA765982E467A148BCF0FE9453A55DC1",
+      "source_span": {
+        "char_start": 92,
+        "char_end": 106,
+        "text": "# 数据交换平台性能测试记录"
+      },
+      "source_hash": "b39d0175f9ba8fd41b225f5b6d7b28dc51d850f4b5e80fe6159ae1af3e4ea189",
+      "content_role": "performance_test",
+      "topics": [],
+      "evidence_capable": false,
+      "supports_evidence_needs": [],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [
+          "CM-DX-32"
+        ],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [
+          {
+            "metric": "average_response_time",
+            "value": "1.4",
+            "unit": "second"
+          },
+          {
+            "metric": "p95_response_time",
+            "value": "1.9",
+            "unit": "second"
+          },
+          {
+            "metric": "concurrency",
+            "value": "50",
+            "unit": "user"
+          }
+        ],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "SOURCE_TOO_THIN or non-evidentiary content role."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen negative Gold sample."
+    },
+    {
+      "inventory_item_id": "INV-MCH-E851C3D77F1CDB2714DDFCA9F5D460FB",
+      "material_id": "SME-004",
+      "chunk_id": "MCH-E851C3D77F1CDB2714DDFCA9F5D460FB",
+      "anchor_id": "MCH-E851C3D77F1CDB2714DDFCA9F5D460FB",
+      "source_span": {
+        "char_start": 108,
+        "char_end": 252,
+        "text": "产品：澄明数据交换平台 V3.2\n环境：8 vCPU、32 GB 内存、PostgreSQL 14、千兆局域网\n条件：50 并发、100 万条基准数据、缓存预热后执行 30 分钟\n指标：数据目录查询平均响应时间\n结果：平均 1.4 秒，P95 1.9 秒。\n日期：2025-05-16。\n"
+      },
+      "source_hash": "14b64d354cd32b3f19d737765151befccec2f0bf63a0fa532652d19c5cf3549e",
+      "content_role": "performance_test",
+      "topics": [],
+      "evidence_capable": true,
+      "supports_evidence_needs": [
+        "quantitative_performance"
+      ],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [
+          "CM-DX-32"
+        ],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [
+          {
+            "metric": "average_response_time",
+            "value": "1.4",
+            "unit": "second"
+          },
+          {
+            "metric": "p95_response_time",
+            "value": "1.9",
+            "unit": "second"
+          },
+          {
+            "metric": "concurrency",
+            "value": "50",
+            "unit": "user"
+          }
+        ],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "Human review is still required; retrieval does not imply claim support."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen representative SME Gold anchor."
+    },
+    {
+      "inventory_item_id": "INV-MCH-89A2D86FBAF365F712C29DB43AF1DE19",
+      "material_id": "SME-005",
+      "chunk_id": "MCH-89A2D86FBAF365F712C29DB43AF1DE19",
+      "anchor_id": "MCH-89A2D86FBAF365F712C29DB43AF1DE19",
+      "source_span": {
+        "char_start": 0,
+        "char_end": 90,
+        "text": "REPRESENTATIVE_SYNTHETIC\nNOT_REAL_CUSTOMER_DATA\nmaterial_id: SME-005\nsubject: 澄明数科（示范）有限公司"
+      },
+      "source_hash": "1721b07ce554845cbc0e33c4c765e2fed6463d7f59554e1a5e3d8a917b09fda0",
+      "content_role": "unknown",
+      "topics": [],
+      "evidence_capable": false,
+      "supports_evidence_needs": [],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "SOURCE_TOO_THIN or non-evidentiary content role."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen negative Gold sample."
+    },
+    {
+      "inventory_item_id": "INV-MCH-A0BA1CA1F09E448E7CB37B1470F78DAB",
+      "material_id": "SME-005",
+      "chunk_id": "MCH-A0BA1CA1F09E448E7CB37B1470F78DAB",
+      "anchor_id": "MCH-A0BA1CA1F09E448E7CB37B1470F78DAB",
+      "source_span": {
+        "char_start": 92,
+        "char_end": 101,
+        "text": "# 产品兼容性矩阵"
+      },
+      "source_hash": "1c32ff7e9aa4f1d01011898c0c195da9bd25953712aa1fdae988dfaed0d4ffea",
+      "content_role": "compatibility_evidence",
+      "topics": [],
+      "evidence_capable": false,
+      "supports_evidence_needs": [],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "SOURCE_TOO_THIN or non-evidentiary content role."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen negative Gold sample."
+    },
+    {
+      "inventory_item_id": "INV-MCH-23E86FDACDC575270E02D5A8D533B166",
+      "material_id": "SME-005",
+      "chunk_id": "MCH-23E86FDACDC575270E02D5A8D533B166",
+      "anchor_id": "MCH-23E86FDACDC575270E02D5A8D533B166",
+      "source_span": {
+        "char_start": 103,
+        "char_end": 257,
+        "text": "x86_64 + Ubuntu 22.04 + PostgreSQL 14：tested\n鲲鹏 920 + 麒麟 V10 + 达梦 8：partially_tested（完成安装和基础交换用例，未完成压力测试）\n海光 + 统信 UOS + 人大金仓：not_verified\n国产数据库组合：unknown\n"
+      },
+      "source_hash": "bf60453cd84b99d920dd5f89217a33ceb9c6191345ca6a8af79e5bd249ef0146",
+      "content_role": "compatibility_evidence",
+      "topics": [],
+      "evidence_capable": true,
+      "supports_evidence_needs": [
+        "compatibility"
+      ],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "Human review is still required; retrieval does not imply claim support."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen representative SME Gold anchor."
+    },
+    {
+      "inventory_item_id": "INV-MCH-12B3D46D366E146A21162B7952303921",
+      "material_id": "SME-006",
+      "chunk_id": "MCH-12B3D46D366E146A21162B7952303921",
+      "anchor_id": "MCH-12B3D46D366E146A21162B7952303921",
+      "source_span": {
+        "char_start": 0,
+        "char_end": 90,
+        "text": "REPRESENTATIVE_SYNTHETIC\nNOT_REAL_CUSTOMER_DATA\nmaterial_id: SME-006\nsubject: 澄明数科（示范）有限公司"
+      },
+      "source_hash": "a93fca757cc0f883dd10692102efb9ec6c7cfbcc7ea785e9049dc0d9e8a60d93",
+      "content_role": "unknown",
+      "topics": [],
+      "evidence_capable": false,
+      "supports_evidence_needs": [],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "SOURCE_TOO_THIN or non-evidentiary content role."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen negative Gold sample."
+    },
+    {
+      "inventory_item_id": "INV-MCH-2B94AA2358C8C63A09B420AE526475BE",
+      "material_id": "SME-006",
+      "chunk_id": "MCH-2B94AA2358C8C63A09B420AE526475BE",
+      "anchor_id": "MCH-2B94AA2358C8C63A09B420AE526475BE",
+      "source_span": {
+        "char_start": 92,
+        "char_end": 107,
+        "text": "# ISO 9001 受控记录"
+      },
+      "source_hash": "5ce2c17155abf56dc3ae9930236f4cab65e0f0263aa88c8547a7034433e0b2ea",
+      "content_role": "qualification",
+      "topics": [],
+      "evidence_capable": false,
+      "supports_evidence_needs": [],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "SOURCE_TOO_THIN or non-evidentiary content role."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen negative Gold sample."
+    },
+    {
+      "inventory_item_id": "INV-MCH-BD99A6E9A36A56051ADA7485BD74CC95",
+      "material_id": "SME-006",
+      "chunk_id": "MCH-BD99A6E9A36A56051ADA7485BD74CC95",
+      "anchor_id": "MCH-BD99A6E9A36A56051ADA7485BD74CC95",
+      "source_span": {
+        "char_start": 109,
+        "char_end": 164,
+        "text": "名称：ISO 9001\n编号：CM-Q-9001-2025\n状态：active\n有效至：2028-03-31\n"
+      },
+      "source_hash": "d482587b31fdd9787cd83abd3a8b5babd96c7597751f674409d7051b862d468f",
+      "content_role": "qualification",
+      "topics": [],
+      "evidence_capable": true,
+      "supports_evidence_needs": [
+        "qualification"
+      ],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "Human review is still required; retrieval does not imply claim support."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen representative SME Gold anchor."
+    },
+    {
+      "inventory_item_id": "INV-MCH-0971FE6A764965255269207A28D2672D",
+      "material_id": "SME-007",
+      "chunk_id": "MCH-0971FE6A764965255269207A28D2672D",
+      "anchor_id": "MCH-0971FE6A764965255269207A28D2672D",
+      "source_span": {
+        "char_start": 0,
+        "char_end": 90,
+        "text": "REPRESENTATIVE_SYNTHETIC\nNOT_REAL_CUSTOMER_DATA\nmaterial_id: SME-007\nsubject: 澄明数科（示范）有限公司"
+      },
+      "source_hash": "95e1fcefa49e0747f8be2ef1965a21793919d226bfe91a6cd9ace4b1635a89b5",
+      "content_role": "unknown",
+      "topics": [],
+      "evidence_capable": false,
+      "supports_evidence_needs": [],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "SOURCE_TOO_THIN or non-evidentiary content role."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen negative Gold sample."
+    },
+    {
+      "inventory_item_id": "INV-MCH-FB583EB4E1DA3B36CE8329A1A3F5F4B7",
+      "material_id": "SME-007",
+      "chunk_id": "MCH-FB583EB4E1DA3B36CE8329A1A3F5F4B7",
+      "anchor_id": "MCH-FB583EB4E1DA3B36CE8329A1A3F5F4B7",
+      "source_span": {
+        "char_start": 92,
+        "char_end": 108,
+        "text": "# ISO 27001 受控记录"
+      },
+      "source_hash": "e4bbd720010befabbdd08b947acc803b7f0c52b5ccdbf8da7f5b169e76f19215",
+      "content_role": "qualification",
+      "topics": [],
+      "evidence_capable": false,
+      "supports_evidence_needs": [],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "SOURCE_TOO_THIN or non-evidentiary content role."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen negative Gold sample."
+    },
+    {
+      "inventory_item_id": "INV-MCH-283F4D96B8D99BBDDB102CA74926F60E",
+      "material_id": "SME-007",
+      "chunk_id": "MCH-283F4D96B8D99BBDDB102CA74926F60E",
+      "anchor_id": "MCH-283F4D96B8D99BBDDB102CA74926F60E",
+      "source_span": {
+        "char_start": 110,
+        "char_end": 171,
+        "text": "名称：ISO/IEC 27001\n编号：CM-Q-27001-2024\n状态：active\n有效至：2027-11-30\n"
+      },
+      "source_hash": "f9b129eeec4bf52560a3bb58a88d4c80b0fe08ed9b6e22e92b26f8a3f463fd72",
+      "content_role": "qualification",
+      "topics": [],
+      "evidence_capable": true,
+      "supports_evidence_needs": [
+        "qualification",
+        "security_capability"
+      ],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "Human review is still required; retrieval does not imply claim support."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen representative SME Gold anchor."
+    },
+    {
+      "inventory_item_id": "INV-MCH-ED209311400D525C4CEC9BA2BB8E1A40",
+      "material_id": "SME-008",
+      "chunk_id": "MCH-ED209311400D525C4CEC9BA2BB8E1A40",
+      "anchor_id": "MCH-ED209311400D525C4CEC9BA2BB8E1A40",
+      "source_span": {
+        "char_start": 0,
+        "char_end": 90,
+        "text": "REPRESENTATIVE_SYNTHETIC\nNOT_REAL_CUSTOMER_DATA\nmaterial_id: SME-008\nsubject: 澄明数科（示范）有限公司"
+      },
+      "source_hash": "7eaaf5633ebf83e7c6440400147f40736e9cb137b33e9fa3d33dd44a6b4d6e05",
+      "content_role": "unknown",
+      "topics": [],
+      "evidence_capable": false,
+      "supports_evidence_needs": [],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "SOURCE_TOO_THIN or non-evidentiary content role."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen negative Gold sample."
+    },
+    {
+      "inventory_item_id": "INV-MCH-F42D4BCCF63C73EB6002BEA9ED8B33BA",
+      "material_id": "SME-008",
+      "chunk_id": "MCH-F42D4BCCF63C73EB6002BEA9ED8B33BA",
+      "anchor_id": "MCH-F42D4BCCF63C73EB6002BEA9ED8B33BA",
+      "source_span": {
+        "char_start": 92,
+        "char_end": 102,
+        "text": "# CS2 受控记录"
+      },
+      "source_hash": "85e42ca69d14d0a2ccf18eeb0f7d896112f0803de8e84dff739044a0811fa79a",
+      "content_role": "qualification",
+      "topics": [],
+      "evidence_capable": false,
+      "supports_evidence_needs": [],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "SOURCE_TOO_THIN or non-evidentiary content role."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen negative Gold sample."
+    },
+    {
+      "inventory_item_id": "INV-MCH-51485F33BBD5BE5142858D88A46590BD",
+      "material_id": "SME-008",
+      "chunk_id": "MCH-51485F33BBD5BE5142858D88A46590BD",
+      "anchor_id": "MCH-51485F33BBD5BE5142858D88A46590BD",
+      "source_span": {
+        "char_start": 104,
+        "char_end": 162,
+        "text": "名称：信息系统建设和服务能力 CS2\n编号：CM-Q-CS2-2023\n状态：unknown；有效期必须人工复核。\n"
+      },
+      "source_hash": "59ba5a31c94df30f59c63b23b3709fbdfdb67da29e6da3d3a89f1db15c5ae630",
+      "content_role": "qualification",
+      "topics": [],
+      "evidence_capable": true,
+      "supports_evidence_needs": [
+        "qualification"
+      ],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "Human review is still required; retrieval does not imply claim support."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen representative SME Gold anchor."
+    },
+    {
+      "inventory_item_id": "INV-MCH-89538D785FE5B5B110F1499216E28943",
+      "material_id": "SME-009",
+      "chunk_id": "MCH-89538D785FE5B5B110F1499216E28943",
+      "anchor_id": "MCH-89538D785FE5B5B110F1499216E28943",
+      "source_span": {
+        "char_start": 0,
+        "char_end": 90,
+        "text": "REPRESENTATIVE_SYNTHETIC\nNOT_REAL_CUSTOMER_DATA\nmaterial_id: SME-009\nsubject: 澄明数科（示范）有限公司"
+      },
+      "source_hash": "08bb4ce4057be0f7ec98154485d666cc79ad436c85470809b05c9d74ca2c5aad",
+      "content_role": "unknown",
+      "topics": [],
+      "evidence_capable": false,
+      "supports_evidence_needs": [],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [
+          "CM-P-A"
+        ],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "SOURCE_TOO_THIN or non-evidentiary content role."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen negative Gold sample."
+    },
+    {
+      "inventory_item_id": "INV-MCH-B9B8E146C36F598946CFD2552B26A728",
+      "material_id": "SME-009",
+      "chunk_id": "MCH-B9B8E146C36F598946CFD2552B26A728",
+      "anchor_id": "MCH-B9B8E146C36F598946CFD2552B26A728",
+      "source_span": {
+        "char_start": 92,
+        "char_end": 101,
+        "text": "# 项目A中选记录"
+      },
+      "source_hash": "8306261def0f68f2aa09b8a19c06671780982b507df13944aaee529c8be9be9d",
+      "content_role": "award_record",
+      "topics": [],
+      "evidence_capable": false,
+      "supports_evidence_needs": [],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [
+          "CM-P-A"
+        ],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "SOURCE_TOO_THIN or non-evidentiary content role."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen negative Gold sample."
+    },
+    {
+      "inventory_item_id": "INV-MCH-2728DD7260DC455194E38091039B3C6D",
+      "material_id": "SME-009",
+      "chunk_id": "MCH-2728DD7260DC455194E38091039B3C6D",
+      "anchor_id": "MCH-2728DD7260DC455194E38091039B3C6D",
+      "source_span": {
+        "char_start": 103,
+        "char_end": 175,
+        "text": "项目：北川新区数据协同平台项目（虚构）\n客户：北川新区数字服务中心（虚构）\n中选日期：2024-01-12\n本记录仅证明虚构语料中的中选事实。\n"
+      },
+      "source_hash": "11a4ed5355e242a7cd1f48ecabd018853c812e7e088406ebc3969cb50d6516f5",
+      "content_role": "award_record",
+      "topics": [],
+      "evidence_capable": true,
+      "supports_evidence_needs": [
+        "award"
+      ],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [
+          "CM-P-A"
+        ],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "Human review is still required; retrieval does not imply claim support."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen representative SME Gold anchor."
+    },
+    {
+      "inventory_item_id": "INV-MCH-4413196E01326C255E597A850A789D82",
+      "material_id": "SME-010",
+      "chunk_id": "MCH-4413196E01326C255E597A850A789D82",
+      "anchor_id": "MCH-4413196E01326C255E597A850A789D82",
+      "source_span": {
+        "char_start": 0,
+        "char_end": 90,
+        "text": "REPRESENTATIVE_SYNTHETIC\nNOT_REAL_CUSTOMER_DATA\nmaterial_id: SME-010\nsubject: 澄明数科（示范）有限公司"
+      },
+      "source_hash": "0765ff11f40f3e1314fbc8c3685204d998741e13057904e520b7fa31ba6b8728",
+      "content_role": "unknown",
+      "topics": [],
+      "evidence_capable": false,
+      "supports_evidence_needs": [],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [
+          "CM-P-A"
+        ],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "SOURCE_TOO_THIN or non-evidentiary content role."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen negative Gold sample."
+    },
+    {
+      "inventory_item_id": "INV-MCH-2F5A2B23C54E66456624B044E422D99D",
+      "material_id": "SME-010",
+      "chunk_id": "MCH-2F5A2B23C54E66456624B044E422D99D",
+      "anchor_id": "MCH-2F5A2B23C54E66456624B044E422D99D",
+      "source_span": {
+        "char_start": 92,
+        "char_end": 101,
+        "text": "# 项目A合同摘要"
+      },
+      "source_hash": "ca47fc9277cc3abdea963673308fa9e15c1fe6395b43f25f18275a418120d0f7",
+      "content_role": "contract_record",
+      "topics": [],
+      "evidence_capable": false,
+      "supports_evidence_needs": [],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [
+          "CM-P-A"
+        ],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "SOURCE_TOO_THIN or non-evidentiary content role."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen negative Gold sample."
+    },
+    {
+      "inventory_item_id": "INV-MCH-843974F8353A8A7FCAD77E9FC25AE914",
+      "material_id": "SME-010",
+      "chunk_id": "MCH-843974F8353A8A7FCAD77E9FC25AE914",
+      "anchor_id": "MCH-843974F8353A8A7FCAD77E9FC25AE914",
+      "source_span": {
+        "char_start": 103,
+        "char_end": 189,
+        "text": "项目：北川新区数据协同平台项目（虚构）\n双方：澄明数科（示范）有限公司；北川新区数字服务中心（虚构）\n签订日期：2024-02-01\n范围：数据目录、交换任务和实施服务。\n"
+      },
+      "source_hash": "1cb17a76265cfcbd0670cf360052f0d8c1002442448eb61b46d13bd9e4c18478",
+      "content_role": "contract_record",
+      "topics": [],
+      "evidence_capable": true,
+      "supports_evidence_needs": [
+        "contract"
+      ],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [
+          "CM-P-A"
+        ],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "Human review is still required; retrieval does not imply claim support."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen representative SME Gold anchor."
+    },
+    {
+      "inventory_item_id": "INV-MCH-CA94F2B89A90A7F798A838242E55975D",
+      "material_id": "SME-011",
+      "chunk_id": "MCH-CA94F2B89A90A7F798A838242E55975D",
+      "anchor_id": "MCH-CA94F2B89A90A7F798A838242E55975D",
+      "source_span": {
+        "char_start": 0,
+        "char_end": 90,
+        "text": "REPRESENTATIVE_SYNTHETIC\nNOT_REAL_CUSTOMER_DATA\nmaterial_id: SME-011\nsubject: 澄明数科（示范）有限公司"
+      },
+      "source_hash": "a87d4d6d764df545d00cb90ff7a7e063979f81975d6e6823929a5dd4b142901a",
+      "content_role": "unknown",
+      "topics": [],
+      "evidence_capable": false,
+      "supports_evidence_needs": [],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [
+          "CM-P-A"
+        ],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "SOURCE_TOO_THIN or non-evidentiary content role."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen negative Gold sample."
+    },
+    {
+      "inventory_item_id": "INV-MCH-5139FB87AC62566CDDFBB632B312C4CB",
+      "material_id": "SME-011",
+      "chunk_id": "MCH-5139FB87AC62566CDDFBB632B312C4CB",
+      "anchor_id": "MCH-5139FB87AC62566CDDFBB632B312C4CB",
+      "source_span": {
+        "char_start": 92,
+        "char_end": 101,
+        "text": "# 项目A实施记录"
+      },
+      "source_hash": "3bab435ad433b3a57db604a8d38ff963cabebe5f14454563b3eabd8cea8c0037",
+      "content_role": "implementation_record",
+      "topics": [],
+      "evidence_capable": false,
+      "supports_evidence_needs": [],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [
+          "CM-P-A"
+        ],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "SOURCE_TOO_THIN or non-evidentiary content role."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen negative Gold sample."
+    },
+    {
+      "inventory_item_id": "INV-MCH-9F041742315E6028688AE51A77E9A19E",
+      "material_id": "SME-011",
+      "chunk_id": "MCH-9F041742315E6028688AE51A77E9A19E",
+      "anchor_id": "MCH-9F041742315E6028688AE51A77E9A19E",
+      "source_span": {
+        "char_start": 103,
+        "char_end": 160,
+        "text": "项目：北川新区数据协同平台项目（虚构）\n开始：2024-02-15\n工作：部署、目录初始化、接口联调、用户培训。\n"
+      },
+      "source_hash": "ad928e091679d989d14253b1240a27cd4bb946b8f13f14532f66d80383bd1876",
+      "content_role": "implementation_record",
+      "topics": [],
+      "evidence_capable": true,
+      "supports_evidence_needs": [
+        "implementation",
+        "delivery_capability"
+      ],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [
+          "CM-P-A"
+        ],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "Human review is still required; retrieval does not imply claim support."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen representative SME Gold anchor."
+    },
+    {
+      "inventory_item_id": "INV-MCH-951ADC2BEEE854ADBEB21AE3D4E76D06",
+      "material_id": "SME-012",
+      "chunk_id": "MCH-951ADC2BEEE854ADBEB21AE3D4E76D06",
+      "anchor_id": "MCH-951ADC2BEEE854ADBEB21AE3D4E76D06",
+      "source_span": {
+        "char_start": 0,
+        "char_end": 90,
+        "text": "REPRESENTATIVE_SYNTHETIC\nNOT_REAL_CUSTOMER_DATA\nmaterial_id: SME-012\nsubject: 澄明数科（示范）有限公司"
+      },
+      "source_hash": "ec446fbf15d616bffd1b2e3380b852df647ce6025677beae716af107fa217a84",
+      "content_role": "unknown",
+      "topics": [],
+      "evidence_capable": false,
+      "supports_evidence_needs": [],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [
+          "CM-P-A"
+        ],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "SOURCE_TOO_THIN or non-evidentiary content role."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen negative Gold sample."
+    },
+    {
+      "inventory_item_id": "INV-MCH-D4AE4037D1FFFA2E717CFCEB92520A77",
+      "material_id": "SME-012",
+      "chunk_id": "MCH-D4AE4037D1FFFA2E717CFCEB92520A77",
+      "anchor_id": "MCH-D4AE4037D1FFFA2E717CFCEB92520A77",
+      "source_span": {
+        "char_start": 92,
+        "char_end": 101,
+        "text": "# 项目A验收记录"
+      },
+      "source_hash": "ad9de59b748780e49abca2cb04e4c7a9ce9ed7d305206925463942c9bd3cc070",
+      "content_role": "acceptance_record",
+      "topics": [],
+      "evidence_capable": false,
+      "supports_evidence_needs": [],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [
+          "CM-P-A"
+        ],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "SOURCE_TOO_THIN or non-evidentiary content role."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen negative Gold sample."
+    },
+    {
+      "inventory_item_id": "INV-MCH-8C83D87D35F148A46FB7D92B614C49B8",
+      "material_id": "SME-012",
+      "chunk_id": "MCH-8C83D87D35F148A46FB7D92B614C49B8",
+      "anchor_id": "MCH-8C83D87D35F148A46FB7D92B614C49B8",
+      "source_span": {
+        "char_start": 103,
+        "char_end": 183,
+        "text": "项目：北川新区数据协同平台项目（虚构）\n客户：北川新区数字服务中心（虚构）\n验收日期：2024-09-20\n结论：虚构项目约定范围通过验收；不外推至其他环境。\n"
+      },
+      "source_hash": "6cef39e930d826ad62bff6f0919f2ab487323f6f32b5360ae349698f3ba65c1d",
+      "content_role": "acceptance_record",
+      "topics": [],
+      "evidence_capable": true,
+      "supports_evidence_needs": [
+        "acceptance_verification",
+        "project_experience"
+      ],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [
+          "CM-P-A"
+        ],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "Human review is still required; retrieval does not imply claim support."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen representative SME Gold anchor."
+    },
+    {
+      "inventory_item_id": "INV-MCH-767B5621ECE02EEDF19D8BB0D0EBDA6E",
+      "material_id": "SME-013",
+      "chunk_id": "MCH-767B5621ECE02EEDF19D8BB0D0EBDA6E",
+      "anchor_id": "MCH-767B5621ECE02EEDF19D8BB0D0EBDA6E",
+      "source_span": {
+        "char_start": 0,
+        "char_end": 90,
+        "text": "REPRESENTATIVE_SYNTHETIC\nNOT_REAL_CUSTOMER_DATA\nmaterial_id: SME-013\nsubject: 澄明数科（示范）有限公司"
+      },
+      "source_hash": "6d67baf6d7fb9ba979776800b09d8716c67386a201ade612fc36b1d14adb0188",
+      "content_role": "unknown",
+      "topics": [],
+      "evidence_capable": false,
+      "supports_evidence_needs": [],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [
+          "CM-P-B"
+        ],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "SOURCE_TOO_THIN or non-evidentiary content role."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen negative Gold sample."
+    },
+    {
+      "inventory_item_id": "INV-MCH-051A8F51E8BE222D2381797270817167",
+      "material_id": "SME-013",
+      "chunk_id": "MCH-051A8F51E8BE222D2381797270817167",
+      "anchor_id": "MCH-051A8F51E8BE222D2381797270817167",
+      "source_span": {
+        "char_start": 92,
+        "char_end": 104,
+        "text": "# 项目B中选及合同记录"
+      },
+      "source_hash": "fad04405873405fcc38e5a10115bc21d71e0053e2b01d18a3bbe59a86fd2fc85",
+      "content_role": "award_record",
+      "topics": [],
+      "evidence_capable": false,
+      "supports_evidence_needs": [],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [
+          "CM-P-B"
+        ],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "SOURCE_TOO_THIN or non-evidentiary content role."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen negative Gold sample."
+    },
+    {
+      "inventory_item_id": "INV-MCH-86809BF0A4218C5D644269854920477F",
+      "material_id": "SME-013",
+      "chunk_id": "MCH-86809BF0A4218C5D644269854920477F",
+      "anchor_id": "MCH-86809BF0A4218C5D644269854920477F",
+      "source_span": {
+        "char_start": 106,
+        "char_end": 170,
+        "text": "项目：临河园区应用集成项目（虚构）\n中选：2025-02-10\n合同：2025-03-03\n客户：临河产业服务有限公司（虚构）\n"
+      },
+      "source_hash": "c95a25d77a7c5b595eb508cea5eff6f700b7e5c076f0e96445405dc799072971",
+      "content_role": "award_record",
+      "topics": [],
+      "evidence_capable": true,
+      "supports_evidence_needs": [
+        "award",
+        "contract"
+      ],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [
+          "CM-P-B"
+        ],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "Human review is still required; retrieval does not imply claim support."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen representative SME Gold anchor."
+    },
+    {
+      "inventory_item_id": "INV-MCH-6D35EE6F57505253E5C5E30BC1AC3C15",
+      "material_id": "SME-014",
+      "chunk_id": "MCH-6D35EE6F57505253E5C5E30BC1AC3C15",
+      "anchor_id": "MCH-6D35EE6F57505253E5C5E30BC1AC3C15",
+      "source_span": {
+        "char_start": 0,
+        "char_end": 90,
+        "text": "REPRESENTATIVE_SYNTHETIC\nNOT_REAL_CUSTOMER_DATA\nmaterial_id: SME-014\nsubject: 澄明数科（示范）有限公司"
+      },
+      "source_hash": "b2ee96d3439537674e527ceb34c9f9bb71b7014583ec1fd54e63e072f52a3a02",
+      "content_role": "unknown",
+      "topics": [],
+      "evidence_capable": false,
+      "supports_evidence_needs": [],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [
+          "CM-P-B"
+        ],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "SOURCE_TOO_THIN or non-evidentiary content role."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen negative Gold sample."
+    },
+    {
+      "inventory_item_id": "INV-MCH-04F1E7237294F4D29B539CC210A65FFF",
+      "material_id": "SME-014",
+      "chunk_id": "MCH-04F1E7237294F4D29B539CC210A65FFF",
+      "anchor_id": "MCH-04F1E7237294F4D29B539CC210A65FFF",
+      "source_span": {
+        "char_start": 92,
+        "char_end": 101,
+        "text": "# 项目B实施周报"
+      },
+      "source_hash": "0adb89cddb5af3af35f5c7707b98a6449799447f4a9842ada95644fcb57bef72",
+      "content_role": "implementation_record",
+      "topics": [],
+      "evidence_capable": false,
+      "supports_evidence_needs": [],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [
+          "CM-P-B"
+        ],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "SOURCE_TOO_THIN or non-evidentiary content role."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen negative Gold sample."
+    },
+    {
+      "inventory_item_id": "INV-MCH-2A032A5E84781B03D177807B513B3D51",
+      "material_id": "SME-014",
+      "chunk_id": "MCH-2A032A5E84781B03D177807B513B3D51",
+      "anchor_id": "MCH-2A032A5E84781B03D177807B513B3D51",
+      "source_span": {
+        "char_start": 103,
+        "char_end": 152,
+        "text": "项目：临河园区应用集成项目（虚构）\n实施开始：2025-03-17\n状态：实施中；没有验收材料。\n"
+      },
+      "source_hash": "ab70b54e98607aadedf4d8e31a0a23d04dff6f1d5413a9013a70e94f6bf2a5e0",
+      "content_role": "implementation_record",
+      "topics": [],
+      "evidence_capable": true,
+      "supports_evidence_needs": [
+        "implementation"
+      ],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [
+          "CM-P-B"
+        ],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "Human review is still required; retrieval does not imply claim support."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen representative SME Gold anchor."
+    },
+    {
+      "inventory_item_id": "INV-MCH-561828ABD104F0EA82D03A614CF3D57B",
+      "material_id": "SME-015",
+      "chunk_id": "MCH-561828ABD104F0EA82D03A614CF3D57B",
+      "anchor_id": "MCH-561828ABD104F0EA82D03A614CF3D57B",
+      "source_span": {
+        "char_start": 0,
+        "char_end": 90,
+        "text": "REPRESENTATIVE_SYNTHETIC\nNOT_REAL_CUSTOMER_DATA\nmaterial_id: SME-015\nsubject: 澄明数科（示范）有限公司"
+      },
+      "source_hash": "df2df85681a7474e0a27bf99cd483918ae85ce805e26993aeb639ec3470105e5",
+      "content_role": "unknown",
+      "topics": [],
+      "evidence_capable": false,
+      "supports_evidence_needs": [],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [
+          "CM-P-C"
+        ],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "SOURCE_TOO_THIN or non-evidentiary content role."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen negative Gold sample."
+    },
+    {
+      "inventory_item_id": "INV-MCH-7BE07A61607A34ECA5E2615F474FDB67",
+      "material_id": "SME-015",
+      "chunk_id": "MCH-7BE07A61607A34ECA5E2615F474FDB67",
+      "anchor_id": "MCH-7BE07A61607A34ECA5E2615F474FDB67",
+      "source_span": {
+        "char_start": 92,
+        "char_end": 104,
+        "text": "# 项目C公开案例式摘要"
+      },
+      "source_hash": "a901f7e28dd14541fb698d86ab696cdd97b678e3feae0df8f7ab6070bd714bd7",
+      "content_role": "award_record",
+      "topics": [],
+      "evidence_capable": false,
+      "supports_evidence_needs": [],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [
+          "CM-P-C"
+        ],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "SOURCE_TOO_THIN or non-evidentiary content role."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen negative Gold sample."
+    },
+    {
+      "inventory_item_id": "INV-MCH-B4CE9539FC47C9B9CEC420D62853EB6A",
+      "material_id": "SME-015",
+      "chunk_id": "MCH-B4CE9539FC47C9B9CEC420D62853EB6A",
+      "anchor_id": "MCH-B4CE9539FC47C9B9CEC420D62853EB6A",
+      "source_span": {
+        "char_start": 106,
+        "char_end": 168,
+        "text": "项目：青屿公共数据目录项目（虚构）\n客户：青屿信息中心（虚构）\n中选日期：2023-06-08\n缺口：无合同、无验收材料。\n"
+      },
+      "source_hash": "b5574cee78a5a390bec0e96b2cc1a9f9ac59595eb9c6154b811f0c3a7651c960",
+      "content_role": "award_record",
+      "topics": [],
+      "evidence_capable": true,
+      "supports_evidence_needs": [
+        "award",
+        "project_experience"
+      ],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [
+          "CM-P-C"
+        ],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "Human review is still required; retrieval does not imply claim support."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen representative SME Gold anchor."
+    },
+    {
+      "inventory_item_id": "INV-MCH-3CF138D4B6D493E8BE1DE69CCC807C1E",
+      "material_id": "SME-016",
+      "chunk_id": "MCH-3CF138D4B6D493E8BE1DE69CCC807C1E",
+      "anchor_id": "MCH-3CF138D4B6D493E8BE1DE69CCC807C1E",
+      "source_span": {
+        "char_start": 0,
+        "char_end": 90,
+        "text": "REPRESENTATIVE_SYNTHETIC\nNOT_REAL_CUSTOMER_DATA\nmaterial_id: SME-016\nsubject: 澄明数科（示范）有限公司"
+      },
+      "source_hash": "003985dfe3d6fbb8879118869bdaf204096921dd787bebd1badfa86157623d06",
+      "content_role": "unknown",
+      "topics": [],
+      "evidence_capable": false,
+      "supports_evidence_needs": [],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [
+          "CM-P-D"
+        ],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "SOURCE_TOO_THIN or non-evidentiary content role."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen negative Gold sample."
+    },
+    {
+      "inventory_item_id": "INV-MCH-032119434A96FD1123ACEC52B1DE4F95",
+      "material_id": "SME-016",
+      "chunk_id": "MCH-032119434A96FD1123ACEC52B1DE4F95",
+      "anchor_id": "MCH-032119434A96FD1123ACEC52B1DE4F95",
+      "source_span": {
+        "char_start": 92,
+        "char_end": 101,
+        "text": "# 项目D实施片段"
+      },
+      "source_hash": "b89f45caf54952409ae8cc93ff746c800a3668024b0eca0665323f9a3fcf3ecf",
+      "content_role": "project_case",
+      "topics": [],
+      "evidence_capable": false,
+      "supports_evidence_needs": [],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [
+          "CM-P-D"
+        ],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "SOURCE_TOO_THIN or non-evidentiary content role."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen negative Gold sample."
+    },
+    {
+      "inventory_item_id": "INV-MCH-4F5869990E3ED096002DDCE1FBE323F4",
+      "material_id": "SME-016",
+      "chunk_id": "MCH-4F5869990E3ED096002DDCE1FBE323F4",
+      "anchor_id": "MCH-4F5869990E3ED096002DDCE1FBE323F4",
+      "source_span": {
+        "char_start": 103,
+        "char_end": 172,
+        "text": "项目：南泽业务协同升级片段（虚构）\n客户：南泽公共服务机构（虚构）\n实施片段日期：2025-10-09\n状态不完整，不得推断完工或验收。\n"
+      },
+      "source_hash": "9be92161f92319fab2613cff679c27d27fa2bc3e9d4baa3bdba28d5f29eb2fc4",
+      "content_role": "project_case",
+      "topics": [],
+      "evidence_capable": true,
+      "supports_evidence_needs": [
+        "implementation",
+        "project_experience"
+      ],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [
+          "CM-P-D"
+        ],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "Human review is still required; retrieval does not imply claim support."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen representative SME Gold anchor."
+    },
+    {
+      "inventory_item_id": "INV-MCH-E9A0DB37748AD712E67A7BAB6E475852",
+      "material_id": "SME-017",
+      "chunk_id": "MCH-E9A0DB37748AD712E67A7BAB6E475852",
+      "anchor_id": "MCH-E9A0DB37748AD712E67A7BAB6E475852",
+      "source_span": {
+        "char_start": 0,
+        "char_end": 90,
+        "text": "REPRESENTATIVE_SYNTHETIC\nNOT_REAL_CUSTOMER_DATA\nmaterial_id: SME-017\nsubject: 澄明数科（示范）有限公司"
+      },
+      "source_hash": "ea56ab31ac1358cf2665f4c67efdca5f703a20de9c6b7095b0588b34c94de009",
+      "content_role": "unknown",
+      "topics": [],
+      "evidence_capable": false,
+      "supports_evidence_needs": [],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "SOURCE_TOO_THIN or non-evidentiary content role."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen negative Gold sample."
+    },
+    {
+      "inventory_item_id": "INV-MCH-7F30A8E1DBDF5E30BAC5FCCBC03B391F",
+      "material_id": "SME-017",
+      "chunk_id": "MCH-7F30A8E1DBDF5E30BAC5FCCBC03B391F",
+      "anchor_id": "MCH-7F30A8E1DBDF5E30BAC5FCCBC03B391F",
+      "source_span": {
+        "char_start": 92,
+        "char_end": 100,
+        "text": "# 关键人员资料"
+      },
+      "source_hash": "123dcbc8256557d20bb187e70d84c69ed39a6b69314b69a754558a952f170b1c",
+      "content_role": "personnel_profile",
+      "topics": [],
+      "evidence_capable": false,
+      "supports_evidence_needs": [],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "SOURCE_TOO_THIN or non-evidentiary content role."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen negative Gold sample."
+    },
+    {
+      "inventory_item_id": "INV-MCH-B49A4A38F3988778E891CACAE2AC9318",
+      "material_id": "SME-017",
+      "chunk_id": "MCH-B49A4A38F3988778E891CACAE2AC9318",
+      "anchor_id": "MCH-B49A4A38F3988778E891CACAE2AC9318",
+      "source_span": {
+        "char_start": 102,
+        "char_end": 234,
+        "text": "林舟（虚构）｜project_manager｜证书：信息系统项目管理师｜经历：complete\n周岚（虚构）｜architect｜证书：无｜经历：complete\n陈屿（虚构）｜implementation_lead｜证书：数据库系统工程师｜经历：partial\n"
+      },
+      "source_hash": "44ffaa300a87fd43197ea415c6c3e20977fc013e604d7db97b8003cc64deeb94",
+      "content_role": "personnel_profile",
+      "topics": [],
+      "evidence_capable": true,
+      "supports_evidence_needs": [
+        "personnel"
+      ],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "Human review is still required; retrieval does not imply claim support."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen representative SME Gold anchor."
+    },
+    {
+      "inventory_item_id": "INV-MCH-337A0111830004B4C47C11BD1F1F3EB7",
+      "material_id": "SME-018",
+      "chunk_id": "MCH-337A0111830004B4C47C11BD1F1F3EB7",
+      "anchor_id": "MCH-337A0111830004B4C47C11BD1F1F3EB7",
+      "source_span": {
+        "char_start": 0,
+        "char_end": 90,
+        "text": "REPRESENTATIVE_SYNTHETIC\nNOT_REAL_CUSTOMER_DATA\nmaterial_id: SME-018\nsubject: 澄明数科（示范）有限公司"
+      },
+      "source_hash": "6753f8f8e18297347ae94f6d3cda652a52fccb387e3dffe0b70f0624831e1fb6",
+      "content_role": "unknown",
+      "topics": [],
+      "evidence_capable": false,
+      "supports_evidence_needs": [],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "SOURCE_TOO_THIN or non-evidentiary content role."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen negative Gold sample."
+    },
+    {
+      "inventory_item_id": "INV-MCH-60941822EF53CF2C51AB9FCF9EF7EFFB",
+      "material_id": "SME-018",
+      "chunk_id": "MCH-60941822EF53CF2C51AB9FCF9EF7EFFB",
+      "anchor_id": "MCH-60941822EF53CF2C51AB9FCF9EF7EFFB",
+      "source_span": {
+        "char_start": 92,
+        "char_end": 100,
+        "text": "# 服务能力说明"
+      },
+      "source_hash": "5cdec9edf919be4e5ac57f9de0aec963e1b38a540994bd18ba7a2b2da9e66933",
+      "content_role": "service_capability",
+      "topics": [],
+      "evidence_capable": false,
+      "supports_evidence_needs": [],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "SOURCE_TOO_THIN or non-evidentiary content role."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen negative Gold sample."
+    },
+    {
+      "inventory_item_id": "INV-MCH-2A98888F5A2CFEC9BAB80452E8E50F5B",
+      "material_id": "SME-018",
+      "chunk_id": "MCH-2A98888F5A2CFEC9BAB80452E8E50F5B",
+      "anchor_id": "MCH-2A98888F5A2CFEC9BAB80452E8E50F5B",
+      "source_span": {
+        "char_start": 102,
+        "char_end": 172,
+        "text": "企业通常提供工作日 9:00-18:00 服务台、远程诊断和必要时现场支持。\n无经审核的 7×24、5 分钟响应或 99.99% SLA。\n"
+      },
+      "source_hash": "7475f2796560b8d7243df403a98e90816c17aecc8ee18fda64fb373ad6a3bfbc",
+      "content_role": "service_capability",
+      "topics": [],
+      "evidence_capable": true,
+      "supports_evidence_needs": [
+        "service_capability"
+      ],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "Human review is still required; retrieval does not imply claim support."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen representative SME Gold anchor."
+    },
+    {
+      "inventory_item_id": "INV-MCH-BE2957B0669E27D37A1E504A41EB211F",
+      "material_id": "SME-019",
+      "chunk_id": "MCH-BE2957B0669E27D37A1E504A41EB211F",
+      "anchor_id": "MCH-BE2957B0669E27D37A1E504A41EB211F",
+      "source_span": {
+        "char_start": 0,
+        "char_end": 90,
+        "text": "REPRESENTATIVE_SYNTHETIC\nNOT_REAL_CUSTOMER_DATA\nmaterial_id: SME-019\nsubject: 澄明数科（示范）有限公司"
+      },
+      "source_hash": "093e400ab282541d88313dab1fa101a73ebc3b58766029a352694a197362b5e5",
+      "content_role": "unknown",
+      "topics": [],
+      "evidence_capable": false,
+      "supports_evidence_needs": [],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "SOURCE_TOO_THIN or non-evidentiary content role."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen negative Gold sample."
+    },
+    {
+      "inventory_item_id": "INV-MCH-C6DC8361F87506161B347AB5E3818168",
+      "material_id": "SME-019",
+      "chunk_id": "MCH-C6DC8361F87506161B347AB5E3818168",
+      "anchor_id": "MCH-C6DC8361F87506161B347AB5E3818168",
+      "source_span": {
+        "char_start": 92,
+        "char_end": 100,
+        "text": "# 交付能力说明"
+      },
+      "source_hash": "07330717a5bc0d852692c90ccfd2a5b4efe1322be51c904c5bf7837e0e8993dc",
+      "content_role": "delivery_capability",
+      "topics": [],
+      "evidence_capable": false,
+      "supports_evidence_needs": [],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "SOURCE_TOO_THIN or non-evidentiary content role."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen negative Gold sample."
+    },
+    {
+      "inventory_item_id": "INV-MCH-F62BD6177A9B54FE99133109D192A759",
+      "material_id": "SME-019",
+      "chunk_id": "MCH-F62BD6177A9B54FE99133109D192A759",
+      "anchor_id": "MCH-F62BD6177A9B54FE99133109D192A759",
+      "source_span": {
+        "char_start": 102,
+        "char_end": 143,
+        "text": "项目交付通常包含部署包、配置清单、操作手册和培训记录。\n具体交付清单以合同为准。\n"
+      },
+      "source_hash": "73a79a678698ee7e025a62dc4ea65544caadc0f7d7ecccec954dd7090b8772ef",
+      "content_role": "delivery_capability",
+      "topics": [],
+      "evidence_capable": true,
+      "supports_evidence_needs": [
+        "delivery_capability"
+      ],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "Human review is still required; retrieval does not imply claim support."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen representative SME Gold anchor."
+    },
+    {
+      "inventory_item_id": "INV-MCH-C3A59CA18823B388F3C82897755F04CC",
+      "material_id": "SME-020",
+      "chunk_id": "MCH-C3A59CA18823B388F3C82897755F04CC",
+      "anchor_id": "MCH-C3A59CA18823B388F3C82897755F04CC",
+      "source_span": {
+        "char_start": 0,
+        "char_end": 90,
+        "text": "REPRESENTATIVE_SYNTHETIC\nNOT_REAL_CUSTOMER_DATA\nmaterial_id: SME-020\nsubject: 澄明数科（示范）有限公司"
+      },
+      "source_hash": "e67e122fca4194aff98da3b03af9b07199b6520fdbaa167edf6c00b6519676e8",
+      "content_role": "unknown",
+      "topics": [],
+      "evidence_capable": false,
+      "supports_evidence_needs": [],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "SOURCE_TOO_THIN or non-evidentiary content role."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen negative Gold sample."
+    },
+    {
+      "inventory_item_id": "INV-MCH-3555A2B658D53AA1070E1857697946F5",
+      "material_id": "SME-020",
+      "chunk_id": "MCH-3555A2B658D53AA1070E1857697946F5",
+      "anchor_id": "MCH-3555A2B658D53AA1070E1857697946F5",
+      "source_span": {
+        "char_start": 92,
+        "char_end": 102,
+        "text": "# 信息安全管理边界"
+      },
+      "source_hash": "b92144fe09597cb5cad440063dd2e2446822824916d1051bbff2404d778c8036",
+      "content_role": "technical_reference",
+      "topics": [],
+      "evidence_capable": false,
+      "supports_evidence_needs": [],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "SOURCE_TOO_THIN or non-evidentiary content role."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen negative Gold sample."
+    },
+    {
+      "inventory_item_id": "INV-MCH-FF69376017FA3AEFBD9606DA5A91AB8A",
+      "material_id": "SME-020",
+      "chunk_id": "MCH-FF69376017FA3AEFBD9606DA5A91AB8A",
+      "anchor_id": "MCH-FF69376017FA3AEFBD9606DA5A91AB8A",
+      "source_span": {
+        "char_start": 104,
+        "char_end": 167,
+        "text": "企业持有在有效期内的 ISO/IEC 27001 受控记录。该事实不证明任一产品已实现特定安全等级、等保级别或具体安全功能。\n"
+      },
+      "source_hash": "d4be58449d9b642d25e17b8fb73842cce8d8c1d4c76b5245f74c028fe4b47d3a",
+      "content_role": "general_capability",
+      "topics": [],
+      "evidence_capable": false,
+      "supports_evidence_needs": [],
+      "candidate_facts": {
+        "subject": "澄明数科（示范）有限公司",
+        "entities": [],
+        "status": "unknown",
+        "scopes": [],
+        "quantities": [],
+        "validity": "unknown"
+      },
+      "limitations": [
+        "SOURCE_TOO_THIN or non-evidentiary content role."
+      ],
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T09:10:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T10:00:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "review_notes": "Frozen negative Gold sample."
+    }
+  ],
+  "probes": [
+    {
+      "dataset": "retained_real_requirements",
+      "created_at": "2026-08-21T11:00:00.000Z",
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T10:30:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T11:30:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "probe_id": "REAL-REQ-001",
+      "query": "制定统一的技术标准、数据标准和业务标准，通过“一网统管”核心平台和数字底座实现城市治理。",
+      "evidence_needs": [
+        "capability"
+      ],
+      "gold_material_ids": [],
+      "gold_anchor_ids": [],
+      "best_anchor_id": null,
+      "gold_no_sufficient_evidence": true,
+      "claim_supported": null,
+      "expected_error": "EVIDENCE_INSUFFICIENT"
+    },
+    {
+      "dataset": "retained_real_requirements",
+      "created_at": "2026-08-21T11:00:00.000Z",
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T10:30:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T11:30:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "probe_id": "REAL-REQ-015",
+      "query": "兼容X86架构，配合支持国产化的操作系统和数据库改造。",
+      "evidence_needs": [
+        "compatibility"
+      ],
+      "gold_material_ids": [
+        "SME-005"
+      ],
+      "gold_anchor_ids": [
+        "MCH-23E86FDACDC575270E02D5A8D533B166"
+      ],
+      "best_anchor_id": "MCH-23E86FDACDC575270E02D5A8D533B166",
+      "gold_no_sufficient_evidence": false,
+      "claim_supported": null,
+      "expected_error": null
+    },
+    {
+      "dataset": "retained_real_requirements",
+      "created_at": "2026-08-21T11:00:00.000Z",
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T10:30:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T11:30:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "probe_id": "REAL-REQ-016",
+      "query": "数据服务类接口响应时间需<=1秒。",
+      "evidence_needs": [
+        "quantitative_performance"
+      ],
+      "gold_material_ids": [
+        "SME-004"
+      ],
+      "gold_anchor_ids": [
+        "MCH-E851C3D77F1CDB2714DDFCA9F5D460FB"
+      ],
+      "best_anchor_id": "MCH-E851C3D77F1CDB2714DDFCA9F5D460FB",
+      "gold_no_sufficient_evidence": false,
+      "claim_supported": false,
+      "expected_error": null
+    },
+    {
+      "dataset": "retained_real_requirements",
+      "created_at": "2026-08-21T11:00:00.000Z",
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T10:30:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T11:30:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "probe_id": "REAL-REQ-027",
+      "query": "系统安全性好，按用户需求设定严格安全等级。",
+      "evidence_needs": [
+        "security_capability"
+      ],
+      "gold_material_ids": [
+        "SME-007"
+      ],
+      "gold_anchor_ids": [
+        "MCH-283F4D96B8D99BBDDB102CA74926F60E"
+      ],
+      "best_anchor_id": "MCH-283F4D96B8D99BBDDB102CA74926F60E",
+      "gold_no_sufficient_evidence": false,
+      "claim_supported": false,
+      "expected_error": null
+    },
+    {
+      "dataset": "retained_real_requirements",
+      "created_at": "2026-08-21T11:00:00.000Z",
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T10:30:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T11:30:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "probe_id": "REAL-REQ-030",
+      "query": "通过数据交换共享平台实现与其它异构系统之间的数据交换和共享。",
+      "evidence_needs": [
+        "product_capability"
+      ],
+      "gold_material_ids": [
+        "SME-002"
+      ],
+      "gold_anchor_ids": [
+        "MCH-702E509FB2C4F932CFD2DEC5108C1E6F"
+      ],
+      "best_anchor_id": "MCH-702E509FB2C4F932CFD2DEC5108C1E6F",
+      "gold_no_sufficient_evidence": false,
+      "claim_supported": null,
+      "expected_error": null
+    },
+    {
+      "dataset": "retained_real_requirements",
+      "created_at": "2026-08-21T11:00:00.000Z",
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T10:30:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T11:30:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "probe_id": "REAL-REQ-047",
+      "query": "本项目部署在政务云平台，要求供应商具备云服务能力。",
+      "evidence_needs": [
+        "service_capability"
+      ],
+      "gold_material_ids": [],
+      "gold_anchor_ids": [],
+      "best_anchor_id": null,
+      "gold_no_sufficient_evidence": true,
+      "claim_supported": null,
+      "expected_error": "CORPUS_GAP"
+    },
+    {
+      "dataset": "retained_real_requirements",
+      "created_at": "2026-08-21T11:00:00.000Z",
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T10:30:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T11:30:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "probe_id": "REAL-REQ-048",
+      "query": "平台必须能够与外部风险防范和网格联动平台无缝对接。",
+      "evidence_needs": [
+        "product_capability"
+      ],
+      "gold_material_ids": [
+        "SME-002"
+      ],
+      "gold_anchor_ids": [
+        "MCH-702E509FB2C4F932CFD2DEC5108C1E6F"
+      ],
+      "best_anchor_id": "MCH-702E509FB2C4F932CFD2DEC5108C1E6F",
+      "gold_no_sufficient_evidence": false,
+      "claim_supported": false,
+      "expected_error": null
+    },
+    {
+      "dataset": "retained_real_requirements",
+      "created_at": "2026-08-21T11:00:00.000Z",
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T10:30:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T11:30:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "probe_id": "REAL-REQ-059",
+      "query": "事件汇聚收发网关应汇聚实时事件并对事件数据进行治理。",
+      "evidence_needs": [
+        "product_capability"
+      ],
+      "gold_material_ids": [
+        "SME-002"
+      ],
+      "gold_anchor_ids": [
+        "MCH-702E509FB2C4F932CFD2DEC5108C1E6F"
+      ],
+      "best_anchor_id": "MCH-702E509FB2C4F932CFD2DEC5108C1E6F",
+      "gold_no_sufficient_evidence": false,
+      "claim_supported": null,
+      "expected_error": null
+    },
+    {
+      "dataset": "retained_real_requirements",
+      "created_at": "2026-08-21T11:00:00.000Z",
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T10:30:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T11:30:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "probe_id": "REAL-REQ-070",
+      "query": "构建平台精网微格体系、警网融合应用和网格学院。",
+      "evidence_needs": [
+        "capability"
+      ],
+      "gold_material_ids": [],
+      "gold_anchor_ids": [],
+      "best_anchor_id": null,
+      "gold_no_sufficient_evidence": true,
+      "claim_supported": null,
+      "expected_error": "CORPUS_GAP"
+    },
+    {
+      "dataset": "retained_real_requirements",
+      "created_at": "2026-08-21T11:00:00.000Z",
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T10:30:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T11:30:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "probe_id": "REAL-REQ-187",
+      "query": "防火墙需支持一体化安全策略并提供第三方权威检测报告扫描件。",
+      "evidence_needs": [
+        "security_capability"
+      ],
+      "gold_material_ids": [
+        "SME-007"
+      ],
+      "gold_anchor_ids": [
+        "MCH-283F4D96B8D99BBDDB102CA74926F60E"
+      ],
+      "best_anchor_id": "MCH-283F4D96B8D99BBDDB102CA74926F60E",
+      "gold_no_sufficient_evidence": false,
+      "claim_supported": false,
+      "expected_error": "EVIDENCE_INSUFFICIENT"
+    },
+    {
+      "dataset": "representative_sme_eval_probes",
+      "created_at": "2026-08-21T11:00:00.000Z",
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T10:30:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T11:30:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "probe_id": "SME-PR-01",
+      "query": "供应商应具备成熟的数据交换产品，支持接口接入、目录管理和任务调度。",
+      "evidence_needs": [
+        "product_capability"
+      ],
+      "gold_material_ids": [
+        "SME-002"
+      ],
+      "gold_anchor_ids": [
+        "MCH-702E509FB2C4F932CFD2DEC5108C1E6F"
+      ],
+      "best_anchor_id": "MCH-702E509FB2C4F932CFD2DEC5108C1E6F",
+      "gold_no_sufficient_evidence": false,
+      "claim_supported": null,
+      "expected_error": null
+    },
+    {
+      "dataset": "representative_sme_eval_probes",
+      "created_at": "2026-08-21T11:00:00.000Z",
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T10:30:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T11:30:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "probe_id": "SME-PR-02",
+      "query": "在五十并发和百万级数据条件下，目录查询平均响应时间应不超过2秒。",
+      "evidence_needs": [
+        "quantitative_performance"
+      ],
+      "gold_material_ids": [
+        "SME-004"
+      ],
+      "gold_anchor_ids": [
+        "MCH-E851C3D77F1CDB2714DDFCA9F5D460FB"
+      ],
+      "best_anchor_id": "MCH-E851C3D77F1CDB2714DDFCA9F5D460FB",
+      "gold_no_sufficient_evidence": false,
+      "claim_supported": true,
+      "expected_error": null
+    },
+    {
+      "dataset": "representative_sme_eval_probes",
+      "created_at": "2026-08-21T11:00:00.000Z",
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T10:30:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T11:30:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "probe_id": "SME-PR-03",
+      "query": "数据目录查询平均响应时间必须不超过1秒。",
+      "evidence_needs": [
+        "quantitative_performance"
+      ],
+      "gold_material_ids": [
+        "SME-004"
+      ],
+      "gold_anchor_ids": [
+        "MCH-E851C3D77F1CDB2714DDFCA9F5D460FB"
+      ],
+      "best_anchor_id": "MCH-E851C3D77F1CDB2714DDFCA9F5D460FB",
+      "gold_no_sufficient_evidence": false,
+      "claim_supported": false,
+      "expected_error": null
+    },
+    {
+      "dataset": "representative_sme_eval_probes",
+      "created_at": "2026-08-21T11:00:00.000Z",
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T10:30:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T11:30:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "probe_id": "SME-PR-04",
+      "query": "产品应完成x86服务器、Ubuntu系统与PostgreSQL数据库组合适配测试。",
+      "evidence_needs": [
+        "compatibility"
+      ],
+      "gold_material_ids": [
+        "SME-005"
+      ],
+      "gold_anchor_ids": [
+        "MCH-23E86FDACDC575270E02D5A8D533B166"
+      ],
+      "best_anchor_id": "MCH-23E86FDACDC575270E02D5A8D533B166",
+      "gold_no_sufficient_evidence": false,
+      "claim_supported": true,
+      "expected_error": null
+    },
+    {
+      "dataset": "representative_sme_eval_probes",
+      "created_at": "2026-08-21T11:00:00.000Z",
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T10:30:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T11:30:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "probe_id": "SME-PR-05",
+      "query": "产品应适配鲲鹏、麒麟和达梦环境并提供完整压力测试结论。",
+      "evidence_needs": [
+        "compatibility"
+      ],
+      "gold_material_ids": [
+        "SME-005"
+      ],
+      "gold_anchor_ids": [
+        "MCH-23E86FDACDC575270E02D5A8D533B166"
+      ],
+      "best_anchor_id": "MCH-23E86FDACDC575270E02D5A8D533B166",
+      "gold_no_sufficient_evidence": false,
+      "claim_supported": false,
+      "expected_error": null
+    },
+    {
+      "dataset": "representative_sme_eval_probes",
+      "created_at": "2026-08-21T11:00:00.000Z",
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T10:30:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T11:30:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "probe_id": "SME-PR-06",
+      "query": "协同平台应具备国产数据库适配证明。",
+      "evidence_needs": [
+        "compatibility"
+      ],
+      "gold_material_ids": [
+        "SME-005"
+      ],
+      "gold_anchor_ids": [
+        "MCH-23E86FDACDC575270E02D5A8D533B166"
+      ],
+      "best_anchor_id": "MCH-23E86FDACDC575270E02D5A8D533B166",
+      "gold_no_sufficient_evidence": false,
+      "claim_supported": false,
+      "expected_error": null
+    },
+    {
+      "dataset": "representative_sme_eval_probes",
+      "created_at": "2026-08-21T11:00:00.000Z",
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T10:30:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T11:30:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "probe_id": "SME-PR-07",
+      "query": "供应商应提供有效的信息安全管理体系认证。",
+      "evidence_needs": [
+        "qualification"
+      ],
+      "gold_material_ids": [
+        "SME-007"
+      ],
+      "gold_anchor_ids": [
+        "MCH-283F4D96B8D99BBDDB102CA74926F60E"
+      ],
+      "best_anchor_id": "MCH-283F4D96B8D99BBDDB102CA74926F60E",
+      "gold_no_sufficient_evidence": false,
+      "claim_supported": null,
+      "expected_error": null
+    },
+    {
+      "dataset": "representative_sme_eval_probes",
+      "created_at": "2026-08-21T11:00:00.000Z",
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T10:30:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T11:30:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "probe_id": "SME-PR-08",
+      "query": "供应商应提供北川新区数据协同平台项目中选证明。",
+      "evidence_needs": [
+        "award"
+      ],
+      "gold_material_ids": [
+        "SME-009"
+      ],
+      "gold_anchor_ids": [
+        "MCH-2728DD7260DC455194E38091039B3C6D"
+      ],
+      "best_anchor_id": "MCH-2728DD7260DC455194E38091039B3C6D",
+      "gold_no_sufficient_evidence": false,
+      "claim_supported": null,
+      "expected_error": null
+    },
+    {
+      "dataset": "representative_sme_eval_probes",
+      "created_at": "2026-08-21T11:00:00.000Z",
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T10:30:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T11:30:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "probe_id": "SME-PR-09",
+      "query": "供应商应提供北川新区数据协同平台合同范围和签订记录。",
+      "evidence_needs": [
+        "contract"
+      ],
+      "gold_material_ids": [
+        "SME-010"
+      ],
+      "gold_anchor_ids": [
+        "MCH-843974F8353A8A7FCAD77E9FC25AE914"
+      ],
+      "best_anchor_id": "MCH-843974F8353A8A7FCAD77E9FC25AE914",
+      "gold_no_sufficient_evidence": false,
+      "claim_supported": null,
+      "expected_error": null
+    },
+    {
+      "dataset": "representative_sme_eval_probes",
+      "created_at": "2026-08-21T11:00:00.000Z",
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T10:30:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T11:30:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "probe_id": "SME-PR-10",
+      "query": "供应商应提供北川新区数据协同平台部署、联调和培训实施记录。",
+      "evidence_needs": [
+        "implementation"
+      ],
+      "gold_material_ids": [
+        "SME-011"
+      ],
+      "gold_anchor_ids": [
+        "MCH-9F041742315E6028688AE51A77E9A19E"
+      ],
+      "best_anchor_id": "MCH-9F041742315E6028688AE51A77E9A19E",
+      "gold_no_sufficient_evidence": false,
+      "claim_supported": null,
+      "expected_error": null
+    },
+    {
+      "dataset": "representative_sme_eval_probes",
+      "created_at": "2026-08-21T11:00:00.000Z",
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T10:30:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T11:30:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "probe_id": "SME-PR-11",
+      "query": "供应商应提供北川新区数据协同平台最终验收证明。",
+      "evidence_needs": [
+        "acceptance_verification"
+      ],
+      "gold_material_ids": [
+        "SME-012"
+      ],
+      "gold_anchor_ids": [
+        "MCH-8C83D87D35F148A46FB7D92B614C49B8"
+      ],
+      "best_anchor_id": "MCH-8C83D87D35F148A46FB7D92B614C49B8",
+      "gold_no_sufficient_evidence": false,
+      "claim_supported": null,
+      "expected_error": null
+    },
+    {
+      "dataset": "representative_sme_eval_probes",
+      "created_at": "2026-08-21T11:00:00.000Z",
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T10:30:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T11:30:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "probe_id": "SME-PR-12",
+      "query": "供应商应提供临河园区应用集成项目验收证明。",
+      "evidence_needs": [
+        "acceptance_verification"
+      ],
+      "gold_material_ids": [],
+      "gold_anchor_ids": [],
+      "best_anchor_id": null,
+      "gold_no_sufficient_evidence": true,
+      "claim_supported": null,
+      "expected_error": "CORPUS_GAP"
+    },
+    {
+      "dataset": "representative_sme_eval_probes",
+      "created_at": "2026-08-21T11:00:00.000Z",
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T10:30:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T11:30:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "probe_id": "SME-PR-13",
+      "query": "项目团队应包括具有相应经历的项目经理、架构师和实施负责人。",
+      "evidence_needs": [
+        "personnel"
+      ],
+      "gold_material_ids": [
+        "SME-017"
+      ],
+      "gold_anchor_ids": [
+        "MCH-B49A4A38F3988778E891CACAE2AC9318"
+      ],
+      "best_anchor_id": "MCH-B49A4A38F3988778E891CACAE2AC9318",
+      "gold_no_sufficient_evidence": false,
+      "claim_supported": null,
+      "expected_error": null
+    },
+    {
+      "dataset": "representative_sme_eval_probes",
+      "created_at": "2026-08-21T11:00:00.000Z",
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T10:30:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T11:30:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "probe_id": "SME-PR-14",
+      "query": "供应商应具备服务台和现场支持能力，并交付部署包、配置清单、手册及培训记录。",
+      "evidence_needs": [
+        "service_capability",
+        "delivery_capability"
+      ],
+      "gold_material_ids": [
+        "SME-018",
+        "SME-019"
+      ],
+      "gold_anchor_ids": [
+        "MCH-2A98888F5A2CFEC9BAB80452E8E50F5B",
+        "MCH-F62BD6177A9B54FE99133109D192A759"
+      ],
+      "best_anchor_id": "MCH-2A98888F5A2CFEC9BAB80452E8E50F5B",
+      "gold_no_sufficient_evidence": false,
+      "claim_supported": null,
+      "expected_error": null
+    },
+    {
+      "dataset": "representative_sme_eval_probes",
+      "created_at": "2026-08-21T11:00:00.000Z",
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T10:30:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T11:30:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "probe_id": "SME-PR-15",
+      "query": "供应商应提供北川新区项目从中选、合同、实施到最终验收的完整证明链。",
+      "evidence_needs": [
+        "award",
+        "contract",
+        "implementation",
+        "acceptance_verification"
+      ],
+      "gold_material_ids": [
+        "SME-009",
+        "SME-010",
+        "SME-011",
+        "SME-012"
+      ],
+      "gold_anchor_ids": [
+        "MCH-2728DD7260DC455194E38091039B3C6D",
+        "MCH-843974F8353A8A7FCAD77E9FC25AE914",
+        "MCH-9F041742315E6028688AE51A77E9A19E",
+        "MCH-8C83D87D35F148A46FB7D92B614C49B8"
+      ],
+      "best_anchor_id": "MCH-2728DD7260DC455194E38091039B3C6D",
+      "gold_no_sufficient_evidence": false,
+      "claim_supported": null,
+      "expected_error": null
+    },
+    {
+      "dataset": "representative_sme_eval_probes",
+      "created_at": "2026-08-21T11:00:00.000Z",
+      "human_review_status": "approved",
+      "review_history": [
+        {
+          "status": "pending",
+          "at": "2026-08-21T10:30:00.000Z"
+        },
+        {
+          "status": "approved",
+          "at": "2026-08-21T11:30:00.000Z",
+          "reviewer": "fixture_sme_human_gold"
+        }
+      ],
+      "probe_id": "SME-PR-16",
+      "query": "供应商必须承诺全年不间断服务、五分钟响应和99.99%可用率。",
+      "evidence_needs": [
+        "service_capability"
+      ],
+      "gold_material_ids": [],
+      "gold_anchor_ids": [],
+      "best_anchor_id": null,
+      "gold_no_sufficient_evidence": true,
+      "claim_supported": null,
+      "expected_error": "EVIDENCE_INSUFFICIENT"
+    }
+  ]
+}

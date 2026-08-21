@@ -17,6 +17,7 @@
     "snapshot:semantic-boundary": "node eval/semantic-boundary/snapshot.js",
     "validate:corpus-manifest": "node eval/semantic-boundary/corpus-manifest-contract.js",
     "build:representative-corpus": "node eval/corpus/corpus-builder.js",
+    "eval:retrieval-baseline": "node eval/retrieval-baseline/benchmark.js",
     "review:evidence-gold": "node eval/evidence-gold/review/review-pack.js",
     "import:evidence-gold-review": "node eval/evidence-gold/review/import-human-review.js",
     "eval:live": "node scripts/eval-live.js",
