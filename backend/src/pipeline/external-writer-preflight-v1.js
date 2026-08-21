@@ -1,6 +1,7 @@
 import {createHash} from 'node:crypto';
 import {evaluateClaimGateBridge} from './claim-gate-input-adapter-v1.js';
 import {createProjectFactCandidate} from './project-fact-control-contract-v1.js';
+import {createPropagationBinding} from './project-fact-propagation-contract-v1.js';
 import {createWriterSafeContext} from './writer-input-authorization-v1.js';
 import {buildWriterTask} from './writer-execution-contract-v1.js';
 
@@ -35,11 +36,13 @@ export function buildSafePositiveWriterFixture({projectId}){
   if(bridge.evaluation.decision!=='allow'||bridge.evaluation.writer_eligible!==true)throw Object.assign(new Error('Safe Positive Claim did not pass Claim Gate v2.'),{code:'SAFE_POSITIVE_GATE_NOT_ALLOW'});
   const projectFact=createProjectFactCandidate({project_id:projectId,key:'synthetic.qualification.registration',fact_role:'enterprise_fact',value_type:'structured',value:{subject:'Synthetic Vendor',product_model:'Model A',certificate:'CERT-001',status:'registered',valid_until:'2099-12-31'},value_status:'known',scope:['chapter-qualification'],provenance_refs:[{source_type:'evidence_fact',source_id:evidenceFact.fact_id,snapshot_hash:evidenceFact.payload_hash,source_ref:{fact_id:evidenceFact.fact_id}}],created_by_type:'system',created_by:'task-9d-auth-r1',review_status:'approved'});
   projectFact.review_status='approved';
-  const binding={propagation_id:'PFB-SYNTHETIC-SAFE-001',project_id:projectId,project_fact_id:projectFact.project_fact_id,project_fact_version:projectFact.version,target_type:'chapter',target_id:'chapter-qualification',binding_role:'required',binding_status:'active',source_reason:'safe_positive_fixture',contract_version:'project-fact-propagation-v1'};
+  const binding=createPropagationBinding({project_id:projectId,project_fact_id:projectFact.project_fact_id,project_fact_version:projectFact.version,target_type:'chapter',target_id:'chapter-qualification',binding_role:'required',binding_status:'active',source_reason:'deterministic_rule',source_ref:{fixture:'task-9d-safe-positive'}});
+  const editableFact=createProjectFactCandidate({project_id:projectId,key:'synthetic.writer.section_label',fact_role:'project_decision',value_type:'string',value:'资质情况',value_status:'known',scope:['chapter-qualification'],provenance_refs:[{source_type:'human_input',source_id:'task-9d-section-label',snapshot_hash:'0'.repeat(64),source_ref:{classification:'synthetic'}}],created_by_type:'human',created_by:'task-9d-auth-r1',review_status:'approved'});editableFact.review_status='approved';
+  const editableBinding=createPropagationBinding({project_id:projectId,project_fact_id:editableFact.project_fact_id,project_fact_version:editableFact.version,target_type:'chapter',target_id:'chapter-qualification',binding_role:'required',binding_status:'active',source_reason:'deterministic_rule',source_ref:{fixture:'task-9d-editable-control'}});
   const gate={...bridge.evaluation,claim_id:bridge.claim.claim_id,claim_assertion_hash:bridge.claim.assertion_hash,gate_result_id:bridge.gate_result_id,input_snapshot_hash:bridge.input_snapshot_hash,lineage_current:true,current:true,source_hashes:[evidenceFact.payload_hash]};
-  const context=createWriterSafeContext({projectId,chapterId:'chapter-qualification',writerTaskId:'WT-SYNTHETIC-SAFE-001',facts:[projectFact],bindings:[binding],claims:[{...bridge.claim,current:true}],gateResults:[gate],versions:{projectFactContextHash:projectFact.payload_hash,propagationBindingVersion:'project-fact-propagation-v1',chapterPlanVersion:'production-shaped-synthetic-v1',claimGateIdentity:bridge.gate_result_id}});
-  const task=buildWriterTask({safeContext:context,chapterRole:'qualification',chapterInstruction:'仅陈述已获授权的产品注册资质事实，不扩展主体、产品范围、证书、有效期或状态。',bindings:[binding]});
-  return{source_truth:{classification:'REPRESENTATIVE_SYNTHETIC',not_real_customer_data:true,hash:sha(sourceText)},evidence_fact:evidenceFact,mapping,claim:bridge.claim,gate,project_fact:projectFact,binding,safe_context:context,writer_task:task};
+  const facts=[projectFact,editableFact],bindings=[binding,editableBinding],context=createWriterSafeContext({projectId,chapterId:'chapter-qualification',writerTaskId:'WT-SYNTHETIC-SAFE-001',facts,bindings,claims:[{...bridge.claim,current:true}],gateResults:[gate],versions:{projectFactContextHash:sha(facts.map(x=>x.payload_hash).join(':')),propagationBindingVersion:'project-fact-propagation-v1',chapterPlanVersion:'production-shaped-synthetic-v1',claimGateIdentity:bridge.gate_result_id}});
+  const task=buildWriterTask({safeContext:context,chapterRole:'qualification',chapterInstruction:'以授权的章节标签开头，仅陈述已获授权的产品注册资质事实，不扩展主体、产品范围、证书、有效期或状态。',bindings});
+  return{source_truth:{classification:'REPRESENTATIVE_SYNTHETIC',not_real_customer_data:true,hash:sha(sourceText)},evidence_fact:evidenceFact,mapping,claim:bridge.claim,gate,project_fact:projectFact,binding,editable_fact:editableFact,editable_binding:editableBinding,facts,bindings,safe_context:context,writer_task:task};
 }
 
 export function writerTaskInventory(task,maxOutputTokens=1600){
