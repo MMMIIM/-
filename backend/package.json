@@ -34,6 +34,7 @@
     "preflight:external-writer": "node eval/production-retrieval-e2e/run-writer-pre-e2e.js --preflight-only",
     "check:external-writer-model": "node scripts/external-writer-model-check.js",
     "e2e:real-writer": "node eval/production-retrieval-e2e/run-real-writer-e2e.js",
+    "e2e:real-writer-regen": "node eval/production-retrieval-e2e/run-real-writer-regeneration.js",
     "review:evidence-gold": "node eval/evidence-gold/review/review-pack.js",
     "import:evidence-gold-review": "node eval/evidence-gold/review/import-human-review.js",
     "eval:live": "node scripts/eval-live.js",
