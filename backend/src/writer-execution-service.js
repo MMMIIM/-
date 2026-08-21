@@ -5,12 +5,12 @@ export class WriterExecutionService{constructor({repository=null}={}){this.repos
 export class ExternalWriterProvider{async generate(){const error=new Error('缺少 TASK 9D EXTERNAL WRITER AUTHORIZATION。');error.code='EXTERNAL_WRITER_AUTHORIZATION_REQUIRED';error.status=403;throw error;}}
 
 export class OpenAICompatibleExternalWriterProvider{
- constructor({apiBase,apiKey,model,maxOutputTokens=1600,timeoutMs=120000,responseFormatMode='json_object',fetchImpl=fetch,authorized=false,lifecycleObserver=null}={}){Object.assign(this,{apiBase:String(apiBase||'').replace(/\/+$/,''),apiKey,model,maxOutputTokens,timeoutMs,responseFormatMode,fetchImpl,authorized,lifecycleObserver,requestCount:0});}
+ constructor({apiBase,apiKey,model,maxOutputTokens=1600,timeoutMs=120000,responseFormatMode='json_object',enableThinking=false,fetchImpl=fetch,authorized=false,lifecycleObserver=null}={}){Object.assign(this,{apiBase:String(apiBase||'').replace(/\/+$/,''),apiKey,model,maxOutputTokens,timeoutMs,responseFormatMode,enableThinking,fetchImpl,authorized,lifecycleObserver,requestCount:0});}
  async notifyLifecycle(state,audit={}){if(this.lifecycleObserver)await this.lifecycleObserver(state,audit);}
  async generate(task){
   if(!this.authorized)throw Object.assign(new Error('缺少 TASK 9D EXTERNAL WRITER AUTHORIZATION。'),{code:'EXTERNAL_WRITER_AUTHORIZATION_REQUIRED',status:403});
   if(this.requestCount>=1)throw Object.assign(new Error('本次授权的唯一外部请求已使用。'),{code:'EXTERNAL_WRITER_REQUEST_LIMIT',status:409});
-  this.requestCount+=1;const payload=buildExternalWriterRequest(task,{model:this.model,maxOutputTokens:this.maxOutputTokens,responseFormatMode:this.responseFormatMode});
+  this.requestCount+=1;const payload=buildExternalWriterRequest(task,{model:this.model,maxOutputTokens:this.maxOutputTokens,responseFormatMode:this.responseFormatMode,enableThinking:this.enableThinking});
   const sanitizedRequestHash=createHash('sha256').update(JSON.stringify(payload)).digest('hex'),started=Date.now();let response;
   await this.notifyLifecycle('dispatched',{sanitized_request_hash:sanitizedRequestHash,request_count:this.requestCount});
   try{response=await this.fetchImpl(`${this.apiBase}/chat/completions`,{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${this.apiKey}`},body:JSON.stringify(payload),signal:AbortSignal.timeout(this.timeoutMs)});}catch(error){const timedOut=error?.name==='TimeoutError'||error?.name==='AbortError';throw Object.assign(new Error(timedOut?'外部 Writer 请求超时。':'外部 Writer 网络请求失败。'),{code:timedOut?'EXTERNAL_WRITER_TIMEOUT':'EXTERNAL_WRITER_NETWORK_ERROR',audit:{latency_ms:Date.now()-started,sanitized_request_hash:sanitizedRequestHash,request_count:this.requestCount}});}
