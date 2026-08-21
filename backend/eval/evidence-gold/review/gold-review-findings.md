@@ -44,6 +44,14 @@ These notes preserve explicit human conclusions from the interrupted review conv
 - no sufficient evidence: true
 - finding: Broad “collect city data” positioning does not prove a data-exchange platform, heterogeneous-system integration, or an exchange mechanism.
 
-## Interrupted card
+### EVD-047-03 / REQ-047
 
-`EVD-047-03 / REQ-047` was displayed but no human conclusion was provided. It remains pending without an inferred finding.
+- relevant: no
+- evidence-capable: no
+- span: correct
+- no sufficient evidence: true
+- finding: The Requirement seeks evidence of cloud deployment and service capability. The project title can authoritatively identify its government procurement/award record, but contains no cloud deployment, cloud service, or cloud implementation fact. Authority is high for its own project fact while Requirement-specific compatibility and sufficiency are none.
+
+## Review status
+
+All six findings remain audit notes only. No reviewer identity was supplied, so they do not change `review_status` and do not enter approved Gold metrics.
