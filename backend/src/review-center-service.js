@@ -35,7 +35,7 @@ export class ReviewCenterService {
     const evidence = reviews.map((item) => {
       const fact = factByReview.get(item.review_id) || null;
       return {
-        kind: 'evidence_review', id: item.review_id, status: item.review_status,
+        kind: 'evidence_review', id: item.review_id, status: item.review_status, material_id:item.material_id,
         requirement_id: item.requirement_ref, requirement_text: item.requirement_text,
         is_mandatory: item.is_mandatory, source_location: { page_start:item.source_page_start, page_end:item.source_page_end, paragraph_start:item.source_paragraph_start, paragraph_end:item.source_paragraph_end },
         source_material: item.source_material, source_span_id: item.source_span_id,
@@ -46,13 +46,13 @@ export class ReviewCenterService {
       };
     });
     const mappingItems = mappings.map((item) => ({
-      kind: 'mapping', id: item.mapping_id, status: item.review_status,
+      kind: 'mapping', id: item.mapping_id, status: item.review_status, material_id:item.material_id,
       requirement_id: item.requirement_identifier, fact_id: item.evidence_fact_id,
       support_level: item.support_level, reason_codes: item.reason_codes || [],
       reason: businessReason((item.reason_codes || [])[0])
     }));
     const reviewById = new Map(reviews.map((item)=>[item.review_id,item]));
-    const factItems = facts.map((item)=>{const review=reviewById.get(item.evidence_review_id);return{kind:'evidence_fact',id:item.fact_id,status:item.review_status,requirement_id:review?.requirement_ref||null,source_span_id:item.source_span_id,subject:item.subject,validity:item.validity,reason:businessReason(item.review_status)};});
+    const factItems = facts.map((item)=>{const review=reviewById.get(item.evidence_review_id);return{kind:'evidence_fact',id:item.fact_id,status:item.review_status,material_id:item.material_id,requirement_id:review?.requirement_ref||null,source_span_id:item.source_span_id,subject:item.subject,validity:item.validity,reason:businessReason(item.review_status)};});
     const gateByClaim = new Map(gates.map((item) => [item.claim_id, item]));
     const claimItems = claims.map((item) => ({
       kind: 'claim', id: item.claim_id, status: gateByClaim.get(item.claim_id)?.decision || item.gate_decision || item.decision,
