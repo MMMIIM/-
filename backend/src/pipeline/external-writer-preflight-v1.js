@@ -15,6 +15,8 @@ Never add or expand numbers, dates, status, qualifications, people, compatibilit
 Every block must contain text, used_context_refs, and used_claim_refs. References must be IDs present in the Writer Task.
 Do not return Markdown fences, commentary, reasoning, or fields outside the requested output contract.`;
 
+export function buildExternalWriterRequest(task,{model,maxOutputTokens=1600}={}){return{model,temperature:0.2,max_tokens:maxOutputTokens,response_format:{type:'json_object'},messages:[{role:'system',content:WRITER_SYSTEM_PROMPT},{role:'user',content:JSON.stringify({instruction:'只输出一个 JSON object，不得输出 Markdown、code fence、解释或前后缀。根层只允许 blocks。每个 block 必须包含 block_id、text、used_context_refs、used_claim_refs。每个事实块必须逐字包含对应 assertable claim，并同时列出授权的 context ref 和 claim ref。',writer_task:task,output_contract:{blocks:[{block_id:'string',text:'string',used_context_refs:['authorized project_fact_id'],used_claim_refs:['authorized claim_id']}]}})}]};}
+
 export function resolveExternalWriterRuntime(env=process.env){
   const apiBase=String(env.EXTERNAL_WRITER_API_BASE||'').replace(/\/+$/,'');
   const keySetting=String(env.EXTERNAL_WRITER_API_KEY||'');
@@ -48,5 +50,6 @@ export function buildSafePositiveWriterFixture({projectId}){
 export function writerTaskInventory(task,maxOutputTokens=1600){
   const outbound={writer_task_id:task.writer_task_id,chapter_id:task.chapter_id,chapter_role:task.chapter_role,chapter_instruction:task.chapter_instruction,context_items:task.context_items,assertable_claims:task.assertable_claims,required_bindings:task.required_bindings,optional_bindings:task.optional_bindings,pending_controls:task.pending_controls,forbidden_assertions:task.forbidden_assertions};
   const estimated_chars=JSON.stringify(outbound).length;
-  return{writer_task_id:task.writer_task_id,chapter_id:task.chapter_id,chapter_role:task.chapter_role,context_items_count:task.context_items.length,assertable_claims_count:task.assertable_claims.length,required_bindings_count:task.required_bindings.length,optional_bindings_count:task.optional_bindings.length,pending_controls_count:task.pending_controls.length,forbidden_assertions_count:task.forbidden_assertions.length,estimated_chars,estimated_input_tokens:Math.ceil(estimated_chars/4),max_output_tokens:maxOutputTokens};
+  const request=buildExternalWriterRequest(task,{model:'MODEL',maxOutputTokens}),provider_request_estimated_chars=JSON.stringify(request).length;
+  return{writer_task_id:task.writer_task_id,chapter_id:task.chapter_id,chapter_role:task.chapter_role,context_items_count:task.context_items.length,assertable_claims_count:task.assertable_claims.length,required_bindings_count:task.required_bindings.length,optional_bindings_count:task.optional_bindings.length,pending_controls_count:task.pending_controls.length,forbidden_assertions_count:task.forbidden_assertions.length,estimated_chars,safe_context_estimated_tokens:Math.ceil(estimated_chars/4),provider_request_estimated_chars,provider_request_estimated_tokens:Math.ceil(provider_request_estimated_chars/2.5),estimated_input_tokens:Math.ceil(provider_request_estimated_chars/2.5),max_output_tokens:maxOutputTokens};
 }
