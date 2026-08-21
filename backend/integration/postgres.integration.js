@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import dotenv from 'dotenv';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { readFile, readdir } from 'node:fs/promises';
 import { createPool, PgRepository } from '../src/db.js';
 import { createDifyClient } from '../src/dify.js';
@@ -23,9 +23,16 @@ import { chunkEnterpriseMaterial } from '../src/pipeline/enterprise-material-chu
 import { EnterpriseRetrievalService } from '../src/pipeline/enterprise-retrieval-service.js';
 import { EmbeddingError } from '../src/pipeline/embedding-client.js';
 import { EvidenceFactService } from '../src/evidence-fact-service.js';
+import { EvidenceSourceContextResolver } from '../src/pipeline/evidence-source-context-resolver.js';
 
 const directory = dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: resolve(directory, '../.env') });
+
+test('Evidence Source Span PostgreSQL lineage 验证连续范围、hash 与 Anchor',async()=>{
+  assert.ok(process.env.DATABASE_URL,'DATABASE_URL is required for PostgreSQL integration tests');const pool=createPool();const repository=new PgRepository(pool);const project=await repository.createProject({name:`Evidence span ${Date.now()}`});
+  try{const source='# 系统集成\n\n企业支持接口集成与系统对接。\n\n# 其他\n\n无关内容';const material=(await pool.query(`INSERT INTO company_materials(project_id,original_name,storage_key,material_type,mime_type,size_bytes,file_hash,extraction_status,extracted_text) VALUES($1,'span.md',$2,'product_documentation','text/markdown',$3,$4,'succeeded',$5) RETURNING *`,[project.id,`span-${project.id}`,Buffer.byteLength(source),createHash('sha256').update(source).digest('hex'),source])).rows[0];const chunks=chunkEnterpriseMaterial(material.id,source);await repository.replaceMaterialChunks(material.id,chunks);const span=new EvidenceSourceContextResolver().resolve({material,chunks,anchorChunkId:chunks[1].chunk_id});const evidence=await repository.createEvidenceRecord({evidenceId:`EVI-${randomUUID().toUpperCase()}`,projectId:project.id,materialId:material.id,sourceChunkId:chunks[1].chunk_id,evidenceType:'product_documentation',title:'span',content:span.source_text,sourceText:span.source_text,sourcePage:null,sourceParagraph:span.source_location.paragraph_start,sourceHash:span.source_hash,sourceLocation:span.source_location,evidenceScope:[],capabilityTags:[],metadata:{},validityStatus:'unknown',applicableRequirementIds:[],usageScope:null,riskNotes:null});let catalog=await repository.listEvidenceCatalog(project.id);assert.equal(catalog.evidences.find((item)=>item.id===evidence.id).source_lineage_verified,true);await pool.query(`UPDATE evidences SET source_hash='${'0'.repeat(64)}' WHERE id=$1`,[evidence.id]);catalog=await repository.listEvidenceCatalog(project.id);assert.equal(catalog.evidences.find((item)=>item.id===evidence.id).source_lineage_verified,false);
+  }finally{await pool.query(`DELETE FROM projects WHERE id=$1`,[project.id]);await pool.end();}
+});
 
 test('019 Enterprise Evidence Contract migration 可重复执行',async()=>{
   assert.ok(process.env.DATABASE_URL,'DATABASE_URL is required for PostgreSQL integration tests');

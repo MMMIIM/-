@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { AppError } from './errors.js';
 import { createEvidenceIdentifier } from './company-material-service.js';
+import { EvidenceSourceContextResolver } from './pipeline/evidence-source-context-resolver.js';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 function assertUuid(value, code, message) { if (!UUID_PATTERN.test(String(value || ''))) throw new AppError(code, message, 400); }
@@ -14,7 +15,7 @@ function object(value){return value&&typeof value==='object'&&!Array.isArray(val
 function metadata(value){const input=object(value);const result=Object.fromEntries(['issuer','valid_from','valid_until','customer','product','version'].filter((key)=>input[key]!=null&&String(input[key]).trim()).map((key)=>[key,String(input[key]).trim()]));for(const key of ['valid_from','valid_until'])if(result[key]&&!/^\d{4}-\d{2}-\d{2}$/.test(result[key]))throw new AppError('EVIDENCE_METADATA_INVALID',`${key} 必须是 YYYY-MM-DD。`,422);return result;}
 
 export class EvidenceService {
-  constructor({ repository }) { this.repository = repository; }
+  constructor({ repository, contextResolver=new EvidenceSourceContextResolver() }) { this.repository = repository;this.contextResolver=contextResolver; }
 
   async list(projectId) {
     assertUuid(projectId, 'INVALID_PROJECT_ID', '项目 ID 格式无效。');
@@ -22,27 +23,30 @@ export class EvidenceService {
     return this.repository.listEvidenceCatalog(projectId);
   }
 
-  async create(projectId, input = {}) {
+  async create(projectId, input = {}, {trustedSpan=false}={}) {
     assertUuid(projectId, 'INVALID_PROJECT_ID', '项目 ID 格式无效。');
     assertUuid(input.material_id, 'INVALID_MATERIAL_ID', '企业材料 ID 格式无效。');
     const material = await this.repository.getCompanyMaterial(input.material_id);
     if (!material || material.project_id !== projectId) throw new AppError('MATERIAL_NOT_FOUND', '企业材料不存在或不属于当前项目。', 404);
     if (material.extraction_status !== 'succeeded') throw new AppError('MATERIAL_NOT_READY', '企业材料尚未成功提取文本。', 409);
-    let chunk=null;
+    if(Object.hasOwn(input,'resolved_source_span')&&!trustedSpan)throw new AppError('EVIDENCE_SOURCE_LINEAGE_FORBIDDEN','Evidence Source Span 只能由后端 Context Resolver 生成。',422);
+    let chunk=null;let resolvedSpan=trustedSpan?input.resolved_source_span||null:null;
     if(input.source_chunk_id){
       chunk=await this.repository.getMaterialChunk(String(input.source_chunk_id));
       if(!chunk||chunk.material_id!==material.id) throw new AppError('EVIDENCE_SOURCE_CHUNK_INVALID', 'Material Chunk 不存在或不属于指定材料。', 422);
       if(material.extracted_text.slice(chunk.char_start,chunk.char_end)!==chunk.source_text) throw new AppError('EVIDENCE_SOURCE_LINEAGE_INVALID', 'Material Chunk 无法回溯到材料原文。', 409);
-      if(input.source_text!=null&&String(input.source_text)!==chunk.source_text)throw new AppError('EVIDENCE_SOURCE_LINEAGE_INVALID','Evidence source_text 与 Material Chunk 原文不一致。',422);
+      if(!resolvedSpan&&input.source_text!=null&&String(input.source_text)!==chunk.source_text)throw new AppError('EVIDENCE_SOURCE_LINEAGE_INVALID','Evidence source_text 与 Material Chunk 原文不一致。',422);
     }
     if(!chunk&&input.source_text!=null&&String(input.source_text).trim())throw new AppError('EVIDENCE_SOURCE_CHUNK_REQUIRED','Enterprise Evidence 的来源原文必须由真实 Material Chunk 提供。',422);
     const requirementIds = ids(input.applicable_requirement_ids);
     const invalidIds = await this.repository.findInvalidConfirmedRequirementIds(projectId, requirementIds);
     if (invalidIds.length) throw new AppError('EVIDENCE_REQUIREMENT_INVALID', `Evidence 关联了未确认 Requirement：${invalidIds.join('、')}`, 422);
     const content = text(input.content, 'Evidence 内容');
-    const sourceText = chunk?.source_text ?? (input.source_text == null || String(input.source_text).trim() === '' ? null : String(input.source_text).trim());
-    const sourcePage = chunk?.page_start ?? (input.source_page == null || input.source_page === '' ? null : Number(input.source_page));
-    const sourceParagraph = chunk?.paragraph_start ?? (input.source_paragraph == null || input.source_paragraph === '' ? null : Number(input.source_paragraph));
+    if(resolvedSpan){const location=object(resolvedSpan.source_location);const start=location.char_start;const end=location.char_end;if(location.anchor_chunk_id!==chunk?.chunk_id||!Number.isInteger(start)||!Number.isInteger(end)||start<0||end<=start||chunk.char_start<start||chunk.char_end>end||material.extracted_text.slice(start,end)!==resolvedSpan.source_text||createHash('sha256').update(resolvedSpan.source_text).digest('hex')!==resolvedSpan.source_hash)throw new AppError('EVIDENCE_SOURCE_LINEAGE_INVALID','Evidence Source Span 无法回溯到材料原文。',422);}
+    const sourceText = resolvedSpan?.source_text??chunk?.source_text ?? (input.source_text == null || String(input.source_text).trim() === '' ? null : String(input.source_text).trim());
+    const sourceLocation=resolvedSpan?.source_location??(chunk?{char_start:chunk.char_start,char_end:chunk.char_end,page_start:chunk.page_start,page_end:chunk.page_end,paragraph_start:chunk.paragraph_start,paragraph_end:chunk.paragraph_end,section:chunk.section,anchor_chunk_id:chunk.chunk_id,chunk_start_index:chunk.chunk_index,chunk_end_index:chunk.chunk_index,resolution_method:'anchor_only',resolver_version:'evidence-source-span-v1'}:{});
+    const sourcePage = sourceLocation.page_start ?? (input.source_page == null || input.source_page === '' ? null : Number(input.source_page));
+    const sourceParagraph = sourceLocation.paragraph_start ?? (input.source_paragraph == null || input.source_paragraph === '' ? null : Number(input.source_paragraph));
     if (sourcePage !== null && (!Number.isInteger(sourcePage) || sourcePage < 1)) throw new AppError('EVIDENCE_SOURCE_INVALID', '来源页码必须为正整数。', 422);
     if (sourceParagraph !== null && (!Number.isInteger(sourceParagraph) || sourceParagraph < 1)) throw new AppError('EVIDENCE_SOURCE_INVALID', '来源段落必须为正整数。', 422);
     if (!sourceText && (sourcePage !== null || sourceParagraph !== null)) throw new AppError('EVIDENCE_SOURCE_INVALID', '没有来源原文时，来源页码和段落必须留空。', 422);
@@ -50,8 +54,7 @@ export class EvidenceService {
     if(input.validity_status!=null&&String(input.validity_status)!=='unknown')throw new AppError('EVIDENCE_VALIDITY_REVIEW_REQUIRED','Evidence 有效性必须通过独立审核接口设置。',422);
     return this.repository.createEvidenceRecord({ evidenceId:createEvidenceIdentifier(), projectId, materialId:material.id, sourceChunkId:chunk?.chunk_id||null,
       evidenceType:text(input.evidence_type || material.material_type, 'Evidence 类型'), title:text(input.title, 'Evidence 标题'), content,
-      sourceText, sourcePage, sourceParagraph, sourceHash:chunk?.chunk_hash||(sourceText ? createHash('sha256').update(sourceText).digest('hex') : null),
-      sourceLocation:chunk?{char_start:chunk.char_start,char_end:chunk.char_end,page_start:chunk.page_start,page_end:chunk.page_end,paragraph_start:chunk.paragraph_start,paragraph_end:chunk.paragraph_end,section:chunk.section}:{},
+      sourceText, sourcePage, sourceParagraph, sourceHash:resolvedSpan?.source_hash??chunk?.chunk_hash??(sourceText ? createHash('sha256').update(sourceText).digest('hex') : null),sourceLocation,
       evidenceScope:ids(input.evidence_scope), capabilityTags:ids(input.capability_tags), metadata:metadata(input.metadata), validityStatus,
       applicableRequirementIds:requirementIds, usageScope:String(input.usage_scope || '').trim() || null, riskNotes:String(input.risk_notes || '').trim() || null });
   }
@@ -64,8 +67,9 @@ export class EvidenceService {
     assertUuid(projectId,'INVALID_PROJECT_ID','项目 ID 格式无效。');const req=String(requirementId||'').trim();const runId=String(input.retrieval_run_id||'').trim();assertUuid(runId,'INVALID_RETRIEVAL_RUN_ID','Retrieval Run ID 格式无效。');const chunkId=String(input.chunk_id||'').trim();if(!chunkId)throw new AppError('EVIDENCE_RETRIEVAL_CHUNK_REQUIRED','Retrieval Result Chunk 不能为空。',422);
     for(const key of ['source_text','source_hash','source_page','source_paragraph','material_id','source_chunk_id','content','approval_status','validity_status','usable_for_claims','usage_scope','risk_notes'])if(Object.hasOwn(input,key))throw new AppError('EVIDENCE_RETRIEVAL_FIELD_FORBIDDEN',`客户端不得提供 ${key}。`,422);
     const source=await this.repository.getRetrievalEvidenceSource({projectId,requirementId:req,retrievalRunId:runId,chunkId});if(!source)throw new AppError('EVIDENCE_RETRIEVAL_RESULT_INVALID','Retrieval Result 不存在、跨项目或与 Requirement 不一致。',422);if(source.status!=='succeeded')throw new AppError('EVIDENCE_RETRIEVAL_RUN_NOT_READY','Retrieval Run 尚未成功完成。',409);
-    const existing=await this.repository.findEvidenceBySourceChunk(projectId,chunkId);if(existing)return{evidence:existing,created:false};
-    const evidence=await this.create(projectId,{material_id:source.material_id,source_chunk_id:source.chunk_id,evidence_type:input.evidence_type||source.material_type,title:input.title||`${source.original_name} 来源证据`,content:source.source_text,evidence_scope:input.evidence_scope,capability_tags:input.capability_tags,metadata:input.metadata});return{evidence,created:true};
+    const material=await this.repository.getCompanyMaterial(source.material_id);const chunks=await this.repository.listMaterialChunks(source.material_id);const span=this.contextResolver.resolve({material,chunks,anchorChunkId:source.chunk_id,strategy:String(input.resolution_strategy||'auto')});
+    const existing=await this.repository.findEvidenceBySourceSpan(projectId,source.material_id,span.source_location.char_start,span.source_location.char_end,span.source_hash);if(existing)return{evidence:existing,created:false};
+    const evidence=await this.create(projectId,{material_id:source.material_id,source_chunk_id:source.chunk_id,resolved_source_span:span,evidence_type:input.evidence_type||source.material_type,title:input.title||`${source.original_name} 来源证据`,content:span.source_text,evidence_scope:input.evidence_scope,capability_tags:input.capability_tags,metadata:input.metadata},{trustedSpan:true});return{evidence,created:true};
   }
 
   async decide(evidenceId, decision, input = {}) {
