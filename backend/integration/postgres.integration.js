@@ -27,6 +27,8 @@ import { EvidenceSourceContextResolver } from '../src/pipeline/evidence-source-c
 import { EvidenceSourceSpanService } from '../src/evidence-source-span-service.js';
 import { EvidenceReviewService } from '../src/evidence-review-service.js';
 
+test('External Writer PostgreSQL 审计状态按请求生命周期持久化',async()=>{const pool=createPool(),repository=new PgRepository(pool),project=await repository.createProject({name:`Writer lifecycle ${Date.now()}`});try{const authorizationId=`LOCAL-LIFECYCLE-${randomUUID()}`,audit=await repository.createExternalWriterCallAudit({writer_task_id:'WT-LOCAL-LIFECYCLE',project_id:project.id,provider:'LocalFixture',model:'fixture',endpoint_host:'127.0.0.1',sanitized_request_hash:'0'.repeat(64),authorization_id:authorizationId});assert.equal(audit.status,'created');let row=await repository.transitionExternalWriterCallAudit(audit.id,'dispatched',{});assert.equal(row.status,'dispatched');assert.ok(row.dispatched_at);row=await repository.transitionExternalWriterCallAudit(audit.id,'response_received',{provider_request_id:'local-request',http_status:200,latency_ms:12});assert.equal(row.status,'response_received');assert.ok(row.response_received_at);assert.equal(row.http_status,200);row=await repository.finishExternalWriterCallAudit(audit.id,{status:'completed',provider_request_id:'local-request',http_status:200,latency_ms:12,json_parse_success:true,schema_validation_success:true});assert.equal(row.status,'completed');assert.ok(row.finished_at);assert.equal(row.error_code,null);}finally{await pool.query(`DELETE FROM projects WHERE id=$1`,[project.id]);await pool.end();}});
+
 const directory = dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: resolve(directory, '../.env') });
 
