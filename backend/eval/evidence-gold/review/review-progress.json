@@ -1,0 +1,30 @@
+{
+  "retrieval": {
+    "approved": 3,
+    "pending": 7,
+    "rejected": 0
+  },
+  "evidence": {
+    "approved": 3,
+    "pending": 27,
+    "rejected": 0
+  },
+  "claim": {
+    "approved": 6,
+    "blocked": 54,
+    "pending": 0,
+    "rejected": 0
+  },
+  "material_coverage": {
+    "company_profile": 15,
+    "product_documentation": 11,
+    "project_case": 3,
+    "qualification": 1
+  },
+  "difficulty_coverage": {
+    "easy": 10,
+    "medium": 10,
+    "hard": 10
+  },
+  "negative_case_coverage": 15
+}
