@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import dotenv from 'dotenv';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { readFile, readdir } from 'node:fs/promises';
 import { createPool, PgRepository } from '../src/db.js';
 import { createDifyClient } from '../src/dify.js';
@@ -22,9 +22,17 @@ import { WriterProvider } from '../src/pipeline/writer-provider.js';
 import { chunkEnterpriseMaterial } from '../src/pipeline/enterprise-material-chunker.js';
 import { EnterpriseRetrievalService } from '../src/pipeline/enterprise-retrieval-service.js';
 import { EmbeddingError } from '../src/pipeline/embedding-client.js';
+import { EvidenceFactService } from '../src/evidence-fact-service.js';
+import { EvidenceSourceContextResolver } from '../src/pipeline/evidence-source-context-resolver.js';
 
 const directory = dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: resolve(directory, '../.env') });
+
+test('Evidence Source Span PostgreSQL lineage 验证连续范围、hash 与 Anchor',async()=>{
+  assert.ok(process.env.DATABASE_URL,'DATABASE_URL is required for PostgreSQL integration tests');const pool=createPool();const repository=new PgRepository(pool);const project=await repository.createProject({name:`Evidence span ${Date.now()}`});
+  try{const source='# 系统集成\n\n企业支持接口集成与系统对接。\n\n# 其他\n\n无关内容';const material=(await pool.query(`INSERT INTO company_materials(project_id,original_name,storage_key,material_type,mime_type,size_bytes,file_hash,extraction_status,extracted_text) VALUES($1,'span.md',$2,'product_documentation','text/markdown',$3,$4,'succeeded',$5) RETURNING *`,[project.id,`span-${project.id}`,Buffer.byteLength(source),createHash('sha256').update(source).digest('hex'),source])).rows[0];const chunks=chunkEnterpriseMaterial(material.id,source);await repository.replaceMaterialChunks(material.id,chunks);const span=new EvidenceSourceContextResolver().resolve({material,chunks,anchorChunkId:chunks[1].chunk_id});const evidence=await repository.createEvidenceRecord({evidenceId:`EVI-${randomUUID().toUpperCase()}`,projectId:project.id,materialId:material.id,sourceChunkId:chunks[1].chunk_id,evidenceType:'product_documentation',title:'span',content:span.source_text,sourceText:span.source_text,sourcePage:null,sourceParagraph:span.source_location.paragraph_start,sourceHash:span.source_hash,sourceLocation:span.source_location,evidenceScope:[],capabilityTags:[],metadata:{},validityStatus:'unknown',applicableRequirementIds:[],usageScope:null,riskNotes:null});let catalog=await repository.listEvidenceCatalog(project.id);assert.equal(catalog.evidences.find((item)=>item.id===evidence.id).source_lineage_verified,true);await pool.query(`UPDATE evidences SET source_hash='${'0'.repeat(64)}' WHERE id=$1`,[evidence.id]);catalog=await repository.listEvidenceCatalog(project.id);assert.equal(catalog.evidences.find((item)=>item.id===evidence.id).source_lineage_verified,false);
+  }finally{await pool.query(`DELETE FROM projects WHERE id=$1`,[project.id]);await pool.end();}
+});
 
 test('019 Enterprise Evidence Contract migration 可重复执行',async()=>{
   assert.ok(process.env.DATABASE_URL,'DATABASE_URL is required for PostgreSQL integration tests');
@@ -48,6 +56,25 @@ test('021 Evidence Review Mapping Contract migration 可重复执行',async()=>{
     const columns=await pool.query(`SELECT column_name FROM information_schema.columns WHERE table_name='requirement_evidence_mappings' AND column_name=ANY($1::text[])`,[['support_level','review_notes','retrieval_run_id','retrieval_chunk_id']]);
     assert.equal(columns.rowCount,4);
   }finally{await pool.end();}
+});
+
+test('023 Evidence Fact Contract migration 可重复执行',async()=>{
+  assert.ok(process.env.DATABASE_URL,'DATABASE_URL is required for PostgreSQL integration tests');const pool=createPool();
+  try{const sql=await readFile(resolve(directory,'../migrations/023_evidence_facts.sql'),'utf8');await pool.query(sql);await pool.query(sql);const table=await pool.query(`SELECT to_regclass('public.evidence_facts') AS facts`);assert.equal(table.rows[0].facts,'evidence_facts');const triggers=await pool.query(`SELECT count(*)::int AS count FROM pg_trigger WHERE tgrelid='evidence_facts'::regclass AND NOT tgisinternal`);assert.equal(triggers.rows[0].count,2);}finally{await pool.end();}
+});
+
+test('Evidence Fact PostgreSQL 生命周期、来源、版本和 HTTP API 闭环',async()=>{
+  const pool=createPool();const repository=new PgRepository(pool);const project=await repository.createProject({name:`Evidence Fact ${Date.now()}`});const other=await repository.createProject({name:`Evidence Fact other ${Date.now()}`});let server;
+  try{
+    const source='供应商东软集团股份有限公司中标数据共享交换平台软件项目，合同金额为100万元。';const material=await repository.createCompanyMaterial({projectId:project.id,originalName:'award.txt',storageKey:`fact-${project.id}`,materialType:'project_case',mimeType:'text/plain',sizeBytes:source.length,fileHash:createHash('sha256').update(source).digest('hex')});await repository.completeCompanyMaterialExtraction(material.id,source);const chunks=chunkEnterpriseMaterial(material.id,source);await repository.replaceMaterialChunks(material.id,chunks);const evidenceService=new EvidenceService({repository});const evidence=await evidenceService.create(project.id,{material_id:material.id,source_chunk_id:chunks[0].chunk_id,evidence_type:'project_case',title:'公开中标公告',content:source,evidence_scope:['award_fact','contract_amount']});await evidenceService.setValidity(evidence.id,{validity_status:'active',reviewed_by:'integration'});await evidenceService.decide(evidence.id,'approved',{decided_by:'integration'});
+    const service=new EvidenceFactService({repository});const body={fact_type:'project_award',subject:{type:'organization',name:'东软集团股份有限公司'},entities:[{type:'procurement_item',name:'数据共享交换平台软件',relation:'awarded_item'}],fact_status:'award',fact_scopes:['award_fact','contract_amount'],quantities:[{metric:'contract_amount',operator:'eq',value:'100',unit:'万元',source_text:'合同金额为100万元'}],validity:{status:'not_applicable'},created_by:'integration'};
+    await assert.rejects(()=>service.create(other.id,evidence.id,body),(error)=>error.code==='EVIDENCE_NOT_FOUND');const created=await service.create(project.id,evidence.id,body);assert.equal(created.review_status,'draft');assert.equal(created.source_text,source);assert.equal(created.source_hash,chunks[0].chunk_hash);assert.deepEqual(created.source_location.char_start,0);
+    const app=createApp({repository,storage:{},generationService:{},requirementParseService:{},requirementSourceService:{},productionBetaService:{},companyMaterialService:{},evidenceService,enterpriseRetrievalService:{},documentGenerationService:{},evidenceFactService:service});server=await new Promise((resolve)=>{const listener=app.listen(0,'127.0.0.1',()=>resolve(listener));});const base=`http://127.0.0.1:${server.address().port}`;let response=await fetch(`${base}/api/evidence-facts/${created.fact_id}`);let result=await response.json();assert.equal(response.status,200);assert.equal(result.data.fact.fact_id,created.fact_id);response=await fetch(`${base}/api/evidence-facts/${created.fact_id}/approve`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({reviewed_by:'integration',review_notes:'原文核验'})});result=await response.json();assert.equal(response.status,200);assert.equal(result.data.fact.review_status,'approved');
+    let approved=await service.listApproved(project.id,evidence.id);assert.equal(approved.facts.length,1);assert.equal(approved.facts[0].usable_for_claims,true);await assert.rejects(()=>pool.query(`UPDATE evidence_facts SET fact_status='completed' WHERE fact_id=$1`,[created.fact_id]),(error)=>error.code==='23514');
+    const replacement=await service.supersede(created.fact_id,{...body,created_by:'integration-v2'});assert.equal(replacement.version,2);approved=await service.listApproved(project.id,evidence.id);assert.equal(approved.facts[0].usable_for_claims,true);await service.decide(replacement.fact_id,'approved',{reviewed_by:'integration'});approved=await service.listApproved(project.id,evidence.id);assert.equal(approved.facts.find((item)=>item.fact_id===created.fact_id).usable_for_claims,false);assert.equal(approved.facts.find((item)=>item.fact_id===replacement.fact_id).usable_for_claims,true);
+    await evidenceService.setValidity(evidence.id,{validity_status:'revoked',reviewed_by:'integration'});approved=await service.listApproved(project.id,evidence.id);assert.equal(approved.facts.every((item)=>item.usable_for_claims===false),true);
+    await assert.rejects(()=>pool.query(`INSERT INTO evidence_facts(fact_id,project_id,evidence_id,fact_type,subject_json,entities_json,fact_status,fact_scopes_json,quantities_json,validity_json,source_text,source_hash,review_status,created_by) VALUES('EFACT-00000000-0000-4000-8000-000000000099',$1,$2,'x','{}','[]','unknown','[]','[]','{"status":"unknown"}','x','x','approved','x')`,[project.id,evidence.id]),(error)=>error.code==='23514');
+  }finally{if(server)await new Promise((resolve)=>server.close(resolve));await pool.query(`DELETE FROM projects WHERE id=ANY($1::uuid[])`,[[project.id,other.id]]);await pool.end();}
 });
 
 test('完整 migration chain 支持 fresh、ambiguous existing 与连续重放',async()=>{

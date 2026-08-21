@@ -12,6 +12,9 @@
     "reconcile:sources": "node scripts/reconcile-requirement-sources.js",
     "eval:requirements": "node scripts/eval-requirements.js",
     "eval:enterprise-retrieval": "node scripts/eval-enterprise-retrieval.js",
+    "eval:evidence-gold": "node eval/evidence-gold/run.js",
+    "review:evidence-gold": "node eval/evidence-gold/review/review-pack.js",
+    "import:evidence-gold-review": "node eval/evidence-gold/review/import-human-review.js",
     "eval:live": "node scripts/eval-live.js",
     "check:response-planning": "node scripts/production-task-check.js response_planning",
     "smoke:response-planning": "node scripts/production-task-smoke.js response_planning",
@@ -26,7 +29,7 @@
     "smoke:writer-gateway": "node scripts/live-gateway-smoke.js section_drafting",
     "smoke:revision-gateway": "node scripts/live-gateway-smoke.js targeted_revision",
     "test": "node --test",
-    "test:postgres": "node --test integration/postgres.integration.js integration/deterministic.integration.js"
+    "test:postgres": "node --test --test-concurrency=1 integration/postgres.integration.js integration/deterministic.integration.js"
   },
   "dependencies": {
     "cors": "^2.8.5",

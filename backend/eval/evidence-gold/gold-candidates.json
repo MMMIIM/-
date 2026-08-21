@@ -1,0 +1,61 @@
+{
+  "schema_version":"4.3-evidence-claim-gold-v1",
+  "project_id":"112b3805-df67-4483-b1aa-c8941a111465",
+  "contract_version":"1",
+  "materials":{
+    "5a4674b0-aaab-475a-964b-977ae4b1ff65":{"name":"东软智慧城市公开资料","type":"company_profile"},
+    "c7542760-5ed9-479e-a642-1ebf7999f446":{"name":"东软系统集成公开资料","type":"product_documentation"},
+    "427e5615-72e0-4d3d-b38a-f44891b993e2":{"name":"东软资质认证公开资料","type":"qualification"},
+    "2e553e66-a909-4ed1-b99e-a57c25b51824":{"name":"国家信息中心三大平台项目中标公告","type":"project_case"}
+  },
+  "requirements":[
+    {"id":"REQ-001","category":"context","text":"制定统一的技术标准、数据标准和业务标准，通过“一网统管”核心平台和数字底座实现城市治理。"},
+    {"id":"REQ-015","category":"technical","text":"兼容X86架构，配合支持国产化的操作系统和数据库改造。"},
+    {"id":"REQ-016","category":"technical","text":"数据服务类接口响应时间需<=1秒。"},
+    {"id":"REQ-027","category":"technical","text":"系统安全性好，按用户需求设定严格安全等级。"},
+    {"id":"REQ-030","category":"technical","text":"通过数据交换共享平台实现与其它异构系统之间的数据交换和共享。"},
+    {"id":"REQ-047","category":"technical","text":"本项目部署在政务云平台，要求供应商具备云服务能力。"},
+    {"id":"REQ-048","category":"technical","text":"平台必须能够与外部风险防范和网格联动平台无缝对接。"},
+    {"id":"REQ-059","category":"technical","text":"事件汇聚收发网关应汇聚实时事件并对事件数据进行治理。"},
+    {"id":"REQ-070","category":"technical","text":"构建平台精网微格体系、警网融合应用和网格学院。"},
+    {"id":"REQ-187","category":"technical","text":"防火墙需支持一体化安全策略并提供第三方权威检测报告扫描件。"}
+  ],
+  "anchors":[
+    ["REQ-001","MCH-FA451031DA8F9F7EAEAF6EFBF97440D5","5a4674b0-aaab-475a-964b-977ae4b1ff65","company_profile",248,289,"64739a2b900319c0ec60bb99ed1b1a2f74c67967b4eef2d3f7ea0f9d27c3c583","以技术创新为驱动，实现数据互联互通、城市管理智能化、服务便捷高效化、生态可持续发展"],
+    ["REQ-001","MCH-D7EB061446A36D928D88907B0C9E24F4","5a4674b0-aaab-475a-964b-977ae4b1ff65","company_profile",370,389,"6bd025f2f6875159b1d6358fc294fbaa4a6ddd183c8325a9e28680fe4a00ea98","构建城市数字治理体系，打造城市宜居环境"],
+    ["REQ-001","MCH-EBF43A05B86AE140B95F2196C96C7884","5a4674b0-aaab-475a-964b-977ae4b1ff65","company_profile",340,358,"6336677b4ab418a310644287e52056c0d4bffeb53d2d2769243aebb8b62ea25e","汇集城市数据，赋能城市服务与产业发展"],
+    ["REQ-015","MCH-B7A88ECC982E0F418C0036C9AB74F538","c7542760-5ed9-479e-a642-1ebf7999f446","product_documentation",335,341,"fb8777920d6b9ff664626a85788f57027e0f7bc4e4fb52dec130fd47597a1204","# 系统集成"],
+    ["REQ-015","MCH-01064ACA73DF22BAF22D55617AE0B6B4","c7542760-5ed9-479e-a642-1ebf7999f446","product_documentation",514,525,"fdc88a76490a48c8bf49db1445aebe887cf1f7b3c79867da5f715e233f533533","## 系统集成业务架构"],
+    ["REQ-015","MCH-D680CB9D21CFF074F8B97275331AA4C1","c7542760-5ed9-479e-a642-1ebf7999f446","product_documentation",617,659,"2ed4f5cc69ef370398f1c7deb48803ca938413fc334ce5c25106ff2fc4073685","具备云、大数据、AI、信创等领域高级人才，跨产品、跨专业的集成能力"],
+    ["REQ-016","MCH-B7A88ECC982E0F418C0036C9AB74F538","c7542760-5ed9-479e-a642-1ebf7999f446","product_documentation",335,341,"fb8777920d6b9ff664626a85788f57027e0f7bc4e4fb52dec130fd47597a1204","# 系统集成"],
+    ["REQ-016","MCH-EBF43A05B86AE140B95F2196C96C7884","5a4674b0-aaab-475a-964b-977ae4b1ff65","company_profile",340,358,"6336677b4ab418a310644287e52056c0d4bffeb53d2d2769243aebb8b62ea25e","汇集城市数据，赋能城市服务与产业发展"],
+    ["REQ-016","MCH-F60C070C11ACFDCA601CA55269A714BF","5a4674b0-aaab-475a-964b-977ae4b1ff65","company_profile",330,338,"ad9844834f47cdf6faa96b25cf6f64c11840237865462fd1480be18884b7fb38","### 数据驱动"],
+    ["REQ-027","MCH-B7A88ECC982E0F418C0036C9AB74F538","c7542760-5ed9-479e-a642-1ebf7999f446","product_documentation",335,341,"fb8777920d6b9ff664626a85788f57027e0f7bc4e4fb52dec130fd47597a1204","# 系统集成"],
+    ["REQ-027","MCH-48202DF58B4AE77901564A543F237D5B","c7542760-5ed9-479e-a642-1ebf7999f446","product_documentation",759,1087,"3e6581fcab7d38429962ebbb1512de05fe85987644ce0cbfbfef5dbd2c6dbb66","信息系统建设和服务能力评估CS5级；CCRC信息系统安全集成服务一级；ISO 27001信息安全管理体系"],
+    ["REQ-027","MCH-01064ACA73DF22BAF22D55617AE0B6B4","c7542760-5ed9-479e-a642-1ebf7999f446","product_documentation",514,525,"fdc88a76490a48c8bf49db1445aebe887cf1f7b3c79867da5f715e233f533533","## 系统集成业务架构"],
+    ["REQ-030","MCH-8234C37AC4B13E751A8FBAB743BBDF34","2e553e66-a909-4ed1-b99e-a57c25b51824","project_case",545,564,"b678b47c22955e02c27fd84fd561022fb2c1773216834ab6e73bafab0ccedba3","货物名称：数据共享交换平台管理中心软件"],
+    ["REQ-030","MCH-B7A88ECC982E0F418C0036C9AB74F538","c7542760-5ed9-479e-a642-1ebf7999f446","product_documentation",335,341,"fb8777920d6b9ff664626a85788f57027e0f7bc4e4fb52dec130fd47597a1204","# 系统集成"],
+    ["REQ-030","MCH-EBF43A05B86AE140B95F2196C96C7884","5a4674b0-aaab-475a-964b-977ae4b1ff65","company_profile",340,358,"6336677b4ab418a310644287e52056c0d4bffeb53d2d2769243aebb8b62ea25e","汇集城市数据，赋能城市服务与产业发展"],
+    ["REQ-047","MCH-DB66BE98F88E8A2C2337DD6DB01CEF61","2e553e66-a909-4ed1-b99e-a57c25b51824","project_case",260,293,"e9d1852a844168de46d33f31c8d55e2ed53c30aa117b7f22a1fc820f97dd7ec7","采购项目名称：三大平台-全国公共资源交易平台通用软件购置和实施项目"],
+    ["REQ-047","MCH-F701291B97AF7C7E62CAE77948C41B55","5a4674b0-aaab-475a-964b-977ae4b1ff65","company_profile",811,870,"1c91db2af866891c8b84e2a9d5951b208252aa5a1189f6a0f3ce04431802da9b","投资项目在线审批监管平台服务国家发改委及10余省市级客户"],
+    ["REQ-047","MCH-A9491506659B05F9FB5EB27668F86925","2e553e66-a909-4ed1-b99e-a57c25b51824","project_case",404,430,"3714b377e96b5fd0049be2d94a48d700d3861bc681f288a7147ffe2169b503ef","三大平台-全国公共资源交易平台通用软件购置和实施项目"],
+    ["REQ-048","MCH-AA7ACA34B5002854093D2F6FED45B89B","5a4674b0-aaab-475a-964b-977ae4b1ff65","company_profile",182,188,"510a50d662b0bbd7d5b263d570125ca3cc8c30b06fe73e0ab0653640e2795937","# 智慧城市"],
+    ["REQ-048","MCH-5E9E9962FF6319012DA5B886CBB6F431","5a4674b0-aaab-475a-964b-977ae4b1ff65","company_profile",401,422,"b2d5cfb9260c1a2567d5b117af2ce63cc001c13c7918176de6799b4465710c9d","整合智慧城市资源，构建多方参与融合发展体系"],
+    ["REQ-048","MCH-82097659292F0A4A19143E82DBA4BD7D","5a4674b0-aaab-475a-964b-977ae4b1ff65","company_profile",228,246,"8cd5f5f4748b1d687707d202e0f06438aec372925dfd3b8cd9b93792748d1f3b","## 多方协同共建以人为本的智慧城市"],
+    ["REQ-059","MCH-B7A88ECC982E0F418C0036C9AB74F538","c7542760-5ed9-479e-a642-1ebf7999f446","product_documentation",335,341,"fb8777920d6b9ff664626a85788f57027e0f7bc4e4fb52dec130fd47597a1204","# 系统集成"],
+    ["REQ-059","MCH-EBF43A05B86AE140B95F2196C96C7884","5a4674b0-aaab-475a-964b-977ae4b1ff65","company_profile",340,358,"6336677b4ab418a310644287e52056c0d4bffeb53d2d2769243aebb8b62ea25e","汇集城市数据，赋能城市服务与产业发展"],
+    ["REQ-059","MCH-D0442A119806189B5EC39C410D45A700","5a4674b0-aaab-475a-964b-977ae4b1ff65","company_profile",360,368,"365365b722f9c1d5145859faae559b7de485aefa5a123318d79bac01d99b4e19","### 数字治理"],
+    ["REQ-070","MCH-5E9E9962FF6319012DA5B886CBB6F431","5a4674b0-aaab-475a-964b-977ae4b1ff65","company_profile",401,422,"b2d5cfb9260c1a2567d5b117af2ce63cc001c13c7918176de6799b4465710c9d","整合智慧城市资源，构建多方参与融合发展体系"],
+    ["REQ-070","MCH-D0442A119806189B5EC39C410D45A700","5a4674b0-aaab-475a-964b-977ae4b1ff65","company_profile",360,368,"365365b722f9c1d5145859faae559b7de485aefa5a123318d79bac01d99b4e19","### 数字治理"],
+    ["REQ-070","MCH-D7EB061446A36D928D88907B0C9E24F4","5a4674b0-aaab-475a-964b-977ae4b1ff65","company_profile",370,389,"6bd025f2f6875159b1d6358fc294fbaa4a6ddd183c8325a9e28680fe4a00ea98","构建城市数字治理体系，打造城市宜居环境"],
+    ["REQ-187","MCH-67F99E2E347B54EA6E600C4ACE97C52D","427e5615-72e0-4d3d-b38a-f44891b993e2","qualification",198,204,"11df61a7d0ccecdd5a6f25860832d5c0c28805c428b9ab06e6dd3e171fe1f238","# 资质认证"],
+    ["REQ-187","MCH-EB26D4BFB766509AE4D0ADD0C77003D6","c7542760-5ed9-479e-a642-1ebf7999f446","product_documentation",563,586,"73accccfb1f39a941ec8540b5e4f73c97f60b87685087b10245a82e7bd3afea2","具备CS5、LS4、CCRC等业内专业集成资质"],
+    ["REQ-187","MCH-972A82CB5A1D2D8FF59FFC29CB0483BF","c7542760-5ed9-479e-a642-1ebf7999f446","product_documentation",588,615,"171538e3360511061bb23c712e37d3e5254e89f7c113cc2f8a75253690f98d4b","从咨询、实施、迁移到运维的全生命周期一站式集成服务能力"]
+  ],
+  "approved_seeds":{
+    "REQ-030":{"anchor":"MCH-8234C37AC4B13E751A8FBAB743BBDF34","span":[514,596],"evidence_id":"EVI-E3B553E9-DD8F-4EFD-88FD-B475143D3A01","support_level":"partial_support","facts":{"subject":"东软集团股份有限公司","entities":["数据共享交换平台管理中心软件"],"status":"award","scopes":["award_fact"],"quantities":[],"validity":"not_applicable"},"source_hash":"852f3c682d66dd7b52fec16548895e10aaa648000b1427dadc9c653dbc2bcb05"},
+    "REQ-016":{"anchor":"MCH-B7A88ECC982E0F418C0036C9AB74F538","span":[335,748],"evidence_id":"EVI-23A3A617-B910-4ED8-9AA0-8395E680AA9E","support_level":"partial_support","facts":{"subject":"unknown","entities":["系统集成"],"status":"unknown","scopes":["integration_capability_reference"],"quantities":[],"validity":"unknown"},"source_hash":"911ef7337ec4bfe4c8d6f50b2757ee230dc1e9c064914d3a5991ed076aefb21d"},
+    "REQ-187":{"anchor":"MCH-67F99E2E347B54EA6E600C4ACE97C52D","span":[198,565],"evidence_id":"EVI-56250BBD-0A33-4086-9C29-208B584DADB9","support_level":"reference_only","facts":{"subject":"unknown","entities":["ISO9001:2015"],"status":"unknown","scopes":["qualification_fact"],"quantities":[],"validity":"unknown"},"source_hash":"1fa44899e3fe5a0a037cb13660d0d8a400df14244b0d778381948d785a045b63"}
+  },
+  "pending_no_sufficient_requirement_ids":["REQ-015","REQ-016","REQ-047","REQ-048","REQ-187"]
+}

@@ -1,0 +1,250 @@
+{
+  "schema_version": "4.3-evidence-claim-gold-v1",
+  "reviewer": "",
+  "reviewed_at": "",
+  "reviews": [
+    {
+      "case_id": "EVD-001-01",
+      "review_status": "pending",
+      "anchor_relevant": null,
+      "best_evidence_capable_anchor": null,
+      "source_span_assessment": null,
+      "human_gold": null,
+      "review_notes": ""
+    },
+    {
+      "case_id": "EVD-001-02",
+      "review_status": "pending",
+      "anchor_relevant": null,
+      "best_evidence_capable_anchor": null,
+      "source_span_assessment": null,
+      "human_gold": null,
+      "review_notes": ""
+    },
+    {
+      "case_id": "EVD-001-03",
+      "review_status": "pending",
+      "anchor_relevant": null,
+      "best_evidence_capable_anchor": null,
+      "source_span_assessment": null,
+      "human_gold": null,
+      "review_notes": ""
+    },
+    {
+      "case_id": "EVD-015-01",
+      "review_status": "pending",
+      "anchor_relevant": null,
+      "best_evidence_capable_anchor": null,
+      "source_span_assessment": null,
+      "human_gold": null,
+      "review_notes": ""
+    },
+    {
+      "case_id": "EVD-015-02",
+      "review_status": "pending",
+      "anchor_relevant": null,
+      "best_evidence_capable_anchor": null,
+      "source_span_assessment": null,
+      "human_gold": null,
+      "review_notes": ""
+    },
+    {
+      "case_id": "EVD-015-03",
+      "review_status": "pending",
+      "anchor_relevant": null,
+      "best_evidence_capable_anchor": null,
+      "source_span_assessment": null,
+      "human_gold": null,
+      "review_notes": ""
+    },
+    {
+      "case_id": "EVD-016-02",
+      "review_status": "pending",
+      "anchor_relevant": null,
+      "best_evidence_capable_anchor": null,
+      "source_span_assessment": null,
+      "human_gold": null,
+      "review_notes": ""
+    },
+    {
+      "case_id": "EVD-016-03",
+      "review_status": "pending",
+      "anchor_relevant": null,
+      "best_evidence_capable_anchor": null,
+      "source_span_assessment": null,
+      "human_gold": null,
+      "review_notes": ""
+    },
+    {
+      "case_id": "EVD-027-01",
+      "review_status": "pending",
+      "anchor_relevant": null,
+      "best_evidence_capable_anchor": null,
+      "source_span_assessment": null,
+      "human_gold": null,
+      "review_notes": ""
+    },
+    {
+      "case_id": "EVD-027-02",
+      "review_status": "pending",
+      "anchor_relevant": null,
+      "best_evidence_capable_anchor": null,
+      "source_span_assessment": null,
+      "human_gold": null,
+      "review_notes": ""
+    },
+    {
+      "case_id": "EVD-027-03",
+      "review_status": "pending",
+      "anchor_relevant": null,
+      "best_evidence_capable_anchor": null,
+      "source_span_assessment": null,
+      "human_gold": null,
+      "review_notes": ""
+    },
+    {
+      "case_id": "EVD-030-02",
+      "review_status": "pending",
+      "anchor_relevant": null,
+      "best_evidence_capable_anchor": null,
+      "source_span_assessment": null,
+      "human_gold": null,
+      "review_notes": ""
+    },
+    {
+      "case_id": "EVD-030-03",
+      "review_status": "pending",
+      "anchor_relevant": null,
+      "best_evidence_capable_anchor": null,
+      "source_span_assessment": null,
+      "human_gold": null,
+      "review_notes": ""
+    },
+    {
+      "case_id": "EVD-047-01",
+      "review_status": "pending",
+      "anchor_relevant": null,
+      "best_evidence_capable_anchor": null,
+      "source_span_assessment": null,
+      "human_gold": null,
+      "review_notes": ""
+    },
+    {
+      "case_id": "EVD-047-02",
+      "review_status": "pending",
+      "anchor_relevant": null,
+      "best_evidence_capable_anchor": null,
+      "source_span_assessment": null,
+      "human_gold": null,
+      "review_notes": ""
+    },
+    {
+      "case_id": "EVD-047-03",
+      "review_status": "pending",
+      "anchor_relevant": null,
+      "best_evidence_capable_anchor": null,
+      "source_span_assessment": null,
+      "human_gold": null,
+      "review_notes": ""
+    },
+    {
+      "case_id": "EVD-048-01",
+      "review_status": "pending",
+      "anchor_relevant": null,
+      "best_evidence_capable_anchor": null,
+      "source_span_assessment": null,
+      "human_gold": null,
+      "review_notes": ""
+    },
+    {
+      "case_id": "EVD-048-02",
+      "review_status": "pending",
+      "anchor_relevant": null,
+      "best_evidence_capable_anchor": null,
+      "source_span_assessment": null,
+      "human_gold": null,
+      "review_notes": ""
+    },
+    {
+      "case_id": "EVD-048-03",
+      "review_status": "pending",
+      "anchor_relevant": null,
+      "best_evidence_capable_anchor": null,
+      "source_span_assessment": null,
+      "human_gold": null,
+      "review_notes": ""
+    },
+    {
+      "case_id": "EVD-059-01",
+      "review_status": "pending",
+      "anchor_relevant": null,
+      "best_evidence_capable_anchor": null,
+      "source_span_assessment": null,
+      "human_gold": null,
+      "review_notes": ""
+    },
+    {
+      "case_id": "EVD-059-02",
+      "review_status": "pending",
+      "anchor_relevant": null,
+      "best_evidence_capable_anchor": null,
+      "source_span_assessment": null,
+      "human_gold": null,
+      "review_notes": ""
+    },
+    {
+      "case_id": "EVD-059-03",
+      "review_status": "pending",
+      "anchor_relevant": null,
+      "best_evidence_capable_anchor": null,
+      "source_span_assessment": null,
+      "human_gold": null,
+      "review_notes": ""
+    },
+    {
+      "case_id": "EVD-070-01",
+      "review_status": "pending",
+      "anchor_relevant": null,
+      "best_evidence_capable_anchor": null,
+      "source_span_assessment": null,
+      "human_gold": null,
+      "review_notes": ""
+    },
+    {
+      "case_id": "EVD-070-02",
+      "review_status": "pending",
+      "anchor_relevant": null,
+      "best_evidence_capable_anchor": null,
+      "source_span_assessment": null,
+      "human_gold": null,
+      "review_notes": ""
+    },
+    {
+      "case_id": "EVD-070-03",
+      "review_status": "pending",
+      "anchor_relevant": null,
+      "best_evidence_capable_anchor": null,
+      "source_span_assessment": null,
+      "human_gold": null,
+      "review_notes": ""
+    },
+    {
+      "case_id": "EVD-187-02",
+      "review_status": "pending",
+      "anchor_relevant": null,
+      "best_evidence_capable_anchor": null,
+      "source_span_assessment": null,
+      "human_gold": null,
+      "review_notes": ""
+    },
+    {
+      "case_id": "EVD-187-03",
+      "review_status": "pending",
+      "anchor_relevant": null,
+      "best_evidence_capable_anchor": null,
+      "source_span_assessment": null,
+      "human_gold": null,
+      "review_notes": ""
+    }
+  ]
+}
