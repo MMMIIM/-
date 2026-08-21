@@ -14,6 +14,7 @@
     "eval:enterprise-retrieval": "node scripts/eval-enterprise-retrieval.js",
     "eval:evidence-gold": "node eval/evidence-gold/run.js",
     "audit:semantic-boundary": "node eval/semantic-boundary/audit-runner.js",
+    "snapshot:semantic-boundary": "node eval/semantic-boundary/snapshot.js",
     "review:evidence-gold": "node eval/evidence-gold/review/review-pack.js",
     "import:evidence-gold-review": "node eval/evidence-gold/review/import-human-review.js",
     "eval:live": "node scripts/eval-live.js",
