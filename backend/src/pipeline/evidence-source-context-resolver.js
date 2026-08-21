@@ -2,60 +2,63 @@ import { createHash } from 'node:crypto';
 import { AppError } from '../errors.js';
 
 export const EVIDENCE_SOURCE_RESOLVER_VERSION='evidence-source-span-v1';
-export const EVIDENCE_SOURCE_MAX_CHARS=4000;
+export const SOURCE_SPAN_MAX_CHARS=4000;
+export const EVIDENCE_SOURCE_MAX_CHARS=SOURCE_SPAN_MAX_CHARS;
 export const EVIDENCE_SOURCE_MAX_PARAGRAPHS=12;
-
+export const EVIDENCE_SOURCE_STRATEGIES=Object.freeze(['anchor_only','paragraph_reconstruction','heading_group','bounded_paragraph_window']);
+const REQUESTED_STRATEGIES=new Set(['auto',...EVIDENCE_SOURCE_STRATEGIES]);
 const sha=(value)=>createHash('sha256').update(value).digest('hex');
-const heading=(value)=>{
-  const text=String(value||'').trim();
-  const markdown=/^(#{1,6})\s+\S/.exec(text);if(markdown)return{level:markdown[1].length};
-  if(/^\u7b2c[\u4e00-\u9fa5\d]+[\u7ae0\u8282\u7bc7]\s*\S*/.test(text))return{level:1};
-  if(/^[\u4e00\u4e8c\u4e09\u56db\u4e94\u516d\u4e03\u516b\u4e5d\u5341\u767e\u96f6\u3007\d]+\u3001\s*\S+/.test(text))return{level:2};
-  if(/^\([\u4e00\u4e8c\u4e09\u56db\u4e94\u516d\u4e03\u516b\u4e5d\u5341\u767e\u96f6\u3007\d]+\)\s*\S+/.test(text)||/^[\uff08][\u4e00\u4e8c\u4e09\u56db\u4e94\u516d\u4e03\u516b\u4e5d\u5341\u767e\u96f6\u3007\d]+[\uff09]\s*\S+/.test(text))return{level:3};
-  const numbered=/^(\d+(?:\.\d+)*)[.\u3001]?\s+\S+/.exec(text);return numbered?{level:3+numbered[1].split('.').length}:null;
-};
 const byIndex=(a,b)=>a.chunk_index-b.chunk_index;
+const heading=(value)=>{const match=/^(#{1,6})\s+(.+)$/m.exec(String(value||'').trim());return match?{level:match[1].length,text:match[2].trim()}:null;};
+const paragraphs=(source)=>[...source.matchAll(/\S[\s\S]*?(?=\r?\n\s*\r?\n|$)/g)].map((match,index)=>({index,start:match.index,end:match.index+match[0].length,text:match[0],heading:heading(match[0])}));
+const containing=(items,start,end)=>items.find((item)=>item.start<=start&&item.end>=end)||null;
+function headingContext(items,paragraphIndex){const path=[];for(let index=0;index<=paragraphIndex;index+=1){const current=items[index].heading;if(!current)continue;while(path.length&&path.at(-1).level>=current.level)path.pop();path.push(current);}return path;}
 
 export class EvidenceSourceContextResolver {
   resolve({material,chunks,anchorChunkId,strategy='auto'}){
-    const ordered=[...(chunks||[])].sort(byIndex);const anchor=ordered.find((item)=>item.chunk_id===anchorChunkId);
-    if(!material||!anchor||anchor.material_id!==material.id)throw new AppError('EVIDENCE_SOURCE_CHUNK_INVALID','Retrieval Anchor 不存在或不属于指定材料。',422);
-    const sameVersion=ordered.filter((item)=>item.material_id===material.id&&item.chunker_version===anchor.chunker_version);
-    const supported=new Set(['auto','anchor_only','paragraph_reconstruction','heading_group','bounded_paragraph_window']);
-    if(!supported.has(strategy))throw new AppError('EVIDENCE_SOURCE_RESOLUTION_INVALID','Evidence Source Span 解析策略无效。',422);
-    let selected;let method=strategy;
+    if(!material)throw new AppError('MATERIAL_NOT_FOUND','企业材料不存在。',404);
+    if(!REQUESTED_STRATEGIES.has(strategy))throw new AppError('SOURCE_SPAN_BOUNDARY_INVALID','Evidence Source Span 解析策略无效。',422);
+    const materialText=typeof material.extracted_text==='string'?material.extracted_text:'';
+    const ordered=[...(chunks||[])].filter((item)=>item.material_id===material.id).sort(byIndex);
+    const anchor=ordered.find((item)=>item.chunk_id===anchorChunkId);
+    if(!anchor)throw new AppError('ANCHOR_CHUNK_NOT_FOUND','Retrieval Anchor Chunk 不存在或不属于指定材料。',404);
+    if(!Number.isInteger(anchor.char_start)||!Number.isInteger(anchor.char_end)||anchor.char_start<0||anchor.char_end<=anchor.char_start||anchor.char_end>materialText.length)throw new AppError('ANCHOR_SOURCE_RANGE_INVALID','Anchor Chunk 来源范围无效。',422);
+    if(materialText.slice(anchor.char_start,anchor.char_end)!==anchor.source_text)throw new AppError('SOURCE_TEXT_MISMATCH','Anchor Chunk 原文与 Material 来源范围不一致。',409);
+    const sameVersion=ordered.filter((item)=>item.chunker_version===anchor.chunker_version);
+    const blocks=paragraphs(materialText);const anchorParagraph=containing(blocks,anchor.char_start,anchor.char_end);
+    if(!anchorParagraph)throw new AppError('ANCHOR_SOURCE_RANGE_INVALID','Anchor Chunk 无法定位到自然段。',422);
+    let requested=strategy,resolved=strategy,fallbackReason=null,range;
     if(strategy==='auto'){
-      const paragraph=sameVersion.filter((item)=>item.paragraph_start===anchor.paragraph_start&&item.paragraph_end===anchor.paragraph_end);
-      if(paragraph.length>1){selected=paragraph;method='paragraph_reconstruction';}
-      else if(this.headingGroup(sameVersion,anchor).length){selected=this.headingGroup(sameVersion,anchor);method='heading_group';}
-      else{selected=this.boundedWindow(sameVersion,anchor);method='bounded_paragraph_window';}
-    }else if(strategy==='anchor_only')selected=[anchor];
-    else if(strategy==='paragraph_reconstruction')selected=sameVersion.filter((item)=>item.paragraph_start===anchor.paragraph_start&&item.paragraph_end===anchor.paragraph_end);
-    else if(strategy==='heading_group')selected=this.headingGroup(sameVersion,anchor);
-    else selected=this.boundedWindow(sameVersion,anchor);
-    if(!selected?.length||!selected.some((item)=>item.chunk_id===anchor.chunk_id))throw new AppError('EVIDENCE_SOURCE_SPAN_INVALID','解析结果未包含 Retrieval Anchor。',422);
-    selected.sort(byIndex);const start=selected[0].char_start;let end=selected.at(-1).char_end;
-    if(end-start>EVIDENCE_SOURCE_MAX_CHARS){end=start+EVIDENCE_SOURCE_MAX_CHARS;if(anchor.char_end>end)throw new AppError('EVIDENCE_SOURCE_SPAN_INVALID','Retrieval Anchor 超出 Source Span 字符预算。',422);}
-    const source=String(material.extracted_text||'').slice(start,end);
-    if(!source||anchor.char_start<start||anchor.char_end>end)throw new AppError('EVIDENCE_SOURCE_SPAN_INVALID','Evidence Source Span 无法回溯 Retrieval Anchor。',422);
-    const pages=selected.flatMap((item)=>[item.page_start,item.page_end]).filter(Number.isInteger);
-    const paragraphs=selected.flatMap((item)=>[item.paragraph_start,item.paragraph_end]).filter(Number.isInteger);
-    return{source_text:source,source_hash:sha(source),source_location:{char_start:start,char_end:end,page_start:pages.length?Math.min(...pages):null,page_end:pages.length?Math.max(...pages):null,paragraph_start:paragraphs.length?Math.min(...paragraphs):null,paragraph_end:paragraphs.length?Math.max(...paragraphs):null,section:anchor.section||null,anchor_chunk_id:anchor.chunk_id,chunk_start_index:selected[0].chunk_index,chunk_end_index:selected.at(-1).chunk_index,resolution_method:method,resolver_version:EVIDENCE_SOURCE_RESOLVER_VERSION}};
+      if(anchor.char_start===anchorParagraph.start&&anchor.char_end===anchorParagraph.end){
+        const group=this.headingRange(blocks,anchorParagraph.index);
+        if(group&&group.end-group.start<=SOURCE_SPAN_MAX_CHARS){resolved='heading_group';range=group;}
+        else{resolved='anchor_only';range={start:anchor.char_start,end:anchor.char_end};}
+      }else if(anchorParagraph.end-anchorParagraph.start<=SOURCE_SPAN_MAX_CHARS){resolved='paragraph_reconstruction';range={start:anchorParagraph.start,end:anchorParagraph.end};}
+      else{resolved='bounded_paragraph_window';fallbackReason='PARAGRAPH_EXCEEDS_MAX_CHARS';range=this.boundedRange(blocks,anchorParagraph.index,anchor,materialText.length);}
+    }else if(strategy==='anchor_only')range={start:anchor.char_start,end:anchor.char_end};
+    else if(strategy==='paragraph_reconstruction'){
+      if(anchorParagraph.end-anchorParagraph.start<=SOURCE_SPAN_MAX_CHARS)range={start:anchorParagraph.start,end:anchorParagraph.end};
+      else{resolved='bounded_paragraph_window';fallbackReason='PARAGRAPH_EXCEEDS_MAX_CHARS';range=this.boundedRange(blocks,anchorParagraph.index,anchor,materialText.length);}
+    }else if(strategy==='heading_group'){
+      const group=this.headingRange(blocks,anchorParagraph.index);
+      if(group&&group.end-group.start<=SOURCE_SPAN_MAX_CHARS)range=group;
+      else{resolved='bounded_paragraph_window';fallbackReason=group?'HEADING_GROUP_EXCEEDS_MAX_CHARS':'HEADING_GROUP_NOT_FOUND';range=this.boundedRange(blocks,anchorParagraph.index,anchor,materialText.length);}
+    }else range=this.boundedRange(blocks,anchorParagraph.index,anchor,materialText.length);
+    const coverageStart=Math.min(...sameVersion.map((item)=>item.char_start));const coverageEnd=Math.max(...sameVersion.map((item)=>item.char_end));
+    if(range){range={start:Math.max(range.start,coverageStart),end:Math.min(range.end,coverageEnd)};}
+    if(!range||range.start<0||range.end<=range.start||range.end>materialText.length||range.end-range.start>SOURCE_SPAN_MAX_CHARS)throw new AppError('SOURCE_SPAN_BOUNDARY_INVALID','Evidence Source Span 边界无效。',422);
+    if(anchor.char_start<range.start||anchor.char_end>range.end)throw new AppError('SOURCE_SPAN_BOUNDARY_INVALID','Evidence Source Span 未包含 Anchor。',422);
+    const sourceText=materialText.slice(range.start,range.end);if(!sourceText)throw new AppError('SOURCE_SPAN_EMPTY','Evidence Source Span 不能为空。',422);
+    const sourceTextHash=sha(sourceText);if(sha(materialText.slice(range.start,range.end))!==sourceTextHash)throw new AppError('SOURCE_SPAN_HASH_MISMATCH','Evidence Source Span hash 校验失败。',409);
+    const included=sameVersion.filter((item)=>item.char_end>range.start&&item.char_start<range.end);
+    const path=headingContext(blocks,anchorParagraph.index).map((item)=>item.text);
+    const spanId=`ESPAN-${sha([material.project_id,material.id,anchor.chunk_id,EVIDENCE_SOURCE_RESOLVER_VERSION,resolved,range.start,range.end,sourceTextHash].join('|')).slice(0,32).toUpperCase()}`;
+    const pageValues=included.flatMap((item)=>[item.page_start,item.page_end]).filter(Number.isInteger);
+    const spanBlocks=blocks.filter((item)=>item.start<range.end&&item.end>range.start);
+    return{span_id:spanId,project_id:material.project_id,material_id:material.id,source_document_id:material.id,anchor_chunk_id:anchor.chunk_id,requested_strategy:requested,resolver_strategy:resolved,fallback_reason:fallbackReason,start_offset:range.start,end_offset:range.end,source_text:sourceText,source_text_hash:sourceTextHash,heading_path:path,source_chunk_ids:included.map((item)=>item.chunk_id),resolver_version:EVIDENCE_SOURCE_RESOLVER_VERSION,source_hash:sourceTextHash,source_location:{char_start:range.start,char_end:range.end,page_start:pageValues.length?Math.min(...pageValues):null,page_end:pageValues.length?Math.max(...pageValues):null,paragraph_start:spanBlocks[0]?.index+1??anchorParagraph.index+1,paragraph_end:spanBlocks.at(-1)?.index+1??anchorParagraph.index+1,section:path.at(-1)||anchor.section||null,heading_path:path,anchor_chunk_id:anchor.chunk_id,source_chunk_ids:included.map((item)=>item.chunk_id),resolution_method:resolved,requested_strategy:requested,fallback_reason:fallbackReason,resolver_version:EVIDENCE_SOURCE_RESOLVER_VERSION}};
   }
 
-  headingGroup(chunks,anchor){
-    const anchorPosition=chunks.findIndex((item)=>item.chunk_id===anchor.chunk_id);let start=-1;let level=null;
-    for(let index=anchorPosition;index>=0;index-=1){const match=heading(chunks[index].source_text);if(match){start=index;level=match.level;break;}}
-    if(start<0)return[];const selected=[];const first=chunks[start];
-    for(let index=start;index<chunks.length;index+=1){const item=chunks[index];const match=index===start?null:heading(item.source_text);if(match&&match.level<=level)break;if(item.char_end-first.char_start>EVIDENCE_SOURCE_MAX_CHARS)break;selected.push(item);if(new Set(selected.flatMap((entry)=>[entry.paragraph_start,entry.paragraph_end]).filter(Number.isInteger)).size>EVIDENCE_SOURCE_MAX_PARAGRAPHS){selected.pop();break;}}
-    return selected.some((item)=>item.chunk_id===anchor.chunk_id)?selected:[];
-  }
+  headingRange(blocks,anchorIndex){let start=-1,level=null;for(let index=anchorIndex;index>=0;index-=1)if(blocks[index].heading){start=index;level=blocks[index].heading.level;break;}if(start<0)return null;let end=blocks.at(-1).end;for(let index=start+1;index<blocks.length;index+=1)if(blocks[index].heading&&blocks[index].heading.level<=level){end=blocks[index].start;break;}return{start:blocks[start].start,end};}
 
-  boundedWindow(chunks,anchor){
-    const position=chunks.findIndex((item)=>item.chunk_id===anchor.chunk_id);let start=position;let end=position;
-    while(start>0&&position-start<2&&!heading(chunks[start-1].source_text))start-=1;
-    while(end+1<chunks.length&&end-position<4&&!heading(chunks[end+1].source_text))end+=1;
-    let selected=chunks.slice(start,end+1);while(selected.length>1&&(selected.at(-1).char_end-selected[0].char_start>EVIDENCE_SOURCE_MAX_CHARS||new Set(selected.flatMap((item)=>[item.paragraph_start,item.paragraph_end]).filter(Number.isInteger)).size>EVIDENCE_SOURCE_MAX_PARAGRAPHS)){if(position-start>=end-position){selected.shift();start+=1;}else selected.pop();}
-    return selected;
-  }
+  boundedRange(blocks,anchorIndex,anchor,sourceLength){let start=anchorIndex,end=anchorIndex;const activeHeading=headingContext(blocks,anchorIndex).at(-1);while(start>0&&anchor.char_end-blocks[start-1].start<=SOURCE_SPAN_MAX_CHARS&&anchorIndex-start<EVIDENCE_SOURCE_MAX_PARAGRAPHS/2){if(activeHeading&&blocks[start-1].heading&&blocks[start-1].heading.level<=activeHeading.level)break;start-=1;}while(end+1<blocks.length&&blocks[end+1].end-blocks[start].start<=SOURCE_SPAN_MAX_CHARS&&end-start+1<EVIDENCE_SOURCE_MAX_PARAGRAPHS){if(blocks[end+1].heading)break;end+=1;}let range={start:blocks[start].start,end:blocks[end].end};if(range.end-range.start>SOURCE_SPAN_MAX_CHARS){const rangeStart=Math.max(0,Math.min(anchor.char_start,anchor.char_end-SOURCE_SPAN_MAX_CHARS));range={start:rangeStart,end:Math.min(sourceLength,rangeStart+SOURCE_SPAN_MAX_CHARS)};}return range;}
 }
