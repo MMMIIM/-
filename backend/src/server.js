@@ -22,6 +22,7 @@ import { EvidenceReviewService } from './evidence-review-service.js';
 import { EvidenceSourceFactService } from './evidence-source-fact-service.js';
 import { ProjectFactControlService } from './project-fact-control-service.js';
 import { ReviewCenterService } from './review-center-service.js';
+import { EvidenceReadinessService } from './evidence-readiness-service.js';
 
 const directory = dirname(fileURLToPath(import.meta.url));
 const runtime = createBackendRuntime();
@@ -56,6 +57,7 @@ const evidenceReviewService = new EvidenceReviewService({ repository });
 const evidenceSourceFactService = new EvidenceSourceFactService({ repository });
 const projectFactControlService = new ProjectFactControlService({ repository });
 const reviewCenterService = new ReviewCenterService({ repository });
+const evidenceReadinessService = new EvidenceReadinessService({ repository });
 const app = createApp({
   repository,
   storage,
@@ -69,6 +71,7 @@ const app = createApp({
   enterpriseRetrievalService,
   documentGenerationService,
   reviewCenterService,
+  evidenceReadinessService,
   evidenceReviewService,
   evidenceSourceFactService,
   projectFactControlService,

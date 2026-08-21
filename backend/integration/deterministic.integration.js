@@ -11,6 +11,7 @@ import {EvidenceFactService} from '../src/evidence-fact-service.js';
 import {ProjectFactControlService} from '../src/project-fact-control-service.js';
 import {ProjectFactImpactResolver} from '../src/project-fact-impact-resolver.js';
 import {ReviewCenterService} from '../src/review-center-service.js';
+import {EvidenceReadinessService} from '../src/evidence-readiness-service.js';
 import {WriterInputAuthorizationService} from '../src/writer-input-authorization-service.js';
 import {WriterExecutionService} from '../src/writer-execution-service.js';
 import {verifyFactCorrection} from '../src/pipeline/writer-execution-contract-v1.js';
@@ -47,7 +48,7 @@ test('确定性 Plan 编辑保存 PostgreSQL 快照且 anchor 不可改',async()
  }finally{await pool.query(`DELETE FROM projects WHERE id=$1`,[project.id]);await pool.end();}
 });
 
-test('Review Center PostgreSQL 聚合保持空项目和待审 Project Fact 可见',async()=>{const pool=createPool(),repository=new PgRepository(pool),project=await repository.createProject({name:`Review Center ${Date.now()}`}),control=new ProjectFactControlService({repository});try{const fact=await control.create({project_id:project.id,key:'review.pending.owner',fact_role:'assignment',value_type:'string',value:null,value_status:'pending',scope:['global_response'],created_by_type:'human',created_by:'integration',provenance_refs:[{source_type:'human_input',source_id:'review-center:owner',snapshot_hash:'0'.repeat(64),source_ref:{note:'pending'}}]});const pack=await new ReviewCenterService({repository}).get(project.id);assert.ok(pack.pending.some((item)=>item.project_fact_id===fact.project_fact_id));assert.equal(pack.summary.fact_confirmation,1);assert.equal(pack.project_facts[0].mention_count,0);}finally{await pool.query(`DELETE FROM projects WHERE id=$1`,[project.id]);await pool.end();}});
+test('Review Center 与 Evidence Readiness PostgreSQL 聚合保持未知状态可见',async()=>{const pool=createPool(),repository=new PgRepository(pool),project=await repository.createProject({name:`Review Center ${Date.now()}`}),control=new ProjectFactControlService({repository});try{const fact=await control.create({project_id:project.id,key:'review.pending.owner',fact_role:'assignment',value_type:'string',value:null,value_status:'pending',scope:['global_response'],created_by_type:'human',created_by:'integration',provenance_refs:[{source_type:'human_input',source_id:'review-center:owner',snapshot_hash:'0'.repeat(64),source_ref:{note:'pending'}}]});const pack=await new ReviewCenterService({repository}).get(project.id);assert.ok(pack.pending.some((item)=>item.project_fact_id===fact.project_fact_id));assert.equal(pack.summary.fact_confirmation,1);assert.equal(pack.project_facts[0].mention_count,0);const readiness=await new EvidenceReadinessService({repository}).get(project.id);assert.equal(readiness.summary.total_requirements,0);assert.equal(readiness.summary.readiness_rate,0);}finally{await pool.query(`DELETE FROM projects WHERE id=$1`,[project.id]);await pool.end();}});
 
 test('Batch 生成模式与规则版本持久化且旧记录默认兼容',async()=>{
  const pool=createPool();const repository=new PgRepository(pool);const project=await repository.createProject({name:`Batch mode ${Date.now()}`});

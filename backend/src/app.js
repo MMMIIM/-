@@ -16,7 +16,7 @@ function sendData(res, data, status = 200) {
   return res.status(status).json({ ok: true, data });
 }
 
-export function createApp({ repository, storage, generationService, requirementParseService, requirementSourceService, productionBetaService, companyMaterialService, evidenceService, evidenceFactService, enterpriseRetrievalService, documentGenerationService, reviewCenterService, evidenceReviewService, evidenceSourceFactService, projectFactControlService, corsOrigin }) {
+export function createApp({ repository, storage, generationService, requirementParseService, requirementSourceService, productionBetaService, companyMaterialService, evidenceService, evidenceFactService, enterpriseRetrievalService, documentGenerationService, reviewCenterService, evidenceReadinessService, evidenceReviewService, evidenceSourceFactService, projectFactControlService, corsOrigin }) {
   const app = express();
   app.use(cors({ origin: corsOrigin || 'http://localhost:5173' }));
   app.use(express.json({ limit: '2mb' }));
@@ -272,6 +272,7 @@ export function createApp({ repository, storage, generationService, requirementP
     catch (error) { next(error); }
   });
   app.get('/api/projects/:projectId/review-center',async(req,res,next)=>{try{sendData(res,await reviewCenterService.get(req.params.projectId));}catch(error){next(error);}});
+  app.get('/api/projects/:projectId/evidence-readiness',async(req,res,next)=>{try{sendData(res,await evidenceReadinessService.get(req.params.projectId));}catch(error){next(error);}});
   app.post('/api/evidence-reviews/:reviewId/:decision(approve|reject)',async(req,res,next)=>{try{sendData(res,{review:await evidenceReviewService.decide(req.params.reviewId,req.params.decision,{reviewer:req.body?.reviewer||'current_user',note:req.body?.note})});}catch(error){next(error);}});
   app.post('/api/evidence-source-facts/:factId/:decision(approve|reject)',async(req,res,next)=>{try{sendData(res,{fact:await evidenceSourceFactService.decide(req.params.factId,req.params.decision,{reviewer:req.body?.reviewer||'current_user',note:req.body?.note})});}catch(error){next(error);}});
   app.get('/api/projects/:projectId/project-facts/:factId/impact',async(req,res,next)=>{try{const impact=await reviewCenterService.factImpact(req.params.projectId,req.params.factId);if(!impact)throw new AppError('PROJECT_FACT_NOT_FOUND','Project Fact 不存在。',404);sendData(res,impact);}catch(error){next(error);}});
