@@ -16,11 +16,13 @@ Do not return Markdown fences, commentary, reasoning, or fields outside the requ
 
 export function resolveExternalWriterRuntime(env=process.env){
   const apiBase=String(env.EXTERNAL_WRITER_API_BASE||'').replace(/\/+$/,'');
-  const apiKey=String(env.EXTERNAL_WRITER_API_KEY||'');
-  const model=String(env.EXTERNAL_WRITER_MODEL||'deepseek-ai/DeepSeek-V4-Flash');
+  const keySetting=String(env.EXTERNAL_WRITER_API_KEY||'');
+  const reference=keySetting.match(/^\$\{([A-Z][A-Z0-9_]*)\}$/)?.[1];
+  const apiKey=reference?String(env[reference]||''):keySetting;
+  const model=String(env.EXTERNAL_WRITER_MODEL||'');
   let host=null;
   try{host=apiBase?new URL(apiBase).host:null;}catch{host=null;}
-  return{provider:'SiliconFlow',protocol:'OpenAI-compatible',endpoint_type:'chat_completions',api_base:apiBase,host,api_key_configured:Boolean(apiKey),model,mode:'non-think',temperature:0.2,max_output_tokens:Number(env.EXTERNAL_WRITER_MAX_OUTPUT_TOKENS)||1600,timeout_ms:Number(env.EXTERNAL_WRITER_TIMEOUT_MS)||120000,concurrency:1,retry_count:0,prompt_version:WRITER_PROMPT_VERSION,configured:Boolean(apiBase&&apiKey&&host)};
+  return{provider:'SiliconFlow',protocol:'OpenAI-compatible',endpoint_type:'chat_completions',api_base:apiBase,host,api_key_configured:Boolean(apiKey),model,model_available:env.EXTERNAL_WRITER_MODEL_AVAILABLE==='true',mode:'non-think',temperature:0.2,max_output_tokens:Number(env.EXTERNAL_WRITER_MAX_OUTPUT_TOKENS)||1600,timeout_ms:Number(env.EXTERNAL_WRITER_TIMEOUT_MS)||120000,concurrency:1,retry_count:0,prompt_version:WRITER_PROMPT_VERSION,configured:Boolean(apiBase&&apiKey&&host&&model)};
 }
 
 export function buildSafePositiveWriterFixture({projectId}){
