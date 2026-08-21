@@ -1,0 +1,38 @@
+CREATE TABLE IF NOT EXISTS evidence_candidate_reviews (
+  review_id text PRIMARY KEY,
+  project_id uuid NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  requirement_id uuid NOT NULL REFERENCES requirements(id) ON DELETE RESTRICT,
+  retrieval_run_id uuid NOT NULL,
+  retrieval_candidate_id text NOT NULL,
+  source_span_id text NOT NULL REFERENCES evidence_source_spans(span_id) ON DELETE RESTRICT,
+  requirement_text_hash text NOT NULL,
+  source_text_hash text NOT NULL,
+  semantic_relevance text NOT NULL,
+  evidence_capability text NOT NULL,
+  support_level text NOT NULL,
+  review_dimensions jsonb NOT NULL,
+  reason_codes jsonb NOT NULL DEFAULT '[]'::jsonb,
+  requires_human_review boolean NOT NULL DEFAULT true,
+  review_status text NOT NULL,
+  reviewer_type text NOT NULL,
+  reviewer_version text NOT NULL,
+  semantic_reviewer_version text,
+  contract_version text NOT NULL,
+  supplemental_note text,
+  reviewed_by text,
+  reviewed_at timestamptz,
+  human_review_version integer NOT NULL DEFAULT 0,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT evidence_candidate_reviews_retrieval_fk FOREIGN KEY(retrieval_run_id,retrieval_candidate_id) REFERENCES enterprise_retrieval_results(retrieval_run_id,chunk_id) ON DELETE RESTRICT,
+  CONSTRAINT evidence_review_relevance_check CHECK(semantic_relevance IN ('relevant','weakly_relevant','irrelevant','unknown')),
+  CONSTRAINT evidence_review_capability_check CHECK(evidence_capability IN ('capable','reference_only','not_capable','unknown')),
+  CONSTRAINT evidence_review_support_check CHECK(support_level IN ('full_support','partial_support','conflict','insufficient','reference_only','unknown')),
+  CONSTRAINT evidence_review_status_check CHECK(review_status IN ('proposed','approved','rejected','needs_review','invalidated')),
+  CONSTRAINT evidence_review_reviewer_check CHECK(reviewer_type IN ('machine','human')),
+  CONSTRAINT evidence_review_contract_check CHECK(contract_version='evidence-review-v1'),
+  CONSTRAINT evidence_review_hash_check CHECK(requirement_text_hash ~ '^[0-9a-f]{64}$' AND source_text_hash ~ '^[0-9a-f]{64}$')
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS evidence_candidate_reviews_identity_idx ON evidence_candidate_reviews(requirement_id,source_span_id,contract_version,reviewer_version,requirement_text_hash,source_text_hash);
+CREATE INDEX IF NOT EXISTS evidence_candidate_reviews_project_status_idx ON evidence_candidate_reviews(project_id,review_status,created_at);
