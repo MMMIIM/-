@@ -26,6 +26,7 @@
     "e2e:evidence-review": "node eval/production-retrieval-e2e/run-evidence-review-e2e.js",
     "e2e:evidence-fact": "node eval/production-retrieval-e2e/run-evidence-fact-e2e.js",
     "e2e:fact-mapping": "node eval/production-retrieval-e2e/run-fact-mapping-e2e.js",
+    "e2e:material-completion": "node eval/production-retrieval-e2e/run-material-completion-e2e.js",
     "e2e:claim-gate": "node eval/production-retrieval-e2e/run-claim-gate-e2e.js",
     "e2e:project-facts": "node eval/production-retrieval-e2e/run-project-fact-e2e.js",
     "e2e:project-fact-propagation": "node eval/production-retrieval-e2e/run-project-fact-propagation-e2e.js",
