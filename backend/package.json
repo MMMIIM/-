@@ -18,6 +18,8 @@
     "validate:corpus-manifest": "node eval/semantic-boundary/corpus-manifest-contract.js",
     "build:representative-corpus": "node eval/corpus/corpus-builder.js",
     "eval:retrieval-baseline": "node eval/retrieval-baseline/benchmark.js",
+    "build:scale-corpus": "node eval/scale-stress/scale-corpus-builder.js",
+    "eval:scale-stress": "node eval/scale-stress/scale-benchmark.js",
     "review:evidence-gold": "node eval/evidence-gold/review/review-pack.js",
     "import:evidence-gold-review": "node eval/evidence-gold/review/import-human-review.js",
     "eval:live": "node scripts/eval-live.js",
