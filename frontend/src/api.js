@@ -132,6 +132,7 @@ export const api = {
   generateClaims(projectId) { return request(`/api/projects/${projectId}/claims/generate`, { method:'POST', body:'{}' }); },
   getCoverage(projectId) { return request(`/api/projects/${projectId}/coverage`); },
   getReviewCenter(projectId) { return request(`/api/projects/${projectId}/review-center`); },
+  getEvidenceReadiness(projectId) { return request(`/api/projects/${projectId}/evidence-readiness`); },
   decideEvidenceReview(reviewId,decision,note='') { return request(`/api/evidence-reviews/${reviewId}/${decision}`,{method:'POST',body:JSON.stringify({reviewer:'current_user',note})}); },
   decideEvidenceSourceFact(factId,decision,note='') { return request(`/api/evidence-source-facts/${factId}/${decision}`,{method:'POST',body:JSON.stringify({reviewer:'current_user',note})}); },
   getProjectFactImpact(projectId,factId) { return request(`/api/projects/${projectId}/project-facts/${factId}/impact`); },
