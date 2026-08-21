@@ -1,0 +1,41 @@
+CREATE TABLE IF NOT EXISTS evidence_source_facts (
+  fact_id text PRIMARY KEY,
+  project_id uuid NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  evidence_review_id text NOT NULL REFERENCES evidence_candidate_reviews(review_id) ON DELETE RESTRICT,
+  source_span_id text NOT NULL REFERENCES evidence_source_spans(span_id) ON DELETE RESTRICT,
+  material_id uuid NOT NULL REFERENCES company_materials(id) ON DELETE RESTRICT,
+  subject jsonb NOT NULL,
+  entities jsonb NOT NULL DEFAULT '[]'::jsonb,
+  fact_status text NOT NULL,
+  scopes jsonb NOT NULL DEFAULT '[]'::jsonb,
+  quantities jsonb NOT NULL DEFAULT '[]'::jsonb,
+  validity jsonb NOT NULL,
+  domain_metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
+  source jsonb NOT NULL,
+  payload_hash text NOT NULL,
+  review_status text NOT NULL DEFAULT 'draft',
+  extractor_type text NOT NULL,
+  extractor_version text NOT NULL,
+  contract_version text NOT NULL,
+  version integer NOT NULL DEFAULT 1,
+  supersedes_fact_id text REFERENCES evidence_source_facts(fact_id) ON DELETE RESTRICT,
+  edited boolean NOT NULL DEFAULT false,
+  edited_by text,
+  edit_note text,
+  reviewed_by text,
+  reviewed_at timestamptz,
+  human_review_version integer NOT NULL DEFAULT 0,
+  review_note text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT evidence_source_fact_status_taxonomy CHECK(fact_status IN ('award','selected','contracted','participated','in_progress','completed','accepted','verified','registered','certified','unknown')),
+  CONSTRAINT evidence_source_fact_review_status CHECK(review_status IN ('draft','approved','rejected','invalidated')),
+  CONSTRAINT evidence_source_fact_extractor_type CHECK(extractor_type IN ('machine','human')),
+  CONSTRAINT evidence_source_fact_contract CHECK(contract_version='evidence-fact-v1'),
+  CONSTRAINT evidence_source_fact_hash CHECK(payload_hash ~ '^[0-9a-f]{64}$'),
+  CONSTRAINT evidence_source_fact_version CHECK(version>0 AND human_review_version>=0)
+);
+ALTER TABLE evidence_source_facts ADD COLUMN IF NOT EXISTS edited_by text;
+ALTER TABLE evidence_source_facts ADD COLUMN IF NOT EXISTS edit_note text;
+CREATE UNIQUE INDEX IF NOT EXISTS evidence_source_facts_identity_idx ON evidence_source_facts(project_id,source_span_id,payload_hash,contract_version,extractor_version);
+CREATE INDEX IF NOT EXISTS evidence_source_facts_review_idx ON evidence_source_facts(evidence_review_id,review_status,created_at);
