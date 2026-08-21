@@ -119,6 +119,16 @@ input:focus, select:focus, textarea:focus { border-color: #2f6fed; box-shadow: 0
 .support-help { color: #475467; font-size: 13px; line-height: 1.5; }
 .risk-hero { gap: 14px; }
 .risk-hero h2, .risk-hero p { margin-bottom: 3px; }
+.review-workbench { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+.workbench-filter { width: 180px; }
+.control-list { display: grid; gap: 10px; margin-top: 16px; }
+.control-item { display: grid; gap: 10px; border: 1px solid #dce5ef; border-radius: 8px; padding: 14px; }
+.control-item header { display: flex; justify-content: space-between; gap: 12px; }
+.control-item p, .control-item small { margin: 0; }
+.control-item small { color: #667085; }
+.control-item details { border-top: 1px solid #eef2f6; padding-top: 8px; }
+.control-item pre { max-height: 220px; overflow: auto; white-space: pre-wrap; }
+.fact-edit { max-width: 900px; }
 .loading { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 180px; color: #667085; }
 .loading.full { min-height: 100vh; }
 .spin { animation: spin .9s linear infinite; }
