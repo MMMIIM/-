@@ -3,7 +3,7 @@ import {evaluateClaimGateBridge} from './claim-gate-input-adapter-v1.js';
 import {createProjectFactCandidate} from './project-fact-control-contract-v1.js';
 import {createPropagationBinding} from './project-fact-propagation-contract-v1.js';
 import {createWriterSafeContext} from './writer-input-authorization-v1.js';
-import {buildWriterTask} from './writer-execution-contract-v1.js';
+import {buildWriterTask,WRITER_PROVIDER_OUTPUT_SCHEMA} from './writer-execution-contract-v1.js';
 
 export const WRITER_PROMPT_VERSION='writer-prompt-v1';
 export const EXTERNAL_WRITER_PREFLIGHT_VERSION='external-writer-preflight-v1';
@@ -15,7 +15,7 @@ Never add or expand numbers, dates, status, qualifications, people, compatibilit
 Every block must contain text, used_context_refs, and used_claim_refs. References must be IDs present in the Writer Task.
 Do not return Markdown fences, commentary, reasoning, or fields outside the requested output contract.`;
 
-export function buildExternalWriterRequest(task,{model,maxOutputTokens=1600}={}){return{model,temperature:0.2,max_tokens:maxOutputTokens,response_format:{type:'json_object'},messages:[{role:'system',content:WRITER_SYSTEM_PROMPT},{role:'user',content:JSON.stringify({instruction:'只输出一个 JSON object，不得输出 Markdown、code fence、解释或前后缀。根层只允许 blocks。每个 block 必须包含 block_id、text、used_context_refs、used_claim_refs。每个事实块必须逐字包含对应 assertable claim，并同时列出授权的 context ref 和 claim ref。',writer_task:task,output_contract:{blocks:[{block_id:'string',text:'string',used_context_refs:['authorized project_fact_id'],used_claim_refs:['authorized claim_id']}]}})}]};}
+export function buildExternalWriterRequest(task,{model,maxOutputTokens=1600,responseFormatMode='json_object'}={}){const response_format=responseFormatMode==='json_schema'?{type:'json_schema',json_schema:{name:'writer_output_v1',strict:true,schema:WRITER_PROVIDER_OUTPUT_SCHEMA}}:{type:'json_object'};return{model,temperature:0.2,max_tokens:maxOutputTokens,response_format,messages:[{role:'system',content:WRITER_SYSTEM_PROMPT},{role:'user',content:JSON.stringify({instruction:'只输出一个 JSON object，不得输出 Markdown、code fence、解释或前后缀。根层只允许 blocks。每个 block 必须包含 block_id、text、used_context_refs、used_claim_refs。每个事实块必须逐字包含对应 assertable claim，并同时列出授权的 context ref 和 claim ref。',writer_task:task,output_contract:{blocks:[{block_id:'string',text:'string',used_context_refs:['authorized project_fact_id'],used_claim_refs:['authorized claim_id']}]}})}]};}
 
 export function resolveExternalWriterRuntime(env=process.env){
   const apiBase=String(env.EXTERNAL_WRITER_API_BASE||'').replace(/\/+$/,'');
@@ -25,7 +25,8 @@ export function resolveExternalWriterRuntime(env=process.env){
   const model=String(env.EXTERNAL_WRITER_MODEL||'');
   let host=null;
   try{host=apiBase?new URL(apiBase).host:null;}catch{host=null;}
-  return{provider:'SiliconFlow',protocol:'OpenAI-compatible',endpoint_type:'chat_completions',api_base:apiBase,host,api_key_configured:Boolean(apiKey),model,model_available:env.EXTERNAL_WRITER_MODEL_AVAILABLE==='true',mode:'non-think',temperature:0.2,max_output_tokens:Number(env.EXTERNAL_WRITER_MAX_OUTPUT_TOKENS)||1600,timeout_ms:Number(env.EXTERNAL_WRITER_TIMEOUT_MS)||120000,concurrency:1,retry_count:0,prompt_version:WRITER_PROMPT_VERSION,configured:Boolean(apiBase&&apiKey&&host&&model)};
+  const responseFormatMode=env.EXTERNAL_WRITER_RESPONSE_FORMAT==='json_schema'?'json_schema':'json_object';
+  return{provider:'SiliconFlow',protocol:'OpenAI-compatible',endpoint_type:'chat_completions',api_base:apiBase,host,api_key_configured:Boolean(apiKey),model,model_available:env.EXTERNAL_WRITER_MODEL_AVAILABLE==='true',mode:'non-think',temperature:0.2,max_output_tokens:Number(env.EXTERNAL_WRITER_MAX_OUTPUT_TOKENS)||1600,timeout_ms:Number(env.EXTERNAL_WRITER_TIMEOUT_MS)||120000,response_format_mode:responseFormatMode,concurrency:1,retry_count:0,prompt_version:WRITER_PROMPT_VERSION,configured:Boolean(apiBase&&apiKey&&host&&model)};
 }
 
 export function buildSafePositiveWriterFixture({projectId}){
