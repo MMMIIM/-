@@ -1,4 +1,5 @@
 import { createClaimGateEvaluationContract } from './claim-gate-v2-contract.js';
+import {evaluateEvidenceFacts} from './evidence-fact-claim-evaluator.js';
 
 const reasonMessage=(code)=>({
   MAPPING_NOT_APPROVED:'Enterprise Claim 缺少当前 Requirement 的 approved Mapping。',
@@ -45,9 +46,10 @@ export function evaluateEnterpriseClaimV2({projectId,claim,binding,evaluatedBy='
   checks.push(check('source_usable',usable,binding?.usable_for_claims??null));if(mapped&&approved&&lineage&&result.validity_match!=='mismatch'&&(historical||binding?.usable_for_claims===false))reasons.push('SOURCE_NOT_USABLE');
   if(binding?.support_level==='full_support')result.support_sufficiency='sufficient';else if(binding?.support_level==='partial_support')result.support_sufficiency='partial';else if(binding?.support_level==='reference_only')result.support_sufficiency='insufficient';
   checks.push(check('support_level_recorded',['full_support','partial_support','reference_only'].includes(binding?.support_level),binding?.support_level||null));if(mapped&&binding?.support_level==='reference_only')reasons.push('REFERENCE_ONLY');else if(mapped&&!['full_support','partial_support'].includes(binding?.support_level))reasons.push('SUPPORT_INSUFFICIENT');
-  if(mapped&&approved&&lineage&&usable)evaluateBoundaries(claim,binding,result,checks,reasons);
+  let factIds=[];let factConflict=false;if(mapped&&approved&&lineage&&usable){const factEvaluation=evaluateEvidenceFacts({claim,binding,facts:binding?.evidence_facts});factIds=factEvaluation.fact_ids;factConflict=factEvaluation.conflict;checks.push(...factEvaluation.checks);reasons.push(...factEvaluation.reasons);if(factIds.length)Object.assign(result,factEvaluation.dimensions);else evaluateBoundaries(claim,binding,result,checks,reasons);}
   if(reasons.some((code)=>['MAPPING_NOT_APPROVED','EVIDENCE_NOT_APPROVED','SOURCE_LINEAGE_REQUIRED','SOURCE_NOT_USABLE','EVIDENCE_EXPIRED','SUPPORT_INSUFFICIENT','STATUS_OVERCLAIM','QUANTITATIVE_UNSUPPORTED','ENTITY_MISMATCH','EVIDENCE_SCOPE_EXCEEDED'].includes(code)))decision='reject';else if(reasons.includes('REFERENCE_ONLY'))decision='restrict';else{decision='needs_review';reasons.push('HUMAN_REVIEW_REQUIRED');}
-  const evaluation=createClaimGateEvaluationContract({decision,reason_codes:[...new Set(reasons)],dimensions:result,allowed_scope:binding?.evidence_scope||[],required_conditions:[],evidence_ids:binding?.evidence_id?[binding.evidence_id]:[],mapping_ids:binding?.mapping_id?[binding.mapping_id]:[],deterministic_checks:checks,semantic_assessment:null,semantic_assessment_used:false,human_review_required:decision==='needs_review',evaluated_by:evaluatedBy});
+  const relevant=['subject_match','scope_match','status_match','entity_match','validity_match'];const factsAllow=factIds.length>0&&!factConflict&&result.support_sufficiency==='sufficient'&&result.source_authority==='usable'&&relevant.every((key)=>result[key]==='match')&&['match','not_applicable'].includes(result.quantitative_match);if(decision==='needs_review'&&factsAllow){decision='allow';const index=reasons.indexOf('HUMAN_REVIEW_REQUIRED');if(index>=0)reasons.splice(index,1);}
+  const evaluation=createClaimGateEvaluationContract({decision,reason_codes:[...new Set(reasons)],dimensions:result,allowed_scope:binding?.evidence_scope||[],required_conditions:[],evidence_ids:binding?.evidence_id?[binding.evidence_id]:[],mapping_ids:binding?.mapping_id?[binding.mapping_id]:[],deterministic_checks:[...checks,{check:'evidence_fact_ids_used',passed:factIds.length>0,actual:{fact_ids:factIds}}],semantic_assessment:null,semantic_assessment_used:false,human_review_required:decision==='needs_review',evaluated_by:evaluatedBy});
   return{...evaluation,reason_message:reasonMessage(evaluation.reason_codes[0])};
 }
 
