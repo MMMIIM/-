@@ -12,3 +12,13 @@ export async function executeAuditedExternalWriter({task,provider,service,reposi
     throw error;
   }
 }
+
+export function assertWriterStageFinalized(result,code='WRITER_STAGE_NOT_FINALIZED'){
+  if(result?.output?.status!=='finalized'||result?.guard?.status!=='pass'||result?.verification?.coverage_status!=='complete')throw Object.assign(new Error('Writer stage did not satisfy Guard and Coverage.'),{code});
+  return true;
+}
+
+export function assertSingleRegenerationScope(plan){
+  if(plan?.coverage_status!=='complete'||plan?.unresolved_targets?.length||plan?.affected_writer_tasks?.length!==1)throw Object.assign(new Error('Propagation plan is not eligible for one affected Writer regeneration.'),{code:'WRITER_REGENERATION_SCOPE_INVALID'});
+  return true;
+}
