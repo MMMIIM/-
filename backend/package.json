@@ -29,7 +29,7 @@
     "smoke:writer-gateway": "node scripts/live-gateway-smoke.js section_drafting",
     "smoke:revision-gateway": "node scripts/live-gateway-smoke.js targeted_revision",
     "test": "node --test",
-    "test:postgres": "node --test integration/postgres.integration.js integration/deterministic.integration.js"
+    "test:postgres": "node --test --test-concurrency=1 integration/postgres.integration.js integration/deterministic.integration.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
