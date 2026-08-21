@@ -1,0 +1,484 @@
+{
+  "version": "4.3-representative-sme-corpus-manifest-v1",
+  "facts_frozen_at": "2026-08-21T08:00:00.000Z",
+  "corpus_frozen_at": "2026-08-21T09:00:00.000Z",
+  "knowledge_origin": "enterprise_representative_sme",
+  "materials": [
+    {
+      "material_id": "SME-001",
+      "knowledge_origin": "enterprise_representative_sme",
+      "subject": "澄明数科（示范）有限公司",
+      "source_type": "representative_sme_controlled_document",
+      "source_authority": "internal_controlled",
+      "content_roles": [
+        "company_positioning",
+        "general_capability"
+      ],
+      "topics": [],
+      "project_entities": [],
+      "product_entities": [],
+      "expected_evidence_needs": [
+        "capability"
+      ],
+      "source_reference": "representative-sme/company-profile.md",
+      "file_hash": "e9c898fd49c2c7f11c0b917ea1caca8eaa4832935a587b9a6b0dde7b4cb8b411",
+      "review_status": "pending",
+      "review_notes": "Representative synthetic corpus; human review required; never real customer evidence.",
+      "generates_evidence_fact": false,
+      "grants_claim_permission": false
+    },
+    {
+      "material_id": "SME-002",
+      "knowledge_origin": "enterprise_representative_sme",
+      "subject": "澄明数科（示范）有限公司",
+      "source_type": "representative_sme_controlled_document",
+      "source_authority": "internal_controlled",
+      "content_roles": [
+        "product_capability",
+        "technical_parameter"
+      ],
+      "topics": [],
+      "project_entities": [],
+      "product_entities": [
+        "CM-DX-32"
+      ],
+      "expected_evidence_needs": [
+        "product_capability",
+        "technical_parameter"
+      ],
+      "source_reference": "representative-sme/product-data-exchange.md",
+      "file_hash": "50704d61f8f8768b5d46c0f3d9648d5c5396b1c46dd150ce3ad255663b022883",
+      "review_status": "pending",
+      "review_notes": "Representative synthetic corpus; human review required; never real customer evidence.",
+      "generates_evidence_fact": false,
+      "grants_claim_permission": false
+    },
+    {
+      "material_id": "SME-003",
+      "knowledge_origin": "enterprise_representative_sme",
+      "subject": "澄明数科（示范）有限公司",
+      "source_type": "representative_sme_controlled_document",
+      "source_authority": "internal_controlled",
+      "content_roles": [
+        "product_capability"
+      ],
+      "topics": [],
+      "project_entities": [],
+      "product_entities": [
+        "CM-COLLAB-24"
+      ],
+      "expected_evidence_needs": [
+        "product_capability"
+      ],
+      "source_reference": "representative-sme/product-collaboration.md",
+      "file_hash": "2896f1af7bd4d2bc80996f6c01bf9496c3a343b557f7ebe11d6d9d14c11a3f35",
+      "review_status": "pending",
+      "review_notes": "Representative synthetic corpus; human review required; never real customer evidence.",
+      "generates_evidence_fact": false,
+      "grants_claim_permission": false
+    },
+    {
+      "material_id": "SME-004",
+      "knowledge_origin": "enterprise_representative_sme",
+      "subject": "澄明数科（示范）有限公司",
+      "source_type": "representative_sme_controlled_document",
+      "source_authority": "internal_controlled",
+      "content_roles": [
+        "performance_test"
+      ],
+      "topics": [],
+      "project_entities": [],
+      "product_entities": [
+        "CM-DX-32"
+      ],
+      "expected_evidence_needs": [
+        "quantitative_performance"
+      ],
+      "source_reference": "representative-sme/performance-report.md",
+      "file_hash": "c647df0c2339a1b56cd8e9b59c8072fa75d0b5eac6ec23af4bf7f9b82649b262",
+      "review_status": "pending",
+      "review_notes": "Representative synthetic corpus; human review required; never real customer evidence.",
+      "generates_evidence_fact": false,
+      "grants_claim_permission": false
+    },
+    {
+      "material_id": "SME-005",
+      "knowledge_origin": "enterprise_representative_sme",
+      "subject": "澄明数科（示范）有限公司",
+      "source_type": "representative_sme_controlled_document",
+      "source_authority": "internal_controlled",
+      "content_roles": [
+        "compatibility_evidence",
+        "technical_parameter"
+      ],
+      "topics": [],
+      "project_entities": [],
+      "product_entities": [],
+      "expected_evidence_needs": [
+        "compatibility"
+      ],
+      "source_reference": "representative-sme/compatibility-matrix.md",
+      "file_hash": "0d68f09fc20e68f89b720ac56c2b1842485bd1add53b10318f44a6e480071a50",
+      "review_status": "pending",
+      "review_notes": "Representative synthetic corpus; human review required; never real customer evidence.",
+      "generates_evidence_fact": false,
+      "grants_claim_permission": false
+    },
+    {
+      "material_id": "SME-006",
+      "knowledge_origin": "enterprise_representative_sme",
+      "subject": "澄明数科（示范）有限公司",
+      "source_type": "representative_sme_controlled_document",
+      "source_authority": "internal_controlled",
+      "content_roles": [
+        "qualification"
+      ],
+      "topics": [],
+      "project_entities": [],
+      "product_entities": [],
+      "expected_evidence_needs": [
+        "qualification"
+      ],
+      "source_reference": "representative-sme/qualification-iso9001.md",
+      "file_hash": "537210d0f1b0998ea69a5f4ec2cda7f240e5bbff1f84641463f8cf94416c2b48",
+      "review_status": "pending",
+      "review_notes": "Representative synthetic corpus; human review required; never real customer evidence.",
+      "generates_evidence_fact": false,
+      "grants_claim_permission": false
+    },
+    {
+      "material_id": "SME-007",
+      "knowledge_origin": "enterprise_representative_sme",
+      "subject": "澄明数科（示范）有限公司",
+      "source_type": "representative_sme_controlled_document",
+      "source_authority": "internal_controlled",
+      "content_roles": [
+        "qualification"
+      ],
+      "topics": [],
+      "project_entities": [],
+      "product_entities": [],
+      "expected_evidence_needs": [
+        "qualification",
+        "security_capability"
+      ],
+      "source_reference": "representative-sme/qualification-iso27001.md",
+      "file_hash": "aaeba55ed9f56288a420abdba1c4436f455680c94ec7896d1d32e14cea6457a8",
+      "review_status": "pending",
+      "review_notes": "Representative synthetic corpus; human review required; never real customer evidence.",
+      "generates_evidence_fact": false,
+      "grants_claim_permission": false
+    },
+    {
+      "material_id": "SME-008",
+      "knowledge_origin": "enterprise_representative_sme",
+      "subject": "澄明数科（示范）有限公司",
+      "source_type": "representative_sme_controlled_document",
+      "source_authority": "internal_controlled",
+      "content_roles": [
+        "qualification"
+      ],
+      "topics": [],
+      "project_entities": [],
+      "product_entities": [],
+      "expected_evidence_needs": [
+        "qualification"
+      ],
+      "source_reference": "representative-sme/qualification-cs2.md",
+      "file_hash": "ccf40166527d9804046da2f8ee7ea85ff7cff97b67a3847f1573e13c1eae5561",
+      "review_status": "pending",
+      "review_notes": "Representative synthetic corpus; human review required; never real customer evidence.",
+      "generates_evidence_fact": false,
+      "grants_claim_permission": false
+    },
+    {
+      "material_id": "SME-009",
+      "knowledge_origin": "enterprise_representative_sme",
+      "subject": "澄明数科（示范）有限公司",
+      "source_type": "representative_sme_controlled_document",
+      "source_authority": "internal_controlled",
+      "content_roles": [
+        "award_record"
+      ],
+      "topics": [],
+      "project_entities": [
+        "CM-P-A"
+      ],
+      "product_entities": [],
+      "expected_evidence_needs": [
+        "award"
+      ],
+      "source_reference": "representative-sme/project-a-award.md",
+      "file_hash": "3b4414784f7ff9d3b73b9ed1ad64c031324b1d96f6c08c3d444ae936df1d55b5",
+      "review_status": "pending",
+      "review_notes": "Representative synthetic corpus; human review required; never real customer evidence.",
+      "generates_evidence_fact": false,
+      "grants_claim_permission": false
+    },
+    {
+      "material_id": "SME-010",
+      "knowledge_origin": "enterprise_representative_sme",
+      "subject": "澄明数科（示范）有限公司",
+      "source_type": "representative_sme_controlled_document",
+      "source_authority": "internal_controlled",
+      "content_roles": [
+        "contract_record"
+      ],
+      "topics": [],
+      "project_entities": [
+        "CM-P-A"
+      ],
+      "product_entities": [],
+      "expected_evidence_needs": [
+        "contract"
+      ],
+      "source_reference": "representative-sme/project-a-contract.md",
+      "file_hash": "a22a3a08ffe6c9b4434aee48fc6f13143321093035e489dda6896e3c1ecdca25",
+      "review_status": "pending",
+      "review_notes": "Representative synthetic corpus; human review required; never real customer evidence.",
+      "generates_evidence_fact": false,
+      "grants_claim_permission": false
+    },
+    {
+      "material_id": "SME-011",
+      "knowledge_origin": "enterprise_representative_sme",
+      "subject": "澄明数科（示范）有限公司",
+      "source_type": "representative_sme_controlled_document",
+      "source_authority": "internal_controlled",
+      "content_roles": [
+        "implementation_record"
+      ],
+      "topics": [],
+      "project_entities": [
+        "CM-P-A"
+      ],
+      "product_entities": [],
+      "expected_evidence_needs": [
+        "implementation",
+        "delivery_capability"
+      ],
+      "source_reference": "representative-sme/project-a-implementation.md",
+      "file_hash": "31b44aa53570063e33dbc6029e3a6707387e323463d0e639a33c24b1792396f0",
+      "review_status": "pending",
+      "review_notes": "Representative synthetic corpus; human review required; never real customer evidence.",
+      "generates_evidence_fact": false,
+      "grants_claim_permission": false
+    },
+    {
+      "material_id": "SME-012",
+      "knowledge_origin": "enterprise_representative_sme",
+      "subject": "澄明数科（示范）有限公司",
+      "source_type": "representative_sme_controlled_document",
+      "source_authority": "internal_controlled",
+      "content_roles": [
+        "acceptance_record"
+      ],
+      "topics": [],
+      "project_entities": [
+        "CM-P-A"
+      ],
+      "product_entities": [],
+      "expected_evidence_needs": [
+        "acceptance_verification",
+        "project_experience"
+      ],
+      "source_reference": "representative-sme/project-a-acceptance.md",
+      "file_hash": "2856f2933f627bfe4999276652c8c7f3d07960cb7d82c82e75584561c57cddf0",
+      "review_status": "pending",
+      "review_notes": "Representative synthetic corpus; human review required; never real customer evidence.",
+      "generates_evidence_fact": false,
+      "grants_claim_permission": false
+    },
+    {
+      "material_id": "SME-013",
+      "knowledge_origin": "enterprise_representative_sme",
+      "subject": "澄明数科（示范）有限公司",
+      "source_type": "representative_sme_controlled_document",
+      "source_authority": "internal_controlled",
+      "content_roles": [
+        "award_record",
+        "contract_record"
+      ],
+      "topics": [],
+      "project_entities": [
+        "CM-P-B"
+      ],
+      "product_entities": [],
+      "expected_evidence_needs": [
+        "award",
+        "contract"
+      ],
+      "source_reference": "representative-sme/project-b-award-contract.md",
+      "file_hash": "f72d99c794663b4dfb724c828ade47914e5fad7894be528e4c693b31e0fa9420",
+      "review_status": "pending",
+      "review_notes": "Representative synthetic corpus; human review required; never real customer evidence.",
+      "generates_evidence_fact": false,
+      "grants_claim_permission": false
+    },
+    {
+      "material_id": "SME-014",
+      "knowledge_origin": "enterprise_representative_sme",
+      "subject": "澄明数科（示范）有限公司",
+      "source_type": "representative_sme_controlled_document",
+      "source_authority": "internal_controlled",
+      "content_roles": [
+        "implementation_record"
+      ],
+      "topics": [],
+      "project_entities": [
+        "CM-P-B"
+      ],
+      "product_entities": [],
+      "expected_evidence_needs": [
+        "implementation"
+      ],
+      "source_reference": "representative-sme/project-b-implementation.md",
+      "file_hash": "2361f4aceae0af62d5e53dc0b76f13e8b915cce546433a2247ab0ad8a3263476",
+      "review_status": "pending",
+      "review_notes": "Representative synthetic corpus; human review required; never real customer evidence.",
+      "generates_evidence_fact": false,
+      "grants_claim_permission": false
+    },
+    {
+      "material_id": "SME-015",
+      "knowledge_origin": "enterprise_representative_sme",
+      "subject": "澄明数科（示范）有限公司",
+      "source_type": "representative_sme_controlled_document",
+      "source_authority": "internal_controlled",
+      "content_roles": [
+        "award_record",
+        "project_case"
+      ],
+      "topics": [],
+      "project_entities": [
+        "CM-P-C"
+      ],
+      "product_entities": [],
+      "expected_evidence_needs": [
+        "award",
+        "project_experience"
+      ],
+      "source_reference": "representative-sme/project-c-case.md",
+      "file_hash": "5fcff3b09c444630fefdc6d0349724b4c2c0ccfd79c92cddd3d2aa092343aef8",
+      "review_status": "pending",
+      "review_notes": "Representative synthetic corpus; human review required; never real customer evidence.",
+      "generates_evidence_fact": false,
+      "grants_claim_permission": false
+    },
+    {
+      "material_id": "SME-016",
+      "knowledge_origin": "enterprise_representative_sme",
+      "subject": "澄明数科（示范）有限公司",
+      "source_type": "representative_sme_controlled_document",
+      "source_authority": "internal_controlled",
+      "content_roles": [
+        "project_case",
+        "implementation_record"
+      ],
+      "topics": [],
+      "project_entities": [
+        "CM-P-D"
+      ],
+      "product_entities": [],
+      "expected_evidence_needs": [
+        "implementation",
+        "project_experience"
+      ],
+      "source_reference": "representative-sme/project-d-fragment.md",
+      "file_hash": "fa697ae4e83843bb4d297a28c09d38b1b090f07f65dfec1a295716246c6f0aff",
+      "review_status": "pending",
+      "review_notes": "Representative synthetic corpus; human review required; never real customer evidence.",
+      "generates_evidence_fact": false,
+      "grants_claim_permission": false
+    },
+    {
+      "material_id": "SME-017",
+      "knowledge_origin": "enterprise_representative_sme",
+      "subject": "澄明数科（示范）有限公司",
+      "source_type": "representative_sme_controlled_document",
+      "source_authority": "internal_controlled",
+      "content_roles": [
+        "personnel_profile"
+      ],
+      "topics": [],
+      "project_entities": [],
+      "product_entities": [],
+      "expected_evidence_needs": [
+        "personnel"
+      ],
+      "source_reference": "representative-sme/personnel-profiles.md",
+      "file_hash": "247e0e01f8dd47d03fd84d068bbb3cab017e3a5ddcbee07d819d2b271d313767",
+      "review_status": "pending",
+      "review_notes": "Representative synthetic corpus; human review required; never real customer evidence.",
+      "generates_evidence_fact": false,
+      "grants_claim_permission": false
+    },
+    {
+      "material_id": "SME-018",
+      "knowledge_origin": "enterprise_representative_sme",
+      "subject": "澄明数科（示范）有限公司",
+      "source_type": "representative_sme_controlled_document",
+      "source_authority": "internal_controlled",
+      "content_roles": [
+        "service_capability"
+      ],
+      "topics": [],
+      "project_entities": [],
+      "product_entities": [],
+      "expected_evidence_needs": [
+        "service_capability"
+      ],
+      "source_reference": "representative-sme/service-capability.md",
+      "file_hash": "988e8a9a8c167702d1b79a74782bdf027f87b0c64efabb9aa84eb4e34f9dc6b1",
+      "review_status": "pending",
+      "review_notes": "Representative synthetic corpus; human review required; never real customer evidence.",
+      "generates_evidence_fact": false,
+      "grants_claim_permission": false
+    },
+    {
+      "material_id": "SME-019",
+      "knowledge_origin": "enterprise_representative_sme",
+      "subject": "澄明数科（示范）有限公司",
+      "source_type": "representative_sme_controlled_document",
+      "source_authority": "internal_controlled",
+      "content_roles": [
+        "delivery_capability"
+      ],
+      "topics": [],
+      "project_entities": [],
+      "product_entities": [],
+      "expected_evidence_needs": [
+        "delivery_capability"
+      ],
+      "source_reference": "representative-sme/delivery-capability.md",
+      "file_hash": "f1af4fc8c7cac6e64c48a8d228d5150766e4c2e732ff164838eafb8af506bee6",
+      "review_status": "pending",
+      "review_notes": "Representative synthetic corpus; human review required; never real customer evidence.",
+      "generates_evidence_fact": false,
+      "grants_claim_permission": false
+    },
+    {
+      "material_id": "SME-020",
+      "knowledge_origin": "enterprise_representative_sme",
+      "subject": "澄明数科（示范）有限公司",
+      "source_type": "representative_sme_controlled_document",
+      "source_authority": "internal_controlled",
+      "content_roles": [
+        "technical_reference",
+        "general_capability"
+      ],
+      "topics": [],
+      "project_entities": [],
+      "product_entities": [],
+      "expected_evidence_needs": [
+        "security_capability"
+      ],
+      "source_reference": "representative-sme/security-reference.md",
+      "file_hash": "7aa9ebcb43cb08f50ab8cba447e2283c54698b0e798fb6bac9ac0bf41c8325b8",
+      "review_status": "pending",
+      "review_notes": "Representative synthetic corpus; human review required; never real customer evidence.",
+      "generates_evidence_fact": false,
+      "grants_claim_permission": false
+    }
+  ]
+}

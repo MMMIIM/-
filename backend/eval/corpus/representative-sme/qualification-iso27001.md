@@ -1,0 +1,11 @@
+REPRESENTATIVE_SYNTHETIC
+NOT_REAL_CUSTOMER_DATA
+material_id: SME-007
+subject: 澄明数科（示范）有限公司
+
+# ISO 27001 受控记录
+
+名称：ISO/IEC 27001
+编号：CM-Q-27001-2024
+状态：active
+有效至：2027-11-30

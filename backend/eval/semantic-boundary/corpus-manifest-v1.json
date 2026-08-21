@@ -11,6 +11,7 @@
   "materials": [
     {
       "material_id": "5a4674b0-aaab-475a-964b-977ae4b1ff65",
+      "knowledge_origin": "enterprise_real_public",
       "subject": "东软集团公开资料 Demo",
       "source_type": "official_corporate_webpage",
       "source_authority": "corporate_primary",
@@ -30,6 +31,7 @@
     },
     {
       "material_id": "c7542760-5ed9-479e-a642-1ebf7999f446",
+      "knowledge_origin": "enterprise_real_public",
       "subject": "东软集团公开资料 Demo",
       "source_type": "official_corporate_webpage",
       "source_authority": "corporate_primary",
@@ -49,6 +51,7 @@
     },
     {
       "material_id": "427e5615-72e0-4d3d-b38a-f44891b993e2",
+      "knowledge_origin": "enterprise_real_public",
       "subject": "东软集团公开资料 Demo",
       "source_type": "official_corporate_webpage",
       "source_authority": "corporate_primary",
@@ -68,6 +71,7 @@
     },
     {
       "material_id": "2e553e66-a909-4ed1-b99e-a57c25b51824",
+      "knowledge_origin": "enterprise_real_public",
       "subject": "东软集团股份有限公司",
       "source_type": "government_procurement_announcement",
       "source_authority": "government_primary",

@@ -1,0 +1,46 @@
+{
+  "version": "4.3-representative-sme-facts-v1",
+  "facts_frozen_at": "2026-08-21T08:00:00.000Z",
+  "corpus_frozen_at": "2026-08-21T09:00:00.000Z",
+  "generation_inputs": ["representative-sme-profile-v1.json", "representative-sme-facts-v1.json"],
+  "requirement_eval_inputs": [],
+  "labels": ["REPRESENTATIVE_SYNTHETIC", "NOT_REAL_CUSTOMER_DATA"],
+  "company_facts": [
+    {"fact_id":"CF-001","statement":"澄明数科（示范）有限公司为100至300人规模的虚构政企软件与系统集成企业。"},
+    {"fact_id":"CF-002","statement":"企业通常提供应用开发、数据交换治理、系统集成、实施和工作日服务台服务。"}
+  ],
+  "product_facts": [
+    {"fact_id":"PF-001","product_id":"CM-DX-32","name":"澄明数据交换平台 V3.2","capabilities":["REST API 接入","数据目录","交换任务调度","运行日志"]},
+    {"fact_id":"PF-002","product_id":"CM-COLLAB-24","name":"澄明政务协同平台 V2.4","capabilities":["事项协同","角色权限","消息通知"]}
+  ],
+  "performance_facts": [
+    {"fact_id":"PERF-001","product_id":"CM-DX-32","environment":"8 vCPU、32 GB 内存、PostgreSQL 14、千兆局域网","conditions":"50 并发、100 万条基准数据、缓存预热后执行 30 分钟","metric":"数据目录查询平均响应时间","value":1.4,"unit":"秒","p95":1.9,"tested_at":"2025-05-16"}
+  ],
+  "compatibility_facts": [
+    {"fact_id":"COMP-001","product_id":"CM-DX-32","target":"x86_64 + Ubuntu 22.04 + PostgreSQL 14","status":"tested"},
+    {"fact_id":"COMP-002","product_id":"CM-DX-32","target":"鲲鹏 920 + 麒麟 V10 + 达梦 8","status":"partially_tested","limitation":"完成安装和基础交换用例，未完成压力测试"},
+    {"fact_id":"COMP-003","product_id":"CM-DX-32","target":"海光 + 统信 UOS + 人大金仓","status":"not_verified"},
+    {"fact_id":"COMP-004","product_id":"CM-COLLAB-24","target":"国产数据库组合","status":"unknown"}
+  ],
+  "qualification_facts": [
+    {"fact_id":"QF-001","name":"ISO 9001","certificate_id":"CM-Q-9001-2025","status":"active","valid_until":"2028-03-31"},
+    {"fact_id":"QF-002","name":"ISO/IEC 27001","certificate_id":"CM-Q-27001-2024","status":"active","valid_until":"2027-11-30"},
+    {"fact_id":"QF-003","name":"信息系统建设和服务能力 CS2","certificate_id":"CM-Q-CS2-2023","status":"unknown","valid_until":null}
+  ],
+  "project_facts": [
+    {"project_id":"CM-P-A","name":"北川新区数据协同平台项目（虚构）","customer":"北川新区数字服务中心（虚构）","award_date":"2024-01-12","contract_date":"2024-02-01","implementation_start":"2024-02-15","acceptance_date":"2024-09-20","stages":["award","contract","implementation","acceptance"]},
+    {"project_id":"CM-P-B","name":"临河园区应用集成项目（虚构）","customer":"临河产业服务有限公司（虚构）","award_date":"2025-02-10","contract_date":"2025-03-03","implementation_start":"2025-03-17","acceptance_date":null,"stages":["award","contract","implementation"]},
+    {"project_id":"CM-P-C","name":"青屿公共数据目录项目（虚构）","customer":"青屿信息中心（虚构）","award_date":"2023-06-08","contract_date":null,"implementation_start":null,"acceptance_date":null,"stages":["award","project_case"]},
+    {"project_id":"CM-P-D","name":"南泽业务协同升级片段（虚构）","customer":"南泽公共服务机构（虚构）","award_date":null,"contract_date":null,"implementation_start":"2025-10-09","acceptance_date":null,"stages":["project_case","implementation_fragment"]}
+  ],
+  "personnel_facts": [
+    {"person_id":"CM-U-01","name":"林舟（虚构）","role":"project_manager","certificates":["信息系统项目管理师"],"experience_status":"complete"},
+    {"person_id":"CM-U-02","name":"周岚（虚构）","role":"architect","certificates":[],"experience_status":"complete"},
+    {"person_id":"CM-U-03","name":"陈屿（虚构）","role":"implementation_lead","certificates":["数据库系统工程师"],"experience_status":"partial"}
+  ],
+  "service_facts": [
+    {"fact_id":"SF-001","statement":"企业通常提供工作日 9:00-18:00 服务台、远程诊断和必要时现场支持。","formal_sla":false},
+    {"fact_id":"SF-002","statement":"项目交付通常包含部署包、配置清单、操作手册和培训记录。","formal_sla":false}
+  ],
+  "known_limitations": ["国产数据库全矩阵未验证","CM-P-B 无验收材料","CM-P-C 无合同及验收材料","CM-P-D 状态不完整","CS2 有效期未知","无量化 SLA 正式承诺依据"]
+}

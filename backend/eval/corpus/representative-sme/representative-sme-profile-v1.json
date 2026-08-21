@@ -1,0 +1,23 @@
+{
+  "version": "4.3-representative-sme-profile-v1",
+  "facts_frozen_at": "2026-08-21T08:00:00.000Z",
+  "company": {"name": "澄明数科（示范）有限公司", "fictional": true, "labels": ["REPRESENTATIVE_SYNTHETIC", "NOT_REAL_CUSTOMER_DATA"]},
+  "company_size_band": "100-300",
+  "business_scope": ["政企应用软件开发", "数据交换与治理", "系统集成", "实施与运维服务"],
+  "products": ["澄明数据交换平台 V3.2", "澄明政务协同平台 V2.4"],
+  "technology_baseline": ["Java/PostgreSQL 技术栈", "容器化部署", "Linux 服务器环境", "REST API 集成"],
+  "qualifications": ["ISO 9001", "ISO/IEC 27001", "信息系统建设和服务能力 CS2"],
+  "personnel": ["项目经理", "架构师", "实施负责人"],
+  "projects": ["CM-P-A", "CM-P-B", "CM-P-C", "CM-P-D"],
+  "service_capabilities": ["工作日服务台", "远程诊断", "现场实施", "版本维护"],
+  "known_limitations": [
+    "未形成国产数据库全矩阵正式验证结论",
+    "数据交换平台仅有一份受控性能测试报告",
+    "CM-P-B 缺少验收材料",
+    "CM-P-C 缺少合同与验收材料",
+    "CM-P-D 项目状态不完整",
+    "CS2 证书有效期需人工复核",
+    "不具备 CS4/CS5 等高级能力等级证明",
+    "没有经审核的 7×24、5 分钟响应或 99.99% SLA 承诺依据"
+  ]
+}
