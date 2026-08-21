@@ -32,6 +32,7 @@
     "e2e:writer-authorization": "node eval/production-retrieval-e2e/run-writer-authorization-e2e.js",
     "e2e:writer-pre": "node eval/production-retrieval-e2e/run-writer-pre-e2e.js",
     "preflight:external-writer": "node eval/production-retrieval-e2e/run-writer-pre-e2e.js --preflight-only",
+    "check:external-writer-model": "node scripts/external-writer-model-check.js",
     "review:evidence-gold": "node eval/evidence-gold/review/review-pack.js",
     "import:evidence-gold-review": "node eval/evidence-gold/review/import-human-review.js",
     "eval:live": "node scripts/eval-live.js",
