@@ -20,6 +20,7 @@
     "eval:retrieval-baseline": "node eval/retrieval-baseline/benchmark.js",
     "build:scale-corpus": "node eval/scale-stress/scale-corpus-builder.js",
     "eval:scale-stress": "node eval/scale-stress/scale-benchmark.js",
+    "eval:candidate-rerank": "node eval/candidate-rerank/candidate-rerank.js && node eval/candidate-rerank/compact-benchmark.js",
     "review:evidence-gold": "node eval/evidence-gold/review/review-pack.js",
     "import:evidence-gold-review": "node eval/evidence-gold/review/import-human-review.js",
     "eval:live": "node scripts/eval-live.js",
