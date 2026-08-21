@@ -18,6 +18,10 @@ import { createWriterProvider } from './pipeline/writer-provider.js';
 import { DocumentGenerationService } from './pipeline/document-generation-service.js';
 import { createEmbeddingClientFromEnv } from './pipeline/embedding-client.js';
 import { EnterpriseRetrievalService } from './pipeline/enterprise-retrieval-service.js';
+import { EvidenceReviewService } from './evidence-review-service.js';
+import { EvidenceSourceFactService } from './evidence-source-fact-service.js';
+import { ProjectFactControlService } from './project-fact-control-service.js';
+import { ReviewCenterService } from './review-center-service.js';
 
 const directory = dirname(fileURLToPath(import.meta.url));
 const runtime = createBackendRuntime();
@@ -48,6 +52,10 @@ const evidenceService = new EvidenceService({ repository });
 const evidenceFactService = new EvidenceFactService({ repository });
 const enterpriseRetrievalService = new EnterpriseRetrievalService({ repository, embeddingClient:createEmbeddingClientFromEnv({env:runtimeEnv}), defaultTopK:runtimeEnv.V43_RETRIEVAL_TOP_K || 5 });
 const documentGenerationService = new DocumentGenerationService({ repository, provider:createWriterProvider({env:runtimeEnv}), concurrency:runtimeEnv.V43_WRITER_CONCURRENCY || 2 });
+const evidenceReviewService = new EvidenceReviewService({ repository });
+const evidenceSourceFactService = new EvidenceSourceFactService({ repository });
+const projectFactControlService = new ProjectFactControlService({ repository });
+const reviewCenterService = new ReviewCenterService({ repository });
 const app = createApp({
   repository,
   storage,
@@ -60,6 +68,10 @@ const app = createApp({
   evidenceFactService,
   enterpriseRetrievalService,
   documentGenerationService,
+  reviewCenterService,
+  evidenceReviewService,
+  evidenceSourceFactService,
+  projectFactControlService,
   corsOrigin: runtimeEnv.CORS_ORIGIN
 });
 
