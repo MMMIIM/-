@@ -26,6 +26,15 @@ h2 { margin-bottom: 16px; color: #182230; font-size: 18px; }
 .action-list small, .library-list small { color: #667085; line-height: 1.45; }
 .library-card { min-height: 280px; }
 .library-card select { width: min(360px, 100%); }
+.library-scope-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 14px; }
+.library-scope-tab { border: 1px solid #d8e1eb; border-radius: 999px; padding: 8px 16px; background: #fff; color: #475467; font-weight: 600; }
+.library-scope-tab:hover, .library-scope-tab.active { border-color: #1859aa; background: #eef5ff; color: #1859aa; }
+.library-scope-summary { margin: 0 0 20px; padding: 12px 14px; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc; }
+.library-scope-summary strong { color: #344054; }
+.library-scope-summary p { margin: 4px 0 0; color: #667085; font-size: 13px; }
+.library-project-heading { margin-top: 4px; }
+.library-item-meta { display: flex; flex-wrap: wrap; gap: 8px; }
+.library-item-meta span { color: #475467; }
 .primary-inline, .secondary-button, .compact-actions button, .icon-button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 38px; border-radius: 7px; padding: 0 14px; }
 .primary-inline, .primary-button { border: 0; background: #1859aa; color: #fff; font-weight: 650; }
 .primary-inline:hover, .primary-button:hover { background: #124987; }

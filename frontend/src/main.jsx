@@ -8,7 +8,7 @@ import { ReviewWorkbench } from './review-workbench.jsx';
 import { EvidenceReadiness } from './evidence-readiness.jsx';
 import { MaterialProcessingCenter } from './material-processing-center.jsx';
 import { BidCopilot } from './bid-copilot.jsx';
-import { MATERIAL_TYPES } from './material-types.js';
+import { MATERIAL_TYPES, formatMaterialType } from './material-types.js';
 import './styles.css';
 
 const tabs = ['概览', '材料准备度', '材料处理', '审核中心', '招标文件', '需求解析', '响应规划', '企业材料', '企业证据复核', '标书', '风险复核', '版本记录'];
@@ -67,6 +67,17 @@ export function ProfessionalWorkspaceNav({ activeTab, setActiveTab }) {
 }
 
 const platformModules = ['工作台', '投标项目', '企业资料库', '标书检查'];
+export const MATERIAL_LIBRARY_SCOPES = [
+  { key: 'general', label: '通用资料', description: '可跨项目复用的标准、法规和通用技术参考。' },
+  { key: 'industry', label: '行业资料', description: '按项目所属行业复用的参考材料，帮助理解行业要求。' },
+  { key: 'enterprise', label: '企业资料', description: '本企业的简介、资质、案例和能力材料，需完成证明确认后使用。' },
+];
+const materialStatusLabels = {
+  succeeded: '已处理，可进入证明确认',
+  processing: '正在处理',
+  failed: '需要人工处理',
+  pending: '等待处理',
+};
 
 export function PlatformShell({ active, onNavigate, onCreate, title, subtitle, children }) {
   return <main className="app-shell platform-shell"><header className="app-header"><div><p className="eyebrow">政企投标辅助平台</p><h1>{title}</h1>{subtitle ? <p className="subtitle">{subtitle}</p> : null}</div><Badge>4.3 确定性流程</Badge></header><nav className="platform-nav" aria-label="平台主导航">{platformModules.map((module) => <button type="button" key={module} className={active === module ? 'active' : ''} onClick={() => onNavigate(module)}>{module}</button>)}<button type="button" className="system-nav" disabled title="系统管理将在权限基础具备后开放">系统管理</button></nav>{children}</main>;
@@ -95,11 +106,28 @@ function ProjectList({ onCreate, onOpen, onNavigate }) {
   </PlatformShell>;
 }
 
-function EnterpriseLibrary({ onNavigate, onOpen }) {
+export function EnterpriseLibrary({ onNavigate, onOpen }) {
+  const [scope, setScope] = useState('enterprise');
   const [state, setState] = useState({ projects: [], selected: '', materials: [], loading: true, error: '' });
   useEffect(() => { api.listProjects().then((payload) => { const projects = payload.projects || []; setState((current) => ({ ...current, projects, selected: current.selected || projects[0]?.id || '', loading: false })); }).catch((error) => setState((current) => ({ ...current, loading: false, error: error.message }))); }, []);
   useEffect(() => { if (!state.selected) return; api.listCompanyMaterials(state.selected).then((payload) => setState((current) => ({ ...current, materials: payload.materials || [] }))).catch((error) => setState((current) => ({ ...current, error: error.message }))); }, [state.selected]);
-  return <PlatformShell active="企业资料库" onNavigate={onNavigate} title="企业资料库" subtitle="查看项目可使用的企业资料和处理状态"><section className="card library-card"><div className="section-heading"><div><h2>资料按项目查看</h2><p>当前版本沿用项目资料范围；进入项目后可补充材料并完成审核。</p></div><select aria-label="选择项目" value={state.selected} onChange={(event) => setState({ ...state, selected: event.target.value })}><option value="">选择项目</option>{state.projects.map((project) => <option value={project.id} key={project.id}>{project.name}</option>)}</select></div>{state.error ? <Notice kind="error">{state.error}</Notice> : null}{state.loading ? <Loading text="正在读取企业资料" /> : state.selected ? state.materials.length ? <div className="library-list">{state.materials.map((material) => <button type="button" key={material.id} onClick={() => onOpen(state.selected)}><span><strong>{material.original_name}</strong><small>{material.material_type} · {material.extraction_status === 'succeeded' ? '已解析，可进入审核' : material.extraction_error_message || '等待处理'}</small></span><span>进入项目 →</span></button>)}</div> : <Empty title="这个项目还没有企业资料" text="进入项目准备，上传公司资料后再进行材料证明确认。" /> : <Empty title="请选择项目" text="选择项目后查看本次可用的企业资料。" />}</section></PlatformShell>;
+  const selectedProject = state.projects.find((project) => project.id === state.selected);
+  const selectedScope = MATERIAL_LIBRARY_SCOPES.find((item) => item.key === scope) || MATERIAL_LIBRARY_SCOPES[2];
+  const scopeEmptyState = scope === 'general'
+    ? { title: '当前还没有通用资料', text: '可补充标准、法规或通用技术参考，之后可跨项目复用。' }
+    : { title: '当前还没有行业资料', text: '可先明确项目所属行业，再补充对应行业参考材料。' };
+  return <PlatformShell active="企业资料库" onNavigate={onNavigate} title="企业资料库" subtitle="按资料范围查找能帮助当前项目的证明材料">
+    <section className="card library-card">
+      <div className="section-heading"><div><h2>资料范围</h2><p>范围只控制材料可见性；实际使用前仍需完成证明确认。</p></div></div>
+      <div className="library-scope-tabs" role="tablist" aria-label="资料范围">
+        {MATERIAL_LIBRARY_SCOPES.map((item) => <button type="button" role="tab" aria-selected={scope === item.key} className={`library-scope-tab ${scope === item.key ? 'active' : ''}`} key={item.key} onClick={() => setScope(item.key)}>{item.label}</button>)}
+      </div>
+      <div className="library-scope-summary"><strong>{selectedScope.label}</strong><p>{selectedScope.description}</p></div>
+      {scope === 'enterprise' ? <div className="section-heading library-project-heading"><div><h2>企业资料</h2><p>选择项目，查看本项目可用的企业材料。</p></div><select aria-label="选择项目" value={state.selected} onChange={(event) => setState({ ...state, selected: event.target.value })}><option value="">选择项目</option>{state.projects.map((project) => <option value={project.id} key={project.id}>{project.name}</option>)}</select></div> : null}
+      {state.error ? <Notice kind="error">暂时无法读取资料，请稍后再试。</Notice> : null}
+      {scope !== 'enterprise' ? <Empty {...scopeEmptyState} /> : state.loading ? <Loading text="正在读取企业资料" /> : state.selected ? state.materials.length ? <div className="library-list">{state.materials.map((material) => <button type="button" key={material.id} onClick={() => onOpen(state.selected)}><span><strong>{material.original_name}</strong><small className="library-item-meta"><span>{formatMaterialType(material.material_type)}</span><span>企业资料</span><span>{materialStatusLabels[material.extraction_status] || '待处理'}</span></small><small>{selectedProject?.name ? `可用于：${selectedProject.name}` : '可用于当前项目'} · 完成证明确认后才能作为正式依据</small></span><span>进入项目 →</span></button>)}</div> : <Empty title="这个项目还没有企业资料" text="进入项目准备，上传企业简介、资质、案例或技术能力材料，再完成证明确认。" /> : <Empty title="请选择项目" text="选择项目后查看本次可用的企业资料。" />}
+    </section>
+  </PlatformShell>;
 }
 
 function BidCheck({ onNavigate, onOpen }) {

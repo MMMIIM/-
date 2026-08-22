@@ -10,12 +10,48 @@ customer or private data.
 Representative fixture: `backend/eval/stage20/fixtures/representative-project.json`.
 The machine-readable offline run is `npm run eval:stage20 -w backend`.
 
+## Scope correction and architecture audit (2026-08-23)
+
+The formal Stage20 business path is **not** coupled to Dify Workflow/App/End
+state. Requirement parsing enters `RequirementParseService` through the
+`semantic_gateway` Provider Adapter, and document generation enters
+`DocumentGenerationService` through the configured Writer Provider. The
+legacy `generation-jobs`/`GenerationService` route and its Dify client remain
+isolated for v4.2 compatibility; they are not used by the current Stage20
+platform flow and were not called in this acceptance.
+
+The runtime path is therefore:
+
+```text
+Backend Control Plane → Provider Adapter → semantic_gateway → model execution
+```
+
+`127.0.0.1:18080` and its SSH tunnel are development-environment access
+methods only. An unreachable tunnel is recorded as
+`DEVELOPMENT_ENVIRONMENT_OPERATIONAL_BLOCKER`, not as a product capability or
+as a reason to redesign the control plane.
+
+The existing non-sensitive representative materials were located in
+`backend/eval/corpus/real-public/` and
+`backend/testdata/live-enterprise-materials/` (four public-source enterprise
+materials covering profile, qualifications, smart-city and system-integration
+capabilities). The current browser write proof still uses the committed
+synthetic tender fixture because the gateway boundary was unreachable; no
+private customer file was uploaded or sent to a Provider.
+
+The `企业资料库` page now exposes one underlying material capability through
+three business scopes: `通用资料`, `行业资料`, and `企业资料`. Scope tabs,
+business-readable empty states, Chinese material categories, processing status,
+current-project usage and the “证明确认后才能作为正式依据” boundary are
+covered by `frontend/src/material-library.test.jsx` and browser inspection.
+No separate vector store or retrieval architecture was introduced.
+
 ## Acceptance evidence
 
 | Area | Result | Evidence |
 | --- | --- | --- |
 | Project/tender/parse/baseline contracts | PASS | Existing HTTP and PostgreSQL suites; canonical baseline remains immutable |
-| Enterprise material/retrieval boundary | PASS | Retrieval Eval: Recall@5 90%, MRR 1.000, source traceability 100%, scope violations 0%, no-answer 100% |
+| Enterprise material/retrieval boundary | PASS | Retrieval Eval: Recall@5 90%, MRR 1.000, source traceability 100%, scope violations 0%, no-answer 100%; scope visibility is explicit in `企业资料库` |
 | Evidence review/readiness | PASS | Existing readiness/review suites; synthetic fixture keeps one approved material and one needs-review material |
 | Response Plan / Claim Gate / coverage | PASS | Synthetic fixture: 4 Plans, 3 approved Claims, 1 rejected high-risk Claim, mandatory uncovered 0 |
 | Generation and chapter isolation | PASS (deterministic) | Writer batch, sanitization, validation and chapter-preview contracts exercised offline; rejected Claim is excluded from Writer input |
@@ -25,7 +61,7 @@ The machine-readable offline run is `npm run eval:stage20 -w backend`.
 | Refresh/re-entry | PASS | Existing browser project workbench reloaded persisted project, task, version and risk state; HTTP/browser tests cover the same read models |
 | Failure/recovery and idempotency | PASS (offline) | Fixture checks mandatory validation failure, human-only formal action, bounded action replay (`NO_CHANGE`) and rejected Claim isolation |
 | Browser main path | PASS (read-only) | Local `http://127.0.0.1:5173/`: platform shell, 投标项目, 项目准备 → 审核与补充 → 标书生成 → 投标检查 all rendered; `/api/health` returned 200/database connected |
-| Browser write path | PARTIAL | New synthetic project and tender upload persisted through the UI; material upload/extraction and Copilot state query persisted after refresh. Requirement parsing was not started because the configured runtime uses `semantic_gateway` and no external Provider authorization was supplied. |
+| Browser write path | PARTIAL | New synthetic project and tender upload persisted through the UI; material upload/extraction and Copilot state query persisted after refresh. The public representative corpus is located, but requirement parsing was not started because the configured runtime uses `semantic_gateway` and the development tunnel was unreachable. |
 | Fresh migration replay | PASS | PostgreSQL migration replay/fresh-install coverage passed in the 40-test PostgreSQL suite |
 
 ## Browser write acceptance
@@ -104,6 +140,22 @@ the SSH/tunnel configuration was not modified.
 **REAL_PROVIDER_OPERATIONAL_BLOCKED.** The deterministic production-shaped path
 remains independently validated, but the authorized provider could not be
 reached. This is an operational stop, not a contract or validation result.
+
+## Stage20 boundary result
+
+| Check | Result | Evidence |
+| --- | --- | --- |
+| Dify formal dependency | **NO (formal path)** | Current Stage20 routes use `semantic_gateway`; the v4.2 Dify client is retained only behind the legacy compatibility route |
+| semantic_gateway role | **PASS** | Provider Adapter boundary used by requirement extraction and Writer services |
+| SSH role | **DEVELOPMENT ACCESS ONLY** | Local `127.0.0.1:18080` tunnel is not a product dependency |
+| 通用资料 | **PASS** | Scope tab and empty state explain what to upload and why it matters |
+| 行业资料 | **PASS** | Scope tab and industry-specific empty state are business-readable |
+| 企业资料 | **PASS** | Project-scoped material list shows category, processing state and usage boundary |
+| Retrieval scope | **PASS (offline)** | Existing retrieval Eval records project/selected-material isolation and zero scope violations |
+| Tender parse / canonical requirements | **PROVIDER_BLOCKED** | No fake Provider output and no parse retry |
+| Retrieval / Evidence review / readiness / generation / Bid Check / Word | **NOT REACHED for new public tender** | Existing deterministic Stage20 fixture and frozen Evals remain PASS separately |
+| Product flow status | **PARTIAL — PROVIDER BOUNDARY** | Independent UI, material scope and deterministic downstream mechanics pass |
+| Real Provider status | **DEVELOPMENT_ENVIRONMENT_OPERATIONAL_BLOCKER** | SSH tunnel / gateway unreachable; no external request made |
 
 ## Remaining production risks / manual items
 

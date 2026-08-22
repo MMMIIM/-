@@ -11,6 +11,12 @@ Status: **PARTIAL / BLOCKED — REAL_PROVIDER_OPERATIONAL_BLOCKED**
 自治或部署基础设施；外部 Provider 在本阶段默认不调用，若已有授权路径不可用则
 记录为运营阻断而不改变架构。
 
+最新范围校正：正式 Stage20 路径使用 `semantic_gateway` Provider Adapter，
+不依赖 Dify Workflow/App/End 状态；保留的 v4.2 Dify 路由仅作兼容，不属于当前
+平台主流程。`企业资料库`按一个底层资料能力提供“通用资料 / 行业资料 / 企业资料”
+三种业务范围，SSH 隧道仅是开发环境访问方式。当前网关不可达继续单独记为
+`DEVELOPMENT_ENVIRONMENT_OPERATIONAL_BLOCKER`，不阻断独立产品验收。
+
 验收产物：`docs/STAGE20_PRODUCTION_BETA_ACCEPTANCE.md` 与离线合成 E2E 夹具。
 Stage 19 及之前的冻结规则继续有效。
 
