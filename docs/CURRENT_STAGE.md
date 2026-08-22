@@ -6,6 +6,8 @@ Priority: **P1**
 Status: **PASS / FROZEN**
 
 Stage 16 — Document Delivery & Word V1 is **PASS / FROZEN**.
+Manual TOC Acceptance: **PASS**
+System Default Page Policy: **PASS**
 The system default page policy is frozen: the cover hides its page number,
 the TOC starts visible numbering at 1, and the body inherits the TOC sequence
 without restarting. The representative DOCX contains a real updateable TOC
