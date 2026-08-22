@@ -1,44 +1,47 @@
 # Current Stage
 
-## Stage 16-R2 — Word Foundation Baseline Hardening
+## Stage 16 — Document Delivery & Word
 
 Priority: **P1**
-Status: **ACTIVE**
+Status: **FREEZE_PENDING_MANUAL_ACCEPTANCE**
 
 Stage 13 — Material Processing / Review UX, Stage 14 — Platform Shell & Core
 Flow IA, and Stage 15 — Generation Workbench V1 remain frozen with acceptance
-**PASS**. Stage 16-R1 format policy and browser export remain valid; real Office
-visual acceptance is still pending.
+**PASS**. Word Foundation Engineering and consolidated OOXML acceptance are
+**PASS**; only real Office visual acceptance remains.
 
 ## Goal
 
-建立并验证 Word 基础排版基线，停止按单个视觉症状逐项修补。基础规则由
-`docs/WORD_FOUNDATION_BASELINE.md` 集中说明，正式链路仍为：
+Stage 16 的 Word 基础排版工程已冻结。唯一剩余门禁是使用
+`uploads/stage16-word-foundation-final.docx` 在 Microsoft Word、WPS Office
+或 LibreOffice Writer 中完成一次真实视觉验收。
 
 ```text
 Bid Document Model → Format Policy → DOCX Renderer
 ```
 
-## Scope
+## Frozen foundation
 
-- 连续 H1/H2/H3、重复章节和非法内容块的确定性预检；
-- Word 自动多级编号与 SPACE 后缀；
-- 默认自然分页、标题 keep-with-next/keep-lines、正文 widow/orphan；
-- 中文 EastAsia 字体映射、段落基础、表格宽度/内边距/表头/行拆分；
-- cover/TOC/body section、正文页码从 1 开始、元数据 allow-list；
-- 真实 TOC 字段及其 Word/WPS 更新限制；
-- 一套集中 OOXML 结构验收和一个最终代表性 DOCX。
+- valid heading hierarchy / duplicate-heading prevention；
+- Word automatic numbering with SPACE suffix；
+- natural pagination, heading keepNext/keepLines, body widow/orphan；
+- Chinese EastAsia font mapping and centralized paragraph policy；
+- table width/padding/repeated headers/cantSplit；
+- section/page numbering, metadata allow-list and document structure validation；
+- formal version linkage。
 
-## Acceptance status
+上述规则未经具体回归证据不得重新设计。
 
-- `backend/test/word-foundation-acceptance.test.js` 与全量回归通过；
-- 导出 `uploads/stage16-word-foundation-final.docx`；
-- 自动验收覆盖结构、编号、分页策略、字体、段落、表格、section、页码、TOC
-  字段和元数据安全；
-- 真实 Office 的分页、字体回退、目录页码和表格视觉仍需一次人工验收。
+## Manual acceptance gate
+
+- 只检查自动化无法证明的真实分页、字体回退、正文密度、表格跨页、TOC 更新
+  与最终页码、封面/目录/正文 section、页眉页脚和可编辑性；
+- TOC 是真实 Word 字段，最终页码必须由 Office 更新；不实现伪造页码；
+- 若验收通过，更新本文件为 `PASS / FROZEN` 并返回 STATUS CHECKPOINT；
+- 若发现问题，先记录 Office 引擎、页面/章节、症状、分类和严重度，不立即改码。
 
 ## Stop conditions
 
-不修改 Writer、Claim Gate、Evidence/Fact/Mapping、semantic gateway 或业务
-Contract；不安装 Office，不调用外部 AI，不开始 RAG/Agent/Permission；不推送、
-不合并、不部署。无 ADR 或 roadmap 变更。
+不修改已冻结 Word 基线，不生成 R1.4/R1.5 文件，不安装系统软件；不修改
+Writer、Claim Gate、Evidence/Fact/Mapping、semantic gateway 或业务 Contract；
+不调用外部 AI，不开始 Stage 17/RAG/Agent/Permission；不推送、不合并、不部署。
