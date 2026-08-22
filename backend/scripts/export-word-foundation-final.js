@@ -27,8 +27,8 @@ const version = {
 
 const model = buildBidDocumentModel({ project, version });
 const buffer = await renderBidDocument(model);
-const outputPath = path.resolve('uploads/stage16-word-foundation-final.docx');
+const outputName = process.argv[2] || 'stage16-word-foundation-final-v2.docx';
+const outputPath = path.resolve('uploads', outputName);
 await fs.mkdir(path.dirname(outputPath), { recursive: true });
 await fs.writeFile(outputPath, buffer);
 console.log(JSON.stringify({ output: outputPath, bytes: buffer.length, model_version: model.model_version }));
-

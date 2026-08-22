@@ -70,9 +70,9 @@ export const PROFESSIONAL_WORD_POLICY = Object.freeze({
   },
   toc: {
     enabled: true, title: '目 录', title_size_half_points: 32,
-    note: '目录页码将在 Word/WPS 中更新目录后显示。', note_size_half_points: 20,
+    note: '', note_size_half_points: 20,
     title_after_pt: 12, note_after_pt: 18, heading_depth: 3, heading_style_range: '1-3', updateable: true,
-    render_mode: 'field_only', visible_cached_result: false,
+    render_mode: 'field_cached_entries', visible_cached_result: true,
     office_update_required: true,
     limitation: 'docx 仅写入可更新 TOC 字段；页码由 Word/WPS 在更新目录后计算。'
   },

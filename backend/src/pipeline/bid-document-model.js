@@ -30,13 +30,15 @@ function markdownBlocks(markdown) {
     if (line.startsWith('|') && line.endsWith('|')) {
       flush();
       const rows = [];
+      let hasHeaderSeparator = false;
       while (index < lines.length && lines[index].trim().startsWith('|') && lines[index].trim().endsWith('|')) {
         const cells = lines[index].trim().slice(1, -1).split('|').map((cell) => cell.trim());
-        if (!cells.every((cell) => /^:?-{2,}:?$/.test(cell))) rows.push(cells);
+        if (cells.every((cell) => /^:?-{2,}:?$/.test(cell))) hasHeaderSeparator = true;
+        else rows.push(cells);
         index += 1;
       }
       index -= 1;
-      if (rows.length) blocks.push({ kind: 'table', rows });
+      if (rows.length) blocks.push({ kind: 'table', rows, header_row_index: hasHeaderSeparator ? 0 : null });
       continue;
     }
     if (/^---+$/.test(line)) { flush(); blocks.push({ kind: 'page_break' }); continue; }
@@ -55,7 +57,13 @@ function normalizeBlock(block) {
   if (kind === 'image') return { kind, alt: text(block.alt || block.caption || '图片'), data: block.data || null, width: Number(block.width) || null, height: Number(block.height) || null };
   if (kind === 'table') {
     const rows = Array.isArray(block.rows) ? block.rows.map((row) => Array.isArray(row) ? row.map(text) : []).filter((row) => row.length) : [];
-    return rows.length ? { kind, rows } : null;
+    if (!rows.length) return null;
+    const headerRowIndex = Number.isInteger(Number(block.header_row_index))
+      && Number(block.header_row_index) >= 0
+      && Number(block.header_row_index) < rows.length
+      ? Number(block.header_row_index)
+      : null;
+    return { kind, rows, header_row_index: headerRowIndex };
   }
   return text(block.text || block.content) ? { kind: 'paragraph', text: text(block.text || block.content) } : null;
 }

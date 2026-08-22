@@ -73,20 +73,23 @@ export function tableCellMarginForPolicy(policy = getDocumentFormatPolicy()) {
 function table(block, policy) {
   const width = tableWidthForPolicy(policy);
   const columnWidths = tableColumnWidths(block.rows, width);
-  const rows = block.rows.map((cells, rowIndex) => new TableRow({
-    tableHeader: policy.table.header_repeat !== false && rowIndex === 0,
+  const rows = block.rows.map((cells, rowIndex) => {
+    const isHeader = block.header_row_index === rowIndex;
+    return new TableRow({
+    ...(policy.table.header_repeat !== false && isHeader ? { tableHeader: true } : {}),
     cantSplit: policy.table.row_cant_split !== false,
     children: cells.map((cell, index) => new TableCell({
       width: { size: columnWidths[index] || columnWidths[columnWidths.length - 1], type: WidthType.DXA },
-      shading: rowIndex === 0 ? { fill: policy.table.header_fill } : undefined,
+      shading: isHeader ? { fill: policy.table.header_fill } : undefined,
       margins: tableCellMarginForPolicy(policy),
       children: [new Paragraph({
-        children: [run(cell, { bold: rowIndex === 0, size: policy.table.size_half_points }, policy, 'table')],
+        children: [run(cell, { bold: isHeader, size: policy.table.size_half_points }, policy, 'table')],
         indent: { firstLine: 0 },
         spacing: { before: ptToTwips(policy.table.paragraph_before_pt), after: ptToTwips(policy.table.paragraph_after_pt), line: getBodyLineSpacingTwips(policy) }
       })]
     }))
-  }));
+  });
+  });
   return new Table({
     rows,
     width: { size: width, type: WidthType.DXA },
@@ -182,6 +185,26 @@ function sectionType(value) {
   return value === 'next_page' ? SectionType.NEXT_PAGE : undefined;
 }
 
+function tocEntries(model) {
+  const counters = [0, 0, 0];
+  const entries = [];
+  const addEntry = (level, title) => {
+    const normalizedLevel = Math.max(1, Math.min(3, Number(level) || 1));
+    counters[normalizedLevel - 1] += 1;
+    for (let index = normalizedLevel; index < counters.length; index += 1) counters[index] = 0;
+    const number = counters.slice(0, normalizedLevel).join('.');
+    entries.push({ title: `${number} ${normalizeHeadingText(title)}`, level: normalizedLevel });
+  };
+  for (const section of model.sections) {
+    addEntry(1, section.title);
+    for (const [index, block] of section.content_blocks.entries()) {
+      if (index === 0 && block.kind === 'heading' && normalizeHeadingText(block.text) === normalizeHeadingText(section.title)) continue;
+      if (block.kind === 'heading') addEntry(block.level, block.text);
+    }
+  }
+  return entries;
+}
+
 export async function renderBidDocument(model, { policy = getDocumentFormatPolicy() } = {}) {
   const header = pageHeader(model, policy);
   const footer = pageFooter(policy);
@@ -197,7 +220,13 @@ export async function renderBidDocument(model, { policy = getDocumentFormatPolic
   const numbering = policy.heading_numbering || { left_dxa_per_level: 360, hanging_dxa: 180, suffix: 'space' };
   const numberingSuffix = numbering.suffix === 'space' ? LevelSuffix.SPACE : numbering.suffix === 'nothing' ? LevelSuffix.NOTHING : LevelSuffix.TAB;
   const bodySection = policy.sections.body;
-  const tocChildren = policy.toc.enabled === false ? [] : [new TableOfContents('', { hyperlink: true, headingStyleRange: policy.toc.heading_style_range, beginDirty: true })];
+  const tocChildren = policy.toc.enabled === false ? [] : [new TableOfContents('', {
+    hyperlink: true,
+    headingStyleRange: policy.toc.heading_style_range,
+    beginDirty: true,
+    cachedEntries: tocEntries(model)
+  })];
+  const tocNote = policy.toc.note ? [new Paragraph({ children: [run(policy.toc.note, { italics: true, size: policy.toc.note_size_half_points, color: '667085' }, policy, 'body')], alignment: AlignmentType.CENTER, spacing: { after: Math.round(policy.toc.note_after_pt * 20) } })] : [];
   const doc = new Document({
     creator: '政企标书平台', title: model.title, subject: '正式投标响应文档',
     features: { updateFields: true },
@@ -220,7 +249,7 @@ export async function renderBidDocument(model, { policy = getDocumentFormatPolic
         footers: { default: blankFooter, first: blankFooter },
         children: [
           new Paragraph({ children: [run(policy.toc.title, { bold: true, size: policy.toc.title_size_half_points }, policy, 'heading1')], alignment: AlignmentType.CENTER, spacing: { after: Math.round(policy.toc.title_after_pt * 20) } }),
-          new Paragraph({ children: [run(policy.toc.note, { italics: true, size: policy.toc.note_size_half_points, color: '667085' }, policy, 'body')], alignment: AlignmentType.CENTER, spacing: { after: Math.round(policy.toc.note_after_pt * 20) } }),
+          ...tocNote,
           ...tocChildren
         ]
       },

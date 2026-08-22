@@ -80,7 +80,7 @@ test('DOCX renderer 产生真实 Heading、目录字段、页眉页脚与正文'
   const coverFooterXml = await zip.file('word/footer1.xml').async('string');
   assert.match(documentXml, /w:val="Heading1"/);
   assert.match(documentXml, /目 录/);
-  assert.match(documentXml, /目录页码将在 Word\/WPS 中更新目录后显示/);
+  assert.doesNotMatch(documentXml, /目录页码将在 Word\/WPS 中更新目录后显示/);
   assert.match(documentXml, /TOC/);
   assert.ok((documentXml.match(/w:sectPr/g) || []).length >= 3);
   assert.match(documentXml, /示例投标项目/);

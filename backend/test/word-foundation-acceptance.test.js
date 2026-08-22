@@ -58,7 +58,7 @@ test('Word Foundation consolidated OOXML acceptance covers the system baseline',
   assert.equal(validateDocumentStructure(model.sections).valid, true);
   assert.equal(policy.profile_id, 'SYSTEM_DEFAULT_TECHNICAL_BID_V1');
   assert.equal(policy.sections.body.chapter_page_break, 'none');
-  assert.equal(policy.toc.render_mode, 'field_only');
+  assert.equal(policy.toc.render_mode, 'field_cached_entries');
 
   // Structure and pagination: no skipped headings, duplicate chapters, or
   // renderer-generated page breaks in the system default profile.
@@ -88,6 +88,8 @@ test('Word Foundation consolidated OOXML acceptance covers the system baseline',
   assert.ok(widths.every((width) => width <= getUsableBodyWidth(policy)));
   assert.match(documentXml, /w:tcMar/);
   assert.match(documentXml, /w:tblHeader/);
+  assert.equal((documentXml.match(/w:tblHeader/g) || []).length, 1);
+  assert.doesNotMatch(documentXml, /w:tblHeader w:val="false"/);
   assert.match(documentXml, /w:cantSplit/);
 
   // Body section restarts visible page numbering at 1. TOC is a real field;
@@ -95,7 +97,12 @@ test('Word Foundation consolidated OOXML acceptance covers the system baseline',
   assert.match(documentXml, /w:pgNumType w:start="1"/);
   assert.match(documentXml, /TOC/);
   assert.match(settingsXml, /updateFields/);
-  assert.match(documentXml, /目录页码将在 Word\/WPS 中更新目录后显示/);
+  assert.match(documentXml, /1 项目理解/);
+  assert.match(documentXml, /1\.1 建设目标/);
+  assert.match(documentXml, /1\.1\.1 建设原则/);
+  assert.match(documentXml, /2 实施方案/);
+  assert.match(documentXml, /2\.1 实施路径/);
+  assert.doesNotMatch(documentXml, /目录页码将在 Word\/WPS 中更新目录后显示/);
 
   // Projection safety: technical identifiers never enter the formal story.
   assert.doesNotMatch(documentXml, /e2e\.|synthetic\.|data_classification|word-foundation-generation/);
@@ -121,3 +128,46 @@ test('Word Foundation allows a tender override to force chapter pagination', asy
   assert.match(documentXml, /w:pageBreakBefore/);
 });
 
+test('Word Foundation repeats exactly one explicitly semantic table header row', async () => {
+  const explicitHeaderVersion = {
+    ...version,
+    sections_json: [{
+      chapter_id: 'table-01', title: '表格章节', order: 1,
+      content_blocks: [{ kind: 'table', header_row_index: 0, rows: [['字段', '说明'], ['交付项', '文档审查'], ['培训', '现场确认']] }]
+    }]
+  };
+  const model = buildBidDocumentModel({ project, version: explicitHeaderVersion });
+  const buffer = await renderBidDocument(model);
+  const zip = await JSZip.loadAsync(buffer);
+  const documentXml = await zip.file('word/document.xml').async('string');
+  assert.equal((documentXml.match(/w:tblHeader/g) || []).length, 1);
+  assert.doesNotMatch(documentXml, /w:tblHeader w:val="false"/);
+});
+
+test('Word Foundation does not infer a repeated header for a table without semantic header metadata', async () => {
+  const noHeaderVersion = {
+    ...version,
+    sections_json: [{
+      chapter_id: 'table-02', title: '无表头章节', order: 1,
+      content_blocks: [{ kind: 'table', rows: [['A', 'B'], ['1', '2']] }]
+    }]
+  };
+  const model = buildBidDocumentModel({ project, version: noHeaderVersion });
+  const buffer = await renderBidDocument(model);
+  const zip = await JSZip.loadAsync(buffer);
+  const documentXml = await zip.file('word/document.xml').async('string');
+  assert.doesNotMatch(documentXml, /w:tblHeader/);
+});
+
+test('Markdown tables repeat a header only when a separator row declares one', () => {
+  const withHeader = buildBidDocumentModel({
+    project,
+    version: { ...version, sections_json: [{ chapter_id: 'markdown-table-1', title: '有表头', order: 1, content_markdown: '| 字段 | 说明 |\n| --- | --- |\n| A | B |' }] }
+  });
+  const withoutHeader = buildBidDocumentModel({
+    project,
+    version: { ...version, sections_json: [{ chapter_id: 'markdown-table-2', title: '无表头', order: 1, content_markdown: '| A | B |\n| 1 | 2 |' }] }
+  });
+  assert.equal(withHeader.sections[0].content_blocks[0].header_row_index, 0);
+  assert.equal(withoutHeader.sections[0].content_blocks[0].header_row_index, null);
+});
