@@ -55,7 +55,8 @@ The first L3 inventory and offline evaluator are now repository-owned:
 - `backend/eval/corpus/l3-synthetic-enterprise/`
 - `npm run eval:corpus-l3 -w backend`
 
-Current offline result (23 curated questions, external calls **0**):
+Current offline result (23 synthetic baseline questions plus 40 real
+official-excerpt questions, external calls **0**):
 
 | Metric | Current | L3 target | Result |
 | --- | ---: | ---: | --- |
@@ -70,12 +71,17 @@ Current offline result (23 curated questions, external calls **0**):
 | Usage Status Coverage | 100% | 100% | PASS |
 | Formal Safety Boundary Violations | 0 | 0 | PASS |
 
-Inventory: general 0 ACTIVE, government-platform 0 ACTIVE (no admitted official
-government candidates yet), healthcare 0 ACTIVE, and 17 ACTIVE eval-only
-synthetic enterprise materials. Four public-source enterprise candidates remain
-`METADATA_ONLY`/pending. Nineteen `CORPUS_GAP-*` question gaps
-remain; controlled negative cases are retained intentionally. Corpus L3 is
-`IN_PROGRESS`, not a retrieval architecture failure.
+Real official excerpt inventory: general 10 ACTIVE_EXCERPT, government-platform
+15 ACTIVE_EXCERPT, healthcare 15 ACTIVE_EXCERPT; approximately 120 chunks are indexed through
+the normal material/retrieval path. The isolated real-wave report is PASS:
+coverage 100%, Recall@5 100%, MRR 1.000, traceability 100%, scope violations 0%,
+obsolete preference errors 0% and no-answer accuracy 100%. The aggregate L3
+gate remains `IN_PROGRESS` because active-count targets and the broader
+business-question inventory and frozen retrieval baseline are not complete; the
+active-count lower bounds are met. The 17-material controlled synthetic
+baseline is retained, and the existing formal synthetic production fixture now
+reuses `CompanyMaterialService` (21 persisted materials / 329 chunks). The four
+previous public-source enterprise candidates remain `METADATA_ONLY`/pending.
 
 ## Acceptance evidence
 

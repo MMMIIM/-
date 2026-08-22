@@ -119,7 +119,15 @@ export function EnterpriseLibrary({ onNavigate, onOpen }) {
   const [industryScope, setIndustryScope] = useState('government');
   const [state, setState] = useState({ projects: [], selected: '', materials: [], loading: true, error: '' });
   useEffect(() => { api.listProjects().then((payload) => { const projects = payload.projects || []; setState((current) => ({ ...current, projects, selected: current.selected || projects[0]?.id || '', loading: false })); }).catch((error) => setState((current) => ({ ...current, loading: false, error: error.message }))); }, []);
-  useEffect(() => { if (!state.selected) return; api.listCompanyMaterials(state.selected).then((payload) => setState((current) => ({ ...current, materials: payload.materials || [] }))).catch((error) => setState((current) => ({ ...current, error: error.message }))); }, [state.selected]);
+  useEffect(() => {
+    if (scope === 'enterprise') {
+      if (!state.selected) return;
+      api.listCompanyMaterials(state.selected).then((payload) => setState((current) => ({ ...current, materials: payload.materials || [] }))).catch((error) => setState((current) => ({ ...current, error: error.message })));
+      return;
+    }
+    const publicScope = scope === 'general' ? 'GENERAL' : (industryScope === 'government' ? 'GOVERNMENT_ENTERPRISE' : 'HEALTHCARE');
+    api.listPublicCorpusMaterials(publicScope).then((payload) => setState((current) => ({ ...current, materials: payload.materials || [], loading: false }))).catch((error) => setState((current) => ({ ...current, loading: false, error: error.message })));
+  }, [state.selected, scope, industryScope]);
   const selectedProject = state.projects.find((project) => project.id === state.selected);
   const selectedScope = MATERIAL_LIBRARY_SCOPES.find((item) => item.key === scope) || MATERIAL_LIBRARY_SCOPES[2];
   const selectedIndustry = INDUSTRY_LIBRARY_SCOPES.find((item) => item.key === industryScope) || INDUSTRY_LIBRARY_SCOPES[0];
@@ -136,7 +144,7 @@ export function EnterpriseLibrary({ onNavigate, onOpen }) {
       {scope === 'industry' ? <IndustryLibraryScopeTabs industryScope={industryScope} setIndustryScope={setIndustryScope} /> : null}
       {scope === 'enterprise' ? <div className="section-heading library-project-heading"><div><h2>企业资料</h2><p>选择项目，查看本项目可用的企业材料。</p></div><select aria-label="选择项目" value={state.selected} onChange={(event) => setState({ ...state, selected: event.target.value })}><option value="">选择项目</option>{state.projects.map((project) => <option value={project.id} key={project.id}>{project.name}</option>)}</select></div> : null}
       {state.error ? <Notice kind="error">暂时无法读取资料，请稍后再试。</Notice> : null}
-      {scope !== 'enterprise' ? <Empty {...scopeEmptyState} /> : state.loading ? <Loading text="正在读取企业资料" /> : state.selected ? state.materials.length ? <div className="library-list">{state.materials.map((material) => <button type="button" key={material.id} onClick={() => onOpen(state.selected)}><span><strong>{material.original_name}</strong><small className="library-item-meta"><span>{formatMaterialType(material.material_type)}</span><span>企业资料</span><span>{materialStatusLabels[material.extraction_status] || '待处理'}</span></small><small>{selectedProject?.name ? `可用于：${selectedProject.name}` : '可用于当前项目'} · 完成证明确认后才能作为正式依据</small></span><span>进入项目 →</span></button>)}</div> : <Empty title="这个项目还没有企业资料" text="进入项目准备，上传企业简介、资质、案例或技术能力材料，再完成证明确认。" /> : <Empty title="请选择项目" text="选择项目后查看本次可用的企业资料。" />}
+      {scope !== 'enterprise' ? state.loading ? <Loading text="正在读取公开资料" /> : state.materials.length ? <div className="library-list">{state.materials.map((material) => <div className="library-list-item" key={material.id}><span><strong>{material.original_name}</strong><small className="library-item-meta"><span>{formatMaterialType(material.material_type)}</span><span>{material.source_org || '官方公开来源'}</span><span>{material.effective_status === 'current' ? '现行有效' : '待复核'}</span></small><small>{material.source_org || '官方公开来源'} · {material.corpus_scope === 'GENERAL' ? '通用资料' : material.industry || '行业资料'} · {material.usage_status === 'ACTIVE_EXCERPT' ? '可使用已审核摘录' : '可用于检索'}</small></span><span>{material.updated_at ? formatDate(material.updated_at) : '已入库'}</span></div>)}</div> : <Empty {...scopeEmptyState} /> : state.loading ? <Loading text="正在读取企业资料" /> : state.selected ? state.materials.length ? <div className="library-list">{state.materials.map((material) => <button type="button" key={material.id} onClick={() => onOpen(state.selected)}><span><strong>{material.original_name}</strong><small className="library-item-meta"><span>{formatMaterialType(material.material_type)}</span><span>企业资料</span><span>{materialStatusLabels[material.extraction_status] || '待处理'}</span></small><small>{selectedProject?.name ? `可用于：${selectedProject.name}` : '可用于当前项目'} · 完成证明确认后才能作为正式依据</small></span><span>进入项目 →</span></button>)}</div> : <Empty title="这个项目还没有企业资料" text="进入项目准备，上传企业简介、资质、案例或技术能力材料，再完成证明确认。" /> : <Empty title="请选择项目" text="选择项目后查看本次可用的企业资料。" />}
     </section>
   </PlatformShell>;
 }

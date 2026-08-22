@@ -17,6 +17,7 @@
     "eval:agent-v2": "node eval/agent-eval-v2/benchmark.js",
     "eval:stage20": "node eval/stage20/acceptance.js",
     "eval:corpus-l3": "node eval/corpus/l3-eval.js",
+    "ingest:corpus-l3": "node scripts/ingest-corpus-l3.js",
     "eval:evidence-gold": "node eval/evidence-gold/run.js",
     "audit:semantic-boundary": "node eval/semantic-boundary/audit-runner.js",
     "snapshot:semantic-boundary": "node eval/semantic-boundary/snapshot.js",
@@ -57,7 +58,7 @@
     "smoke:writer-gateway": "node scripts/live-gateway-smoke.js section_drafting",
     "smoke:revision-gateway": "node scripts/live-gateway-smoke.js targeted_revision",
     "test": "node --test",
-    "test:postgres": "node --test --test-concurrency=1 integration/postgres.integration.js integration/deterministic.integration.js integration/document-delivery.integration.js integration/agent-actions.integration.js"
+    "test:postgres": "node --test --test-concurrency=1 integration/postgres.integration.js integration/deterministic.integration.js integration/document-delivery.integration.js integration/agent-actions.integration.js integration/corpus-l3.integration.js"
   },
   "dependencies": {
     "cors": "^2.8.5",

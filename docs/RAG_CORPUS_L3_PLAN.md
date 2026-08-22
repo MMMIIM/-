@@ -52,7 +52,13 @@ hard failure.
 
 The current Stage17 retrieval baseline remains frozen at Recall@5 90%, MRR
 1.000, traceability 100%, scope violations 0% and no-answer accuracy 100%.
-That is a corpus-readiness gap, not evidence to redesign retrieval.
+The real official-excerpt wave is now indexed through the same path:
+40 ACTIVE_EXCERPT materials and approximately 120 deterministic-indexed chunks. Its isolated
+offline evaluation is Recall@5 100%, MRR 1.000, traceability 100%, scope
+violations 0% and no-answer accuracy 100%. The overall L3 gate remains open
+because the active-count lower bounds are only the inventory floor, while the broader
+business-question inventory and frozen retrieval baseline are not yet complete; this is
+not evidence to redesign retrieval.
 
 ## Governance lifecycle
 
@@ -84,17 +90,28 @@ reference-only/rejected. Hard failures override the score.
 The machine-readable inventory is
 `backend/eval/corpus/l3-corpus-manifest-v1.json`.
 
-- General: 0 ACTIVE; five P0 acquisition gaps remain.
-- Government industry: 0 ACTIVE and no admitted candidates yet; official
-  government/policy sources still require acquisition and usage review.
-- Healthcare industry: 0 ACTIVE; five P0 acquisition gaps remain.
+- General: 10 ACTIVE_EXCERPT official materials; the lower target bound is met.
+- Government industry: 15 ACTIVE_EXCERPT official materials; the lower target
+  bound is met.
+- Healthcare industry: 15 ACTIVE_EXCERPT official materials; the lower target
+  bound is met.
 - Synthetic enterprise: 17 ACTIVE eval-only materials for the fictional
   `杭州景云数科有限公司`, under
   `backend/eval/corpus/l3-synthetic-enterprise/`.
 
-Four public-source enterprise candidates (corporate pages and one public
-procurement notice) are screened but remain `METADATA_ONLY`/pending; they are
-not counted as government-industry authority.
+The formal Stage20 synthetic retrieval fixture also imports the representative
+SME manifest through `CompanyMaterialService`; the existing local fixture currently
+contains 21 persisted materials and 329 chunks, while the 17-material L3 baseline
+remains the controlled evaluation set.
+
+The real public wave is defined in
+`backend/eval/corpus/real-public-authoritative/catalog.js` and persisted by
+`npm run ingest:corpus-l3 -w backend`. All 40 records are short excerpts with
+official URLs, document numbers where available, effectivity metadata and
+`ACTIVE_EXCERPT` usage status. No full-text redistribution right is claimed.
+The previous four public-source enterprise candidates (corporate pages and one
+public procurement notice) remain `METADATA_ONLY`/pending and are not counted
+as government-industry authority.
 
 The synthetic set intentionally retains six negative/uncertain cases:
 expired qualification, conflicting company fact, unsupported marketing SLA,
@@ -118,6 +135,15 @@ npm run eval:corpus-l3 -w backend
 
 The command emits machine-readable JSON and a short summary. It never calls
 the semantic gateway or any external model.
+
+The real-wave-only report can be inspected with:
+
+```text
+node eval/corpus/real-l3-eval.js
+```
+
+It evaluates only the reviewed public excerpts and does not create Facts,
+Mappings, Claims or Writer input.
 
 ## Expansion stop rule
 

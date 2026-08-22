@@ -25,6 +25,47 @@ Canonical Requirement
 → Coverage Verification
 ```
 
+## Knowledge & material architecture
+
+用户在“企业资料库”中看到三个业务范围：
+
+- `GENERAL` → 通用资料
+- `INDUSTRY` → 行业资料（首批：`GOVERNMENT_ENTERPRISE` 政企平台、`HEALTHCARE` 医疗行业）
+- `ENTERPRISE_PRIVATE` → 企业资料
+
+三个范围共用一套资料与检索基础设施：
+
+```text
+Material → Parsed Document → Chunk → Search Index → Retrieval → Evidence Candidate
+```
+
+候选证据仍必须进入正式控制面：
+
+```text
+Evidence Candidate → Evidence Review → Evidence Fact
+→ Requirement-Evidence Mapping → Claim Gate → Writer Authorization
+```
+
+`Relevant` 不等于 `Evidence`，`Evidence` 不等于 `Approved Fact`，
+`Approved Fact` 也不等于 `Safe Claim`。通用或行业资料只能提供受范围约束的候选依据，
+不得静默升级为企业能力或批准的 Claim。
+
+## Corpus governance and readiness
+
+公共语料遵循受控生命周期：
+
+```text
+DISCOVERED → SCREENED → APPROVED_FOR_PROCESSING → PROCESSED → EVAL_PASSED → ACTIVE
+```
+
+只有 `ACTIVE` 内容进入正式 Production Retrieval。`REFERENCE_ONLY`、`REJECTED`、
+`SUPERSEDED` 和 `EXPIRED` 是非活动分类，不参与正常检索。
+
+Stage 17 的 Retrieval Engine 已冻结；它与 Corpus Readiness 分开验收。当前目标是
+Corpus Readiness `L3 — BID-USABLE`，由业务覆盖、检索质量、来源可追溯性、范围安全、
+当前性、无答案行为以及审核/使用状态完整性衡量，而不是由文档数量决定。详细阈值和
+评测方法见 [`docs/RAG_CORPUS_L3_PLAN.md`](docs/RAG_CORPUS_L3_PLAN.md)。
+
 ## Responsibilities
 
 - **Canonical Requirement** is the frozen scope baseline and source of coverage.

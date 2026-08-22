@@ -1,0 +1,299 @@
+/**
+ * Curated, reviewable excerpts from official public sources.
+ *
+ * We deliberately store short excerpts and lineage metadata instead of copying
+ * full documents.  The official page remains the source of truth and usage is
+ * marked ACTIVE_EXCERPT until redistribution rights for a full text are clear.
+ */
+export const REAL_PUBLIC_CORPUS_VERSION = 'real-public-authoritative-v2';
+
+const general = 'GENERAL';
+const government = 'GOVERNMENT_ENTERPRISE';
+const healthcare = 'HEALTHCARE';
+
+export const REAL_PUBLIC_CORPUS = Object.freeze([
+  {
+    material_id: 'PUB-GEN-GOVPROC-LAW', scope: general, title: '中华人民共和国政府采购法', material_type: 'other',
+    source_org: '国家市场监督管理总局', source_url: 'https://www.samr.gov.cn/zw/zfxxgk/fdzdgknr/bgt/art/2023/art_47b5807c40c040368eb5f13b489d6c43.html', source_type: 'official', document_number: null,
+    published_at: '2014-08-31', effective_from: '2003-01-01', effective_status: 'current_status_required', source_version: '2014修正', authority_level: 'national_law', usage_status: 'ACTIVE_EXCERPT',
+    excerpt: '第三条 政府采购应当遵循公开透明原则、公平竞争原则、公正原则和诚实信用原则。第十一条 政府采购的信息应当在政府采购监督管理部门指定的媒体上及时向社会公开发布，但涉及商业秘密的除外。',
+    topics: ['政府采购', '公开透明', '公平竞争', '信息公开']
+  },
+  {
+    material_id: 'PUB-GEN-GOVPROC-REG', scope: general, title: '中华人民共和国政府采购法实施条例', material_type: 'other',
+    source_org: '中华人民共和国司法部', source_url: 'https://www.moj.gov.cn/pub/sfbgw/zcjd/201502/t20150227_390072.html', source_type: 'official', document_number: '国务院令第658号',
+    published_at: '2015-01-30', effective_from: '2015-03-01', effective_status: 'current_status_required', source_version: '国务院令第658号', authority_level: 'administrative_regulation', usage_status: 'ACTIVE_EXCERPT',
+    excerpt: '第一条 根据《中华人民共和国政府采购法》（以下简称政府采购法），制定本条例。第二条 政府采购法第二条所称财政性资金是指纳入预算管理的资金。',
+    topics: ['采购范围', '财政性资金', '政府采购实施']
+  },
+  {
+    material_id: 'PUB-GEN-BID-REG', scope: general, title: '中华人民共和国招标投标法实施条例', material_type: 'other',
+    source_org: '工业和信息化部', source_url: 'https://www.miit.gov.cn/jgsj/txs/txjs/flfg/art/2020/art_e8a7f915d8774c17bad99c0052f2734a.html', source_type: 'official', document_number: '国务院令第613号',
+    published_at: '2011-12-20', effective_from: '2012-02-01', effective_status: 'current_status_required', source_version: '国务院令第613号', authority_level: 'administrative_regulation', usage_status: 'ACTIVE_EXCERPT',
+    excerpt: '第一条 为了规范招标投标活动，根据《中华人民共和国招标投标法》（以下简称招标投标法），制定本条例。第五十七条 招标人和中标人应当依照招标投标法和本条例的规定签订书面合同。',
+    topics: ['招标投标', '书面合同', '履行期限']
+  },
+  {
+    material_id: 'PUB-GEN-EBID', scope: general, title: '电子招标投标办法', material_type: 'other',
+    source_org: '国家发展和改革委员会、工业和信息化部等', source_url: 'https://www.miit.gov.cn/zwgk/zcwj/flfg/art/2020/art_1756b1e7e7ab4ec0b2b26adac2557141.html', source_type: 'official', document_number: '令第20号',
+    published_at: '2013-02-04', effective_from: '2013-05-01', effective_status: 'current_status_required', source_version: '令第20号', authority_level: 'departmental_regulation', usage_status: 'ACTIVE_EXCERPT',
+    excerpt: '为了规范电子招标投标活动，促进电子招标投标健康发展，国家发展改革委、工业和信息化部等部门联合制定《电子招标投标办法》及相关附件，自2013年5月1日起施行。',
+    topics: ['电子招标', '电子投标', '交易规范']
+  },
+  {
+    material_id: 'PUB-GEN-CYBER-LAW-2025', scope: general, title: '中华人民共和国网络安全法（2025年修正）', material_type: 'other',
+    source_org: '中央网络安全和信息化委员会办公室', source_url: 'https://www.cac.gov.cn/2025-10/29/c_1763461514706581.htm', source_type: 'official', document_number: '中华人民共和国主席令第六十一号',
+    published_at: '2025-10-28', effective_from: '2026-01-01', effective_status: 'current', source_version: '2025修正', authority_level: 'national_law', usage_status: 'ACTIVE_EXCERPT',
+    excerpt: '《全国人民代表大会常务委员会关于修改〈中华人民共和国网络安全法〉的决定》已于2025年10月28日通过，现予公布，自2026年1月1日起施行。',
+    topics: ['网络安全法', '2025修正', '生效日期']
+  },
+  {
+    material_id: 'PUB-GEN-DATA-LAW', scope: general, title: '中华人民共和国数据安全法', material_type: 'other',
+    source_org: '中国人大网', source_url: 'https://www.npc.gov.cn/npc/c2/c30834/202106/t20210610_311888.html', source_type: 'official', document_number: '中华人民共和国主席令第八十四号',
+    published_at: '2021-06-10', effective_from: '2021-09-01', effective_status: 'current_status_required', source_version: '2021', authority_level: 'national_law', usage_status: 'ACTIVE_EXCERPT',
+    excerpt: '第一条 为了规范数据处理活动，保障数据安全，促进数据开发利用，保护个人、组织的合法权益，维护国家主权、安全和发展利益，制定本法。第二条 在中华人民共和国境内开展数据处理活动及其安全监管，适用本法。',
+    topics: ['数据处理', '数据安全', '数据开发利用']
+  },
+  {
+    material_id: 'PUB-GEN-PIPL', scope: general, title: '中华人民共和国个人信息保护法', material_type: 'other',
+    source_org: '中央网络安全和信息化委员会办公室', source_url: 'https://www.cac.gov.cn/2021-08/20/c_1631050028355286.htm', source_type: 'official', document_number: null,
+    published_at: '2021-08-20', effective_from: '2021-11-01', effective_status: 'current_status_required', source_version: '2021', authority_level: 'national_law', usage_status: 'ACTIVE_EXCERPT',
+    excerpt: '第十三条 个人信息处理者符合取得个人同意、履行合同或者法定义务等法定情形之一的，方可处理个人信息。',
+    topics: ['个人信息', '处理规则', '合法性基础']
+  },
+  {
+    material_id: 'PUB-GEN-NETWORK-DATA', scope: general, title: '网络数据安全管理条例', material_type: 'other',
+    source_org: '中华人民共和国司法部', source_url: 'https://xzfg.moj.gov.cn/front/law/detail?LawID=1734', source_type: 'official', document_number: '国务院令第790号',
+    published_at: '2024-09-24', effective_from: '2025-01-01', effective_status: 'current', source_version: '国务院令第790号', authority_level: 'administrative_regulation', usage_status: 'ACTIVE_EXCERPT',
+    excerpt: '第一条 为了规范网络数据处理活动，保障网络数据安全，促进网络数据依法合理有效利用，保护个人、组织的合法权益，维护国家安全和公共利益，根据相关法律制定本条例。',
+    topics: ['网络数据', '安全管理', '依法利用']
+  },
+  {
+    material_id: 'PUB-GEN-CIIP', scope: general, title: '关键信息基础设施安全保护条例', material_type: 'other',
+    source_org: '中华人民共和国司法部', source_url: 'https://xzfg.moj.gov.cn/law/detail?LawID=683', source_type: 'official', document_number: '国务院令第745号',
+    published_at: '2021-07-30', effective_from: '2021-09-01', effective_status: 'current_status_required', source_version: '国务院令第745号', authority_level: 'administrative_regulation', usage_status: 'ACTIVE_EXCERPT',
+    excerpt: '关键信息基础设施安全保护条例用于规范关键信息基础设施安全保护工作，建立和完善保护制度，保障关键信息基础设施安全稳定运行。',
+    topics: ['关键信息基础设施', '安全保护', '稳定运行']
+  },
+  {
+    material_id: 'PUB-GOV-EGOV-PROJECT', scope: government, industry: '政务信息化', title: '国家政务信息化项目建设管理办法', material_type: 'technical_whitepaper',
+    source_org: '国务院办公厅', source_url: 'https://xxzx.mof.gov.cn/guizhangzhiduxxzx/202001/t20200122_3463129.htm', source_type: 'official', document_number: '国办发〔2019〕57号',
+    published_at: '2019-12-30', effective_from: '2020-02-01', effective_status: 'current', source_version: '国办发〔2019〕57号', authority_level: 'state_council_policy', usage_status: 'ACTIVE_EXCERPT',
+    excerpt: '第一条 为规范国家政务信息化建设管理，推动政务信息系统跨部门跨层级互联互通、信息共享和业务协同，强化政务信息系统应用绩效考核，制定本办法。',
+    topics: ['政务信息化', '互联互通', '信息共享', '项目绩效']
+  },
+  {
+    material_id: 'PUB-GOV-DIGITAL-GOV', scope: government, industry: '数字政府', title: '国务院关于加强数字政府建设的指导意见', material_type: 'technical_whitepaper',
+    source_org: '国务院', source_url: 'https://app.www.gov.cn/govdata/gov/202206/23/486412/article.html', source_type: 'official', document_number: '国发〔2022〕14号',
+    published_at: '2022-06-23', effective_from: '2022-06-06', effective_status: 'current', source_version: '国发〔2022〕14号', authority_level: 'state_council_policy', usage_status: 'ACTIVE_EXCERPT',
+    excerpt: '坚持以人民为中心，推进政府治理流程优化、模式创新和履职能力提升；坚持数据赋能，建立健全数据治理制度和标准体系，加强数据汇聚融合、共享开放和开发利用。',
+    topics: ['数字政府', '数据治理', '共享开放', '智慧城市']
+  },
+  {
+    material_id: 'PUB-GOV-DATA-SHARING', scope: government, industry: '政务数据', title: '政务数据共享条例', material_type: 'other',
+    source_org: '中华人民共和国司法部', source_url: 'https://xzfg.moj.gov.cn/front/law/detail?LawID=1771', source_type: 'official', document_number: '国务院令第809号',
+    published_at: '2025-05-18', effective_from: '2025-08-01', effective_status: 'current', source_version: '国务院令第809号', authority_level: 'administrative_regulation', usage_status: 'ACTIVE_EXCERPT',
+    excerpt: '第一条 为推进政务数据安全有序高效共享利用，提升政府数字化治理能力和政务服务效能，全面建设数字政府，制定本条例。第四条 政务数据共享应遵循统筹协调、标准统一、依法共享、合理使用、安全可控的原则。',
+    topics: ['政务数据共享', '标准统一', '安全可控']
+  },
+  {
+    material_id: 'PUB-HC-HOSPITAL-INFO', scope: healthcare, industry: '医疗卫生', title: '全国医院信息化建设标准与规范（试行）', material_type: 'technical_whitepaper',
+    source_org: '国家卫生健康委员会办公厅', source_url: 'https://www.nhc.gov.cn/wjw/c100175/201804/19de144b8bc741c19489a8489ba6fa77.shtml', source_type: 'official', document_number: '国卫办规划发〔2018〕4号',
+    published_at: '2018-04-02', effective_from: '2018-04-02', effective_status: 'current_status_required', source_version: '试行', authority_level: 'national_health_policy', usage_status: 'ACTIVE_EXCERPT',
+    excerpt: '为促进和规范医院信息化建设，制定《全国医院信息化建设标准与规范（试行）》，明确医院信息化建设的建设内容和建设要求。',
+    topics: ['医院信息化', '建设内容', '建设要求']
+  },
+  {
+    material_id: 'PUB-HC-EMR-GRADE', scope: healthcare, industry: '医疗卫生', title: '电子病历系统应用水平分级评价管理办法（试行）及评价标准', material_type: 'technical_whitepaper',
+    source_org: '国家卫生健康委员会办公厅', source_url: 'https://www.nhc.gov.cn/wjw/c100175/201812/7d64363a20cd4ea798f8343842b28d0c.shtml', source_type: 'official', document_number: '国卫办医函〔2018〕1079号',
+    published_at: '2018-12-03', effective_from: '2018-12-03', effective_status: 'current_status_required', source_version: '试行', authority_level: 'national_health_policy', usage_status: 'ACTIVE_EXCERPT',
+    excerpt: '持续推进以电子病历为核心的医疗机构信息化建设；地方各级卫生健康行政部门组织辖区内二级以上医院按时参加电子病历系统功能应用水平分级评价。',
+    topics: ['电子病历', '分级评价', '医疗信息化']
+  },
+  {
+    material_id: 'PUB-HC-SMART-SERVICE', scope: healthcare, industry: '医疗卫生', title: '医院智慧服务分级评估标准体系（试行）', material_type: 'technical_whitepaper',
+    source_org: '国家卫生健康委员会办公厅', source_url: 'https://www.nhc.gov.cn/yzygj/c100068/201903/004a87a8eb3f48c48ffb120dab883c4f.shtml', source_type: 'official', document_number: '国卫办医函〔2019〕236号',
+    published_at: '2019-03-05', effective_from: '2019-03-05', effective_status: 'current_status_required', source_version: '试行', authority_level: 'national_health_policy', usage_status: 'ACTIVE_EXCERPT',
+    excerpt: '指导医疗机构科学、规范开展智慧医院建设，建立适合国情的医疗机构智慧服务分级评估体系。智慧服务评估分为0至5级，包含诊前、诊中、诊后、全程服务以及基础与安全类别。',
+    topics: ['智慧服务', '分级评估', '患者服务', '安全']
+  },
+  {
+    material_id: 'PUB-HC-SMART-MANAGEMENT', scope: healthcare, industry: '医疗卫生', title: '医院智慧管理分级评估标准体系（试行）', material_type: 'technical_whitepaper',
+    source_org: '国家卫生健康委员会办公厅', source_url: 'https://www.nhc.gov.cn/yzygj/c100068/202103/a14c60de4af9423cbbf45712e27e3cc8.shtml', source_type: 'official', document_number: '国卫办医函〔2021〕86号',
+    published_at: '2021-03-15', effective_from: '2021-03-15', effective_status: 'current_status_required', source_version: '试行', authority_level: 'national_health_policy', usage_status: 'ACTIVE_EXCERPT',
+    excerpt: '医院智慧管理是“三位一体”智慧医院建设的重要组成部分。评估结果分为0级至5级，针对医院管理的核心内容，从智慧管理的功能和效果两个方面进行评估。',
+    topics: ['智慧管理', '分级评估', '业务联动']
+  },
+  {
+    material_id: 'PUB-HC-PUBLIC-HEALTH', scope: healthcare, industry: '公共卫生', title: '全国公共卫生信息化建设标准与规范（试行）', material_type: 'technical_whitepaper',
+    source_org: '国家卫生健康委员会、国家中医药管理局', source_url: 'https://www.nhc.gov.cn/guihuaxxs/c100133/202012/3331e6f6dc884ee3a85d9e884827325b.shtml', source_type: 'official', document_number: '国卫办规划发〔2020〕21号',
+    published_at: '2020-12-01', effective_from: '2020-12-01', effective_status: 'current_status_required', source_version: '试行', authority_level: 'national_health_policy', usage_status: 'ACTIVE_EXCERPT',
+    excerpt: '为促进和规范全国公共卫生信息化建设与应用，国家卫生健康委、国家中医药管理局联合制定《全国公共卫生信息化建设标准与规范（试行）》，明确公共卫生信息化建设与应用的内容和要求。',
+    topics: ['公共卫生', '信息化建设', '应用规范']
+  },
+  {
+    material_id: 'PUB-HC-PRIMARY-CARE', scope: healthcare, industry: '基层医疗', title: '全国基层医疗卫生机构信息化建设标准与规范（试行）', material_type: 'technical_whitepaper',
+    source_org: '国家卫生健康委员会', source_url: 'https://www.nhc.gov.cn/wjw/tia/202009/73ae8ef1d12e42629df945fe39bde1e1.shtml', source_type: 'official', document_number: '国卫规划函〔2019〕87号',
+    published_at: '2019-04-01', effective_from: '2019-04-01', effective_status: 'current_status_required', source_version: '试行', authority_level: 'national_health_policy', usage_status: 'ACTIVE_EXCERPT',
+    excerpt: '国家卫生健康委印发全国基层医疗卫生机构信息化建设标准与规范（试行），推动基层医疗卫生机构信息化建设、数据接口标准统一与互通建设。',
+    topics: ['基层医疗', '信息化标准', '接口互通']
+  },
+  {
+    material_id: 'PUB-HC-CYBER', scope: healthcare, industry: '医疗卫生', title: '医疗卫生机构网络安全管理办法', material_type: 'other',
+    source_org: '国家卫生健康委、国家中医药局、国家疾控局', source_url: 'https://app.www.gov.cn/govdata/gov/202208/31/488953/article.html', source_type: 'official', document_number: '医疗卫生机构网络安全管理办法',
+    published_at: '2022-08-31', effective_from: '2022-08-31', effective_status: 'current', source_version: '现行', authority_level: 'national_health_policy', usage_status: 'ACTIVE_EXCERPT',
+    excerpt: '医疗卫生机构网络安全管理应坚持分等级保护、突出重点，重点保障关键信息基础设施、网络安全等级保护第三级及以上网络以及重要数据和个人信息安全。',
+    topics: ['医疗网络安全', '等级保护', '重要数据', '个人信息']
+  },
+  {
+    material_id: 'PUB-HC-HEALTH-STANDARDIZATION', scope: healthcare, industry: '医疗卫生', title: '全民健康信息标准化体系相关官方文件', material_type: 'technical_whitepaper',
+    source_org: '国家卫生健康委员会', source_url: 'https://www.nhc.gov.cn/bgt/c100254/202302/52b1552003414a9d9f6ea60e81a0e0c4/files/1733795764359_95151.pdf', source_type: 'official', document_number: null,
+    published_at: '2023-02-01', effective_from: '2023-02-01', effective_status: 'current_status_required', source_version: '官方公报摘录', authority_level: 'national_health_policy', usage_status: 'ACTIVE_EXCERPT',
+    excerpt: '推进全民健康信息化基础标准在卫生健康行业落地实施，推进病案首页书写规范、疾病分类与代码、手术操作分类与代码、医学名词术语“四统一”，落实统一的基础资源及信息互联互通编码标准。',
+    topics: ['健康信息标准', '互联互通', '编码统一']
+  },
+  {
+    material_id: 'PUB-GEN-GOVINFO', scope: general, title: '中华人民共和国政府信息公开条例', material_type: 'other',
+    source_org: '国务院', source_url: 'https://www.gov.cn/zhengce/content/2019-04/15/content_5382991.htm', source_type: 'official', document_number: '国务院令第711号',
+    published_at: '2019-04-15', effective_from: '2019-05-15', effective_status: 'current_status_required', source_version: '2019修订', authority_level: 'administrative_regulation', usage_status: 'ACTIVE_EXCERPT',
+    excerpt: '条例明确政府信息的范围和公开原则，要求行政机关主动公开、依法答复并保障公众获取政府信息。',
+    topics: ['政府信息公开', '公开原则', '政务透明']
+  },
+  {
+    material_id: 'PUB-GOV-DATA-SHARING-MGMT', scope: government, industry: '政务数据', title: '政务信息资源共享管理暂行办法', material_type: 'other',
+    source_org: '国务院', source_url: 'https://app.www.gov.cn/govdata/gov/201609/19/389485/article.html', source_type: 'official', document_number: '国发〔2016〕51号',
+    published_at: '2016-09-19', effective_from: '2016-09-05', effective_status: 'current_status_required', source_version: '2016', authority_level: 'state_council_policy', usage_status: 'ACTIVE_EXCERPT',
+    excerpt: '政务信息资源原则上应予共享，涉及国家秘密和安全的事项依照法律法规执行，并应建立共享目录和使用反馈机制。',
+    topics: ['政务数据共享', '共享目录', '安全边界']
+  },
+  {
+    material_id: 'PUB-GOV-SYSTEM-INTEGRATION', scope: government, industry: '政务信息化', title: '政务信息系统整合共享实施方案', material_type: 'technical_whitepaper',
+    source_org: '国务院办公厅', source_url: 'https://m.mof.gov.cn/czxw/201706/t20170605_2614778.htm', source_type: 'official', document_number: '国办发〔2017〕39号',
+    published_at: '2017-05-03', effective_from: '2017-05-03', effective_status: 'current_status_required', source_version: '2017', authority_level: 'state_council_policy', usage_status: 'ACTIVE_EXCERPT',
+    excerpt: '方案以消除信息孤岛为目标，推动政务信息系统统一目录、统一交换、统一共享和跨部门协同。',
+    topics: ['系统整合', '信息孤岛', '共享交换']
+  },
+  {
+    material_id: 'PUB-GOV-BIG-DATA-GUIDE', scope: government, industry: '政务数据', title: '全国一体化政务大数据体系建设指南', material_type: 'technical_whitepaper',
+    source_org: '国务院办公厅', source_url: 'https://app.www.gov.cn/govdata/gov/202210/28/493746/article.html', source_type: 'official', document_number: '国办函〔2022〕102号',
+    published_at: '2022-10-28', effective_from: '2022-09-13', effective_status: 'current', source_version: '国办函〔2022〕102号', authority_level: 'state_council_policy', usage_status: 'ACTIVE_EXCERPT',
+    excerpt: '指南要求建设标准统一、管理协同、安全可靠的政务大数据体系，推进数据目录、归集、共享、开放和全生命周期安全。',
+    topics: ['政务大数据', '数据目录', '全生命周期']
+  },
+  {
+    material_id: 'PUB-GOV-SERVICE-STANDARD', scope: government, industry: '政务服务', title: '关于加快推进政务服务标准化规范化便利化的指导意见', material_type: 'technical_whitepaper',
+    source_org: '国务院', source_url: 'https://app.www.gov.cn/govdata/gov/202203/01/482346/article.html', source_type: 'official', document_number: '国发〔2022〕5号',
+    published_at: '2022-03-01', effective_from: '2022-03-01', effective_status: 'current', source_version: '国发〔2022〕5号', authority_level: 'state_council_policy', usage_status: 'ACTIVE_EXCERPT',
+    excerpt: '意见推动政务服务运行标准化、服务供给规范化和企业群众办事便利化，强调平台支撑、事项标准和数据协同。',
+    topics: ['政务服务', '标准化', '规范化', '便利化']
+  },
+  {
+    material_id: 'PUB-GOV-ONE-THING-2022', scope: government, industry: '政务服务', title: '关于加快推进“一件事一次办”打造政务服务升级版的指导意见', material_type: 'technical_whitepaper',
+    source_org: '国务院办公厅', source_url: 'https://www.mee.gov.cn/zcwj/gwywj/202210/t20221003_995532.shtml', source_type: 'official', document_number: '国办发〔2022〕32号',
+    published_at: '2022-10-03', effective_from: '2022-10-03', effective_status: 'current', source_version: '国办发〔2022〕32号', authority_level: 'state_council_policy', usage_status: 'ACTIVE_EXCERPT',
+    excerpt: '意见要求围绕企业和群众视角整合跨部门事项，打通业务系统和数据共享堵点，减少办理环节和重复材料。',
+    topics: ['一件事一次办', '跨部门协同', '数据共享']
+  },
+  {
+    material_id: 'PUB-GOV-HIGH-EFFICIENCY', scope: government, industry: '政务服务', title: '推动“高效办成一件事”的指导意见', material_type: 'technical_whitepaper',
+    source_org: '国务院', source_url: 'https://app.www.gov.cn/govdata/gov/202401/16/511211/article.html', source_type: 'official', document_number: '国发〔2024〕3号',
+    published_at: '2024-01-16', effective_from: '2024-01-16', effective_status: 'current', source_version: '国发〔2024〕3号', authority_level: 'state_council_policy', usage_status: 'ACTIVE_EXCERPT',
+    excerpt: '意见从企业和群众视角优化办事流程，推动线上线下融合、材料精简、部门协同和数据共享。',
+    topics: ['高效办成一件事', '流程优化', '办事材料']
+  },
+  {
+    material_id: 'PUB-GOV-MOBILE-GUIDE', scope: government, industry: '政务服务', title: '全国一体化政务服务平台移动端建设指南', material_type: 'technical_whitepaper',
+    source_org: '国务院办公厅', source_url: 'https://app.www.gov.cn/govdata/gov/202111/12/478083/article.html', source_type: 'official', document_number: '国办函〔2021〕105号',
+    published_at: '2021-11-12', effective_from: '2021-09-29', effective_status: 'current_status_required', source_version: '国办函〔2021〕105号', authority_level: 'state_council_policy', usage_status: 'ACTIVE_EXCERPT',
+    excerpt: '指南要求移动政务服务统一标准、统一管理、互联互通，并加强重要政务数据和敏感个人信息保护。',
+    topics: ['移动政务', '统一管理', '数据安全']
+  },
+  {
+    material_id: 'PUB-GOV-INTERNET-SERVICE', scope: government, industry: '政务服务', title: '“互联网+政务服务”技术体系建设指南', material_type: 'technical_whitepaper',
+    source_org: '国务院办公厅', source_url: 'https://www.cac.gov.cn/2017-01/13/c_1120300337_8.htm', source_type: 'official', document_number: '国办函〔2016〕108号',
+    published_at: '2017-01-13', effective_from: '2016-12-30', effective_status: 'current_status_required', source_version: '国办函〔2016〕108号', authority_level: 'state_council_policy', usage_status: 'ACTIVE_EXCERPT',
+    excerpt: '指南提出统一政务服务信息资源目录、交换体系和平台支撑，推动跨部门数据共享与服务协同。',
+    topics: ['互联网政务服务', '平台体系', '资源目录']
+  },
+  {
+    material_id: 'PUB-GOV-CROSS-PROVINCE-2020', scope: government, industry: '政务服务', title: '加快推进政务服务“跨省通办”的指导意见', material_type: 'technical_whitepaper',
+    source_org: '国务院办公厅', source_url: 'https://app.www.gov.cn/govdata/gov/202009/29/463330/article.html', source_type: 'official', document_number: '国办发〔2020〕35号',
+    published_at: '2020-09-29', effective_from: '2020-09-29', effective_status: 'current_status_required', source_version: '国办发〔2020〕35号', authority_level: 'state_council_policy', usage_status: 'ACTIVE_EXCERPT',
+    excerpt: '意见依托全国一体化政务服务平台打通业务链条和数据共享堵点，推动更多事项跨区域协同办理。',
+    topics: ['跨省通办', '跨区域协同', '数据共享']
+  },
+  {
+    material_id: 'PUB-GOV-ONLINE-PLATFORM', scope: government, industry: '政务服务', title: '加快推进全国一体化在线政务服务平台建设的指导意见', material_type: 'technical_whitepaper',
+    source_org: '国务院', source_url: 'https://app.www.gov.cn/govdata/gov/201807/31/427584/article.html', source_type: 'official', document_number: null,
+    published_at: '2018-07-31', effective_from: '2018-07-31', effective_status: 'current_status_required', source_version: '2018', authority_level: 'state_council_policy', usage_status: 'ACTIVE_EXCERPT',
+    excerpt: '意见提出整合资源、优化流程、强化协同，建设统一规范、多级联动的在线政务服务平台和标准体系。',
+    topics: ['在线政务', '平台建设', '标准体系']
+  },
+  {
+    material_id: 'PUB-GOV-CROSS-PROVINCE-2022', scope: government, industry: '政务服务', title: '扩大政务服务“跨省通办”范围进一步提升服务效能的意见', material_type: 'technical_whitepaper',
+    source_org: '国务院办公厅', source_url: 'https://www.baofeng.gov.cn/upload/files/2023/7/28a0f272aa23e9296acef22df78ac6e5.pdf', source_type: 'official', document_number: '国办发〔2022〕34号',
+    published_at: '2022-09-19', effective_from: '2022-09-19', effective_status: 'current_status_required', source_version: '国办发〔2022〕34号', authority_level: 'state_council_policy', usage_status: 'ACTIVE_EXCERPT',
+    excerpt: '意见要求统一服务标准、优化服务流程、推动线上线下渠道融合，并提升跨区域数据共享支撑能力。',
+    topics: ['跨省通办', '服务标准', '数据支撑']
+  },
+  {
+    material_id: 'PUB-GOV-DATA-COORDINATION', scope: government, industry: '政务数据', title: '政务数据共享协调机制相关官方文件', material_type: 'technical_whitepaper',
+    source_org: '国家发展和改革委员会', source_url: 'https://www.ndrc.gov.cn/xxgk/jianyitianfuwen/qgrddbjyfwgk/202112/t20211214_1307742.html', source_type: 'official', document_number: '国办发〔2021〕6号',
+    published_at: '2021-12-14', effective_from: '2021-03-01', effective_status: 'current_status_required', source_version: '官方答复摘录', authority_level: 'state_council_policy', usage_status: 'ACTIVE_EXCERPT',
+    excerpt: '官方答复确认国办发〔2021〕6号意见为建立权威高效政务数据共享协调机制的重要依据。',
+    topics: ['数据共享协调', '权威机制', '政务数据']
+  },
+  {
+    material_id: 'PUB-HC-MEDICAL-INSTITUTIONS', scope: healthcare, industry: '医疗卫生', title: '医疗机构管理条例', material_type: 'other',
+    source_org: '国家卫生健康委员会', source_url: 'https://www.nhc.gov.cn/fzs/c100048/202303/79ba042296184726bd100d6fecea177c.shtml', source_type: 'official', document_number: '国务院令第149号（2022年修订）',
+    published_at: '2022-02-28', effective_from: '2022-05-01', effective_status: 'current_status_required', source_version: '2022修订', authority_level: 'administrative_regulation', usage_status: 'ACTIVE_EXCERPT',
+    excerpt: '条例适用于各类医疗机构，并规定医疗机构执业登记、监督管理和评审制度等基本要求。',
+    topics: ['医疗机构', '执业登记', '机构评审']
+  },
+  {
+    material_id: 'PUB-HC-MEDICAL-QUALITY', scope: healthcare, industry: '医疗卫生', title: '医疗质量管理办法', material_type: 'other',
+    source_org: '国家卫生健康委员会', source_url: 'https://www.nhc.gov.cn/fzs/c100048/201808/6f3f7915d59943e09768b7469679b857.shtml', source_type: 'official', document_number: '国家卫生计生委令第10号',
+    published_at: '2016-09-25', effective_from: '2016-11-01', effective_status: 'current_status_required', source_version: '2016', authority_level: 'national_health_policy', usage_status: 'ACTIVE_EXCERPT',
+    excerpt: '办法将医疗质量管理作为医疗管理核心，要求医疗机构落实主体责任、持续改进质量并保障医疗安全。',
+    topics: ['医疗质量', '医疗安全', '主体责任']
+  },
+  {
+    material_id: 'PUB-HC-INTERNET-HEALTH', scope: healthcare, industry: '医疗卫生', title: '关于促进“互联网+医疗健康”发展的意见', material_type: 'technical_whitepaper',
+    source_org: '国务院办公厅', source_url: 'https://www.nhc.gov.cn/wjw/gwywj/201804/e004ff8c26124336981505ec62b82af9.shtml', source_type: 'official', document_number: '国办发〔2018〕26号',
+    published_at: '2018-04-28', effective_from: '2018-04-28', effective_status: 'current_status_required', source_version: '国办发〔2018〕26号', authority_level: 'state_council_policy', usage_status: 'ACTIVE_EXCERPT',
+    excerpt: '意见推动医疗服务信息互通共享，完善电子健康档案、电子病历和医疗健康数据标准体系。',
+    topics: ['互联网医疗', '互通共享', '健康数据标准']
+  },
+  {
+    material_id: 'PUB-HC-HEALTH-PLAN', scope: healthcare, industry: '医疗卫生', title: '“十四五”全民健康信息化规划', material_type: 'technical_whitepaper',
+    source_org: '国家卫生健康委员会', source_url: 'https://www.nhc.gov.cn/guihuaxxs/c100133/202211/fae867435fea479c828cb50047526a69.shtml', source_type: 'official', document_number: null,
+    published_at: '2022-11-09', effective_from: '2022-11-09', effective_status: 'current_status_required', source_version: '十四五', authority_level: 'national_health_policy', usage_status: 'ACTIVE_EXCERPT',
+    excerpt: '规划提出推进全民健康信息基础设施、互通共享、数据标准和网络安全体系建设，提升卫生健康数字化服务能力。',
+    topics: ['全民健康信息化', '互通共享', '网络安全']
+  },
+  {
+    material_id: 'PUB-HC-TERTIARY-2025', scope: healthcare, industry: '医疗卫生', title: '三级医院评审标准（2025年版）', material_type: 'technical_whitepaper',
+    source_org: '国家卫生健康委员会', source_url: 'https://www.nhc.gov.cn/cms-search/xxgk/getManuscriptXxgk.htm?id=25229edc80d34694b7debf54ddef9f9f', source_type: 'official', document_number: '国卫医政发〔2025〕4号',
+    published_at: '2025-06-10', effective_from: '2025-06-10', effective_status: 'current_status_required', source_version: '2025年版', authority_level: 'national_health_policy', usage_status: 'ACTIVE_EXCERPT',
+    excerpt: '标准完善三级医院功能定位、医疗管理和质量安全评审要求，强调依法规范执业和公益性责任。',
+    topics: ['三级医院', '评审标准', '质量安全']
+  },
+  {
+    material_id: 'PUB-HC-INTERNET-DIAGNOSIS', scope: healthcare, industry: '医疗卫生', title: '互联网诊疗管理办法（试行）等三个文件', material_type: 'other',
+    source_org: '国家卫生健康委员会、国家中医药管理局', source_url: 'https://www.nhc.gov.cn/yzygj/c100068/201809/d53877b9685d4e7ca991f77542402c1b.shtml', source_type: 'official', document_number: '国卫医发〔2018〕25号',
+    published_at: '2018-09-14', effective_from: '2018-09-14', effective_status: 'current_status_required', source_version: '试行', authority_level: 'national_health_policy', usage_status: 'ACTIVE_EXCERPT',
+    excerpt: '三个文件规范互联网诊疗、互联网医院和远程医疗服务，强调医疗质量、医疗安全与服务准入管理。',
+    topics: ['互联网诊疗', '互联网医院', '远程医疗']
+  },
+  {
+    material_id: 'PUB-HC-INTERNET-SUPERVISION', scope: healthcare, industry: '医疗卫生', title: '互联网诊疗监管细则（试行）', material_type: 'other',
+    source_org: '国家卫生健康委员会办公厅、国家中医药局办公室', source_url: 'https://www.nhc.gov.cn/yzygj/c100068/202203/2072f0e8988249e59d942e1b2a933916.shtml', source_type: 'official', document_number: null,
+    published_at: '2022-03-03', effective_from: '2022-03-03', effective_status: 'current_status_required', source_version: '试行', authority_level: 'national_health_policy', usage_status: 'ACTIVE_EXCERPT',
+    excerpt: '细则要求建立互联网诊疗医疗质量、安全、药学服务和信息技术管理制度，并落实患者信息和电子病历管理。',
+    topics: ['互联网监管', '医疗质量', '电子病历']
+  }
+]);
+
+export function getRealPublicCorpus() {
+  return REAL_PUBLIC_CORPUS.map((item) => ({ ...item, scope: item.scope, industry: item.industry ?? null }));
+}

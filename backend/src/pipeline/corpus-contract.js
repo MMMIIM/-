@@ -1,0 +1,9 @@
+export const PUBLIC_CORPUS_PROJECT_ID = '00000000-0000-4000-8000-000000000001';
+export const CORPUS_SCOPES = Object.freeze(['GENERAL', 'GOVERNMENT_ENTERPRISE', 'HEALTHCARE', 'ENTERPRISE_PRIVATE']);
+export const CORPUS_ACTIVE_USAGE = Object.freeze(['ACTIVE_FULLTEXT', 'ACTIVE_EXCERPT']);
+export const CORPUS_LIFECYCLE = Object.freeze(['DISCOVERED', 'SCREENED', 'APPROVED_FOR_PROCESSING', 'PROCESSED', 'EVAL_PASSED', 'ACTIVE']);
+export const CORPUS_MATERIAL_STATUS = Object.freeze(['NOT_INDEXED', 'INDEXED', 'FAILED']);
+
+export function isPublicCorpusScope(scope) {
+  return ['GENERAL', 'GOVERNMENT_ENTERPRISE', 'HEALTHCARE'].includes(String(scope));
+}

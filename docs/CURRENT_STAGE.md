@@ -3,26 +3,39 @@
 ## Stage 20 — Production Beta Hardening / Real E2E
 
 Priority: **P0/P1**
-Status: **PARTIAL / BLOCKED — REAL_PROVIDER_OPERATIONAL_BLOCKED**
+Status: **PARTIAL — CORPUS_L3_IN_PROGRESS / REAL_E2E_PENDING**
 
 本阶段只验证现有产品能力能否作为一条可恢复、可追溯的完整业务流运行：
 项目准备 → 招标解析 → 需求基线 → 材料检索与复核 → 生成准备 → 标书生成 →
 章节复核/安全修订 → 投标检查 → Word 导出。禁止新增 AI 能力、Provider、Agent
 自治或部署基础设施；外部 Provider 在本阶段默认不调用，若已有授权路径不可用则
-记录为运营阻断而不改变架构。
+记录为运营阻断而不改变架构。当前真实 Provider E2E 仍未获得本阶段的精确外部调用授权。
 
 最新范围校正：正式 Stage20 路径使用 `semantic_gateway` Provider Adapter，
 不依赖 Dify Workflow/App/End 状态；保留的 v4.2 Dify 路由仅作兼容，不属于当前
 平台主流程。`企业资料库`按一个底层资料能力提供“通用资料 / 行业资料 / 企业资料”
-三种业务范围，SSH 隧道仅是开发环境访问方式。当前网关不可达继续单独记为
-`DEVELOPMENT_ENVIRONMENT_OPERATIONAL_BLOCKER`，不阻断独立产品验收。
+三种业务范围，SSH 隧道仅是开发环境访问方式。最近一次只读网关检查已通过；
+不得把手工 SSH 隧道当作正式产品运行要求。
+
+### Stage20 parallel acceptance tracks
+
+- Track A — Corpus Readiness L3：`IN_PROGRESS`。当前真实公共资料为通用 10、政企 15、医疗 15，
+  合成企业基线 17；正式合成生产检索夹具已通过 `CompanyMaterialService` 复用入库，当前
+  项目保留 21 份材料、329 个 chunk；真实公共语料独立评测已通过，但总体问题覆盖仍未完成。
+- Track B — Real Provider E2E：`PENDING_AUTHORIZATION`。`semantic_gateway` 是当前模型执行边界；
+  只读网关检查已通过，真实公共招标流程尚未调用。
+- Track C — Deterministic / Offline Product Acceptance：`PASS`（已达到范围内）。
 
 Stage20 当前并行推进 Corpus Readiness L3：以业务问题覆盖、来源权威性、有效期、
 使用许可、可追溯性和人工审核覆盖衡量语料是否可支撑投标业务，不以文档数量替代
 验收。当前 L3 为 `IN_PROGRESS`；Stage17 检索架构保持冻结，详见
 `docs/RAG_CORPUS_L3_PLAN.md` 与 `npm run eval:corpus-l3 -w backend`。
-当前离线基线：业务问题覆盖 17.4%、Recall@5 90%、MRR 1.000、来源可追溯 100%、
-范围违规 0%、无答案准确率 100%；语料缺口保持显式记录，不通过降低规则掩盖。
+已完成真实官方摘录扩展入库：通用资料 10 份、政企平台 15 份、医疗行业 15 份，
+共 40 份 ACTIVE_EXCERPT，预计 120 个 chunk，全部经过来源复核、处理、索引和脱敏摘录审计。
+真实公共语料离线评测：业务问题覆盖 100%、Recall@5 100%、MRR 1.000、来源可追溯
+100%、范围违规 0%、无答案准确率 100%。整体 L3 仍为 `IN_PROGRESS`：官方语料数量
+已达到各范围的下限，合成企业基线仍单独保留；更广泛的问题覆盖和冻结的检索基线仍未达标，
+未以摘录评测替代完整正文授权。
 
 验收产物：`docs/STAGE20_PRODUCTION_BETA_ACCEPTANCE.md` 与离线合成 E2E 夹具。
 Stage 19 及之前的冻结规则继续有效。

@@ -103,6 +103,12 @@ export const api = {
   listCompanyMaterials(projectId) {
     return request(`/api/projects/${projectId}/company-materials`);
   },
+  listPublicCorpusMaterials(scope, industry) {
+    const params = new URLSearchParams();
+    if (scope) params.set('scope', scope);
+    if (industry) params.set('industry', industry);
+    return request(`/api/material-library/public${params.toString() ? `?${params.toString()}` : ''}`);
+  },
   uploadCompanyMaterial(projectId, file, materialType) {
     const body = new FormData(); body.append('file', file); body.append('material_type', materialType);
     return request(`/api/projects/${projectId}/company-materials`, { method:'POST', body });

@@ -186,6 +186,14 @@ export function createApp({ repository, storage, generationService, requirementP
     catch (error) { next(error); }
   });
 
+  app.get('/api/material-library/public', async (req, res, next) => {
+    try {
+      const scope = req.query.scope ? String(req.query.scope) : null;
+      const industry = req.query.industry ? String(req.query.industry) : null;
+      sendData(res, { materials: await repository.listPublicCorpusMaterials({ scope, industry }) });
+    } catch (error) { next(error); }
+  });
+
   app.post('/api/projects/:projectId/company-materials', upload.single('file'), async (req, res, next) => {
     try { sendData(res, { material: await companyMaterialService.upload({ projectId:req.params.projectId, file:req.file, materialType:String(req.body?.material_type || '') }) }, 201); }
     catch (error) { next(error); }

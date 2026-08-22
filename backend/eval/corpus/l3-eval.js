@@ -3,6 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { evaluateRetrievalFixture, loadRetrievalEvalFixture } from '../retrieval-eval/benchmark.js';
 import { loadL3SyntheticManifest, validateL3SyntheticManifest } from './l3-synthetic-enterprise/build.js';
+import { evaluateRealPublicCorpus } from './real-l3-eval.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const l3Manifest = JSON.parse(fs.readFileSync(path.join(here, 'l3-corpus-manifest-v1.json'), 'utf8'));
@@ -32,6 +33,7 @@ function isQualified(material, question) {
 }
 
 export function evaluateCorpusL3({ manifest = l3Manifest, syntheticManifest = loadL3SyntheticManifest(), goldQuestions = questions, retrieval = evaluateRetrievalFixture(loadRetrievalEvalFixture()) } = {}) {
+  const realPublic = evaluateRealPublicCorpus();
   const syntheticValidation = validateL3SyntheticManifest(syntheticManifest);
   const activeMaterials = syntheticManifest.materials.filter((item) => item.lifecycle?.at(-1) === 'ACTIVE');
   const activeById = new Map(activeMaterials.map((item) => [item.material_id, item]));
@@ -59,7 +61,16 @@ export function evaluateCorpusL3({ manifest = l3Manifest, syntheticManifest = lo
     const pass = key.endsWith('_errors') || key.endsWith('_violations') || key === 'scope_violation_rate' ? value <= threshold : value >= threshold;
     return [key, { value, threshold, pass }];
   }));
-  const scopeCounts = Object.fromEntries(Object.entries(manifest.scopes).map(([key, scope]) => [key, { active: key === 'enterprise' ? activeMaterials.length : scope.active_materials, target_min: scope.target_active_min, target_max: scope.target_active_max }]));
+  const realScopeCounts = {
+    general: realPublic.by_scope?.GENERAL?.active ?? 0,
+    government: realPublic.by_scope?.GOVERNMENT_ENTERPRISE?.active ?? 0,
+    healthcare: realPublic.by_scope?.HEALTHCARE?.active ?? 0,
+  };
+  const scopeCounts = Object.fromEntries(Object.entries(manifest.scopes).map(([key, scope]) => [key, {
+    active: key === 'enterprise' ? activeMaterials.length : (realScopeCounts[key] ?? scope.active_materials),
+    target_min: scope.target_active_min,
+    target_max: scope.target_active_max,
+  }]));
   const report = {
     schema_version: '4.3-corpus-l3-eval-v1',
     generated_at: new Date().toISOString(),
@@ -74,6 +85,7 @@ export function evaluateCorpusL3({ manifest = l3Manifest, syntheticManifest = lo
     question_results: questionResults,
     current_retrieval_baseline: { recall_at_5: retrieval.expected_requirement_recall, mrr: retrieval.mrr, source_traceability: retrieval.source_traceability_rate, scope_violation_rate: retrieval.scope_violation_rate, no_answer_accuracy: retrieval.no_answer_accuracy },
     external_provider_calls: 0,
+    real_public_corpus: realPublic,
   };
   return report;
 }

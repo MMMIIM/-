@@ -17,6 +17,15 @@ bid-production workflow—not text generation alone.
 - Unknown must remain unknown.
 - Backend is the formal Control Plane.
 
+## Knowledge and material invariants
+
+- 企业资料库提供 GENERAL、INDUSTRY、ENTERPRISE_PRIVATE 三个业务范围；首批行业范围为 GOVERNMENT_ENTERPRISE 和 HEALTHCARE。
+- 三个范围共用一套 Material / Retrieval 基础设施，不创建彼此隔离的 RAG 系统。
+- Material ≠ Chunk ≠ Evidence ≠ Evidence Fact ≠ Claim。
+- 新语料必须经过治理与评测激活后，才能进入正式 Production Retrieval。
+- Corpus Readiness L3 是当前可用于投标的语料目标；资料数量本身不构成 PASS。
+- 通用/行业知识不得静默升级为企业能力或 Approved Claim。
+
 ## Development rules
 
 - Solve demonstrated problems only. Without E2E, evaluation, or user evidence,
@@ -94,12 +103,19 @@ Stop and report before proceeding when a change would:
 
 ## Reading order
 
-Do not rescan the whole repository for every task. Read:
+Do not rescan the whole repository for every task. Codex pre-reads:
 
-1. [Current stage](docs/CURRENT_STAGE.md)
-2. This file
-3. The relevant architecture or decision file
-4. Directly related code and tests
+1. This file
+2. [Architecture](ARCHITECTURE.md)
+3. [Current stage](docs/CURRENT_STAGE.md)
+4. [Roadmap](docs/ROADMAP.md)
+5. Relevant ADRs
+6. Directly related code, tests, and stage documents
+
+For Corpus L3 work, also read
+[`docs/decisions/008-curated-corpus-governance.md`](docs/decisions/008-curated-corpus-governance.md)
+and [`docs/RAG_CORPUS_L3_PLAN.md`](docs/RAG_CORPUS_L3_PLAN.md). Do not load unrelated
+Word or Agent deep documentation unless the task touches it.
 
 ## Source documents
 

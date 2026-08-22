@@ -65,6 +65,16 @@ Professional workspaces remain available as secondary detail views. The
 Stepper and navigation should never expose Backend Pipeline states as the
 ordinary user's main task list.
 
+资料库的一级业务范围固定显示为：
+
+```text
+通用资料 · 行业资料 · 企业资料
+```
+
+其中“行业资料”当前包含政企平台和医疗行业。Embedding、Vector、Chunk、Top-K、
+Cosine Similarity 等检索实现术语不得成为主界面信息；语料生命周期和技术诊断只在
+二级管理或审计视图中展示。
+
 ## Workbench principle
 
 工作台 is action-oriented rather than a data dashboard. It prioritizes 待我

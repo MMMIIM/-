@@ -33,6 +33,15 @@ See [`RAG_CORPUS_L3_PLAN.md`](RAG_CORPUS_L3_PLAN.md) and the offline
 Compatible projects such as RAGFlow, AnythingLLM, LangChain.js, MinerU, or
 Docling remain reference/reuse options, not automatic additions.
 
+Stage 17 Retrieval Engine is **PASS / FROZEN**. Stage 20 is the active Production Beta
+acceptance track for Corpus Readiness L3; the knowledge base is not considered bid-usable
+until L3 passes. Initial industry focus remains 政企平台 and 医疗行业; do not broaden
+industry scope before the current corpus gaps are resolved.
+
+Stage 21 must resolve development/runtime Gateway connectivity so manual SSH tunneling is
+not a normal product operating requirement. Stage 21 is not authorized by the current
+stage and is not being implemented now.
+
 ## P2 — PLANNED: Users, organizations, and permissions
 
 Provide secure, sufficient enterprise identity and RBAC by reusing mature
