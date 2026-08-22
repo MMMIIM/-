@@ -3,24 +3,23 @@
 Roadmap priority is not implementation authorization. Only
 [`CURRENT_STAGE.md`](CURRENT_STAGE.md) can select the next work.
 
-## P0 — ACTIVE: Core product UX and generation flow
+## P0 — FROZEN: Core product UX and generation flow
 
-Make the core workflow real, stable, reviewable, traceable, and easy to use:
+The core workflow is real, stable, reviewable, traceable, and easy to use:
 
 ```text
 Platform Shell → Project Preparation → Review & Completion
 → Chapter Generation → Bid Check
 ```
 
-Stage 13 product acceptance is closed. Stage 14 Platform Shell & Core Flow IA
-is active. Stage 15 Chapter Generation Workbench follows after Stage 14
-acceptance. Roadmap entries are not implementation authorization.
+Stage 13 product acceptance, Stage 14 Platform Shell & Core Flow IA, and Stage
+15 Chapter Generation Workbench are frozen with acceptance PASS.
 
-## P1 — PLANNED: Word and document formatting
+## P1 — ACTIVE: Document Delivery & Word V1
 
-Word export, chapter structure, numbering, table/image handling, pagination,
-headers/footers, customer templates, and versions. Reuse compatible mature
-DOCX implementations where possible; own the bid document model and UX.
+Word delivery uses one product-owned document model, one professional default
+format policy, and a compatible DOCX renderer. Customer templates, browser Word
+editing, and pagination guarantees are later evidence-driven work.
 
 ## P1 — PLANNED: Enterprise knowledge base / RAG
 
@@ -32,8 +31,8 @@ options, not automatic additions.
 ## P2 — PLANNED: Users, organizations, and permissions
 
 Provide secure, sufficient enterprise identity and RBAC by reusing mature
-solutions such as Better Auth, Node-Casbin, or a compatible IdP when needed.
-Do not self-build password, session, RBAC, or SSO protocols.
+solutions when needed. Do not self-build password, session, RBAC, or SSO
+protocols.
 
 ## P2 — PLANNED: Bid Copilot / Agent V1
 

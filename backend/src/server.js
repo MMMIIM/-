@@ -25,6 +25,7 @@ import { ReviewCenterService } from './review-center-service.js';
 import { EvidenceReadinessService } from './evidence-readiness-service.js';
 import { MaterialProcessingCenterService } from './material-processing-center-service.js';
 import { RequirementEvidenceFactMappingService } from './requirement-evidence-fact-mapping-service.js';
+import { DocumentDeliveryService } from './pipeline/document-delivery-service.js';
 
 const directory = dirname(fileURLToPath(import.meta.url));
 const runtime = createBackendRuntime();
@@ -62,6 +63,7 @@ const reviewCenterService = new ReviewCenterService({ repository });
 const evidenceReadinessService = new EvidenceReadinessService({ repository });
 const materialProcessingCenterService = new MaterialProcessingCenterService({ repository, evidenceReadinessService });
 const requirementEvidenceFactMappingService = new RequirementEvidenceFactMappingService({ repository });
+const documentDeliveryService = new DocumentDeliveryService({ repository, storage });
 const app = createApp({
   repository,
   storage,
@@ -81,6 +83,7 @@ const app = createApp({
   evidenceReviewService,
   evidenceSourceFactService,
   projectFactControlService,
+  documentDeliveryService,
   corsOrigin: runtimeEnv.CORS_ORIGIN
 });
 

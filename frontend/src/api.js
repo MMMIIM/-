@@ -28,6 +28,27 @@ export async function request(path, options = {}) {
   return payload.ok === true && payload.data && typeof payload.data === 'object' ? payload.data : payload;
 }
 
+export async function downloadWord(projectId, versionId) {
+  const response = await fetch(`${API_BASE}/api/projects/${projectId}/document-versions/${versionId}/export-word`);
+  if (!response.ok) {
+    let detail = {};
+    try { detail = await response.json(); } catch (_error) { /* safe fallback */ }
+    const error = new Error(detail?.error?.message || 'Word 文件暂时无法导出，请稍后重试。');
+    error.code = detail?.error?.code || `HTTP_${response.status}`;
+    error.status = response.status;
+    throw error;
+  }
+  const blob = await response.blob();
+  const disposition = response.headers.get('content-disposition') || '';
+  const encoded = disposition.match(/filename\*=UTF-8''([^;]+)/i)?.[1];
+  const fileName = encoded ? decodeURIComponent(encoded) : '技术标.docx';
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url; link.download = fileName; link.click();
+  URL.revokeObjectURL(url);
+  return { fileName, size: blob.size, exportId: response.headers.get('x-document-export-id') };
+}
+
 export const api = {
   listProjects: () => request('/api/projects'),
   getProject: (id) => request(`/api/projects/${id}`),
@@ -158,6 +179,7 @@ export const api = {
       method: 'POST', body: JSON.stringify({ decision: 'confirmed', confirmation_text: confirmationText })
     });
   },
+  downloadWord,
   generateBid(inputs) {
     return request('/api/generate-bid', { method: 'POST', body: JSON.stringify(inputs) });
   }

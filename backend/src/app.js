@@ -16,7 +16,7 @@ function sendData(res, data, status = 200) {
   return res.status(status).json({ ok: true, data });
 }
 
-export function createApp({ repository, storage, generationService, requirementParseService, requirementSourceService, productionBetaService, companyMaterialService, evidenceService, evidenceFactService, enterpriseRetrievalService, documentGenerationService, reviewCenterService, evidenceReadinessService, materialProcessingCenterService, evidenceReviewService, evidenceSourceFactService, requirementEvidenceFactMappingService, projectFactControlService, corsOrigin }) {
+export function createApp({ repository, storage, generationService, requirementParseService, requirementSourceService, productionBetaService, companyMaterialService, evidenceService, evidenceFactService, enterpriseRetrievalService, documentGenerationService, reviewCenterService, evidenceReadinessService, materialProcessingCenterService, evidenceReviewService, evidenceSourceFactService, requirementEvidenceFactMappingService, projectFactControlService, documentDeliveryService, corsOrigin }) {
   const app = express();
   app.use(cors({ origin: corsOrigin || 'http://localhost:5173' }));
   app.use(express.json({ limit: '2mb' }));
@@ -56,12 +56,12 @@ export function createApp({ repository, storage, generationService, requirementP
     try {
       const project = await repository.getProject(req.params.projectId);
       if (!project) throw new AppError('PROJECT_NOT_FOUND', ERROR_MESSAGES.PROJECT_NOT_FOUND, 404);
-      const [tenderFiles, jobs, generations, documentGenerations, versions, parseJobs, requirementBaseline] = await Promise.all([
+      const [tenderFiles, jobs, generations, documentGenerations, versions, parseJobs, requirementBaseline, documentExports] = await Promise.all([
         repository.listTenderFiles(project.id), repository.listJobs(project.id),
         repository.listGenerations(project.id), repository.listDocumentGenerations ? repository.listDocumentGenerations(project.id) : Promise.resolve([]), repository.listVersions(project.id),
-        repository.listParseJobs(project.id), repository.getRequirementBaseline(project.id)
+        repository.listParseJobs(project.id), repository.getRequirementBaseline(project.id), repository.listDocumentExports ? repository.listDocumentExports(project.id) : Promise.resolve([])
       ]);
-      res.json({ project, tenderFiles, jobs, generations, documentGenerations, versions, parseJobs, requirementBaseline });
+      res.json({ project, tenderFiles, jobs, generations, documentGenerations, versions, parseJobs, requirementBaseline, documentExports });
     } catch (error) { next(error); }
   });
 
@@ -317,6 +317,21 @@ export function createApp({ repository, storage, generationService, requirementP
   app.get('/api/document-versions/:versionId',async(req,res,next)=>{try{const value=await repository.getPipelineDocumentVersion(req.params.versionId);if(!value)throw new AppError('VERSION_NOT_FOUND','文档版本不存在。',404);sendData(res,{version:value});}catch(error){next(error);}});
   app.post('/api/document-versions/:versionId/confirm',async(req,res,next)=>{try{const version=await repository.getVersion(req.params.versionId);if(!version)throw new AppError('VERSION_NOT_FOUND','文档版本不存在。',404);if(version.risk_status==='critical')throw new AppError('CRITICAL_RISK','严重风险版本禁止确认。',409);sendData(res,await repository.confirmVersion(version,req.body?.confirmation_text));}catch(error){next(error);}});
   app.post('/api/document-versions/:versionId/chapters/:chapterId/regenerate',async(req,res,next)=>{try{sendData(res,{version:await documentGenerationService.regenerate(req.params.versionId,req.params.chapterId)},201);}catch(error){next(error);}});
+  app.get('/api/projects/:projectId/document-exports', async (req, res, next) => {
+    try { sendData(res, { exports: await repository.listDocumentExports(req.params.projectId) }); } catch (error) { next(error); }
+  });
+  app.get('/api/projects/:projectId/document-versions/:versionId/export-word', async (req, res, next) => {
+    try {
+      if (!documentDeliveryService) throw new AppError('DOCUMENT_DELIVERY_UNAVAILABLE', 'Word 交付服务尚未配置。', 503);
+      const result = await documentDeliveryService.exportWord({ projectId: req.params.projectId, versionId: req.params.versionId });
+      const encodedName = encodeURIComponent(result.fileName).replace(/['()]/g, escape);
+      res.setHeader('Content-Type', result.mimeType);
+      res.setHeader('Content-Length', String(result.buffer.length));
+      res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodedName}`);
+      res.setHeader('X-Document-Export-Id', result.audit.id);
+      res.status(200).send(result.buffer);
+    } catch (error) { next(error); }
+  });
 
   app.get('/api/projects/:projectId/generation-jobs', async (req, res, next) => {
     try { res.json({ jobs: await repository.listJobs(req.params.projectId) }); } catch (error) { next(error); }

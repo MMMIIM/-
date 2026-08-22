@@ -52,10 +52,11 @@
     "smoke:writer-gateway": "node scripts/live-gateway-smoke.js section_drafting",
     "smoke:revision-gateway": "node scripts/live-gateway-smoke.js targeted_revision",
     "test": "node --test",
-    "test:postgres": "node --test --test-concurrency=1 integration/postgres.integration.js integration/deterministic.integration.js"
+    "test:postgres": "node --test --test-concurrency=1 integration/postgres.integration.js integration/deterministic.integration.js integration/document-delivery.integration.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
+    "docx": "^9.6.1",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "mammoth": "^1.12.1",

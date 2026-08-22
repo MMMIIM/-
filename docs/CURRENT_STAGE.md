@@ -1,64 +1,52 @@
 # Current Stage
 
-## Stage 15 — Generation Workbench V1
+## Stage 16 — Document Delivery & Word V1
 
-Priority: **P0**
-Status: **PASS · FROZEN**
+Priority: **P1**
+Status: **ACTIVE**
 
-Stage 13 — Material Processing / Review UX and Stage 14 — Platform Shell &
-Core Flow IA are both frozen with acceptance **PASS**.
+Stage 13 — Material Processing / Review UX, Stage 14 — Platform Shell & Core
+Flow IA, and Stage 15 — Generation Workbench V1 are frozen with acceptance
+**PASS**.
 
 ## Goal
 
-Turn the existing generation experience into a chapter-oriented, observable
-workspace inside the accepted project flow:
+Turn a formally checked, project-associated generated version into a traceable
+Word delivery artifact inside the accepted project flow:
 
 ```text
-项目准备 → 审核与补充 → 标书生成 → 投标检查
+正式版本 → 文档模型 → 专业格式策略 → DOCX → 可下载 Word → 版本追溯
 ```
 
-Users should understand which chapters are waiting, generating, checking,
-complete, or failed, and inspect completed content without learning Writer
-Task, Guard, or Coverage terminology.
+Users should be able to understand that the current checked version is ready
+for delivery, download a professional Word file, and trace it back to the
+project version without seeing renderer or OOXML concepts.
 
-## Implemented scope
+## Stage 16 scope
 
-- Existing persisted `document_generation_tasks` are exposed through the
-  separate `documentGenerations` project read model.
-- The UI restores the latest generation on refresh and polls existing detail
-  data; no queue, worker, WebSocket, SSE, or new lifecycle state was added.
-- Chapter states are projected deterministically as 等待生成、生成中、检查中、
-  已完成、生成失败. Completed output is previewed immediately when present;
-  failed chapters remain selectable and do not hide other chapters.
-- Existing failed-batch retry and completed-version chapter regeneration remain
-  the only retry actions.
-- A finalized version exposes the existing [开始投标检查] transition.
-- No fake percentage, token streaming, Writer contract change, Claim Gate
-  change, Evidence/Fact/Mapping change, Agent, Word, RAG, permissions, or
-  deployment work was introduced.
+- 复用 MIT `docx` 生成真实 DOCX；
+- 后端拥有 `BidDocumentModel`、格式策略、版本关联和导出审计；
+- 使用真实 Heading 样式、稳定编号、可更新目录字段、段落、表格、页眉页脚和分页；
+- 仅使用当前项目已经通过现有风险检查且未失效的正式版本；
+- 一个内置专业默认模板；客户模板、浏览器 Word 克隆、Agent、RAG、权限和外部模型均不在本阶段。
 
 ## Acceptance status
 
-Deterministic frontend fixtures and the local browser verified chapter
-directory, persisted task restoration, generating/checking/failed projections,
-partial-failure isolation, absence of percentage progress, and persisted
-completed previews. A deterministic local Mock Provider acceptance run then
-used the existing formal Writer path: three real chapter tasks were created,
-all three succeeded, a finalized `pass` version was persisted, refresh restored
-the chapter states and正文, and the existing 开始投标检查 action entered Stage
-4. No fake progress, direct database insertion, Writer bypass, or new lifecycle
-state was used.
-
-The earlier `GENERATION_PROVIDER=semantic_gateway` run remains a separate
-known operational blocker: two chapters received the safe gateway failure
-audit (two attempts each, four gateway request attempts in total). It was not
-changed or retried during this acceptance.
+Stage 16 implementation is complete for the local MVP. A current synthetic
+formal version was exported and structurally verified (DOCX ZIP, Chinese text,
+Heading styles, updateable TOC field, numbering definition, table, page break,
+header and PAGE footer field). The local render helper could not complete page
+PNG QA because no LibreOffice/soffice executable is installed; Stage 16
+therefore remains ACTIVE until a compatible Word processor is available for
+manual open and layout acceptance. The reuse spike and architecture decision
+are recorded in `docs/WORD_REUSE_SPIKE.md` and
+`docs/decisions/007-document-model-docx-renderer.md`.
 
 ## Stop conditions
 
 Stop before any external model/provider call, contract semantic change, new
-formal state, queue/worker infrastructure, or destructive DB/Git action.
+formal business state, queue/worker infrastructure, destructive DB/Git action,
+merge, push, or deploy.
 
-External authorization: **none** for this acceptance; external AI calls in this
-run: **0**. ADR required: **no**. Roadmap change: **no**. Merge, push, and
-deploy: **none**.
+External authorization: **none**. External AI calls: **0**. ADR: **007**.
+Roadmap change: **yes**. Merge, push, and deploy: **none**.
