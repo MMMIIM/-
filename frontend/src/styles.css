@@ -33,10 +33,10 @@ h2 { margin-bottom: 16px; color: #182230; font-size: 18px; }
 .icon-button { width: 40px; padding: 0; }
 button:disabled { cursor: not-allowed; opacity: .5; }
 .badge { display: inline-flex; width: fit-content; border: 1px solid #d7e0e9; border-radius: 999px; padding: 4px 9px; background: #f7f9fb; color: #475467; font-size: 12px; white-space: nowrap; }
-.badge.succeeded, .badge.confirmed, .badge.pass, .badge.success { border-color: #a6e1c2; background: #ecfdf3; color: #067647; }
+.badge.succeeded, .badge.confirmed, .badge.pass, .badge.success, .badge.completed { border-color: #a6e1c2; background: #ecfdf3; color: #067647; }
 .badge.running, .badge.generating { border-color: #b2ccff; background: #eff4ff; color: #175cd3; }
-.badge.warning, .badge.review, .badge.queued, .badge.pending_confirmation { border-color: #fedf89; background: #fffaeb; color: #b54708; }
-.badge.critical, .badge.failed { border-color: #fecdca; background: #fef3f2; color: #b42318; }
+.badge.checking, .badge.waiting, .badge.warning, .badge.review, .badge.queued, .badge.pending_confirmation { border-color: #fedf89; background: #fffaeb; color: #b54708; }
+.badge.attention, .badge.critical, .badge.failed { border-color: #fecdca; background: #fef3f2; color: #b42318; }
 .table-card { padding: 0; overflow: hidden; }
 .table-scroll { overflow-x: auto; }
 .data-table { width: 100%; border-collapse: collapse; font-size: 14px; }

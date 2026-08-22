@@ -56,12 +56,12 @@ export function createApp({ repository, storage, generationService, requirementP
     try {
       const project = await repository.getProject(req.params.projectId);
       if (!project) throw new AppError('PROJECT_NOT_FOUND', ERROR_MESSAGES.PROJECT_NOT_FOUND, 404);
-      const [tenderFiles, jobs, generations, versions, parseJobs, requirementBaseline] = await Promise.all([
+      const [tenderFiles, jobs, generations, documentGenerations, versions, parseJobs, requirementBaseline] = await Promise.all([
         repository.listTenderFiles(project.id), repository.listJobs(project.id),
-        repository.listGenerations(project.id), repository.listVersions(project.id),
+        repository.listGenerations(project.id), repository.listDocumentGenerations ? repository.listDocumentGenerations(project.id) : Promise.resolve([]), repository.listVersions(project.id),
         repository.listParseJobs(project.id), repository.getRequirementBaseline(project.id)
       ]);
-      res.json({ project, tenderFiles, jobs, generations, versions, parseJobs, requirementBaseline });
+      res.json({ project, tenderFiles, jobs, generations, documentGenerations, versions, parseJobs, requirementBaseline });
     } catch (error) { next(error); }
   });
 
