@@ -3,7 +3,7 @@
 ## Stage 20 — Production Beta Hardening / Real E2E
 
 Priority: **P0/P1**
-Status: **PARTIAL / BLOCKED — EXTERNAL_PROVIDER_AUTHORIZATION_REQUIRED**
+Status: **PARTIAL / BLOCKED — REAL_PROVIDER_OPERATIONAL_BLOCKED**
 
 本阶段只验证现有产品能力能否作为一条可恢复、可追溯的完整业务流运行：
 项目准备 → 招标解析 → 需求基线 → 材料检索与复核 → 生成准备 → 标书生成 →

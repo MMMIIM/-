@@ -85,13 +85,25 @@ chapter, one rejected quantitative Claim, and one generated table.
 - `npm run lint`: **PASS**.
 - `git diff --check`: **PASS** (only normal line-ending warnings from the existing corpus on Windows).
 
+## Authorized provider preflight
+
+The existing-provider authorization was present, but the single preflight was
+operationally blocked on 2026-08-22:
+
+- `npm run check:gateway -w backend`: `GATEWAY_CHECK_FAILED`.
+- `Test-NetConnection 127.0.0.1 -Port 18080`: `TcpTestSucceeded=false`.
+- Read-only `/v1/info`: no network response.
+- No Workflow request, requirement extraction request, model request, or
+  project content was sent; external AI calls: **0**.
+
+Classification: **REAL_PROVIDER_OPERATIONAL_BLOCKED**. No retry was issued and
+the SSH/tunnel configuration was not modified.
+
 ## Real-provider status
 
-**NOT_RUN.** No new external authorization was supplied for this checkpoint and
-no project/private data was sent outside the repository. The deterministic
-production-shaped path is validated independently. A later explicitly
-authorized run may classify the already-configured provider as `PASS` or
-`OPERATIONAL_BLOCKED`; this checkpoint does not infer either result.
+**REAL_PROVIDER_OPERATIONAL_BLOCKED.** The deterministic production-shaped path
+remains independently validated, but the authorized provider could not be
+reached. This is an operational stop, not a contract or validation result.
 
 ## Remaining production risks / manual items
 
