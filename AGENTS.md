@@ -43,6 +43,41 @@ For ordinary implementation, test, DTO, frontend, integration, or migration
 bugs: identify the root cause, make a minimum fix, run targeted tests and
 regression, then continue. Stop only for a stop condition below.
 
+## GPT Decision handoff protocol
+
+When a user message begins with **GPT DECISION** and includes any stage
+decision fields (such as Decision, Current Stage, Next Goal, Allowed Scope,
+Success Criteria, Stop Conditions, External Authorization, ADR Required, or
+Roadmap Change), treat it as the latest user-level stage decision. Do not ask
+for the project background again.
+
+Read in this order: `AGENTS.md`, `docs/CURRENT_STAGE.md`, then only the
+architecture, ADR, UX, roadmap, code, tests, and docs directly relevant to the
+decision. If the decision changes the stage, update `docs/CURRENT_STAGE.md`
+with the current stage, priority, goal, allowed scope, success criteria, stop
+conditions, authorization, and status; keep it short and current.
+
+Do not change `docs/ROADMAP.md` unless the decision explicitly says
+`Roadmap Change: YES`. Create or update an ADR only when `ADR Required: YES`
+or a genuinely new long-term architecture decision triggers a stop condition.
+Never use a GPT Decision to override frozen contracts, security boundaries, or
+external-data limits; report the conflict and wait for the minimum decision.
+
+For a clear, safe scope, continue autonomously through inspect, minimum fix,
+targeted tests, regression, independent commit, and clean status. Ordinary
+frontend/backend, DTO, query, navigation, fixture, integration, audit, and
+minor UX issues do not require interruption when formal semantics stay intact.
+External Authorization is exact and single-purpose: `NONE` means zero external
+LLM, embedding, Dify, or provider calls, and unused prior authorization is not
+inherited. Stop conditions always win, including false allow, Claim Gate
+bypass, lineage loss, unauthorized scope, provider/data changes, destructive
+Git/DB actions, merge, push, deploy, or repeated failure without new evidence.
+
+When the selected stage's success criteria are complete, report a concise
+`STATUS CHECKPOINT` (HEAD, stage, completed work, commits, regression, status,
+blocker, next stage, and `User Decision Required: YES`) and wait for the next
+GPT Decision rather than opening roadmap work automatically.
+
 ## Stop conditions
 
 Stop and report before proceeding when a change would:
