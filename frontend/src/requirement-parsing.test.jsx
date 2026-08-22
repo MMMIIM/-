@@ -192,7 +192,7 @@ describe('企业材料与 Evidence 页面', () => {
   it('展示上传、材料分类、Evidence 创建和审批计数入口', () => {
     const html=renderToStaticMarkup(<CompanyMaterials projectId="project-1" baseline={{requirements:[{req_id:'REQ-001',content:'接口需求'}]}} />);
     expect(html).toContain('企业材料'); expect(html).toContain('company_profile'); expect(html).toContain('上传并解析');
-    expect(html).toContain('Evidence Catalog'); expect(html).toContain('创建 draft Evidence'); expect(html).toContain('approved'); expect(html).toContain('rejected');
+    expect(html).toContain('材料依据'); expect(html).toContain('保存材料依据'); expect(html).toContain('已确认'); expect(html).toContain('已拒绝');
   });
 
   it('批准、拒绝与上传 API 使用固定路径和 method', async () => {

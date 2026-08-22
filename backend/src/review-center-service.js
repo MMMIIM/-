@@ -32,8 +32,10 @@ export class ReviewCenterService {
       this.repository.listProjectFactMentions(projectId)
     ]);
     const factByReview = new Map(facts.map((item) => [item.evidence_review_id, item]));
+    const mappingByFact = new Map(mappings.map((item) => [item.evidence_fact_id, item]));
     const evidence = reviews.map((item) => {
       const fact = factByReview.get(item.review_id) || null;
+      const mapping = fact ? mappingByFact.get(fact.fact_id) || null : null;
       return {
         kind: 'evidence_review', id: item.review_id, status: item.review_status, material_id:item.material_id,
         requirement_id: item.requirement_ref, requirement_text: item.requirement_text,
@@ -42,7 +44,8 @@ export class ReviewCenterService {
         source_excerpt: item.source_excerpt, support_level: item.support_level,
         evidence_capability: item.evidence_capability, requires_confirmation: item.requires_human_review,
         reason_codes: item.reason_codes || [], reason: businessReason((item.reason_codes || [])[0]),
-        fact: fact && { fact_id: fact.fact_id, status: fact.review_status, subject: fact.subject, validity: fact.validity }
+        fact: fact && { fact_id: fact.fact_id, status: fact.review_status, subject: fact.subject, validity: fact.validity },
+        mapping: mapping && { mapping_id: mapping.mapping_id, status: mapping.review_status, support_level: mapping.support_level }
       };
     });
     const mappingItems = mappings.map((item) => ({

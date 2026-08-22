@@ -10,6 +10,13 @@ Stage 13 engineering implementation is complete. The remaining P0 work is
 manual product acceptance of the existing core flow from an ordinary bid
 writer's perspective.
 
+Acceptance status: the material-gap context carry-over, business-language
+review actions, stale-proof explanation, and readiness refresh are verified
+locally. The current synthetic project has no new deterministic proof
+candidate after re-reading an approved evidence review, so the safe next
+action is shown as supplementing or replacing the material; no proof is
+invented or auto-approved.
+
 Use [the Stage 13 acceptance checklist](stage13-material-processing-manual-acceptance.md)
 to verify:
 
