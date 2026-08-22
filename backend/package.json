@@ -15,6 +15,7 @@
     "eval:retrieval": "node eval/retrieval-eval/benchmark.js",
     "eval:agent": "node eval/agent-eval/benchmark.js",
     "eval:agent-v2": "node eval/agent-eval-v2/benchmark.js",
+    "eval:stage20": "node eval/stage20/acceptance.js",
     "eval:evidence-gold": "node eval/evidence-gold/run.js",
     "audit:semantic-boundary": "node eval/semantic-boundary/audit-runner.js",
     "snapshot:semantic-boundary": "node eval/semantic-boundary/snapshot.js",

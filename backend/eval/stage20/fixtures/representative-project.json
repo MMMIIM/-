@@ -1,0 +1,83 @@
+{
+  "schema_version": "stage20-representative-project-v1",
+  "data_classification": "REPRESENTATIVE_SYNTHETIC / NOT_REAL_CUSTOMER_DATA",
+  "project": {
+    "name": "星河数据治理平台技术标（合成验收）",
+    "deadline": "2030-12-31"
+  },
+  "tender": {
+    "file_name": "星河数据治理平台招标文件.txt",
+    "text": "第一章 项目概况\n\n第二章 技术要求\nREQ-001 系统应支持统一数据接入。\nREQ-002 平台应提供实施计划。\nREQ-003 关键操作应保留审计记录。\nREQ-004 应提交项目验收材料。",
+    "sections": ["投标邀请", "项目要求和有关说明", "合同"]
+  },
+  "requirements": [
+    {
+      "req_id": "REQ-001",
+      "text": "系统应支持统一数据接入。",
+      "is_mandatory": true,
+      "requirement_category": "technical",
+      "target_sections": ["chapter-06"],
+      "source_clause_id": "2.1",
+      "source_verified": true
+    },
+    {
+      "req_id": "REQ-002",
+      "text": "平台应提供实施计划。",
+      "is_mandatory": false,
+      "requirement_category": "implementation",
+      "target_sections": ["chapter-06"],
+      "source_clause_id": "2.2",
+      "source_verified": true
+    },
+    {
+      "req_id": "REQ-003",
+      "text": "关键操作应保留审计记录。",
+      "is_mandatory": true,
+      "requirement_category": "technical",
+      "target_sections": ["chapter-06"],
+      "source_clause_id": "2.3",
+      "source_verified": true
+    },
+    {
+      "req_id": "REQ-004",
+      "text": "应提交项目验收材料。",
+      "is_mandatory": false,
+      "requirement_category": "delivery",
+      "target_sections": ["chapter-08"],
+      "source_clause_id": "2.4",
+      "source_verified": true
+    }
+  ],
+  "materials": [
+    {
+      "name": "统一数据接入能力说明.txt",
+      "material_type": "technical_solution",
+      "content": "平台支持统一数据接入和审计留痕。",
+      "supports": ["REQ-001", "REQ-003"],
+      "approval": "approved"
+    },
+    {
+      "name": "待补充实施计划.txt",
+      "material_type": "delivery_capability",
+      "content": "实施计划将在项目启动后由双方确认。",
+      "supports": ["REQ-002"],
+      "approval": "needs_review"
+    }
+  ],
+  "project_facts": [
+    {
+      "key": "project.owner",
+      "value": "星河项目组",
+      "review_status": "approved",
+      "provenance": "人工确认的项目统一信息"
+    }
+  ],
+  "expected_states": {
+    "missing_evidence_requirement": "REQ-004",
+    "human_review_requirement": "REQ-002",
+    "approved_project_fact": "project.owner",
+    "chapter_with_multiple_requirements": "chapter-06",
+    "bid_check_issue": "CONDITION_NOT_VERBATIM",
+    "table_required": true
+  }
+}

@@ -1,5 +1,19 @@
 # Current Stage
 
+## Stage 20 — Production Beta Hardening / Real E2E
+
+Priority: **P0/P1**
+Status: **PARTIAL / PENDING SIDE-EFFECTING MANUAL ACCEPTANCE**
+
+本阶段只验证现有产品能力能否作为一条可恢复、可追溯的完整业务流运行：
+项目准备 → 招标解析 → 需求基线 → 材料检索与复核 → 生成准备 → 标书生成 →
+章节复核/安全修订 → 投标检查 → Word 导出。禁止新增 AI 能力、Provider、Agent
+自治或部署基础设施；外部 Provider 在本阶段默认不调用，若已有授权路径不可用则
+记录为运营阻断而不改变架构。
+
+验收产物：`docs/STAGE20_PRODUCTION_BETA_ACCEPTANCE.md` 与离线合成 E2E 夹具。
+Stage 19 及之前的冻结规则继续有效。
+
 ## Stage 19 — Bid Copilot Guided Actions / Safe Execution
 
 Priority: **P1**
