@@ -3,16 +3,18 @@
 Roadmap priority is not implementation authorization. Only
 [`CURRENT_STAGE.md`](CURRENT_STAGE.md) can select the next work.
 
-## P0 — ACTIVE: Core bid product flow
+## P0 — ACTIVE: Core product UX and generation flow
 
 Make the core workflow real, stable, reviewable, traceable, and easy to use:
 
 ```text
-Project → Tender File → Requirement → Enterprise Material → Evidence
-→ Review → Readiness → Safe Generation → Final Bid Document Flow
+Platform Shell → Project Preparation → Review & Completion
+→ Chapter Generation → Bid Check
 ```
 
-Problems in this chain take priority over later capabilities.
+Stage 13 product acceptance is closed. Stage 14 Platform Shell & Core Flow IA
+is active. Stage 15 Chapter Generation Workbench follows after Stage 14
+acceptance. Roadmap entries are not implementation authorization.
 
 ## P1 — PLANNED: Word and document formatting
 
@@ -33,7 +35,8 @@ Provide secure, sufficient enterprise identity and RBAC by reusing mature
 solutions such as Better Auth, Node-Casbin, or a compatible IdP when needed.
 Do not self-build password, session, RBAC, or SSO protocols.
 
-## P3 — PLANNED: Bid Copilot / Agent
+## P2 — PLANNED: Bid Copilot / Agent V1
 
 An assistant may call formal backend tools to reduce navigation and repetition.
-It must never become a second business Control Plane.
+It must never become a second business Control Plane. Agent V2 remains later
+and evidence-driven.

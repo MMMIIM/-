@@ -112,3 +112,14 @@ Do not rescan the whole repository for every task. Read:
 
 Roadmap items are not implementation authorization. Implement only what the
 current stage explicitly selects.
+
+Permanent product principles:
+
+- Main UI expresses user tasks, not Backend Pipeline structure.
+- Business-critical actions should use reusable Backend Service boundaries
+  when practical.
+- Future Agent tools call formal services and never duplicate business truth in
+  prompts.
+
+Product architecture references: [Product IA](docs/PRODUCT_IA.md) and [Agent
+Product Strategy](docs/AGENT_PRODUCT_STRATEGY.md).

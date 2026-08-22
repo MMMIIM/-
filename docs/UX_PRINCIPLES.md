@@ -46,6 +46,39 @@ but is folded by default.
 Technical enum and reason codes belong in advanced/audit details, not primary
 headings or action labels.
 
+## Product information architecture
+
+Platform navigation is organized around high-frequency tasks:
+
+```text
+工作台 · 投标项目 · 企业资料库 · 标书检查
+```
+
+系统管理 is a low-frequency bottom entry. Inside a project, the first-level
+flow is exactly:
+
+```text
+项目准备 → 审核与补充 → 标书生成 → 投标检查
+```
+
+Professional workspaces remain available as secondary detail views. The
+Stepper and navigation should never expose Backend Pipeline states as the
+ordinary user's main task list.
+
+## Workbench principle
+
+工作台 is action-oriented rather than a data dashboard. It prioritizes 待我
+处理、进行中的项目、即将截止、待检查标书、最近项目, with 新建投标项目 as
+the primary action. Supporting statistics may exist, but must not dominate the
+homepage.
+
+## Agent-ready boundary
+
+Business-critical actions should live behind reusable backend service
+boundaries when practical so UI, tests, and future Agent tools share the same
+formal semantics. A future Agent calls those services and never duplicates
+Evidence, Fact, Mapping, Claim Gate, Readiness, or Writer truth in prompts.
+
 ## Interaction rules
 
 Use progressive disclosure, preserve provenance, and minimize page switching,
