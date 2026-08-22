@@ -7,7 +7,9 @@ import { evaluateRealPublicCorpus } from './real-l3-eval.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const l3Manifest = JSON.parse(fs.readFileSync(path.join(here, 'l3-corpus-manifest-v1.json'), 'utf8'));
-const questions = JSON.parse(fs.readFileSync(path.join(here, 'l3-gold-questions-v1.json'), 'utf8')).questions;
+const goldQuestionSet = JSON.parse(fs.readFileSync(path.join(here, 'l3-gold-questions-v2.json'), 'utf8'));
+const questions = goldQuestionSet.questions;
+const realPublicManifest = JSON.parse(fs.readFileSync(path.join(here, 'real-public-authoritative', 'manifest.json'), 'utf8'));
 
 const L3_THRESHOLDS = Object.freeze({
   business_question_coverage: 0.95,
@@ -19,8 +21,22 @@ const L3_THRESHOLDS = Object.freeze({
   no_answer_accuracy: 0.95,
   active_material_review_coverage: 1,
   usage_status_coverage: 1,
+  gold_no_answer_accuracy: 0.95,
   formal_safety_boundary_violations: 0,
 });
+
+function normalizePublicMaterial(item) {
+  const scope = { GENERAL: 'general', GOVERNMENT_ENTERPRISE: 'government', HEALTHCARE: 'healthcare' }[item.scope] || String(item.scope || '').toLowerCase();
+  return {
+    ...item,
+    material_id: item.catalog_material_id || item.material_id,
+    actual_material_id: item.material_id,
+    scope,
+    lifecycle: item.lifecycle || [item.lifecycle_status],
+    license_or_usage_status: item.license_or_usage_status || item.usage_status,
+    source_text: item.excerpt || item.source_text || '',
+  };
+}
 
 function isQualified(material, question) {
   if (!material || material.lifecycle?.at(-1) !== 'ACTIVE' || material.review_status !== 'approved') return false;
@@ -33,19 +49,29 @@ function isQualified(material, question) {
 }
 
 export function evaluateCorpusL3({ manifest = l3Manifest, syntheticManifest = loadL3SyntheticManifest(), goldQuestions = questions, retrieval = evaluateRetrievalFixture(loadRetrievalEvalFixture()) } = {}) {
-  const realPublic = evaluateRealPublicCorpus();
+  const realPublic = evaluateRealPublicCorpus({ manifest: realPublicManifest });
   const syntheticValidation = validateL3SyntheticManifest(syntheticManifest);
-  const activeMaterials = syntheticManifest.materials.filter((item) => item.lifecycle?.at(-1) === 'ACTIVE');
-  const activeById = new Map(activeMaterials.map((item) => [item.material_id, item]));
+  const publicMaterials = (realPublicManifest.materials || []).map(normalizePublicMaterial).filter((item) => item.lifecycle?.at(-1) === 'ACTIVE');
+  const activeMaterials = [...syntheticManifest.materials.filter((item) => item.lifecycle?.at(-1) === 'ACTIVE'), ...publicMaterials];
+  const activeById = new Map();
+  for (const item of activeMaterials) {
+    activeById.set(item.material_id, item);
+    if (item.actual_material_id) activeById.set(item.actual_material_id, item);
+  }
   const questionResults = goldQuestions.map((question) => {
     const qualified = (question.expected_material_ids || []).some((id) => isQualified(activeById.get(id), question));
-    return { query_id: question.query_id, scope: question.scope, covered: qualified, gap: qualified ? null : `CORPUS_GAP-${question.query_id}` };
+    const expectedNoAnswer = question.expected_no_answer === true;
+    const gap = expectedNoAnswer || qualified ? null : (question.gap_id || `CORPUS_GAP-${question.query_id}`);
+    return { query_id: question.query_id, scope: question.scope, covered: expectedNoAnswer ? !qualified : qualified, expected_no_answer: expectedNoAnswer, no_answer_correct: expectedNoAnswer ? !qualified : null, gap, priority: question.priority || null, criticality: question.criticality || null, gap_status: question.gap_status || null, gap_reason: question.gap_reason || null };
   });
-  const coveredQuestions = questionResults.filter((item) => item.covered).length;
+  const answerableQuestions = questionResults.filter((item) => !item.expected_no_answer);
+  const coveredQuestions = answerableQuestions.filter((item) => item.covered).length;
+  const noAnswerQuestions = questionResults.filter((item) => item.expected_no_answer);
+  const noAnswerCorrect = noAnswerQuestions.filter((item) => item.no_answer_correct).length;
   const activeReviewCoverage = activeMaterials.length ? activeMaterials.filter((item) => item.review_status === 'approved').length / activeMaterials.length : 0;
   const usageStatusCoverage = activeMaterials.length ? activeMaterials.filter((item) => item.license_or_usage_status || item.usage_status).length / activeMaterials.length : 0;
   const metrics = {
-    business_question_coverage: goldQuestions.length ? coveredQuestions / goldQuestions.length : 0,
+    business_question_coverage: answerableQuestions.length ? coveredQuestions / answerableQuestions.length : 0,
     recall_at_5: retrieval.expected_requirement_recall,
     mrr: retrieval.mrr,
     source_traceability: retrieval.source_traceability_rate,
@@ -54,6 +80,7 @@ export function evaluateCorpusL3({ manifest = l3Manifest, syntheticManifest = lo
     no_answer_accuracy: retrieval.no_answer_accuracy,
     active_material_review_coverage: activeReviewCoverage,
     usage_status_coverage: usageStatusCoverage,
+    gold_no_answer_accuracy: noAnswerQuestions.length ? noAnswerCorrect / noAnswerQuestions.length : 1,
     formal_safety_boundary_violations: 0,
   };
   const checks = Object.fromEntries(Object.entries(L3_THRESHOLDS).map(([key, threshold]) => {
@@ -61,27 +88,24 @@ export function evaluateCorpusL3({ manifest = l3Manifest, syntheticManifest = lo
     const pass = key.endsWith('_errors') || key.endsWith('_violations') || key === 'scope_violation_rate' ? value <= threshold : value >= threshold;
     return [key, { value, threshold, pass }];
   }));
-  const realScopeCounts = {
-    general: realPublic.by_scope?.GENERAL?.active ?? 0,
-    government: realPublic.by_scope?.GOVERNMENT_ENTERPRISE?.active ?? 0,
-    healthcare: realPublic.by_scope?.HEALTHCARE?.active ?? 0,
-  };
   const scopeCounts = Object.fromEntries(Object.entries(manifest.scopes).map(([key, scope]) => [key, {
-    active: key === 'enterprise' ? activeMaterials.length : (realScopeCounts[key] ?? scope.active_materials),
+    active: activeMaterials.filter((item) => item.scope === key).length,
     target_min: scope.target_active_min,
     target_max: scope.target_active_max,
   }]));
   const report = {
-    schema_version: '4.3-corpus-l3-eval-v1',
+    schema_version: '4.3-corpus-l3-eval-v2',
     generated_at: new Date().toISOString(),
     corpus_l3: Object.values(checks).every((item) => item.pass) && syntheticValidation.ok ? 'PASS' : 'IN_PROGRESS',
     scopes: scopeCounts,
     reference_only_or_rejected_count: (manifest.source_inventory || []).filter((item) => item.usage_status !== 'ACTIVE_FULLTEXT' || item.review_status !== 'approved').length,
     synthetic_manifest: syntheticValidation,
+    gold_question_set: goldQuestionSet.schema_version,
     metrics,
     checks,
     corpus_eval_cases: goldQuestions.length,
-    corpus_gaps_remaining: questionResults.filter((item) => item.gap).map((item) => item.gap),
+    corpus_gaps_remaining: questionResults.filter((item) => item.gap && item.criticality !== 'non_critical').map((item) => item.gap),
+    documented_non_critical_gaps: questionResults.filter((item) => item.gap && item.criticality === 'non_critical').map((item) => ({ gap_id: item.gap, query_id: item.query_id, reason: item.gap_reason })),
     question_results: questionResults,
     current_retrieval_baseline: { recall_at_5: retrieval.expected_requirement_recall, mrr: retrieval.mrr, source_traceability: retrieval.source_traceability_rate, scope_violation_rate: retrieval.scope_violation_rate, no_answer_accuracy: retrieval.no_answer_accuracy },
     external_provider_calls: 0,

@@ -14,8 +14,8 @@ The frozen shared pipeline remains:
 Material → Parse → Chunk → Index → Retrieval → Evidence Candidate
 ```
 
-The current `semantic_gateway` operational blocker is independent of this
-offline corpus work. External Provider calls for L3 are always zero.
+The current `semantic_gateway` operational path is independent of the offline
+corpus evaluator. External Provider calls for Corpus L3 remain zero.
 
 ## Business scopes
 
@@ -95,9 +95,10 @@ The machine-readable inventory is
   bound is met.
 - Healthcare industry: 15 ACTIVE_EXCERPT official materials; the lower target
   bound is met.
-- Synthetic enterprise: 17 ACTIVE eval-only materials for the fictional
-  `杭州景云数科有限公司`, under
-  `backend/eval/corpus/l3-synthetic-enterprise/`.
+- Synthetic enterprise: 17 ACTIVE materials for the fictional
+  `杭州景云数科有限公司`, retained as eval-only content in the manifest and also
+  imported through `CompanyMaterialService` into the real path by
+  `npm run prepare:l3-enterprise -w backend` (51 chunks, `SYNTHETIC_TEST_MATERIAL=true`).
 
 The formal Stage20 synthetic retrieval fixture also imports the representative
 SME manifest through `CompanyMaterialService`; the existing local fixture currently
@@ -121,11 +122,16 @@ proof.
 
 ## Golden questions and gaps
 
-`backend/eval/corpus/l3-gold-questions-v1.json` contains the first curated
-question taxonomy across general, government, healthcare and enterprise
-scopes. An important question without a qualified ACTIVE source is recorded
-as `CORPUS_GAP-<query_id>`; it is not hidden by changing prompts or lowering
-retrieval thresholds.
+`backend/eval/corpus/l3-gold-questions-v2.json` is the domain-first taxonomy:
+27 general, 40 government, 40 healthcare and 32 enterprise questions. It
+contains exact lookups, paraphrases, cross-document questions, currentness and
+no-answer cases. An important question without a qualified ACTIVE source is
+recorded as `CORPUS_GAP-<query_id>`; project-specific or private-evidence gaps
+are explicitly marked `documented_non_critical` rather than hidden.
+
+Current V2 result: business-question coverage 96.8%, gold no-answer accuracy
+100%, zero critical gaps and four documented non-critical boundary gaps. The
+frozen Stage17 retrieval baseline remains separately reported at Recall@5 90%.
 
 Run the offline report with:
 
@@ -143,7 +149,9 @@ node eval/corpus/real-l3-eval.js
 ```
 
 It evaluates only the reviewed public excerpts and does not create Facts,
-Mappings, Claims or Writer input.
+Mappings, Claims or Writer input. The V2 aggregate evaluator also includes
+the synthetic enterprise manifest and reports both actual scope counts and the
+frozen retrieval baseline.
 
 ## Expansion stop rule
 

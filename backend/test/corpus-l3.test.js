@@ -23,9 +23,12 @@ test('L3 controlled quality cases remain visible and do not become formal proof'
   assert.ok(manifest.materials.find((item) => item.controlled_case === 'unsupported_marketing_sla'));
 });
 
-test('L3 eval reports the current 90% retrieval baseline as corpus work, not an architecture failure', () => {
+test('L3 eval uses the domain-first V2 gold set and keeps non-critical gaps explicit', () => {
   const report = evaluateCorpusL3();
   assert.equal(report.external_provider_calls, 0);
+  assert.equal(report.gold_question_set, '4.3-corpus-l3-gold-questions-v2');
+  assert.equal(report.corpus_eval_cases, 139);
+  assert.equal(report.metrics.business_question_coverage, 0.968);
   assert.equal(report.current_retrieval_baseline.recall_at_5, 0.9);
   assert.equal(report.current_retrieval_baseline.scope_violation_rate, 0);
   assert.deepEqual({
@@ -35,7 +38,8 @@ test('L3 eval reports the current 90% retrieval baseline as corpus work, not an 
     enterprise: report.scopes.enterprise.active,
   }, { general: 10, government: 15, healthcare: 15, enterprise: 17 });
   assert.equal(report.corpus_l3, 'IN_PROGRESS');
-  assert.ok(report.corpus_gaps_remaining.length > 0);
+  assert.equal(report.corpus_gaps_remaining.length, 0);
+  assert.equal(report.documented_non_critical_gaps.length, 4);
   assert.equal(report.checks.formal_safety_boundary_violations.pass, true);
 });
 

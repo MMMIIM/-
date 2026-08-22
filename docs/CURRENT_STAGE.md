@@ -20,10 +20,11 @@ Status: **PARTIAL — CORPUS_L3_IN_PROGRESS / REAL_E2E_PENDING**
 ### Stage20 parallel acceptance tracks
 
 - Track A — Corpus Readiness L3：`IN_PROGRESS`。当前真实公共资料为通用 10、政企 15、医疗 15，
-  合成企业基线 17；正式合成生产检索夹具已通过 `CompanyMaterialService` 复用入库，当前
-  项目保留 21 份材料、329 个 chunk；真实公共语料独立评测已通过，但总体问题覆盖仍未完成。
-- Track B — Real Provider E2E：`PENDING_AUTHORIZATION`。`semantic_gateway` 是当前模型执行边界；
-  只读网关检查已通过，真实公共招标流程尚未调用。
+  合成企业基线 17；17 份合成企业资料已通过 `CompanyMaterialService` 实际导入并索引（51 chunks），
+  正式生产检索夹具另保留 21 份材料、329 个 chunk。Golden V2 共 139 个领域问题，业务覆盖 96.8%，
+  4 个范围边界缺口已记录为 non-critical；冻结检索基线 Recall@5 仍为 90%。
+- Track B — Real Provider E2E：`AUTHORIZED_PENDING_EXECUTION`。本次 GPT 决策授权一次现有
+  `semantic_gateway` 代表性公共招标 E2E；只读网关检查已通过，尚未发起受控调用。
 - Track C — Deterministic / Offline Product Acceptance：`PASS`（已达到范围内）。
 
 Stage20 当前并行推进 Corpus Readiness L3：以业务问题覆盖、来源权威性、有效期、

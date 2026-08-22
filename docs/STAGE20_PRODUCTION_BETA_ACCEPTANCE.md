@@ -51,16 +51,16 @@ No separate vector store or retrieval architecture was introduced.
 The first L3 inventory and offline evaluator are now repository-owned:
 
 - `backend/eval/corpus/l3-corpus-manifest-v1.json`
-- `backend/eval/corpus/l3-gold-questions-v1.json`
+- `backend/eval/corpus/l3-gold-questions-v2.json`
 - `backend/eval/corpus/l3-synthetic-enterprise/`
 - `npm run eval:corpus-l3 -w backend`
 
-Current offline result (23 synthetic baseline questions plus 40 real
-official-excerpt questions, external calls **0**):
+Current offline result (139 domain-first Golden V2 questions plus 40 real
+official-excerpt checks, external calls **0**):
 
 | Metric | Current | L3 target | Result |
 | --- | ---: | ---: | --- |
-| Business Question Coverage | 17.4% | ≥95% | GAP |
+| Business Question Coverage | 96.8% | ≥95% | PASS |
 | Recall@5 | 90.0% | ≥95% | GAP; frozen Stage17 baseline |
 | MRR | 1.000 | ≥0.85 | PASS |
 | Source Traceability | 100% | 100% | PASS |
@@ -76,12 +76,13 @@ Real official excerpt inventory: general 10 ACTIVE_EXCERPT, government-platform
 the normal material/retrieval path. The isolated real-wave report is PASS:
 coverage 100%, Recall@5 100%, MRR 1.000, traceability 100%, scope violations 0%,
 obsolete preference errors 0% and no-answer accuracy 100%. The aggregate L3
-gate remains `IN_PROGRESS` because active-count targets and the broader
-business-question inventory and frozen retrieval baseline are not complete; the
-active-count lower bounds are met. The 17-material controlled synthetic
-baseline is retained, and the existing formal synthetic production fixture now
-reuses `CompanyMaterialService` (21 persisted materials / 329 chunks). The four
-previous public-source enterprise candidates remain `METADATA_ONLY`/pending.
+gate remains `IN_PROGRESS` because the frozen Stage17 retrieval baseline is
+90% against the 95% target. Four project/private-evidence boundary gaps are
+explicitly documented as non-critical. The 17-material controlled synthetic
+baseline is retained and also imported through `CompanyMaterialService`
+(51 indexed chunks); the existing formal synthetic production fixture separately
+reuses that service (21 persisted materials / 329 chunks). The four previous
+public-source enterprise candidates remain `METADATA_ONLY`/pending.
 
 ## Acceptance evidence
 

@@ -27,6 +27,7 @@
         "信息公开"
       ],
       "industry": null,
+      "catalog_material_id": "PUB-GEN-GOVPROC-LAW",
       "original_name": "中华人民共和国政府采购法（官方摘录）.md",
       "file_hash": "685fd4e5da9bdd5c51f154cbea77619d3590e050d98b31db264a24dec407a648",
       "chunk_count": 3,
@@ -57,6 +58,7 @@
         "政府采购实施"
       ],
       "industry": null,
+      "catalog_material_id": "PUB-GEN-GOVPROC-REG",
       "original_name": "中华人民共和国政府采购法实施条例（官方摘录）.md",
       "file_hash": "5b322c5092468cd9768472269d5fb5e9aeb2d43e8a256fc5f4fe9473be24e010",
       "chunk_count": 3,
@@ -87,6 +89,7 @@
         "履行期限"
       ],
       "industry": null,
+      "catalog_material_id": "PUB-GEN-BID-REG",
       "original_name": "中华人民共和国招标投标法实施条例（官方摘录）.md",
       "file_hash": "1ab564985dd065be561b48c4abf3f58222e44e4c779df6b99a1acda17983d225",
       "chunk_count": 3,
@@ -117,6 +120,7 @@
         "交易规范"
       ],
       "industry": null,
+      "catalog_material_id": "PUB-GEN-EBID",
       "original_name": "电子招标投标办法（官方摘录）.md",
       "file_hash": "9a6d733a5bad55b50b0dabad49716fbccf8a6ccf169970c3098529f7716c55d6",
       "chunk_count": 3,
@@ -147,6 +151,7 @@
         "生效日期"
       ],
       "industry": null,
+      "catalog_material_id": "PUB-GEN-CYBER-LAW-2025",
       "original_name": "中华人民共和国网络安全法（2025年修正）（官方摘录）.md",
       "file_hash": "e97e17e6f85c5e0ab7b86001163194ed5ac2ccf4cd743e8f2b63b5e792d1bc44",
       "chunk_count": 3,
@@ -177,6 +182,7 @@
         "数据开发利用"
       ],
       "industry": null,
+      "catalog_material_id": "PUB-GEN-DATA-LAW",
       "original_name": "中华人民共和国数据安全法（官方摘录）.md",
       "file_hash": "d3fdfc7682b696f71201c4d444f10146a1badc0f882213f9d2e233a1aa6c9bca",
       "chunk_count": 3,
@@ -207,6 +213,7 @@
         "合法性基础"
       ],
       "industry": null,
+      "catalog_material_id": "PUB-GEN-PIPL",
       "original_name": "中华人民共和国个人信息保护法（官方摘录）.md",
       "file_hash": "d4b000ea138a821fac104c434322fa4f35b6fd389a714ae1a3b3e621e53c0557",
       "chunk_count": 3,
@@ -237,6 +244,7 @@
         "依法利用"
       ],
       "industry": null,
+      "catalog_material_id": "PUB-GEN-NETWORK-DATA",
       "original_name": "网络数据安全管理条例（官方摘录）.md",
       "file_hash": "ef49181ecc05553cc4daa98301b2bec56d9b580d6f0799761ab99c6503c477b2",
       "chunk_count": 3,
@@ -267,6 +275,7 @@
         "稳定运行"
       ],
       "industry": null,
+      "catalog_material_id": "PUB-GEN-CIIP",
       "original_name": "关键信息基础设施安全保护条例（官方摘录）.md",
       "file_hash": "05c4e14970ef18322a6329bd870d49e8ebfef4267e3effb13148f51411e2200b",
       "chunk_count": 3,
@@ -298,6 +307,7 @@
         "信息共享",
         "项目绩效"
       ],
+      "catalog_material_id": "PUB-GOV-EGOV-PROJECT",
       "original_name": "国家政务信息化项目建设管理办法（官方摘录）.md",
       "file_hash": "85d3a578d3cd80e58d2e46b13f7e14ac205240b7135a243e9bb89a7e11eb61c0",
       "chunk_count": 3,
@@ -329,6 +339,7 @@
         "共享开放",
         "智慧城市"
       ],
+      "catalog_material_id": "PUB-GOV-DIGITAL-GOV",
       "original_name": "国务院关于加强数字政府建设的指导意见（官方摘录）.md",
       "file_hash": "d50684d5d13e0e7d350f9aa09a2d299528ddd3e5d038684ff3507999391184ca",
       "chunk_count": 3,
@@ -359,6 +370,7 @@
         "标准统一",
         "安全可控"
       ],
+      "catalog_material_id": "PUB-GOV-DATA-SHARING",
       "original_name": "政务数据共享条例（官方摘录）.md",
       "file_hash": "0f634545976d54512e00c7dde12e12a7b73e5280584bd6ca487ca40d00f76b1f",
       "chunk_count": 3,
@@ -389,6 +401,7 @@
         "建设内容",
         "建设要求"
       ],
+      "catalog_material_id": "PUB-HC-HOSPITAL-INFO",
       "original_name": "全国医院信息化建设标准与规范（试行）（官方摘录）.md",
       "file_hash": "1334f132323909b600672bd8b2282cf6cf35136621f6873dbb02ac539974ba96",
       "chunk_count": 3,
@@ -419,6 +432,7 @@
         "分级评价",
         "医疗信息化"
       ],
+      "catalog_material_id": "PUB-HC-EMR-GRADE",
       "original_name": "电子病历系统应用水平分级评价管理办法（试行）及评价标准（官方摘录）.md",
       "file_hash": "0b61131c399c20551da4e19901e14791a1f41e601d659ca311547c5fd44dfb38",
       "chunk_count": 3,
@@ -450,6 +464,7 @@
         "患者服务",
         "安全"
       ],
+      "catalog_material_id": "PUB-HC-SMART-SERVICE",
       "original_name": "医院智慧服务分级评估标准体系（试行）（官方摘录）.md",
       "file_hash": "cdee53570a852d8150c34d7c98bb7709bd9eadd51977777353ca0d94522a6c1e",
       "chunk_count": 3,
@@ -480,6 +495,7 @@
         "分级评估",
         "业务联动"
       ],
+      "catalog_material_id": "PUB-HC-SMART-MANAGEMENT",
       "original_name": "医院智慧管理分级评估标准体系（试行）（官方摘录）.md",
       "file_hash": "a59e04c611b0e4f84f65e702c58117953e0bcd952740c583480776a215c87b2c",
       "chunk_count": 3,
@@ -510,6 +526,7 @@
         "信息化建设",
         "应用规范"
       ],
+      "catalog_material_id": "PUB-HC-PUBLIC-HEALTH",
       "original_name": "全国公共卫生信息化建设标准与规范（试行）（官方摘录）.md",
       "file_hash": "45a7e7ff4aa984d7daade41c199fd71538472c789f056bd071b61c52d46aa487",
       "chunk_count": 3,
@@ -540,6 +557,7 @@
         "信息化标准",
         "接口互通"
       ],
+      "catalog_material_id": "PUB-HC-PRIMARY-CARE",
       "original_name": "全国基层医疗卫生机构信息化建设标准与规范（试行）（官方摘录）.md",
       "file_hash": "bda8f1963a4195ecc8c1143602f444fc8e64e1248c55b457158008a7373559e2",
       "chunk_count": 3,
@@ -571,6 +589,7 @@
         "重要数据",
         "个人信息"
       ],
+      "catalog_material_id": "PUB-HC-CYBER",
       "original_name": "医疗卫生机构网络安全管理办法（官方摘录）.md",
       "file_hash": "fcb539f3a64712502d8eb4e07214288135c7a838e110215c8795a3d54560521b",
       "chunk_count": 3,
@@ -601,6 +620,7 @@
         "互联互通",
         "编码统一"
       ],
+      "catalog_material_id": "PUB-HC-HEALTH-STANDARDIZATION",
       "original_name": "全民健康信息标准化体系相关官方文件（官方摘录）.md",
       "file_hash": "965306897f70e1d92b9821c1593063bca4c9d6d2a2bf705b34b56b0efe378463",
       "chunk_count": 3,
@@ -631,6 +651,7 @@
         "政务透明"
       ],
       "industry": null,
+      "catalog_material_id": "PUB-GEN-GOVINFO",
       "original_name": "中华人民共和国政府信息公开条例（官方摘录）.md",
       "file_hash": "fb5872bd42a301407cbdc627383e771ec086ad35c868c15ceb0f41f79e0478d4",
       "chunk_count": 3,
@@ -661,6 +682,7 @@
         "共享目录",
         "安全边界"
       ],
+      "catalog_material_id": "PUB-GOV-DATA-SHARING-MGMT",
       "original_name": "政务信息资源共享管理暂行办法（官方摘录）.md",
       "file_hash": "766681814c38834bb1ead4291b788ab42aa0c54bed71170441f08e5d1ec6eeea",
       "chunk_count": 3,
@@ -691,6 +713,7 @@
         "信息孤岛",
         "共享交换"
       ],
+      "catalog_material_id": "PUB-GOV-SYSTEM-INTEGRATION",
       "original_name": "政务信息系统整合共享实施方案（官方摘录）.md",
       "file_hash": "0009cb858d4e69f0b7531b56f1799d658b982aab617f91502e8221a70bca48ed",
       "chunk_count": 3,
@@ -721,6 +744,7 @@
         "数据目录",
         "全生命周期"
       ],
+      "catalog_material_id": "PUB-GOV-BIG-DATA-GUIDE",
       "original_name": "全国一体化政务大数据体系建设指南（官方摘录）.md",
       "file_hash": "aadbe70d435862b954f76aba49c9f1c336f57b8d4bcdcebb88b77af10b987373",
       "chunk_count": 3,
@@ -752,6 +776,7 @@
         "规范化",
         "便利化"
       ],
+      "catalog_material_id": "PUB-GOV-SERVICE-STANDARD",
       "original_name": "关于加快推进政务服务标准化规范化便利化的指导意见（官方摘录）.md",
       "file_hash": "104cefee1194afce7245a0e232860e446726b823aa1cae1759aa0bdbff210c96",
       "chunk_count": 3,
@@ -782,6 +807,7 @@
         "跨部门协同",
         "数据共享"
       ],
+      "catalog_material_id": "PUB-GOV-ONE-THING-2022",
       "original_name": "关于加快推进“一件事一次办”打造政务服务升级版的指导意见（官方摘录）.md",
       "file_hash": "b67b7f8996063a8ac096cb158d0a361d55631b40079d41884ba8595b24badd11",
       "chunk_count": 3,
@@ -812,6 +838,7 @@
         "流程优化",
         "办事材料"
       ],
+      "catalog_material_id": "PUB-GOV-HIGH-EFFICIENCY",
       "original_name": "推动“高效办成一件事”的指导意见（官方摘录）.md",
       "file_hash": "1c8250e59e2c8c0aabe887534aaeab6604c0f62ad867aa09466a2ca470ac1563",
       "chunk_count": 3,
@@ -842,6 +869,7 @@
         "统一管理",
         "数据安全"
       ],
+      "catalog_material_id": "PUB-GOV-MOBILE-GUIDE",
       "original_name": "全国一体化政务服务平台移动端建设指南（官方摘录）.md",
       "file_hash": "dba1c13224331aff2237d6c66a3dbee31a877c4a9ef5f8941d0173c77ca5a5f0",
       "chunk_count": 3,
@@ -872,6 +900,7 @@
         "平台体系",
         "资源目录"
       ],
+      "catalog_material_id": "PUB-GOV-INTERNET-SERVICE",
       "original_name": "“互联网+政务服务”技术体系建设指南（官方摘录）.md",
       "file_hash": "018bc29f56da052b1bdbca19c6cb1d5d324f0a6e784217c30ba4afdf57a33900",
       "chunk_count": 3,
@@ -902,6 +931,7 @@
         "跨区域协同",
         "数据共享"
       ],
+      "catalog_material_id": "PUB-GOV-CROSS-PROVINCE-2020",
       "original_name": "加快推进政务服务“跨省通办”的指导意见（官方摘录）.md",
       "file_hash": "b279eb5adb9e00acdb89f8f9802a49b5388b3fc51dc129a2e096757394ef5556",
       "chunk_count": 3,
@@ -932,6 +962,7 @@
         "平台建设",
         "标准体系"
       ],
+      "catalog_material_id": "PUB-GOV-ONLINE-PLATFORM",
       "original_name": "加快推进全国一体化在线政务服务平台建设的指导意见（官方摘录）.md",
       "file_hash": "dcaf3d6ec63a8e4b926f6466ffe047d5cb87a07f3f0c1a9d9f9c0cf1a6d26612",
       "chunk_count": 3,
@@ -962,6 +993,7 @@
         "服务标准",
         "数据支撑"
       ],
+      "catalog_material_id": "PUB-GOV-CROSS-PROVINCE-2022",
       "original_name": "扩大政务服务“跨省通办”范围进一步提升服务效能的意见（官方摘录）.md",
       "file_hash": "916bf3ffe6a3fef7cf9deb20b8a0e826fa6f7a2417ef8547dba0bb414a3c5275",
       "chunk_count": 3,
@@ -992,6 +1024,7 @@
         "权威机制",
         "政务数据"
       ],
+      "catalog_material_id": "PUB-GOV-DATA-COORDINATION",
       "original_name": "政务数据共享协调机制相关官方文件（官方摘录）.md",
       "file_hash": "5824e1fe7b738e45d13384a3d81b1d3581cc789acd7da4c7ee8eea529a1849ff",
       "chunk_count": 3,
@@ -1022,6 +1055,7 @@
         "执业登记",
         "机构评审"
       ],
+      "catalog_material_id": "PUB-HC-MEDICAL-INSTITUTIONS",
       "original_name": "医疗机构管理条例（官方摘录）.md",
       "file_hash": "2ae5b19f942792e16b03e17326ee2cc9fa2d1c072fc098ca764d9f3986aeff42",
       "chunk_count": 3,
@@ -1052,6 +1086,7 @@
         "医疗安全",
         "主体责任"
       ],
+      "catalog_material_id": "PUB-HC-MEDICAL-QUALITY",
       "original_name": "医疗质量管理办法（官方摘录）.md",
       "file_hash": "ce16b998c9c85387e8096f8ec4b56e5b67edeebf8acd5fb1e3e4568f41480f52",
       "chunk_count": 3,
@@ -1082,6 +1117,7 @@
         "互通共享",
         "健康数据标准"
       ],
+      "catalog_material_id": "PUB-HC-INTERNET-HEALTH",
       "original_name": "关于促进“互联网+医疗健康”发展的意见（官方摘录）.md",
       "file_hash": "01ca0a5e6879356d74359b01cd01ff242677a722c99e54cfb777808c122fb4ad",
       "chunk_count": 3,
@@ -1112,6 +1148,7 @@
         "互通共享",
         "网络安全"
       ],
+      "catalog_material_id": "PUB-HC-HEALTH-PLAN",
       "original_name": "“十四五”全民健康信息化规划（官方摘录）.md",
       "file_hash": "f0d212f16716737c68bf69585d6b7a6efb923ed4601a368f3561439af35a0fd8",
       "chunk_count": 3,
@@ -1142,6 +1179,7 @@
         "评审标准",
         "质量安全"
       ],
+      "catalog_material_id": "PUB-HC-TERTIARY-2025",
       "original_name": "三级医院评审标准（2025年版）（官方摘录）.md",
       "file_hash": "2f463101185b92c148d8bd80effd9be058ce5565151eeed9b36fb94d456acfbd",
       "chunk_count": 3,
@@ -1172,6 +1210,7 @@
         "互联网医院",
         "远程医疗"
       ],
+      "catalog_material_id": "PUB-HC-INTERNET-DIAGNOSIS",
       "original_name": "互联网诊疗管理办法（试行）等三个文件（官方摘录）.md",
       "file_hash": "853aeb5b4dc28d0da49dae64b1b00a827b98d6f04b98b8b886a641e1e7278c8f",
       "chunk_count": 3,
@@ -1202,6 +1241,7 @@
         "医疗质量",
         "电子病历"
       ],
+      "catalog_material_id": "PUB-HC-INTERNET-SUPERVISION",
       "original_name": "互联网诊疗监管细则（试行）（官方摘录）.md",
       "file_hash": "577d06c4025024d2328111ab34d167e2ecb007b5c4341e4a24809767408b367f",
       "chunk_count": 3,

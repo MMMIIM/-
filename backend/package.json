@@ -18,6 +18,7 @@
     "eval:stage20": "node eval/stage20/acceptance.js",
     "eval:corpus-l3": "node eval/corpus/l3-eval.js",
     "ingest:corpus-l3": "node scripts/ingest-corpus-l3.js",
+    "prepare:l3-enterprise": "node scripts/prepare-l3-enterprise-path.js",
     "eval:evidence-gold": "node eval/evidence-gold/run.js",
     "audit:semantic-boundary": "node eval/semantic-boundary/audit-runner.js",
     "snapshot:semantic-boundary": "node eval/semantic-boundary/snapshot.js",

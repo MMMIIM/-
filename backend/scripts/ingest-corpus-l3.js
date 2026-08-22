@@ -84,7 +84,7 @@ async function upsertMaterial(item) {
   } finally {
     client.release();
   }
-  return { ...item, material_id: material.id, original_name: material.original_name, file_hash: material.file_hash, chunk_count: chunks.length, index_model: DETERMINISTIC_EMBEDDING_MODEL, lifecycle_status: 'ACTIVE', review_status: 'approved', usage_status: item.usage_status, index_status: 'INDEXED' };
+  return { ...item, catalog_material_id: item.material_id, material_id: material.id, original_name: material.original_name, file_hash: material.file_hash, chunk_count: chunks.length, index_model: DETERMINISTIC_EMBEDDING_MODEL, lifecycle_status: 'ACTIVE', review_status: 'approved', usage_status: item.usage_status, index_status: 'INDEXED' };
 }
 
 async function main() {
