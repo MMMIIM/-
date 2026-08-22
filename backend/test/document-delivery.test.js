@@ -5,7 +5,7 @@ import { buildBidDocumentModel } from '../src/pipeline/bid-document-model.js';
 import { normalizeHeadingText } from '../src/pipeline/bid-document-model.js';
 import { DocumentDeliveryService } from '../src/pipeline/document-delivery-service.js';
 import { renderBidDocument, tableCellMarginForPolicy, tableWidthForPolicy } from '../src/pipeline/docx-renderer.js';
-import { getDocumentFormatPolicy, getUsableBodyWidth } from '../src/pipeline/document-format-policy.js';
+import { getDocumentFormatPolicy, getFirstLineIndentTwips, getUsableBodyWidth } from '../src/pipeline/document-format-policy.js';
 import { projectFactsForDocument, projectNameForDocument } from '../src/pipeline/document-projection-policy.js';
 import { createApp } from '../src/app.js';
 
@@ -44,6 +44,11 @@ test('DOCX renderer 产生真实 Heading、目录字段、页眉页脚与正文'
   assert.match(documentXml, /示例公司/);
   assert.match(documentXml, /SimSun/);
   assert.match(documentXml, /SimHei/);
+  assert.match(documentXml, /w:sz w:val="32"/);
+  assert.match(documentXml, /w:sz w:val="28"/);
+  assert.match(documentXml, /w:sz w:val="24"/);
+  assert.match(documentXml, /w:firstLine="480"/);
+  assert.match(documentXml, /w:spacing w:after="0" w:before="0" w:line="360"/);
   assert.doesNotMatch(documentXml, /项目统一信息/);
   assert.doesNotMatch(documentXml, /data_classification|synthetic|DocumentVersion|generation-word-1/);
   assert.match(documentXml, /w:tbl/);
@@ -69,6 +74,37 @@ test('Stage16-R1 默认表格宽度不超过正文可用宽度且保留内边距
   assert.equal(tableWidthForPolicy(policy), getUsableBodyWidth(policy));
   assert.ok(tableWidthForPolicy(policy) <= policy.page.width_dxa - policy.page.margin_dxa.left - policy.page.margin_dxa.right);
   assert.deepEqual(tableCellMarginForPolicy(policy), { top: 80, bottom: 80, left: 180, right: 180 });
+});
+
+test('Stage16-R1.1 格式策略集中表达正式标书语义', () => {
+  const policy = getDocumentFormatPolicy();
+  assert.equal(policy.profile_id, 'SYSTEM_DEFAULT_TECHNICAL_BID_V1');
+  assert.equal(policy.profile_type, 'SYSTEM_DEFAULT');
+  assert.deepEqual(policy.page.margins_cm, { top: 2.5, right: 2.5, bottom: 2.5, left: 3 });
+  assert.equal(policy.body.size_pt, 12);
+  assert.equal(policy.body.firstLineIndentChars, 2);
+  assert.equal(policy.body.paragraph_before_pt, 0);
+  assert.equal(policy.body.paragraph_after_pt, 0);
+  assert.equal(policy.body.line_spacing.value, 1.5);
+  assert.equal(policy.headings[1].size_pt, 16);
+  assert.equal(policy.headings[2].size_pt, 14);
+  assert.notEqual(policy.headings[2].size_pt, 13);
+  assert.equal(policy.headings[3].size_pt, 12);
+  assert.equal(policy.table.size_pt, 10.5);
+  assert.equal(policy.table.width_policy, 'usable_body_width');
+  assert.equal(policy.toc.updateable, true);
+  assert.equal(policy.sections.body.page_number_start, 1);
+  assert.equal(getFirstLineIndentTwips(policy), 480);
+});
+
+test('Stage16-R1.1 首行缩进随正文有效字号确定性适配', async () => {
+  const base = getDocumentFormatPolicy();
+  const policy = { ...base, body: { ...base.body, size_pt: 14, size_half_points: 28 } };
+  const buffer = await renderBidDocument(buildBidDocumentModel({ project, version }), { policy });
+  const zip = await JSZip.loadAsync(buffer);
+  const documentXml = await zip.file('word/document.xml').async('string');
+  assert.equal(getFirstLineIndentTwips(policy), 560);
+  assert.match(documentXml, /w:firstLine="560"/);
 });
 
 test('Stage16-R1 标题编号由后端统一生成，源标题编号不会重复', () => {

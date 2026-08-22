@@ -1,38 +1,38 @@
 # Word Format Strategy
 
-Stage 16-R1 implements one conservative system-default Chinese technical-bid
-format. It is intentionally separate from tender semantics and from the
-semantic control plane.
+Stage 16-R1.1 defines one product-owned fallback profile:
+`SYSTEM_DEFAULT_TECHNICAL_BID_V1`.
 
-Priority for future profiles:
+Format priority is:
 
 ```text
-Tender-specific explicit format requirements
-  > Enterprise/customer template
-  > System default format
+Tender explicit rule > Enterprise/customer template > System default format
 ```
 
-The current default uses A4, 宋体 body text, 黑体 headings, deterministic
-heading numbering, a dedicated visible `目 录` area backed by a real
-Word-updateable TOC field, body-width-bounded tables, explicit cell padding,
-and a cover page without a visible page number. The body section starts page
-numbering at 1. Word/WPS may require the user to choose “更新目录/更新域” to
-resolve final page references; the exported file still contains a visible TOC
-title and explanatory placeholder before that refresh.
+There is no universal Chinese bid format. The system default is a conservative
+technical-bid baseline and must yield to an explicit tender rule or an approved
+enterprise template when those are introduced.
 
-Formal Project Facts are projected only into known display fields such as
-项目名称、项目编号、投标人 and 项目周期. Unknown, technical, object-valued,
-synthetic or audit fields are not dumped into the formal document.
+The default profile uses A4 portrait, 2.5 cm top/right/bottom margins and a
+3.0 cm left margin, 宋体 12 pt body text, 黑体 16/14/12 pt Heading 1/2/3,
+two-Chinese-character first-line indentation, 1.5 line spacing, and zero
+paragraph before/after spacing. Tables use 宋体 10.5 pt, explicit padding and
+the usable body width. Cover, TOC, header/footer and body page-number behavior
+are explicit policy sections rather than renderer constants.
 
-Future `TenderFormatProfile` / enterprise-template support may override:
+Format inventory: `document-format-policy.js` owns page geometry, type scale,
+semantic spacing, numbering tokens, table geometry, TOC, section and page
+furniture values; `docx-renderer.js` only maps those values to DOCX/OOXML. The
+Bid Document Model supplies content and formal field projection, not visual
+format decisions.
 
-- font family and size;
-- line and paragraph spacing;
-- page margins and paper size;
-- TOC/header/footer requirements;
-- cover and page-number rules;
-- table style and page limits.
+These are verified reference patterns, not universal truths: 宋体/黑体,
+小四/四号/三号, two-character indentation, zero paragraph spacing, 1.5x or
+fixed-point line spacing, and tender-specific TOC/header/footer requirements
+all occur in real bid documents. Unknown requirements remain unknown.
 
-Automatic tender-format extraction, template management UI and custom renderer
-implementations are out of scope for Stage 16-R1.
-
+Future `TenderFormatProfile` and enterprise-template support may override page
+geometry, fonts, spacing, heading tiers, tables, TOC/header/footer and page
+number rules. Such overrides must be traceable to explicit source text,
+source clause/location and a deterministic or reviewed interpretation. No
+automatic tender-format extraction or template UI is implemented here.
