@@ -196,6 +196,16 @@ input:focus, select:focus, textarea:focus { border-color: #2f6fed; box-shadow: 0
 .copilot-blockers button, .copilot-tasks button, .copilot-actions button { justify-self: start; border: 0; background: transparent; color: #1859aa; cursor: pointer; padding: 0; }
 .copilot-tasks em { color: #92400e; font-size: 12px; font-style: normal; }
 .copilot-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.copilot-preview { display: grid; gap: 10px; border: 1px solid #b8cbe3; border-radius: 9px; padding: 12px; background: #f8fbff; }
+.copilot-preview-heading { display: flex; justify-content: space-between; gap: 12px; color: #182230; }
+.copilot-preview-heading span { color: #667085; font-size: 12px; }
+.copilot-preview > p { margin: 0; color: #475467; font-size: 13px; }
+.copilot-diff { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.copilot-diff > div { min-width: 0; border: 1px solid #d8e1eb; border-radius: 7px; padding: 8px; background: #fff; }
+.copilot-diff small { color: #667085; font-weight: 650; }
+.copilot-diff pre, .copilot-preview details pre { max-height: 180px; margin: 7px 0 0; overflow: auto; white-space: pre-wrap; font: 12px/1.55 inherit; color: #344054; }
+.copilot-preview details summary { cursor: pointer; color: #1859aa; font-size: 12px; }
+@media (max-width: 720px) { .copilot-diff { grid-template-columns: 1fr; } }
 .loading.full { min-height: 100vh; }
 .spin { animation: spin .9s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }

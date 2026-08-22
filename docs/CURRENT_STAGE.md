@@ -1,14 +1,17 @@
 # Current Stage
 
-## Stage 18 — Bid Copilot / Agent Foundation
+## Stage 19 — Bid Copilot Guided Actions / Safe Execution
 
 Priority: **P1**
 Status: **PASS / FROZEN**
 
-Stage 18 is a contextual orchestration layer over the formal Control Plane.
-It may read, explain, prioritize and navigate through existing authoritative
-services, but it never becomes a second source of truth, bypasses Claim Gate,
-or makes formal approvals.
+Stage 18 remains **PASS / FROZEN** below.
+
+Stage 19 extends the contextual assistant with bounded, reversible actions over
+existing formal services. Every action is context-bound, risk-classified,
+idempotent where needed, validated after execution, and auditable. Formal
+business decisions remain human-only. Engineering acceptance is complete;
+manual formal decisions remain in the existing workbench.
 
 Stage 16 — Document Delivery & Word V1 is **PASS / FROZEN**.
 Manual TOC Acceptance: **PASS**
@@ -68,6 +71,42 @@ Bid Document Model → Format Policy → DOCX Renderer
 - retrieval cannot bypass Evidence, Fact, Mapping, Claim Gate or Writer auth;
 - backend, frontend, PostgreSQL, build, lint and diff checks all pass.
 
+## Stage 19 goal
+
+让用户可以安全执行可逆的准备和检查动作，并对章节修订先预览差异、再由
+正式服务应用；Agent 不直接写数据库、不覆盖旧版本、不把检索候选升级为
+正式事实或 Claim。
+
+## Stage 19 acceptance target
+
+- safe action tools and centralized L0–L4 execution authorization;
+- bounded multi-step execution with exact partial-failure reporting;
+- chapter revision preview/diff, validation and stale-preview protection;
+- idempotent action execution and post-action authoritative re-read;
+- structured human decisions for L4 blockers;
+- Agent Eval V2 and prompt-injection action safety tests;
+- full backend/frontend/PostgreSQL/retrieval/eval/build/lint regression.
+
+## Stage 19 acceptance result
+
+- Safe L0/L1 refresh, retrieval and bid-check actions execute only through
+  formal services; L2 actions prepare/validate without mutation;
+- L3 chapter changes require a persisted preview, current-version hash match
+  and explicit human approval, then create a new version through the formal
+  document service;
+- L4 approvals, rejections, overrides and Claim Gate bypasses remain
+  `HUMAN_REQUIRED` and are audited without execution;
+- action previews expose business-readable Original / Proposed / Diff, with
+  stale-preview protection, bounded eight-step plans and idempotent replay;
+- migration 040 persists previews and action audits, and project-scoped HTTP
+  endpoints expose only safe preview fields;
+- Agent Eval V2: 12/12 cases, pass rate 100%, stale prevention 100%,
+  idempotency 100%, unauthorized mutation 0, prompt-injection action
+  violation 0, partial-failure reporting 100%;
+- backend 502 tests, frontend 47 tests, PostgreSQL 40 tests, retrieval eval,
+  build, lint and diff checks pass. No external AI calls, push, merge or
+  deployment were used.
+
 ## Stage 18 goal
 
 让普通投标人员可以在项目上下文中询问“还缺什么、为什么不能生成、哪些材料
@@ -96,11 +135,11 @@ Bid Document Model → Format Policy → DOCX Renderer
   diff checks pass.
 
 Stage 18 is **PASS / FROZEN**. No external AI calls, new providers, private
-data scope, push, merge or deployment were used. The next stage requires a new
-GPT Decision.
+data scope, push, merge or deployment were used.
 
 ## Stop conditions
 
 不修改已冻结 Word 基线；不修改 Writer、Claim Gate、Evidence/Fact/Mapping、
 semantic gateway 或业务 Contract；不调用外部 AI；不新增 Provider/私有数据
-范围；不自动批准、不绕过正式门禁；不推送、不合并、不部署。
+范围；不自动批准、不绕过正式门禁；不直接数据库写入；不推送、不合并、
+不部署。

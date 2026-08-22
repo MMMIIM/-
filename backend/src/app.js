@@ -16,7 +16,7 @@ function sendData(res, data, status = 200) {
   return res.status(status).json({ ok: true, data });
 }
 
-export function createApp({ repository, storage, generationService, requirementParseService, requirementSourceService, productionBetaService, companyMaterialService, evidenceService, evidenceFactService, enterpriseRetrievalService, documentGenerationService, reviewCenterService, evidenceReadinessService, materialProcessingCenterService, evidenceReviewService, evidenceSourceFactService, requirementEvidenceFactMappingService, projectFactControlService, documentDeliveryService, agentContextResolver, agentOrchestrator, corsOrigin }) {
+export function createApp({ repository, storage, generationService, requirementParseService, requirementSourceService, productionBetaService, companyMaterialService, evidenceService, evidenceFactService, enterpriseRetrievalService, documentGenerationService, reviewCenterService, evidenceReadinessService, materialProcessingCenterService, evidenceReviewService, evidenceSourceFactService, requirementEvidenceFactMappingService, projectFactControlService, documentDeliveryService, agentContextResolver, agentOrchestrator, agentActionExecutor, corsOrigin }) {
   const app = express();
   app.use(cors({ origin: corsOrigin || 'http://localhost:5173' }));
   app.use(express.json({ limit: '2mb' }));
@@ -360,6 +360,46 @@ export function createApp({ repository, storage, generationService, requirementP
     try {
       if (!repository.listAgentExecutionAudits) throw new AppError('AGENT_AUDIT_UNAVAILABLE', '当前暂时无法读取助手记录。', 503);
       sendData(res, { audits: await repository.listAgentExecutionAudits(req.params.projectId, req.query.limit) });
+    } catch (error) { next(error); }
+  });
+
+  app.post('/api/projects/:projectId/copilot/actions/execute', async (req, res, next) => {
+    try {
+      if (!agentActionExecutor || !agentContextResolver) throw new AppError('AGENT_ACTION_UNAVAILABLE', '项目助手操作能力尚未配置。', 503);
+      const action = requireText(req.body?.tool || req.body?.action, '操作');
+      const suppliedContext = req.body?.context && typeof req.body.context === 'object' ? req.body.context : {};
+      if (suppliedContext.project_id && suppliedContext.project_id !== req.params.projectId) throw new AppError('AGENT_CONTEXT_MISMATCH', '当前请求的项目上下文不一致，请从项目工作区重新发起。', 400);
+      const context = await agentContextResolver.resolve({ ...suppliedContext, project_id: req.params.projectId, user_id: req.body?.user_id });
+      const result = await agentActionExecutor.execute({ context, tool: action, args: req.body?.args || {}, agent_run_id: req.body?.agent_run_id || null, idempotency_key: req.body?.idempotency_key || null, human_approved: req.body?.human_approved === true });
+      sendData(res, result);
+    } catch (error) { next(error); }
+  });
+
+  app.post('/api/projects/:projectId/copilot/actions/execute-plan', async (req, res, next) => {
+    try {
+      if (!agentActionExecutor || !agentContextResolver) throw new AppError('AGENT_ACTION_UNAVAILABLE', '项目助手操作能力尚未配置。', 503);
+      const suppliedContext = req.body?.context && typeof req.body.context === 'object' ? req.body.context : {};
+      if (suppliedContext.project_id && suppliedContext.project_id !== req.params.projectId) throw new AppError('AGENT_CONTEXT_MISMATCH', '当前请求的项目上下文不一致，请从项目工作区重新发起。', 400);
+      const context = await agentContextResolver.resolve({ ...suppliedContext, project_id: req.params.projectId, user_id: req.body?.user_id });
+      const result = await agentActionExecutor.executePlan({ context, actions: Array.isArray(req.body?.actions) ? req.body.actions : [], agent_run_id: req.body?.agent_run_id || null });
+      sendData(res, result);
+    } catch (error) { next(error); }
+  });
+
+  app.get('/api/projects/:projectId/copilot/action-audits', async (req, res, next) => {
+    try {
+      if (!repository.listAgentActionAudits) throw new AppError('AGENT_AUDIT_UNAVAILABLE', '当前暂时无法读取操作记录。', 503);
+      sendData(res, { audits: await repository.listAgentActionAudits(req.params.projectId, req.query.limit) });
+    } catch (error) { next(error); }
+  });
+
+  app.get('/api/projects/:projectId/copilot/action-previews/:previewId', async (req, res, next) => {
+    try {
+      if (!repository.getAgentActionPreview) throw new AppError('AGENT_ACTION_UNAVAILABLE', '当前暂时无法读取操作预览。', 503);
+      const row = await repository.getAgentActionPreview(req.params.previewId);
+      if (!row || row.project_id !== req.params.projectId) throw new AppError('AGENT_PREVIEW_NOT_FOUND', '操作预览不存在或不属于当前项目。', 404);
+      const raw = row.preview_json || {};
+      sendData(res, { preview: { preview_id: row.preview_id, action_type: row.action_type, target: row.target_json || {}, original_text: raw.original_text || raw.diff?.original || '', proposed_text: raw.proposed_text || raw.diff?.proposed || '', diff: raw.diff || null, validation_result: row.validation_json || {} } });
     } catch (error) { next(error); }
   });
 

@@ -14,6 +14,7 @@
     "eval:enterprise-retrieval": "node scripts/eval-enterprise-retrieval.js",
     "eval:retrieval": "node eval/retrieval-eval/benchmark.js",
     "eval:agent": "node eval/agent-eval/benchmark.js",
+    "eval:agent-v2": "node eval/agent-eval-v2/benchmark.js",
     "eval:evidence-gold": "node eval/evidence-gold/run.js",
     "audit:semantic-boundary": "node eval/semantic-boundary/audit-runner.js",
     "snapshot:semantic-boundary": "node eval/semantic-boundary/snapshot.js",
@@ -54,7 +55,7 @@
     "smoke:writer-gateway": "node scripts/live-gateway-smoke.js section_drafting",
     "smoke:revision-gateway": "node scripts/live-gateway-smoke.js targeted_revision",
     "test": "node --test",
-    "test:postgres": "node --test --test-concurrency=1 integration/postgres.integration.js integration/deterministic.integration.js integration/document-delivery.integration.js"
+    "test:postgres": "node --test --test-concurrency=1 integration/postgres.integration.js integration/deterministic.integration.js integration/document-delivery.integration.js integration/agent-actions.integration.js"
   },
   "dependencies": {
     "cors": "^2.8.5",

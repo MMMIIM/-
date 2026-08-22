@@ -18,4 +18,20 @@ describe('Bid Copilot contextual panel', () => {
     await api.askCopilot('P', '下一步先做什么？', { current_route: '概览' });
     expect(fetch).toHaveBeenCalledWith('/api/projects/P/copilot', expect.objectContaining({ method: 'POST' }));
   });
+
+  it('shows a chapter preview and keeps formal application behind an explicit action', () => {
+    const html = renderToStaticMarkup(<BidCopilot projectId="P" context={{ current_route: '标书', document_version_id: 'v1', chapter_id: 'implementation' }} initialResponse={{ status: 'SUCCESS', summary: '已准备章节修订预览。', tasks: [], blockers: [], actions: [{ type: 'preview', label: '查看预览差异', tool: 'prepareChapterRevision', preview_id: 'preview-1', target: { version_id: 'v1', chapter_id: 'implementation' }, preview: { original_text: '原文', proposed_text: '建议修改' }, validation_result: { validation_status: 'pass' } }] }} />);
+    expect(html).toContain('章节修订预览');
+    expect(html).toContain('接受并应用修改');
+    expect(html).toContain('建议修改');
+    expect(html).toContain('正式版本还没有改变');
+  });
+
+  it('calls the explicit action endpoint with human approval only when requested', async () => {
+    const fetch = vi.fn(async () => new Response(JSON.stringify({ ok: true, data: { result: 'EXECUTED' } }), { status: 200, headers: { 'Content-Type': 'application/json' } }));
+    vi.stubGlobal('fetch', fetch);
+    await api.executeCopilotAction('P', 'applyApprovedChapterRevision', { preview_id: 'preview-1' }, { chapter_id: 'implementation' }, true);
+    expect(fetch).toHaveBeenCalledWith('/api/projects/P/copilot/actions/execute', expect.objectContaining({ method: 'POST' }));
+    expect(JSON.parse(fetch.mock.calls[0][1].body).human_approved).toBe(true);
+  });
 });

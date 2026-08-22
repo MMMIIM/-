@@ -29,6 +29,8 @@ import { DocumentDeliveryService } from './pipeline/document-delivery-service.js
 import { AgentContextResolver } from './pipeline/agent-context-resolver.js';
 import { AgentToolLayer } from './pipeline/agent-tools.js';
 import { BidCopilotOrchestrator } from './pipeline/bid-copilot-orchestrator.js';
+import { AgentActionService } from './pipeline/agent-action-service.js';
+import { AgentActionExecutor } from './pipeline/agent-action-executor.js';
 
 const directory = dirname(fileURLToPath(import.meta.url));
 const runtime = createBackendRuntime();
@@ -77,7 +79,9 @@ const agentTools = new AgentToolLayer({
   documentGenerationService,
   productionBetaService
 });
-const agentOrchestrator = new BidCopilotOrchestrator({ contextResolver: agentContextResolver, tools: agentTools, auditRepository: repository });
+const agentActionService = new AgentActionService({ repository, tools: agentTools, evidenceReadinessService, reviewCenterService, productionBetaService, documentGenerationService });
+const agentActionExecutor = new AgentActionExecutor({ actionService: agentActionService, repository });
+const agentOrchestrator = new BidCopilotOrchestrator({ contextResolver: agentContextResolver, tools: agentTools, actionExecutor: agentActionExecutor, auditRepository: repository });
 const app = createApp({
   repository,
   storage,
@@ -100,6 +104,7 @@ const app = createApp({
   documentDeliveryService,
   agentContextResolver,
   agentOrchestrator,
+  agentActionExecutor,
   corsOrigin: runtimeEnv.CORS_ORIGIN
 });
 

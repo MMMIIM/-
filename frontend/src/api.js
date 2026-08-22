@@ -162,6 +162,24 @@ export const api = {
   askCopilot(projectId, message, context = {}) {
     return request(`/api/projects/${projectId}/copilot`, { method: 'POST', body: JSON.stringify({ message, context: { ...context, project_id: projectId } }) });
   },
+  executeCopilotAction(projectId, tool, args = {}, context = {}, humanApproved = false, idempotencyKey = '') {
+    return request(`/api/projects/${projectId}/copilot/actions/execute`, {
+      method: 'POST',
+      body: JSON.stringify({ tool, args, context: { ...context, project_id: projectId }, human_approved: humanApproved, idempotency_key: idempotencyKey || undefined })
+    });
+  },
+  executeCopilotPlan(projectId, actions = [], context = {}) {
+    return request(`/api/projects/${projectId}/copilot/actions/execute-plan`, {
+      method: 'POST',
+      body: JSON.stringify({ actions, context: { ...context, project_id: projectId } })
+    });
+  },
+  listCopilotActionAudits(projectId, limit = 50) {
+    return request(`/api/projects/${projectId}/copilot/action-audits?limit=${encodeURIComponent(limit)}`);
+  },
+  getCopilotActionPreview(projectId, previewId) {
+    return request(`/api/projects/${projectId}/copilot/action-previews/${encodeURIComponent(previewId)}`);
+  },
   decideEvidenceReview(reviewId,decision,note='') { return request(`/api/evidence-reviews/${reviewId}/${decision}`,{method:'POST',body:JSON.stringify({reviewer:'current_user',note})}); },
   extractEvidenceSourceFact(reviewId) { return request(`/api/evidence-reviews/${reviewId}/facts`,{method:'POST',body:'{}'}); },
   decideEvidenceSourceFact(factId,decision,note='') { return request(`/api/evidence-source-facts/${factId}/${decision}`,{method:'POST',body:JSON.stringify({reviewer:'current_user',note})}); },

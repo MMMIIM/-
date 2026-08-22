@@ -1268,6 +1268,56 @@ export class PgRepository {
     return rows;
   }
 
+  async createAgentActionPreview(value) {
+    const { rows } = await this.pool.query(`
+      INSERT INTO agent_action_previews
+        (preview_id,agent_run_id,project_id,action_type,idempotency_key,target_json,
+         before_version_id,before_version_hash,preview_json,validation_json,status,expires_at)
+      VALUES ($1,$2,$3,$4,$5,$6::jsonb,$7,$8,$9::jsonb,$10::jsonb,$11,$12)
+      ON CONFLICT(idempotency_key) DO UPDATE SET idempotency_key=EXCLUDED.idempotency_key
+      RETURNING *
+    `, [value.preview_id, value.agent_run_id || null, value.project_id, value.action_type, value.idempotency_key,
+      JSON.stringify(value.target || {}), value.before_version_id || null, value.before_version_hash || null,
+      JSON.stringify(value.preview || {}), JSON.stringify(value.validation_result || {}), value.status || 'preview_ready', value.expires_at || null]);
+    return rows[0];
+  }
+
+  async getAgentActionPreview(previewId) {
+    const { rows } = await this.pool.query(`SELECT * FROM agent_action_previews WHERE preview_id=$1`, [previewId]);
+    return rows[0] || null;
+  }
+
+  async updateAgentActionPreview(previewId, data = {}) {
+    const { rows } = await this.pool.query(`UPDATE agent_action_previews SET status=COALESCE($2,status),applied_at=COALESCE($3,applied_at),validation_json=COALESCE($4::jsonb,validation_json) WHERE preview_id=$1 RETURNING *`, [previewId, data.status || null, data.applied_at || null, data.validation_result ? JSON.stringify(data.validation_result) : null]);
+    return rows[0] || null;
+  }
+
+  async getAgentActionAuditByIdempotency(idempotencyKey) {
+    const { rows } = await this.pool.query(`SELECT * FROM agent_action_audits WHERE idempotency_key=$1`, [idempotencyKey]);
+    return rows[0] || null;
+  }
+
+  async createAgentActionAudit(value) {
+    const { rows } = await this.pool.query(`
+      INSERT INTO agent_action_audits
+        (action_id,agent_run_id,project_id,idempotency_key,tool,risk_level,planned,executed,
+         target_json,before_version,after_version,result,human_required,validation_json,latency_ms)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb,$10,$11,$12,$13,$14::jsonb,$15)
+      ON CONFLICT(idempotency_key) DO UPDATE SET idempotency_key=EXCLUDED.idempotency_key
+      RETURNING *
+    `, [value.action_id, value.agent_run_id || null, value.project_id, value.idempotency_key, value.tool, value.risk_level,
+      value.planned !== false, value.executed === true, JSON.stringify(value.target || {}), value.before_version || null,
+      value.after_version || null, value.result, value.human_required === true, JSON.stringify(value.validation_result || {}),
+      Number.isFinite(value.latency_ms) ? value.latency_ms : null]);
+    return rows[0];
+  }
+
+  async listAgentActionAudits(projectId, limit = 50) {
+    const safeLimit = Math.min(200, Math.max(1, Number(limit) || 50));
+    const { rows } = await this.pool.query(`SELECT * FROM agent_action_audits WHERE project_id=$1 ORDER BY created_at DESC LIMIT $2`, [projectId, safeLimit]);
+    return rows;
+  }
+
   async touchProject(id) {
     await this.pool.query(`UPDATE projects SET updated_at = now() WHERE id = $1`, [id]);
   }
