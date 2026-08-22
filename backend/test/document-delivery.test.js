@@ -106,6 +106,23 @@ test('DOCX renderer 产生真实 Heading、目录字段、页眉页脚与正文'
   assert.match(footerXml, /instrText[^>]*>PAGE/);
 });
 
+test('Stage16-R1.3 章节换页绑定 Heading1，不把普通段落孤立在章节前', async () => {
+  const paginationVersion = {
+    ...version,
+    sections_json: [
+      { chapter_id: 'chapter-01', title: '项目理解', order: 1, content_markdown: '正文内容。\n\n[[PAGE_BREAK]]\n\n后续实施安排。' },
+      { chapter_id: 'chapter-02', title: '实施方案', order: 2, content_markdown: '### 质量保证\n\n质量说明。' }
+    ]
+  };
+  const buffer = await renderBidDocument(buildBidDocumentModel({ project, version: paginationVersion }));
+  const zip = await JSZip.loadAsync(buffer);
+  const documentXml = await zip.file('word/document.xml').async('string');
+  assert.match(documentXml, /w:pageBreakBefore/);
+  assert.doesNotMatch(documentXml, /w:br w:type="page"/);
+  assert.match(documentXml, /w:widowControl/);
+  assert.ok(documentXml.indexOf('后续实施安排。') < documentXml.lastIndexOf('实施方案'));
+});
+
 test('Stage16-R1 文档投影只允许正式字段并拒绝技术/对象值', () => {
   assert.equal(projectNameForDocument({ name: 'E2E-PROJECT [data_classification=synthetic]' }), '');
   assert.deepEqual(projectFactsForDocument([

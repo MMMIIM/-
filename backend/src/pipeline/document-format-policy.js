@@ -76,7 +76,7 @@ export const PROFESSIONAL_WORD_POLICY = Object.freeze({
   sections: {
     cover: { type: 'first_page', title_page: true, header: false, footer: false, page_number: false },
     toc: { type: 'next_page', title_page: true, header: false, footer: false, page_number: false },
-    body: { type: 'next_page', title_page: false, header: true, footer: true, page_number: true, page_number_start: 1 }
+    body: { type: 'next_page', title_page: false, header: true, footer: true, page_number: true, page_number_start: 1, chapter_page_break: 'before_heading' }
   },
   header_footer: {
     enabled: true, show_project_name: true, header_size_half_points: 20, header_after_pt: 0,

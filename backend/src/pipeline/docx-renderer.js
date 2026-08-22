@@ -1,6 +1,6 @@
 import {
   AlignmentType, BorderStyle, Document, Footer, Header, HeadingLevel, LevelFormat, LevelSuffix,
-  PageBreak, PageNumber, Paragraph, Packer, SectionType, Table, TableCell, TableOfContents,
+  PageNumber, Paragraph, Packer, SectionType, Table, TableCell, TableOfContents,
   TableRow, TextRun, WidthType
 } from 'docx';
 import {
@@ -30,6 +30,7 @@ function paragraph(textValue, policy) {
     alignment: policy.body.alignment === 'both' ? AlignmentType.JUSTIFIED : AlignmentType.LEFT,
     indent: { firstLine: getFirstLineIndentTwips(policy) },
     spacing: { ...spacing, line: getBodyLineSpacingTwips(policy) },
+    widowControl: true,
     style: 'Normal'
   });
 }
@@ -103,21 +104,30 @@ function table(block, policy) {
 
 function contentChildren(model, policy) {
   const children = [];
-  for (const section of model.sections) {
+  for (const [sectionIndex, section] of model.sections.entries()) {
     const sectionHeading = normalizeHeadingText(section.title);
     children.push(new Paragraph({
       children: [run(sectionHeading, { bold: policy.headings[1].bold !== false, size: policy.headings[1].size_half_points }, policy, 'heading1')],
       heading: HeadingLevel.HEADING_1,
       numbering: { reference: 'bid-heading-numbering', level: policy.headings[1].numbering_level ?? 0 },
       spacing: getParagraphSpacingTwips(policy, 1),
-      pageBreakBefore: policy.headings[1].page_break_before === true,
+      pageBreakBefore: (sectionIndex > 0 && policy.sections.body.chapter_page_break === 'before_heading') || policy.headings[1].page_break_before === true,
       keepNext: true
     }));
+    let pageBreakBeforeNextHeading = false;
     for (const [index, block] of section.content_blocks.entries()) {
       if (index === 0 && block.kind === 'heading' && normalizeHeadingText(block.text) === sectionHeading) continue;
-      if (block.kind === 'heading') children.push(heading(block, policy));
+      if (block.kind === 'heading') {
+        children.push(heading({ ...block, page_break_before: block.page_break_before === true || pageBreakBeforeNextHeading }, policy));
+        pageBreakBeforeNextHeading = false;
+      }
       else if (block.kind === 'table') children.push(table(block, policy));
-      else if (block.kind === 'page_break') children.push(new Paragraph({ children: [new PageBreak()] }));
+      else if (block.kind === 'page_break') {
+        // A standalone break can strand a normal paragraph before the next
+        // chapter. Chapter breaks are bound to the next Heading 1 instead.
+        const next = section.content_blocks.slice(index + 1).find((candidate) => candidate?.kind !== 'page_break');
+        pageBreakBeforeNextHeading = next?.kind === 'heading';
+      }
       else if (block.kind === 'image') children.push(new Paragraph({ children: [run(`[图片占位：${block.alt}]`, { italics: true, color: '667085' }, policy, 'body')], alignment: AlignmentType.CENTER }));
       else if (block.text) children.push(paragraph(block.text, policy));
     }

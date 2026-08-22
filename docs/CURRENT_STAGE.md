@@ -1,6 +1,6 @@
 # Current Stage
 
-## Stage 16-R1.2 — Heading Hierarchy & Numbering Spacing
+## Stage 16-R1.3 — Chapter Pagination Fix
 
 Priority: **P1**
 Status: **ACTIVE**
@@ -13,9 +13,8 @@ Office visual acceptance is still pending.
 ## Goal
 
 Ensure the document model handed to the DOCX renderer has a continuous heading
-hierarchy. A source H3/H4 without its required parent is deterministically
-lowered to the nearest valid level; no empty or fabricated parent heading is
-created.
+hierarchy and that top-level chapters begin with their Heading 1. Standalone
+page-break blocks must not strand a normal paragraph before the next chapter.
 
 ```text
 Chapter (H1) → Section (H2) → Subsection (H3)
@@ -25,6 +24,8 @@ Chapter (H1) → Section (H2) → Subsection (H3)
 
 - normalize and validate heading levels in the Bid Document Model;
 - use a normal-space numbering suffix with restrained H1/H2/H3 indentation;
+- bind default chapter pagination to `Heading1` with `pageBreakBefore`;
+- preserve paragraph ownership and avoid standalone rendered page breaks;
 - preserve renderer-owned deterministic numbering, TOC behavior, typography,
   table layout, cover, page numbering and metadata projection;
 - keep the fix independent from Requirement, Evidence, Fact, Mapping, Claim
@@ -32,10 +33,10 @@ Chapter (H1) → Section (H2) → Subsection (H3)
 
 ## Acceptance status
 
-Heading hierarchy tests and representative DOCX structural validation must
-pass. Browser export remains covered by the existing Stage 16 flow. Real Office
-visual acceptance remains required in Microsoft Word, WPS Office or LibreOffice
-Writer; do not claim final freeze without that check.
+Heading, numbering and pagination tests plus representative DOCX structural
+validation must pass. Browser export remains covered by the existing Stage 16
+flow. Real Office visual acceptance remains required in Microsoft Word, WPS
+Office or LibreOffice Writer; do not claim final freeze without that check.
 
 ## Stop conditions
 
