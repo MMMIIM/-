@@ -25,7 +25,33 @@ The machine-readable offline run is `npm run eval:stage20 -w backend`.
 | Refresh/re-entry | PASS | Existing browser project workbench reloaded persisted project, task, version and risk state; HTTP/browser tests cover the same read models |
 | Failure/recovery and idempotency | PASS (offline) | Fixture checks mandatory validation failure, human-only formal action, bounded action replay (`NO_CHANGE`) and rejected Claim isolation |
 | Browser main path | PASS (read-only) | Local `http://127.0.0.1:5173/`: platform shell, 投标项目, 项目准备 → 审核与补充 → 标书生成 → 投标检查 all rendered; `/api/health` returned 200/database connected |
+| Browser write path | PARTIAL | New synthetic project and tender upload persisted through the UI; material upload/extraction and Copilot state query persisted after refresh. Requirement parsing was not started because the configured runtime uses `semantic_gateway` and no external Provider authorization was supplied. |
 | Fresh migration replay | PASS | PostgreSQL migration replay/fresh-install coverage passed in the 40-test PostgreSQL suite |
+
+## Browser write acceptance
+
+Executed against the real local UI at `http://127.0.0.1:5173/` with synthetic,
+non-sensitive data only (2026-08-22):
+
+- Project creation: **PASS** — `046e0160-1d98-4e28-ac5f-b86440e19516`,
+  `STAGE20-浏览器写入验收-合成项目`, persisted as `draft`.
+- Tender upload: **PASS** — `representative-tender.txt` persisted with
+  `succeeded` status; refresh/re-entry preserved the project and file.
+- Requirement parse: **EXTERNAL_PROVIDER_BLOCKED** — current backend runtime
+  resolves `GENERATION_PROVIDER=semantic_gateway` and would invoke the V43
+  gateway. No parse job was started and no external call was made.
+- Enterprise material upload/extraction: **PASS** —
+  `representative-company-material.txt` persisted as `technical_solution` with
+  `extraction_status=succeeded`; refresh preserved the record.
+- Evidence review, readiness resolution, generation, chapter revision, Bid
+  Check and Word export: **NOT_REACHED** because they require a confirmed
+  Requirement baseline.
+- Copilot real-state query: **PASS** after the pending local migration was
+  applied; one `SUCCESS` audit was persisted with intent `project_next_steps`.
+  The first attempt exposed a stale local database schema (`agent_execution_audits`
+  missing), fixed by running the existing `npm run db:migrate -w backend`.
+- Browser-generated document: **NOT_REACHED**; Word structural acceptance is
+  therefore covered only by the deterministic fixture in this checkpoint.
 
 ## Offline fixture result
 
@@ -69,10 +95,9 @@ authorized run may classify the already-configured provider as `PASS` or
 
 ## Remaining production risks / manual items
 
-1. A fresh project created through the browser and its complete side-effecting
-   path (upload, parse, review decisions, generation and export) still requires
-   an operator-controlled acceptance run; the browser check above was read-only
-   against the existing synthetic project.
+1. The fresh browser write path is complete through project, tender and
+   material persistence; parse and all downstream formal steps remain blocked by
+   the explicitly unauthorized Semantic Gateway call.
 2. Real Office visual acceptance remains the frozen Stage 16 gate and must be
    performed in Word/WPS/LibreOffice before customer delivery.
 3. Stage20 failure injections were validated offline and in targeted
@@ -83,5 +108,6 @@ authorized run may classify the already-configured provider as `PASS` or
 
 Engineering changes for this checkpoint are limited to the reusable synthetic
 fixture, deterministic acceptance runner/test, and stage documentation. No
-P0/P1 safety defect was found. Stage 20 is **PARTIAL / PENDING SIDE-EFFECTING
-MANUAL ACCEPTANCE**, not frozen solely from offline evidence.
+P0/P1 safety defect was found. Stage 20 remains **PARTIAL / BLOCKED** because
+the configured requirement parser needs an external Provider that this decision
+does not authorize; it is not frozen and no Provider PASS is inferred.
