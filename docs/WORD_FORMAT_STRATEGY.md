@@ -1,6 +1,11 @@
 # Word Format Strategy
 
-Stage 16-R1.1 defines one product-owned fallback profile:
+The normative foundation for basic Word behavior is now maintained in
+[`WORD_FOUNDATION_BASELINE.md`](WORD_FOUNDATION_BASELINE.md). This document
+keeps the product-level format priority and profile rationale; it does not
+duplicate renderer-specific rules.
+
+Stage 16 defines one product-owned fallback profile:
 `SYSTEM_DEFAULT_TECHNICAL_BID_V1`.
 
 Format priority is:

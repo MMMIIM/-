@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { projectDocumentFields, projectFactsForDocument, projectNameForDocument, DOCUMENT_PROJECTION_POLICY_VERSION } from './document-projection-policy.js';
+import { validateDocumentStructure } from './document-structure-validator.js';
 
 export const BID_DOCUMENT_MODEL_VERSION = 'bid-document-v1';
 
@@ -134,6 +135,7 @@ export function buildBidDocumentModel({ project, version, approvedProjectFacts =
   })).sort((a, b) => a.order - b.order || a.section_id.localeCompare(b.section_id));
   const normalizedSections = normalizeHeadingHierarchy(sections);
   validateHeadingHierarchy(normalizedSections);
+  validateDocumentStructure(normalizedSections);
   const projectedFacts = projectFactsForDocument(approvedProjectFacts);
   const documentFields = projectDocumentFields({ project, approvedProjectFacts });
   const documentProjectName = documentFields.project_name || projectNameForDocument(project);

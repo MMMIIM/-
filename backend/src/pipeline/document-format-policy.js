@@ -1,7 +1,7 @@
 const TWIPS_PER_POINT = 20;
 const TWIPS_PER_CM = 567;
 
-export const DOCUMENT_FORMAT_POLICY_VERSION = 'word-default-v1-r1.1';
+export const DOCUMENT_FORMAT_POLICY_VERSION = 'word-default-v1-r2';
 export const SYSTEM_DEFAULT_TECHNICAL_BID_V1 = 'SYSTEM_DEFAULT_TECHNICAL_BID_V1';
 
 function cmToTwips(value) {
@@ -61,7 +61,7 @@ export const PROFESSIONAL_WORD_POLICY = Object.freeze({
     paragraph_before_pt: 0, paragraph_after_pt: 0,
     cell_padding_dxa: { top: 80, bottom: 80, left: 180, right: 180 },
     border: { style: 'single', outer_size: 4, outer_color: 'B7C4D6', inner_size: 2, inner_color: 'D9E2F3' },
-    header_fill: 'F4F6F9'
+    header_fill: 'F4F6F9', header_repeat: true, row_cant_split: true
   },
   cover: {
     title_size_half_points: 36, document_title_size_half_points: 40, subtitle_size_half_points: 28, label_size_half_points: 24,
@@ -71,12 +71,15 @@ export const PROFESSIONAL_WORD_POLICY = Object.freeze({
   toc: {
     enabled: true, title: '目 录', title_size_half_points: 32,
     note: '目录页码将在 Word/WPS 中更新目录后显示。', note_size_half_points: 20,
-    title_after_pt: 12, note_after_pt: 18, heading_depth: 3, heading_style_range: '1-3', updateable: true
+    title_after_pt: 12, note_after_pt: 18, heading_depth: 3, heading_style_range: '1-3', updateable: true,
+    render_mode: 'field_only', visible_cached_result: false,
+    office_update_required: true,
+    limitation: 'docx 仅写入可更新 TOC 字段；页码由 Word/WPS 在更新目录后计算。'
   },
   sections: {
     cover: { type: 'first_page', title_page: true, header: false, footer: false, page_number: false },
     toc: { type: 'next_page', title_page: true, header: false, footer: false, page_number: false },
-    body: { type: 'next_page', title_page: false, header: true, footer: true, page_number: true, page_number_start: 1, chapter_page_break: 'before_heading' }
+    body: { type: 'next_page', title_page: false, header: true, footer: true, page_number: true, page_number_start: 1, chapter_page_break: 'none' }
   },
   header_footer: {
     enabled: true, show_project_name: true, header_size_half_points: 20, header_after_pt: 0,

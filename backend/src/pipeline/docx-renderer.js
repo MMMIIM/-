@@ -45,7 +45,8 @@ function heading(block, policy) {
     numbering: { reference: 'bid-heading-numbering', level: style.numbering_level ?? level - 1 },
     spacing,
     pageBreakBefore: style.page_break_before === true,
-    keepNext: true
+    keepNext: true,
+    keepLines: true
   });
 }
 
@@ -73,7 +74,8 @@ function table(block, policy) {
   const width = tableWidthForPolicy(policy);
   const columnWidths = tableColumnWidths(block.rows, width);
   const rows = block.rows.map((cells, rowIndex) => new TableRow({
-    tableHeader: rowIndex === 0,
+    tableHeader: policy.table.header_repeat !== false && rowIndex === 0,
+    cantSplit: policy.table.row_cant_split !== false,
     children: cells.map((cell, index) => new TableCell({
       width: { size: columnWidths[index] || columnWidths[columnWidths.length - 1], type: WidthType.DXA },
       shading: rowIndex === 0 ? { fill: policy.table.header_fill } : undefined,
@@ -112,7 +114,8 @@ function contentChildren(model, policy) {
       numbering: { reference: 'bid-heading-numbering', level: policy.headings[1].numbering_level ?? 0 },
       spacing: getParagraphSpacingTwips(policy, 1),
       pageBreakBefore: (sectionIndex > 0 && policy.sections.body.chapter_page_break === 'before_heading') || policy.headings[1].page_break_before === true,
-      keepNext: true
+      keepNext: true,
+      keepLines: true
     }));
     let pageBreakBeforeNextHeading = false;
     for (const [index, block] of section.content_blocks.entries()) {
@@ -187,7 +190,7 @@ export async function renderBidDocument(model, { policy = getDocumentFormatPolic
   const page = { size: { width: policy.page.width_dxa, height: policy.page.height_dxa }, margin: margins };
   const headingStyle = (level) => {
     const style = policy.headings[level];
-    return { id: `Heading${level}`, name: `Heading ${level}`, basedOn: 'Normal', next: 'Normal', run: { font: fontFor(policy, `heading${level}`), bold: style.bold !== false, size: style.size_half_points, color: style.color }, paragraph: { keepNext: true, spacing: getParagraphSpacingTwips(policy, level), outlineLevel: style.numbering_level ?? level - 1 } };
+    return { id: `Heading${level}`, name: `Heading ${level}`, basedOn: 'Normal', next: 'Normal', run: { font: fontFor(policy, `heading${level}`), bold: style.bold !== false, size: style.size_half_points, color: style.color }, paragraph: { keepNext: true, keepLines: true, spacing: getParagraphSpacingTwips(policy, level), outlineLevel: style.numbering_level ?? level - 1 } };
   };
   const bodySpacing = getParagraphSpacingTwips(policy, 'body');
   const bodyLine = getBodyLineSpacingTwips(policy);

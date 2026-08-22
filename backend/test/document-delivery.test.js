@@ -106,7 +106,7 @@ test('DOCX renderer 产生真实 Heading、目录字段、页眉页脚与正文'
   assert.match(footerXml, /instrText[^>]*>PAGE/);
 });
 
-test('Stage16-R1.3 章节换页绑定 Heading1，不把普通段落孤立在章节前', async () => {
+test('Stage16-R1.3 默认不强制所有章节换页，且不渲染独立分页符', async () => {
   const paginationVersion = {
     ...version,
     sections_json: [
@@ -117,7 +117,7 @@ test('Stage16-R1.3 章节换页绑定 Heading1，不把普通段落孤立在章�
   const buffer = await renderBidDocument(buildBidDocumentModel({ project, version: paginationVersion }));
   const zip = await JSZip.loadAsync(buffer);
   const documentXml = await zip.file('word/document.xml').async('string');
-  assert.match(documentXml, /w:pageBreakBefore/);
+  assert.doesNotMatch(documentXml, /w:pageBreakBefore/);
   assert.doesNotMatch(documentXml, /w:br w:type="page"/);
   assert.match(documentXml, /w:widowControl/);
   assert.ok(documentXml.indexOf('后续实施安排。') < documentXml.lastIndexOf('实施方案'));
