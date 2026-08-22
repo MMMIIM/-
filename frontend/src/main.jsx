@@ -11,6 +11,14 @@ import { MATERIAL_TYPES } from './material-types.js';
 import './styles.css';
 
 const tabs = ['概览', '材料准备度', '材料处理', '审核中心', '招标文件', '需求解析', '响应规划', '企业材料', '企业证据复核', '标书', '风险复核', '版本记录'];
+const flowStages = [
+  { label: '项目信息', tabs: ['概览'] },
+  { label: '招标文件', tabs: ['招标文件', '需求解析'] },
+  { label: '企业资料', tabs: ['企业材料'] },
+  { label: '审核与补充', tabs: ['材料准备度', '材料处理', '审核中心', '企业证据复核'] },
+  { label: '标书生成', tabs: ['标书', '响应规划'] },
+  { label: '核验与导出', tabs: ['风险复核', '版本记录'] },
+];
 const projectTypes = ['智慧城市', '数据治理', '系统集成', '园区运营', '应急管理', 'AI 应用'];
 const outputModes = ['技术标初稿', '售前方案', '响应矩阵', '风险清单'];
 const statusLabels = { draft: '草稿', generating: '生成中', review: '待复核', requirements_review: '需求待确认', requirements_confirmed: '需求已确认', confirmed: '已确认', candidate: '候选', queued: '排队中', running: '进行中', succeeded: '成功', failed: '失败' };
@@ -30,6 +38,35 @@ function Stat({ label, value }) { return <div><span>{label}</span><strong>{value
 
 function PageShell({ title, subtitle, onBack, children }) {
   return <main className="app-shell"><header className="app-header"><div className="brand-row">{onBack ? <button className="icon-button" onClick={onBack}><ArrowLeft size={20} /></button> : null}<div><p className="eyebrow">政企投标辅助工作台</p><h1>{title}</h1>{subtitle ? <p className="subtitle">{subtitle}</p> : null}</div></div><Badge>4.3 后端确定性流程</Badge></header>{children}</main>;
+}
+
+function flowStageStatus(stage, data, active) {
+  if (active) return '当前';
+  if (stage === '项目信息') return '已建立';
+  if (stage === '招标文件') {
+    if (data.requirementBaseline) return '需求已确认';
+    if (data.tenderFiles?.length) return '文件已上传';
+    return '待上传';
+  }
+  if (stage === '企业资料') return '可查看';
+  if (stage === '审核与补充') return data.requirementBaseline ? '可处理' : '待需求确认';
+  if (stage === '标书生成') return data.versions?.length ? '已有版本' : '待生成';
+  if (stage === '核验与导出') return data.versions?.length ? '待核验' : '待版本';
+  return '可查看';
+}
+
+export function ProjectNavigation({ activeTab, setActiveTab, data }) {
+  const activeStage = flowStages.findIndex((stage) => stage.tabs.includes(activeTab));
+  const openStage = (stage) => setActiveTab(stage.tabs[0]);
+  return <nav className="flow-stepper" aria-label="项目流程">
+      {flowStages.map((stage, index) => <button type="button" key={stage.label} className={`flow-step ${index === activeStage ? 'active' : ''}`} onClick={() => openStage(stage)} aria-current={index === activeStage ? 'step' : undefined}>
+        <span className="flow-step-number">{index + 1}</span><span className="flow-step-copy"><strong>{stage.label}</strong><small>{flowStageStatus(stage.label, data, index === activeStage)}</small></span>
+      </button>)}
+    </nav>;
+}
+
+export function ProfessionalWorkspaceNav({ activeTab, setActiveTab }) {
+  return <aside className="professional-nav"><h2>专业工作区</h2><p>需要查看规则、来源或审计时，从这里进入。</p><nav aria-label="专业工作区">{tabs.map((tab) => <button type="button" className={activeTab === tab ? 'active' : ''} key={tab} onClick={() => setActiveTab(tab)}>{tab}</button>)}</nav></aside>;
 }
 
 function ProjectList({ onCreate, onOpen }) {
@@ -78,10 +115,13 @@ function Workspace({ projectId, onBack }) {
   if (!data && !error) return <Loading text="正在加载项目工作台" full />;
   if (!data) return <PageShell title="项目工作台" onBack={onBack}><Notice kind="error">{error}</Notice></PageShell>;
   const latestVersion = data.versions?.[0];
-  if (activeTab === '材料准备度') return <PageShell title={data.project.name} subtitle="项目工作台 · 材料准备度" onBack={onBack}><nav className="tabs">{tabs.map((tab) => <button className={activeTab === tab ? 'active' : ''} key={tab} onClick={() => setActiveTab(tab)}>{tab}</button>)}</nav><EvidenceReadiness projectId={projectId} onOpenReview={()=>setActiveTab('审核中心')} onSupplementMaterial={(gap)=>{setMaterialGapContext(gap);setActiveTab('企业材料');}} /></PageShell>;
-  if (activeTab === '材料处理') return <PageShell title={data.project.name} subtitle="项目工作台 · 材料处理中心" onBack={onBack}><nav className="tabs">{tabs.map((tab) => <button className={activeTab === tab ? 'active' : ''} key={tab} onClick={() => setActiveTab(tab)}>{tab}</button>)}</nav><MaterialProcessingCenter projectId={projectId} focusMaterialId={focusMaterialId} onOpenReview={(materialId)=>{setFocusReviewMaterialId(materialId);setActiveTab('审核中心');}} onOpenReadiness={()=>setActiveTab('材料准备度')} /></PageShell>;
-  if (activeTab === '审核中心') return <PageShell title={data.project.name} subtitle="项目工作台 · 审核与控制中心" onBack={onBack}><nav className="tabs">{tabs.map((tab) => <button className={activeTab === tab ? 'active' : ''} key={tab} onClick={() => setActiveTab(tab)}>{tab}</button>)}</nav><ReviewWorkbench projectId={projectId} focusMaterialId={focusReviewMaterialId} onClearMaterialFocus={()=>setFocusReviewMaterialId(null)} /></PageShell>;
-  return <PageShell title={data.project.name} subtitle={`项目工作台 · ${statusLabels[data.project.status] || data.project.status}`} onBack={onBack}><nav className="tabs">{tabs.map((tab) => <button className={activeTab === tab ? 'active' : ''} key={tab} onClick={() => setActiveTab(tab)}>{tab}</button>)}</nav>{error ? <Notice kind="error">{error}</Notice> : null}{activeTab === '概览' ? <Overview data={data} /> : null}{activeTab === '招标文件' ? <TenderFiles projectId={projectId} files={data.tenderFiles} onChanged={load} /> : null}{activeTab === '需求解析' ? <RequirementParsing projectId={projectId} files={data.tenderFiles} parseJobs={data.parseJobs || []} baseline={data.requirementBaseline} onChanged={load} /> : null}{activeTab === '响应规划' ? <ProductionBeta projectId={projectId} baseline={data.requirementBaseline} /> : null}{activeTab === '企业材料' ? <CompanyMaterials projectId={projectId} baseline={data.requirementBaseline} gapContext={materialGapContext} onUploaded={(material)=>{setFocusMaterialId(material?.id||null);setMaterialGapContext(null);setActiveTab('材料处理');}} /> : null}{activeTab === '企业证据复核' ? <EvidenceReview projectId={projectId} requirements={data.requirementBaseline?.requirements||[]} /> : null}{activeTab === '标书' ? <BidDocument project={data.project} version={latestVersion} onGenerated={load} /> : null}{activeTab === '风险复核' ? <RiskReview version={latestVersion} baseline={data.requirementBaseline} onConfirmed={load} /> : null}{activeTab === '版本记录' ? <Versions versions={data.versions} /> : null}</PageShell>;
+  const navigation = <ProjectNavigation activeTab={activeTab} setActiveTab={setActiveTab} data={data} />;
+  let content;
+  if (activeTab === '材料准备度') content = <EvidenceReadiness projectId={projectId} onOpenReview={()=>setActiveTab('审核中心')} onSupplementMaterial={(gap)=>{setMaterialGapContext(gap);setActiveTab('企业材料');}} />;
+  else if (activeTab === '材料处理') content = <MaterialProcessingCenter projectId={projectId} focusMaterialId={focusMaterialId} onOpenReview={(materialId)=>{setFocusReviewMaterialId(materialId);setActiveTab('审核中心');}} onOpenReadiness={()=>setActiveTab('材料准备度')} />;
+  else if (activeTab === '审核中心') content = <ReviewWorkbench projectId={projectId} focusMaterialId={focusReviewMaterialId} onClearMaterialFocus={()=>setFocusReviewMaterialId(null)} />;
+  else content = <>{activeTab === '概览' ? <Overview data={data} /> : null}{activeTab === '招标文件' ? <TenderFiles projectId={projectId} files={data.tenderFiles} onChanged={load} /> : null}{activeTab === '需求解析' ? <RequirementParsing projectId={projectId} files={data.tenderFiles} parseJobs={data.parseJobs || []} baseline={data.requirementBaseline} onChanged={load} /> : null}{activeTab === '响应规划' ? <ProductionBeta projectId={projectId} baseline={data.requirementBaseline} /> : null}{activeTab === '企业材料' ? <CompanyMaterials projectId={projectId} baseline={data.requirementBaseline} gapContext={materialGapContext} onUploaded={(material)=>{setFocusMaterialId(material?.id||null);setMaterialGapContext(null);setActiveTab('材料处理');}} /> : null}{activeTab === '企业证据复核' ? <EvidenceReview projectId={projectId} requirements={data.requirementBaseline?.requirements||[]} /> : null}{activeTab === '标书' ? <BidDocument project={data.project} version={latestVersion} onGenerated={load} /> : null}{activeTab === '风险复核' ? <RiskReview version={latestVersion} baseline={data.requirementBaseline} onConfirmed={load} /> : null}{activeTab === '版本记录' ? <Versions versions={data.versions} /> : null}</>;
+  return <PageShell title={data.project.name} subtitle={`项目工作台 · ${activeTab === '概览' ? (statusLabels[data.project.status] || data.project.status) : activeTab}`} onBack={onBack}>{navigation}<div className="workspace-layout"><ProfessionalWorkspaceNav activeTab={activeTab} setActiveTab={setActiveTab} /><section className="workspace-main">{error ? <Notice kind="error">{error}</Notice> : null}{content}</section></div></PageShell>;
 }
 
 function PlanEditor({plan,onSave}){const [edit,setEdit]=useState(false);const [form,setForm]=useState({response_status:plan.response_status,implementation_actions:(plan.implementation_actions||[]).join('\n'),conditions:(plan.conditions||[]).join('\n'),capability_gap:plan.capability_gap||'',supporting_evidence_ids:(plan.supporting_evidence_ids||[]).join(','),edit_reason:''});if(!edit)return <button onClick={()=>setEdit(true)}>编辑</button>;const submit=()=>onSave(plan.requirement_id,{response_status:form.response_status,implementation_actions:form.implementation_actions.split('\n').map(x=>x.trim()).filter(Boolean),conditions:form.conditions.split('\n').map(x=>x.trim()).filter(Boolean),capability_gap:form.capability_gap,supporting_evidence_ids:form.supporting_evidence_ids.split(',').map(x=>x.trim()).filter(Boolean),edit_reason:form.edit_reason,edited_by:'current_user'}).then(()=>setEdit(false));return <div className="plan-editor"><select value={form.response_status} onChange={e=>setForm({...form,response_status:e.target.value})}><option>full</option><option>partial</option><option>confirm</option></select><textarea placeholder="实施动作，每行一项" value={form.implementation_actions} onChange={e=>setForm({...form,implementation_actions:e.target.value})}/><textarea placeholder="条件，每行一项" value={form.conditions} onChange={e=>setForm({...form,conditions:e.target.value})}/><input placeholder="capability gap" value={form.capability_gap} onChange={e=>setForm({...form,capability_gap:e.target.value})}/><input placeholder="approved Evidence ID，逗号分隔" value={form.supporting_evidence_ids} onChange={e=>setForm({...form,supporting_evidence_ids:e.target.value})}/><input placeholder="编辑原因" value={form.edit_reason} onChange={e=>setForm({...form,edit_reason:e.target.value})}/><button disabled={!form.edit_reason.trim()} onClick={submit}>提交人工审核</button><button onClick={()=>setEdit(false)}>取消</button></div>;}
@@ -378,13 +418,15 @@ export function RequirementParsing({ projectId, files, parseJobs, baseline, onCh
 }
 
 export function BidDocument({ project, version, onGenerated }) {
-  const [state,setState]=useState({loading:false,error:'',generation:null});
+  const [state,setState]=useState({loading:false,error:'',generation:null,selectedTaskId:null});
   const html=useMemo(()=>marked.parse(version?.final_text||version?.content_markdown||'# 尚未生成正文'),[version]);
-  async function generate(){setState({...state,loading:true,error:''});try{const generation=await api.createDocumentGeneration(project.id);setState({loading:false,error:'',generation});await onGenerated();}catch(error){setState({...state,loading:false,error:error.message});}}
-  async function retry(){try{const generation=await api.retryDocumentBatches(state.generation.id);setState({...state,generation,error:''});await onGenerated();}catch(error){setState({...state,error:error.message});}}
+  async function generate(){setState({...state,loading:true,error:'',generation:null,selectedTaskId:null});try{const generation=await api.createDocumentGeneration(project.id);setState({loading:false,error:'',generation,selectedTaskId:generation.tasks?.[0]?.id||null});await onGenerated();}catch(error){setState({...state,loading:false,error:error.message});}}
+  async function retry(){try{const generation=await api.retryDocumentBatches(state.generation.id);setState({...state,generation,error:'',selectedTaskId:generation.tasks?.[0]?.id||null});await onGenerated();}catch(error){setState({...state,error:error.message});}}
   async function regenerate(chapterId){try{await api.regenerateChapter(version.id,chapterId);await onGenerated();}catch(error){setState({...state,error:error.message});}}
-  const tasks=state.generation?.tasks||[];const failed=tasks.filter((t)=>t.status==='failed');
-  return <div className="document-layout"><section className="card generation-form"><h2>生成门禁与 Batch</h2><p>仅消费 confirmed Baseline、validated Plan、approved Claim/Evidence 和后端章节路由。</p>{state.error?<Notice kind="error">{state.error}</Notice>:null}<button className="primary-button" onClick={generate} disabled={state.loading}>{state.loading?<Loader2 className="spin" size={18}/>:<Sparkles size={18}/>}生成分组正文</button>{tasks.length?<div className="version-list">{tasks.map((task)=><div key={task.id}><span>{task.chapter_id} · Batch {task.batch_index+1}</span><Badge type={task.status}>{task.status}</Badge></div>)}{failed.length?<button onClick={retry}>仅重试失败 Batch</button>:null}</div>:null}</section><section className="card document-card"><div className="section-heading"><div><h2>{version?.title||'正式正文'}</h2><p>{version?`V${version.version_number} · ${riskLabels[version.risk_status]} · ${version.status}`:'等待生成'}</p></div></div>{version?.sections_json?.length?<aside className="toc"><strong>章节导航</strong>{version.sections_json.map((section)=><span key={section.chapter_id||section.id}>{section.title}<button onClick={()=>regenerate(section.chapter_id||section.id)}>重生成</button></span>)}</aside>:null}{version?.removed_items?.length?<div className="warning-summary"><strong>Sanitizer 删除清单</strong>{version.removed_items.map((item,index)=><p key={index}>{item.code}</p>)}</div>:null}{version?.validation_errors?.map((item,index)=><Notice kind="error" key={index}>{item.message}</Notice>)}{version?.warnings_json?.map((item,index)=><Notice kind="warning" key={index}>{item.message}</Notice>)}<article className="markdown-preview" dangerouslySetInnerHTML={{__html:html}}/></section></div>;
+  const tasks=state.generation?.tasks||[];const failed=tasks.filter((t)=>t.status==='failed');const completed=tasks.filter((t)=>t.status==='succeeded').length;const selectedTask=tasks.find((task)=>task.id===state.selectedTaskId)||tasks[0];const taskHtml=useMemo(()=>selectedTask?.output_markdown?marked.parse(selectedTask.output_markdown):'', [selectedTask]);
+  const taskStatus={created:'等待处理',queued:'等待处理',running:'正在生成',succeeded:'已完成',failed:'需要处理'};
+  const generationStatus=state.generation?.status==='finalized'?'已完成':state.generation?.status==='failed'?'需要处理':state.generation?'正在处理':'尚未开始';
+  return <div className="document-layout"><section className="card generation-form"><h2>正文生成</h2><p>系统会按已确认的需求和已通过的内容检查生成章节。你可以先查看处理状态，再阅读正式正文。</p><div className="generation-summary"><Stat label="当前状态" value={generationStatus}/><Stat label="章节进度" value={tasks.length?`${completed}/${tasks.length} 章已完成`:'尚未创建任务'}/></div>{state.error?<Notice kind="error">{state.error}</Notice>:null}<button className="primary-button" onClick={generate} disabled={state.loading}>{state.loading?<Loader2 className="spin" size={18}/>:<Sparkles size={18}/>}开始生成正文</button>{tasks.length?<div className="chapter-task-list"><strong>章节处理</strong>{tasks.map((task,index)=><button type="button" className={`chapter-task ${selectedTask?.id===task.id?'selected':''}`} key={task.id} onClick={()=>setState({...state,selectedTaskId:task.id})}><span><strong>{task.title||task.chapter_title||`第 ${index+1} 章`}</strong><small>{taskStatus[task.status]||'待查看'}</small></span><Badge type={task.status}>{taskStatus[task.status]||task.status}</Badge></button>)}{failed.length?<button className="secondary-button" onClick={retry}>仅处理失败章节</button>:null}</div>:null}<details><summary>生成门禁与 Batch（专业信息）</summary><p className="helper">仅消费已确认需求、已审核响应计划、已通过内容检查和后端章节路由。</p>{tasks.map((task)=><small key={`audit-${task.id}`}>chapter_id={task.chapter_id} · batch={task.batch_index+1} · {task.status}</small>)}</details>{selectedTask?.output_markdown?<div className="chapter-preview"><h3>当前章节预览</h3><article className="markdown-preview" dangerouslySetInnerHTML={{__html:taskHtml}}/></div>:null}</section><section className="card document-card"><div className="section-heading"><div><h2>{version?.title||'正式正文'}</h2><p>{version?`V${version.version_number} · ${riskLabels[version.risk_status]} · ${version.status}`:'生成完成后，这里会显示可阅读的正式正文。'}</p></div></div>{version?.sections_json?.length?<aside className="toc"><strong>章节目录</strong>{version.sections_json.map((section)=><span key={section.chapter_id||section.id}>{section.title}<button onClick={()=>regenerate(section.chapter_id||section.id)}>重新生成</button></span>)}</aside>:null}{version?.removed_items?.length?<div className="warning-summary"><strong>内容检查提醒</strong>{version.removed_items.map((item,index)=><p key={index}>{item.message||item.code}</p>)}</div>:null}{version?.validation_errors?.map((item,index)=><Notice kind="error" key={index}>{item.message}</Notice>)}{version?.warnings_json?.map((item,index)=><Notice kind="warning" key={index}>{item.message}</Notice>)}<article className="markdown-preview" dangerouslySetInnerHTML={{__html:html}}/></section></div>;
 }
 
 function LegacyBidDocument({ project, version, onGenerated }) {
