@@ -179,6 +179,23 @@ input:focus, select:focus, textarea:focus { border-color: #2f6fed; box-shadow: 0
 .readiness-detail { display:grid;gap:10px;margin-top:14px;border:1px solid #b2ccff;border-radius:8px;padding:15px;background:#f7faff; }.readiness-detail h3,.readiness-detail p{margin:0;}.readiness-detail>div{border-top:1px solid #dce5ef;padding-top:9px;}
 .gap-list{display:grid;gap:10px;margin-bottom:24px}.gap-list article{border:1px solid #dce5ef;border-radius:8px;padding:13px}.gap-list header{display:flex;justify-content:space-between;gap:10px}.gap-list p{margin:8px 0}.gap-list small{color:#667085;line-height:1.5}
 .loading { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 180px; color: #667085; }
+.copilot-panel { display: grid; gap: 12px; margin-top: 16px; border: 1px solid #cbdcf4; border-radius: 10px; padding: 16px; background: #fbfdff; }
+.copilot-panel .section-heading { margin-bottom: 0; }
+.copilot-panel h2, .copilot-panel h3 { margin: 0; }
+.copilot-badge { border-radius: 999px; padding: 4px 8px; background: #e8f1ff; color: #1859aa; font-size: 12px; }
+.copilot-form { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+.copilot-form textarea { min-height: 54px; resize: vertical; }
+.copilot-error { margin: 0; color: #b42318; font-size: 13px; }
+.copilot-result { display: grid; gap: 12px; }
+.copilot-status { display: flex; justify-content: space-between; gap: 12px; border-left: 3px solid #2f6fed; padding: 8px 10px; background: #f4f8ff; }
+.copilot-status span { color: #667085; font-size: 12px; }
+.copilot-blockers, .copilot-tasks { display: grid; gap: 8px; }
+.copilot-blockers article, .copilot-tasks article { display: grid; gap: 5px; border: 1px solid #dce5ef; border-radius: 8px; padding: 10px; background: #fff; }
+.copilot-blockers p, .copilot-tasks p { margin: 0; color: #475467; font-size: 13px; }
+.copilot-blockers small, .copilot-tasks small { color: #667085; }
+.copilot-blockers button, .copilot-tasks button, .copilot-actions button { justify-self: start; border: 0; background: transparent; color: #1859aa; cursor: pointer; padding: 0; }
+.copilot-tasks em { color: #92400e; font-size: 12px; font-style: normal; }
+.copilot-actions { display: flex; flex-wrap: wrap; gap: 10px; }
 .loading.full { min-height: 100vh; }
 .spin { animation: spin .9s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }

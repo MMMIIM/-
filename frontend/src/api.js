@@ -155,6 +155,13 @@ export const api = {
   getReviewCenter(projectId) { return request(`/api/projects/${projectId}/review-center`); },
   getEvidenceReadiness(projectId) { return request(`/api/projects/${projectId}/evidence-readiness`); },
   getMaterialProcessing(projectId) { return request(`/api/projects/${projectId}/material-processing`); },
+  getCopilotContext(projectId, context = {}) {
+    const query = new URLSearchParams(Object.entries(context).filter(([, value]) => value !== undefined && value !== null && value !== '')).toString();
+    return request(`/api/projects/${projectId}/copilot/context${query ? `?${query}` : ''}`);
+  },
+  askCopilot(projectId, message, context = {}) {
+    return request(`/api/projects/${projectId}/copilot`, { method: 'POST', body: JSON.stringify({ message, context: { ...context, project_id: projectId } }) });
+  },
   decideEvidenceReview(reviewId,decision,note='') { return request(`/api/evidence-reviews/${reviewId}/${decision}`,{method:'POST',body:JSON.stringify({reviewer:'current_user',note})}); },
   extractEvidenceSourceFact(reviewId) { return request(`/api/evidence-reviews/${reviewId}/facts`,{method:'POST',body:'{}'}); },
   decideEvidenceSourceFact(factId,decision,note='') { return request(`/api/evidence-source-facts/${factId}/${decision}`,{method:'POST',body:JSON.stringify({reviewer:'current_user',note})}); },

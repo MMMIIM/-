@@ -26,6 +26,9 @@ import { EvidenceReadinessService } from './evidence-readiness-service.js';
 import { MaterialProcessingCenterService } from './material-processing-center-service.js';
 import { RequirementEvidenceFactMappingService } from './requirement-evidence-fact-mapping-service.js';
 import { DocumentDeliveryService } from './pipeline/document-delivery-service.js';
+import { AgentContextResolver } from './pipeline/agent-context-resolver.js';
+import { AgentToolLayer } from './pipeline/agent-tools.js';
+import { BidCopilotOrchestrator } from './pipeline/bid-copilot-orchestrator.js';
 
 const directory = dirname(fileURLToPath(import.meta.url));
 const runtime = createBackendRuntime();
@@ -64,6 +67,17 @@ const evidenceReadinessService = new EvidenceReadinessService({ repository });
 const materialProcessingCenterService = new MaterialProcessingCenterService({ repository, evidenceReadinessService });
 const requirementEvidenceFactMappingService = new RequirementEvidenceFactMappingService({ repository });
 const documentDeliveryService = new DocumentDeliveryService({ repository, storage });
+const agentContextResolver = new AgentContextResolver({ repository });
+const agentTools = new AgentToolLayer({
+  repository,
+  evidenceReadinessService,
+  reviewCenterService,
+  materialProcessingCenterService,
+  enterpriseRetrievalService,
+  documentGenerationService,
+  productionBetaService
+});
+const agentOrchestrator = new BidCopilotOrchestrator({ contextResolver: agentContextResolver, tools: agentTools, auditRepository: repository });
 const app = createApp({
   repository,
   storage,
@@ -84,6 +98,8 @@ const app = createApp({
   evidenceSourceFactService,
   projectFactControlService,
   documentDeliveryService,
+  agentContextResolver,
+  agentOrchestrator,
   corsOrigin: runtimeEnv.CORS_ORIGIN
 });
 

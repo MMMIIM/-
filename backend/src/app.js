@@ -16,7 +16,7 @@ function sendData(res, data, status = 200) {
   return res.status(status).json({ ok: true, data });
 }
 
-export function createApp({ repository, storage, generationService, requirementParseService, requirementSourceService, productionBetaService, companyMaterialService, evidenceService, evidenceFactService, enterpriseRetrievalService, documentGenerationService, reviewCenterService, evidenceReadinessService, materialProcessingCenterService, evidenceReviewService, evidenceSourceFactService, requirementEvidenceFactMappingService, projectFactControlService, documentDeliveryService, corsOrigin }) {
+export function createApp({ repository, storage, generationService, requirementParseService, requirementSourceService, productionBetaService, companyMaterialService, evidenceService, evidenceFactService, enterpriseRetrievalService, documentGenerationService, reviewCenterService, evidenceReadinessService, materialProcessingCenterService, evidenceReviewService, evidenceSourceFactService, requirementEvidenceFactMappingService, projectFactControlService, documentDeliveryService, agentContextResolver, agentOrchestrator, corsOrigin }) {
   const app = express();
   app.use(cors({ origin: corsOrigin || 'http://localhost:5173' }));
   app.use(express.json({ limit: '2mb' }));
@@ -335,6 +335,32 @@ export function createApp({ repository, storage, generationService, requirementP
 
   app.get('/api/projects/:projectId/generation-jobs', async (req, res, next) => {
     try { res.json({ jobs: await repository.listJobs(req.params.projectId) }); } catch (error) { next(error); }
+  });
+
+  app.get('/api/projects/:projectId/copilot/context', async (req, res, next) => {
+    try {
+      if (!agentContextResolver) throw new AppError('AGENT_UNAVAILABLE', '项目助手尚未配置。', 503);
+      const context = await agentContextResolver.resolve({ project_id: req.params.projectId, user_id: req.query.user_id, current_route: req.query.current_route, material_id: req.query.material_id, requirement_id: req.query.requirement_id, chapter_id: req.query.chapter_id, document_version_id: req.query.document_version_id });
+      sendData(res, { context });
+    } catch (error) { next(error); }
+  });
+
+  app.post('/api/projects/:projectId/copilot', async (req, res, next) => {
+    try {
+      if (!agentOrchestrator) throw new AppError('AGENT_UNAVAILABLE', '项目助手尚未配置。', 503);
+      const message = requireText(req.body?.message, '问题');
+      const suppliedContext = req.body?.context && typeof req.body.context === 'object' ? req.body.context : {};
+      if (suppliedContext.project_id && suppliedContext.project_id !== req.params.projectId) throw new AppError('AGENT_CONTEXT_MISMATCH', '当前请求的项目上下文不一致，请从项目工作区重新发起。', 400);
+      const result = await agentOrchestrator.run({ message, project_id: req.params.projectId, user_id: req.body?.user_id, context: { ...suppliedContext, project_id: req.params.projectId } });
+      sendData(res, result);
+    } catch (error) { next(error); }
+  });
+
+  app.get('/api/projects/:projectId/copilot/audits', async (req, res, next) => {
+    try {
+      if (!repository.listAgentExecutionAudits) throw new AppError('AGENT_AUDIT_UNAVAILABLE', '当前暂时无法读取助手记录。', 503);
+      sendData(res, { audits: await repository.listAgentExecutionAudits(req.params.projectId, req.query.limit) });
+    } catch (error) { next(error); }
   });
 
   app.get('/api/projects/:projectId/document-versions', async (req, res, next) => {

@@ -1,9 +1,14 @@
 # Current Stage
 
-## Stage 17 — Enterprise Knowledge / RAG Productization
+## Stage 18 — Bid Copilot / Agent Foundation
 
 Priority: **P1**
 Status: **PASS / FROZEN**
+
+Stage 18 is a contextual orchestration layer over the formal Control Plane.
+It may read, explain, prioritize and navigate through existing authoritative
+services, but it never becomes a second source of truth, bypasses Claim Gate,
+or makes formal approvals.
 
 Stage 16 — Document Delivery & Word V1 is **PASS / FROZEN**.
 Manual TOC Acceptance: **PASS**
@@ -63,11 +68,39 @@ Bid Document Model → Format Policy → DOCX Renderer
 - retrieval cannot bypass Evidence, Fact, Mapping, Claim Gate or Writer auth;
 - backend, frontend, PostgreSQL, build, lint and diff checks all pass.
 
-The next roadmap direction is Stage 18 — Bid Copilot / Agent Foundation. It is
-not started in this checkpoint because it materially expands product scope.
+## Stage 18 goal
+
+让普通投标人员可以在项目上下文中询问“还缺什么、为什么不能生成、哪些材料
+可以证明”，并得到基于正式服务的可追溯解释、待办和导航动作。初期仅提供
+只读工具、上下文解析、动作风险门禁、执行审计和确定性评测；不新增 AI
+提供商、不自动确认 Evidence/Mapping/Claim/Project Fact/Writer。
+
+## Stage 18 acceptance target
+
+- explicit project context resolver and authoritative read tools;
+- deterministic L0–L4 action policy with formal decisions requiring humans;
+- primary next-step, generation-blocker and requirement-material scenarios;
+- candidate material results remain distinct from confirmed proof;
+- prompt injection content remains data and cannot alter policy;
+- execution trace, ten-case deterministic eval and full regression pass.
+
+## Stage 18 acceptance result
+
+- explicit context, read-only formal tools and safe navigation are available;
+- L0–L4 action policy blocks automatic formal decisions and Claim Gate bypass;
+- next-step, generation-blocker and requirement-material scenarios are covered;
+- retrieval candidates remain distinct from confirmed proof;
+- prompt-injection and context-mismatch tests pass;
+- execution audit migration 039 and ten-case offline evaluation pass;
+- backend 497 tests, frontend 45 tests, PostgreSQL 39 tests, build, lint and
+  diff checks pass.
+
+Stage 18 is **PASS / FROZEN**. No external AI calls, new providers, private
+data scope, push, merge or deployment were used. The next stage requires a new
+GPT Decision.
 
 ## Stop conditions
 
 不修改已冻结 Word 基线；不修改 Writer、Claim Gate、Evidence/Fact/Mapping、
-semantic gateway 或业务 Contract；不调用外部 AI；不开始 Agent/Permission；
-不推送、不合并、不部署。
+semantic gateway 或业务 Contract；不调用外部 AI；不新增 Provider/私有数据
+范围；不自动批准、不绕过正式门禁；不推送、不合并、不部署。

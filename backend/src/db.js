@@ -1244,6 +1244,30 @@ export class PgRepository {
       uncovered_requirement_ids:coverage.rows.filter((item)=>!item.covered).map((item)=>item.requirement_id) };
   }
 
+  async createAgentExecutionAudit(value) {
+    const compact = (items) => JSON.stringify((Array.isArray(items) ? items : []).slice(0, 50));
+    const context = JSON.stringify(value.context_json || {});
+    const request = sanitizeAuditText(String(value.user_request || '').slice(0, 1000));
+    const { rows } = await this.pool.query(`
+      INSERT INTO agent_execution_audits
+        (agent_run_id,user_id,project_id,current_route,context_json,user_request,intent,
+         selected_tools,tool_results,actions_proposed,actions_executed,human_required_actions,
+         provider,model,latency_ms,status)
+      VALUES ($1,$2,$3,$4,$5::jsonb,$6,$7,$8::jsonb,$9::jsonb,$10::jsonb,$11::jsonb,$12::jsonb,$13,$14,$15,$16)
+      RETURNING *
+    `, [value.agent_run_id, value.user_id || null, value.project_id || null, value.current_route || null,
+      context, request, value.intent || null, compact(value.selected_tools), compact(value.tool_results),
+      compact(value.actions_proposed), compact(value.actions_executed), compact(value.human_required_actions),
+      value.provider || null, value.model || null, Number.isFinite(value.latency_ms) ? value.latency_ms : null, value.status || 'completed']);
+    return rows[0];
+  }
+
+  async listAgentExecutionAudits(projectId, limit = 20) {
+    const safeLimit = Math.min(100, Math.max(1, Number(limit) || 20));
+    const { rows } = await this.pool.query(`SELECT * FROM agent_execution_audits WHERE project_id=$1 ORDER BY created_at DESC LIMIT $2`, [projectId, safeLimit]);
+    return rows;
+  }
+
   async touchProject(id) {
     await this.pool.query(`UPDATE projects SET updated_at = now() WHERE id = $1`, [id]);
   }
