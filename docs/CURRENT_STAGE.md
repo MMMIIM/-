@@ -44,10 +44,11 @@ directory, persisted task restoration, generating/checking/failed projections,
 partial-failure isolation, and absence of percentage progress. A synthetic
 multi-chapter run was attempted once; the local runtime was configured with
 `GENERATION_PROVIDER=semantic_gateway`, so two chapters received the existing
-safe gateway failure audit and no completed version was produced. No retry or
-additional gateway call is authorized in this stage. Stage 15 therefore remains
-partial until a mock-provider or explicitly authorized runtime can demonstrate
-a completed chapter preview and the final 投标检查 handoff.
+safe gateway failure audit (two attempts each, four gateway request attempts in
+total) and no completed version was produced. No retry or additional gateway
+call is authorized in this stage. Stage 15 therefore remains partial until a
+mock-provider or explicitly authorized runtime can demonstrate a completed
+chapter preview and the final 投标检查 handoff.
 
 ## Stop conditions
 
