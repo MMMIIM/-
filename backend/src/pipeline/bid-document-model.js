@@ -71,6 +71,52 @@ export function normalizeHeadingText(value) {
     .trim();
 }
 
+/**
+ * A section title is rendered as Heading 1. Source content can contain a
+ * deeper heading without an explicit parent (for example H1 → H3). Lowering
+ * only that heading to the nearest valid level preserves the source meaning
+ * without inventing a synthetic parent title.
+ */
+export function normalizeHeadingHierarchy(sections = []) {
+  return sections.map((section) => {
+    let previousLevel = 1;
+    let previousSourceLevel = 1;
+    const contentBlocks = (section.content_blocks || []).map((block) => {
+      if (block?.kind !== 'heading') return block;
+      const sourceLevel = Math.max(1, Math.min(6, Number(block.level) || 1));
+      const level = sourceLevel === previousSourceLevel
+        ? previousLevel
+        : sourceLevel > previousSourceLevel
+          ? Math.min(3, previousLevel + 1)
+          : Math.min(3, sourceLevel, previousLevel);
+      previousLevel = level;
+      previousSourceLevel = sourceLevel;
+      return { ...block, level };
+    });
+    return { ...section, content_blocks: contentBlocks };
+  });
+}
+
+export function validateHeadingHierarchy(sections = [], { throwOnError = true } = {}) {
+  const violations = [];
+  for (const section of sections) {
+    let previousLevel = 1;
+    for (const [index, block] of (section.content_blocks || []).entries()) {
+      if (block?.kind !== 'heading') continue;
+      const level = Number(block.level);
+      if (!Number.isInteger(level) || level < 1 || level > 3 || level > previousLevel + 1) {
+        violations.push({ section_id: section.section_id || section.id || null, block_index: index, previous_level: previousLevel, level });
+      }
+      previousLevel = Number.isInteger(level) ? level : previousLevel;
+    }
+  }
+  const result = { valid: violations.length === 0, violations };
+  if (!result.valid && throwOnError) {
+    throw Object.assign(new Error('文档标题层级缺少必要的父级标题。'), { code: 'DOCUMENT_HIERARCHY_INVALID', status: 422, violations });
+  }
+  return result;
+}
+
 export function buildBidDocumentModel({ project, version, approvedProjectFacts = [] }) {
   if (!project?.id || !version?.id) throw Object.assign(new Error('项目和文档版本不能为空。'), { code: 'DOCUMENT_MODEL_INPUT_INVALID', status: 422 });
   if (String(version.project_id) !== String(project.id)) throw Object.assign(new Error('文档版本不属于当前项目。'), { code: 'VERSION_PROJECT_MISMATCH', status: 409 });
@@ -86,6 +132,8 @@ export function buildBidDocumentModel({ project, version, approvedProjectFacts =
     heading_level: Math.max(1, Math.min(3, Number(section.heading_level) || 1)),
     content_blocks: sectionBlocks(section)
   })).sort((a, b) => a.order - b.order || a.section_id.localeCompare(b.section_id));
+  const normalizedSections = normalizeHeadingHierarchy(sections);
+  validateHeadingHierarchy(normalizedSections);
   const projectedFacts = projectFactsForDocument(approvedProjectFacts);
   const documentFields = projectDocumentFields({ project, approvedProjectFacts });
   const documentProjectName = documentFields.project_name || projectNameForDocument(project);
@@ -100,7 +148,7 @@ export function buildBidDocumentModel({ project, version, approvedProjectFacts =
     // Kept for audit/model consumers, but the default renderer does not dump
     // this list into a generic visible section.
     approved_project_facts: projectedFacts,
-    sections
+    sections: normalizedSections
   };
 }
 

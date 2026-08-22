@@ -1,8 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import JSZip from 'jszip';
-import { buildBidDocumentModel } from '../src/pipeline/bid-document-model.js';
-import { normalizeHeadingText } from '../src/pipeline/bid-document-model.js';
+import { buildBidDocumentModel, normalizeHeadingHierarchy, normalizeHeadingText, validateHeadingHierarchy } from '../src/pipeline/bid-document-model.js';
 import { DocumentDeliveryService } from '../src/pipeline/document-delivery-service.js';
 import { renderBidDocument, tableCellMarginForPolicy, tableWidthForPolicy } from '../src/pipeline/docx-renderer.js';
 import { getDocumentFormatPolicy, getFirstLineIndentTwips, getUsableBodyWidth } from '../src/pipeline/document-format-policy.js';
@@ -24,6 +23,49 @@ test('Bid Document Model 保留稳定章节、标题、表格和分页内容块'
   assert.equal(model.source.final_text_length, version.final_text.length);
   assert.deepEqual(model.approved_project_facts, [{ field: 'bidder', label: '投标人', value: '示例公司' }]);
   assert.equal(model.project.name, '示例投标项目');
+});
+
+test('Stage16-R1.2 H1→H3 确定性归一化为 H1→H2，不伪造父标题', () => {
+  const raw = [{ section_id: 'chapter-01', content_blocks: [
+    { kind: 'heading', level: 3, text: '建设目标' },
+    { kind: 'heading', level: 4, text: '建设原则' }
+  ] }];
+  assert.equal(validateHeadingHierarchy(raw, { throwOnError: false }).valid, false);
+  const normalized = normalizeHeadingHierarchy(raw);
+  assert.deepEqual(normalized[0].content_blocks.map((block) => block.level), [2, 3]);
+  assert.equal(validateHeadingHierarchy(normalized).valid, true);
+  assert.deepEqual(normalized[0].content_blocks.map((block) => block.text), ['建设目标', '建设原则']);
+});
+
+test('Stage16-R1.2 原始同级深标题保持同级，不因前一项归一化而伪造子级', () => {
+  const normalized = normalizeHeadingHierarchy([{ section_id: 'chapter-01', content_blocks: [
+    { kind: 'heading', level: 3, text: '建设目标' },
+    { kind: 'heading', level: 3, text: '建设原则' }
+  ] }]);
+  assert.deepEqual(normalized[0].content_blocks.map((block) => block.level), [2, 2]);
+});
+
+test('Stage16-R1.2 合法 H1→H2→H3 与同级 H2 保持不变', () => {
+  const raw = [{ section_id: 'chapter-01', content_blocks: [
+    { kind: 'heading', level: 2, text: '建设目标' },
+    { kind: 'heading', level: 3, text: '建设原则' },
+    { kind: 'heading', level: 2, text: '实施路径' }
+  ] }];
+  const normalized = normalizeHeadingHierarchy(raw);
+  assert.deepEqual(normalized[0].content_blocks.map((block) => block.level), [2, 3, 2]);
+  assert.equal(validateHeadingHierarchy(normalized).valid, true);
+});
+
+test('Stage16-R1.2 文档模型在渲染前修正缺失父级，保留标题正文', () => {
+  const hierarchyVersion = {
+    ...version,
+    sections_json: [{ chapter_id: 'chapter-01', title: '项目理解', order: 1, content_markdown: '### 建设目标\n\n目标说明。' },
+      { chapter_id: 'chapter-02', title: '实施方案', order: 2, content_markdown: '### 质量保证\n\n质量说明。' }]
+  };
+  const model = buildBidDocumentModel({ project, version: hierarchyVersion });
+  assert.deepEqual(model.sections.map((section) => section.content_blocks.map((block) => block.level).filter(Boolean)), [[2], [2]]);
+  assert.deepEqual(model.sections.map((section) => section.content_blocks.find((block) => block.kind === 'heading').text), ['建设目标', '质量保证']);
+  assert.doesNotMatch(JSON.stringify(model), /fake|synthetic_parent|空标题/);
 });
 
 test('DOCX renderer 产生真实 Heading、目录字段、页眉页脚与正文', async () => {
