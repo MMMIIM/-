@@ -32,15 +32,18 @@ project version without seeing renderer or OOXML concepts.
 
 ## Acceptance status
 
-Stage 16 implementation is complete for the local MVP. A current synthetic
-formal version was exported and structurally verified (DOCX ZIP, Chinese text,
-Heading styles, updateable TOC field, numbering definition, table, page break,
-header and PAGE footer field). The local render helper could not complete page
-PNG QA because no LibreOffice/soffice executable is installed; Stage 16
-therefore remains ACTIVE until a compatible Word processor is available for
-manual open and layout acceptance. Browser acceptance is also pending a
-restart of the long-running local backend so the new export route is served.
-The reuse spike and architecture decision
+Stage 16 implementation is complete for the local MVP. Browser acceptance
+passed on the normal local app after restarting the long-running backend:
+the export action is visible only in the 投标检查 context, the current
+formal version is shown as `V1 · 技术响应 V1`, a single click returns a
+business-readable `.docx` filename, the UI reports a user-readable success,
+and refresh preserves the export entry point. The exported file was also
+structurally verified (DOCX ZIP, Chinese text, Heading styles, updateable TOC
+field, numbering definition, table, page break, header and PAGE footer field).
+The local render helper could not complete page PNG QA because no
+LibreOffice/soffice executable is installed; Stage 16 therefore remains
+ACTIVE until a compatible Word processor is available for manual open and
+layout acceptance. The reuse spike and architecture decision
 are recorded in `docs/WORD_REUSE_SPIKE.md` and
 `docs/decisions/007-document-model-docx-renderer.md`.
 
