@@ -1,7 +1,7 @@
 const TWIPS_PER_POINT = 20;
 const TWIPS_PER_CM = 567;
 
-export const DOCUMENT_FORMAT_POLICY_VERSION = 'word-default-v1-r2';
+export const DOCUMENT_FORMAT_POLICY_VERSION = 'word-default-v1-r2.1';
 export const SYSTEM_DEFAULT_TECHNICAL_BID_V1 = 'SYSTEM_DEFAULT_TECHNICAL_BID_V1';
 
 function cmToTwips(value) {
@@ -78,8 +78,10 @@ export const PROFESSIONAL_WORD_POLICY = Object.freeze({
   },
   sections: {
     cover: { type: 'first_page', title_page: true, header: false, footer: false, page_number: false },
-    toc: { type: 'next_page', title_page: true, header: false, footer: false, page_number: false },
-    body: { type: 'next_page', title_page: false, header: true, footer: true, page_number: true, page_number_start: 1, chapter_page_break: 'none' }
+    // The cover owns the hidden first page.  The TOC is the first visible
+    // numbered section and the body deliberately inherits its numbering.
+    toc: { type: 'next_page', title_page: false, header: false, footer: true, page_number: true, page_number_start: 1 },
+    body: { type: 'next_page', title_page: false, header: true, footer: true, page_number: true, page_number_start: null, chapter_page_break: 'none' }
   },
   header_footer: {
     enabled: true, show_project_name: true, header_size_half_points: 20, header_after_pt: 0,

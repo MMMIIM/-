@@ -220,6 +220,7 @@ export async function renderBidDocument(model, { policy = getDocumentFormatPolic
   const numbering = policy.heading_numbering || { left_dxa_per_level: 360, hanging_dxa: 180, suffix: 'space' };
   const numberingSuffix = numbering.suffix === 'space' ? LevelSuffix.SPACE : numbering.suffix === 'nothing' ? LevelSuffix.NOTHING : LevelSuffix.TAB;
   const bodySection = policy.sections.body;
+  const tocSection = policy.sections.toc;
   const tocChildren = policy.toc.enabled === false ? [] : [new TableOfContents('', {
     hyperlink: true,
     headingStyleRange: policy.toc.heading_style_range,
@@ -245,8 +246,17 @@ export async function renderBidDocument(model, { policy = getDocumentFormatPolic
         children: coverChildren(model, policy)
       },
       {
-        properties: { page, type: sectionType(policy.sections.toc.type), titlePage: policy.sections.toc.title_page },
-        footers: { default: blankFooter, first: blankFooter },
+        properties: {
+          page: {
+            ...page,
+            ...(tocSection.page_number && Number.isFinite(Number(tocSection.page_number_start))
+              ? { pageNumbers: { start: Number(tocSection.page_number_start) } }
+              : {})
+          },
+          type: sectionType(tocSection.type),
+          titlePage: tocSection.title_page
+        },
+        ...(tocSection.footer && policy.header_footer.show_page_number ? { footers: { default: footer } } : {}),
         children: [
           new Paragraph({ children: [run(policy.toc.title, { bold: true, size: policy.toc.title_size_half_points }, policy, 'heading1')], alignment: AlignmentType.CENTER, spacing: { after: Math.round(policy.toc.title_after_pt * 20) } }),
           ...tocNote,
@@ -254,7 +264,15 @@ export async function renderBidDocument(model, { policy = getDocumentFormatPolic
         ]
       },
       {
-        properties: { page: { ...page, pageNumbers: { start: bodySection.page_number_start ?? policy.header_footer.page_number_start } }, type: sectionType(bodySection.type) },
+        properties: {
+          page: {
+            ...page,
+            ...(bodySection.page_number && Number.isFinite(Number(bodySection.page_number_start))
+              ? { pageNumbers: { start: Number(bodySection.page_number_start) } }
+              : {})
+          },
+          type: sectionType(bodySection.type)
+        },
         ...(bodySection.header ? { headers: { default: header } } : {}),
         ...(bodySection.footer && policy.header_footer.show_page_number ? { footers: { default: footer } } : {}),
         children: contentChildren(model, policy)

@@ -92,9 +92,9 @@ test('Word Foundation consolidated OOXML acceptance covers the system baseline',
   assert.doesNotMatch(documentXml, /w:tblHeader w:val="false"/);
   assert.match(documentXml, /w:cantSplit/);
 
-  // Body section restarts visible page numbering at 1. TOC is a real field;
-  // Word/WPS owns the final page references and must update it on open.
-  assert.match(documentXml, /w:pgNumType w:start="1"/);
+  // The cover is unnumbered; the TOC starts visible numbering at 1 and the
+  // body inherits that sequence rather than restarting at another 1.
+  assert.equal((documentXml.match(/w:pgNumType w:start="1"/g) || []).length, 1);
   assert.match(documentXml, /TOC/);
   assert.match(settingsXml, /updateFields/);
   assert.match(documentXml, /1 项目理解/);

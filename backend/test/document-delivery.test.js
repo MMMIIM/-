@@ -76,7 +76,9 @@ test('DOCX renderer 产生真实 Heading、目录字段、页眉页脚与正文'
   const settingsXml = await zip.file('word/settings.xml').async('string');
   const numberingXml = await zip.file('word/numbering.xml').async('string');
   const footerFiles = Object.keys(zip.files).filter((name) => /^word\/footer\d+\.xml$/.test(name));
-  const footerXml = (await Promise.all(footerFiles.map((name) => zip.file(name).async('string')))).find((xml) => /instrText[^>]*>PAGE/.test(xml));
+  const footerXmls = await Promise.all(footerFiles.map((name) => zip.file(name).async('string')));
+  const pageFooterXmls = footerXmls.filter((xml) => /instrText[^>]*>PAGE/.test(xml));
+  const footerXml = pageFooterXmls[0];
   const coverFooterXml = await zip.file('word/footer1.xml').async('string');
   assert.match(documentXml, /w:val="Heading1"/);
   assert.match(documentXml, /目 录/);
@@ -103,6 +105,7 @@ test('DOCX renderer 产生真实 Heading、目录字段、页眉页脚与正文'
   assert.match(documentXml, /w:tcMar/);
   assert.match(settingsXml, /updateFields/);
   assert.doesNotMatch(coverFooterXml, /PAGE/);
+  assert.ok(pageFooterXmls.length >= 2, 'TOC and body must both expose the visible page field');
   assert.match(footerXml, /instrText[^>]*>PAGE/);
 });
 
@@ -158,7 +161,8 @@ test('Stage16-R1.1 格式策略集中表达正式标书语义', () => {
   assert.equal(policy.table.size_pt, 10.5);
   assert.equal(policy.table.width_policy, 'usable_body_width');
   assert.equal(policy.toc.updateable, true);
-  assert.equal(policy.sections.body.page_number_start, 1);
+  assert.equal(policy.sections.toc.page_number_start, 1);
+  assert.equal(policy.sections.body.page_number_start, null);
   assert.equal(getFirstLineIndentTwips(policy), 480);
 });
 
