@@ -12,12 +12,10 @@ import './styles.css';
 
 const tabs = ['概览', '材料准备度', '材料处理', '审核中心', '招标文件', '需求解析', '响应规划', '企业材料', '企业证据复核', '标书', '风险复核', '版本记录'];
 const flowStages = [
-  { label: '项目信息', tabs: ['概览'] },
-  { label: '招标文件', tabs: ['招标文件', '需求解析'] },
-  { label: '企业资料', tabs: ['企业材料'] },
+  { label: '项目准备', tabs: ['概览', '招标文件', '需求解析', '企业材料'] },
   { label: '审核与补充', tabs: ['材料准备度', '材料处理', '审核中心', '企业证据复核'] },
   { label: '标书生成', tabs: ['标书', '响应规划'] },
-  { label: '核验与导出', tabs: ['风险复核', '版本记录'] },
+  { label: '投标检查', tabs: ['风险复核', '版本记录'] },
 ];
 const projectTypes = ['智慧城市', '数据治理', '系统集成', '园区运营', '应急管理', 'AI 应用'];
 const outputModes = ['技术标初稿', '售前方案', '响应矩阵', '风险清单'];
@@ -42,16 +40,14 @@ function PageShell({ title, subtitle, onBack, children }) {
 
 function flowStageStatus(stage, data, active) {
   if (active) return '当前';
-  if (stage === '项目信息') return '已建立';
-  if (stage === '招标文件') {
+  if (stage === '项目准备') {
     if (data.requirementBaseline) return '需求已确认';
     if (data.tenderFiles?.length) return '文件已上传';
     return '待上传';
   }
-  if (stage === '企业资料') return '可查看';
   if (stage === '审核与补充') return data.requirementBaseline ? '可处理' : '待需求确认';
   if (stage === '标书生成') return data.versions?.length ? '已有版本' : '待生成';
-  if (stage === '核验与导出') return data.versions?.length ? '待核验' : '待版本';
+  if (stage === '投标检查') return data.versions?.length ? '待核验' : '待版本';
   return '可查看';
 }
 
@@ -69,7 +65,21 @@ export function ProfessionalWorkspaceNav({ activeTab, setActiveTab }) {
   return <aside className="professional-nav"><h2>专业工作区</h2><p>需要查看规则、来源或审计时，从这里进入。</p><nav aria-label="专业工作区">{tabs.map((tab) => <button type="button" className={activeTab === tab ? 'active' : ''} key={tab} onClick={() => setActiveTab(tab)}>{tab}</button>)}</nav></aside>;
 }
 
-function ProjectList({ onCreate, onOpen }) {
+const platformModules = ['工作台', '投标项目', '企业资料库', '标书检查'];
+
+export function PlatformShell({ active, onNavigate, onCreate, title, subtitle, children }) {
+  return <main className="app-shell platform-shell"><header className="app-header"><div><p className="eyebrow">政企投标辅助平台</p><h1>{title}</h1>{subtitle ? <p className="subtitle">{subtitle}</p> : null}</div><Badge>4.3 确定性流程</Badge></header><nav className="platform-nav" aria-label="平台主导航">{platformModules.map((module) => <button type="button" key={module} className={active === module ? 'active' : ''} onClick={() => onNavigate(module)}>{module}</button>)}<button type="button" className="system-nav" disabled title="系统管理将在权限基础具备后开放">系统管理</button></nav>{children}</main>;
+}
+
+function Workbench({ onCreate, onOpen, onNavigate }) {
+  const [state, setState] = useState({ loading: true, projects: [], error: '' });
+  useEffect(() => { api.listProjects().then((payload) => setState({ loading: false, projects: payload.projects || [], error: '' })).catch((error) => setState({ loading: false, projects: [], error: error.message })); }, []);
+  const attention = state.projects.filter((project) => ['requirements_review', 'review', 'generating'].includes(project.status) || (project.risk_status && project.risk_status !== 'pass'));
+  const recent = state.projects.slice(0, 5);
+  return <PlatformShell active="工作台" onNavigate={onNavigate} onCreate={onCreate} title="工作台" subtitle="今天先处理最重要的项目事项"><div className="page-actions"><button className="primary-inline" onClick={onCreate}><FolderPlus size={17} />新建投标项目</button><button className="secondary-button" onClick={() => onNavigate('投标项目')}>查看全部项目</button></div>{state.error ? <Notice kind="error">{state.error}</Notice> : null}{state.loading ? <Loading text="正在读取工作台" /> : <div className="workbench-grid"><section className="card"><h2>待我处理</h2>{attention.length ? <div className="action-list">{attention.map((project) => <button type="button" key={project.id} onClick={() => onOpen(project.id)}><span><strong>{project.name}</strong><small>{project.status === 'requirements_review' ? '需求待确认' : project.status === 'generating' ? '正在生成标书' : project.risk_status && project.risk_status !== 'pass' ? '有投标检查事项' : '有待处理事项'}</small></span><span>进入项目 →</span></button>)}</div> : <Empty title="暂时没有待办" text="新的项目事项会出现在这里。" />}</section><section className="card"><h2>最近项目</h2>{recent.length ? <div className="action-list">{recent.map((project) => <button type="button" key={project.id} onClick={() => onOpen(project.id)}><span><strong>{project.name}</strong><small>{project.deadline ? `截止 ${formatDate(project.deadline)}` : '未设置截止时间'}</small></span><span>{statusLabels[project.status] || '查看'} →</span></button>)}</div> : <Empty title="还没有项目" text="创建第一个投标项目，开始准备招标文件和企业资料。" />}</section></div>}</PlatformShell>;
+}
+
+function ProjectList({ onCreate, onOpen, onNavigate }) {
   const [state, setState] = useState({ loading: true, projects: [], error: '' });
   async function load() {
     setState((current) => ({ ...current, loading: true, error: '' }));
@@ -77,11 +87,25 @@ function ProjectList({ onCreate, onOpen }) {
     catch (error) { setState({ loading: false, projects: [], error: error.message }); }
   }
   useEffect(() => { load(); }, []);
-  return <PageShell title="项目归档" subtitle="集中管理项目、生成任务、风险复核和正式版本">
+  return <PlatformShell active="投标项目" onNavigate={onNavigate} onCreate={onCreate} title="投标项目" subtitle="管理项目、截止时间和当前处理阶段">
     <div className="page-actions"><button className="secondary-button" onClick={load}><RefreshCw size={16} />刷新</button><button className="primary-inline" onClick={onCreate}><FolderPlus size={17} />新建项目</button></div>
     {state.error ? <Notice kind="error">{state.error}</Notice> : null}
     <section className="card table-card">{state.loading ? <Loading text="正在加载项目" /> : state.projects.length ? <div className="table-scroll"><table className="data-table"><thead><tr><th>项目名称</th><th>状态</th><th>截止时间</th><th>当前版本</th><th>风险状态</th><th>更新时间</th></tr></thead><tbody>{state.projects.map((project) => <tr key={project.id} onClick={() => onOpen(project.id)}><td><button className="link-button">{project.name}</button></td><td><Badge type={project.status}>{statusLabels[project.status] || project.status}</Badge></td><td>{formatDate(project.deadline)}</td><td>{project.current_version ? `V${project.current_version}` : '—'}</td><td>{project.risk_status ? <Badge type={project.risk_status}>{riskLabels[project.risk_status]}</Badge> : '—'}</td><td>{formatDate(project.updated_at)}</td></tr>)}</tbody></table></div> : <Empty title="还没有项目" text="创建第一个项目并上传招标文件，开始建立可追溯的生成归档。" />}</section>
-  </PageShell>;
+  </PlatformShell>;
+}
+
+function EnterpriseLibrary({ onNavigate, onOpen }) {
+  const [state, setState] = useState({ projects: [], selected: '', materials: [], loading: true, error: '' });
+  useEffect(() => { api.listProjects().then((payload) => { const projects = payload.projects || []; setState((current) => ({ ...current, projects, selected: current.selected || projects[0]?.id || '', loading: false })); }).catch((error) => setState((current) => ({ ...current, loading: false, error: error.message }))); }, []);
+  useEffect(() => { if (!state.selected) return; api.listCompanyMaterials(state.selected).then((payload) => setState((current) => ({ ...current, materials: payload.materials || [] }))).catch((error) => setState((current) => ({ ...current, error: error.message }))); }, [state.selected]);
+  return <PlatformShell active="企业资料库" onNavigate={onNavigate} title="企业资料库" subtitle="查看项目可使用的企业资料和处理状态"><section className="card library-card"><div className="section-heading"><div><h2>资料按项目查看</h2><p>当前版本沿用项目资料范围；进入项目后可补充材料并完成审核。</p></div><select aria-label="选择项目" value={state.selected} onChange={(event) => setState({ ...state, selected: event.target.value })}><option value="">选择项目</option>{state.projects.map((project) => <option value={project.id} key={project.id}>{project.name}</option>)}</select></div>{state.error ? <Notice kind="error">{state.error}</Notice> : null}{state.loading ? <Loading text="正在读取企业资料" /> : state.selected ? state.materials.length ? <div className="library-list">{state.materials.map((material) => <button type="button" key={material.id} onClick={() => onOpen(state.selected)}><span><strong>{material.original_name}</strong><small>{material.material_type} · {material.extraction_status === 'succeeded' ? '已解析，可进入审核' : material.extraction_error_message || '等待处理'}</small></span><span>进入项目 →</span></button>)}</div> : <Empty title="这个项目还没有企业资料" text="进入项目准备，上传公司资料后再进行材料证明确认。" /> : <Empty title="请选择项目" text="选择项目后查看本次可用的企业资料。" />}</section></PlatformShell>;
+}
+
+function BidCheck({ onNavigate, onOpen }) {
+  const [state, setState] = useState({ projects: [], selected: '', project: null, loading: true, error: '' });
+  useEffect(() => { api.listProjects().then((payload) => { const projects = payload.projects || []; setState((current) => ({ ...current, projects, selected: current.selected || projects[0]?.id || '', loading: false })); }).catch((error) => setState((current) => ({ ...current, loading: false, error: error.message }))); }, []);
+  useEffect(() => { if (!state.selected) return; api.getProject(state.selected).then((project) => setState((current) => ({ ...current, project }))).catch((error) => setState((current) => ({ ...current, error: error.message }))); }, [state.selected]);
+  return <PlatformShell active="标书检查" onNavigate={onNavigate} title="标书检查" subtitle="集中查看已有项目的风险、完整性和交付准备"><section className="card"><div className="section-heading"><div><h2>检查已有项目</h2><p>本阶段复用项目内正式检查结果，不创建第二套检查引擎。</p></div><select aria-label="选择项目" value={state.selected} onChange={(event) => setState({ ...state, selected: event.target.value })}><option value="">选择项目</option>{state.projects.map((project) => <option value={project.id} key={project.id}>{project.name}</option>)}</select></div>{state.error ? <Notice kind="error">{state.error}</Notice> : null}{state.loading ? <Loading text="正在读取检查结果" /> : state.project ? state.project.versions?.[0] ? <RiskReview version={state.project.versions[0]} baseline={state.project.requirementBaseline} onConfirmed={() => {}} /> : <Empty title="这个项目还没有正式版本" text="先在项目内完成标书生成，正式版本会在这里进入投标检查。" /> : <Empty title="请选择项目" text="选择项目后查看风险与交付准备。" />}</section></PlatformShell>;
 }
 
 function CreateProject({ onBack, onCreated }) {
@@ -461,10 +485,14 @@ function Versions({ versions }) {
 }
 
 function App() {
-  const [route, setRoute] = useState({ page: 'list', projectId: null });
+  const [route, setRoute] = useState({ page: 'workbench', projectId: null });
+  const navigatePlatform = (module) => setRoute({ page: module === '工作台' ? 'workbench' : module === '投标项目' ? 'list' : module === '企业资料库' ? 'library' : 'bid-check', projectId: null });
   if (route.page === 'create') return <CreateProject onBack={() => setRoute({ page: 'list' })} onCreated={(projectId) => setRoute({ page: 'workspace', projectId })} />;
   if (route.page === 'workspace') return <Workspace projectId={route.projectId} onBack={() => setRoute({ page: 'list' })} />;
-  return <ProjectList onCreate={() => setRoute({ page: 'create' })} onOpen={(projectId) => setRoute({ page: 'workspace', projectId })} />;
+  if (route.page === 'library') return <EnterpriseLibrary onNavigate={navigatePlatform} onOpen={(projectId) => setRoute({ page: 'workspace', projectId })} />;
+  if (route.page === 'bid-check') return <BidCheck onNavigate={navigatePlatform} />;
+  if (route.page === 'list') return <ProjectList onCreate={() => setRoute({ page: 'create' })} onNavigate={navigatePlatform} onOpen={(projectId) => setRoute({ page: 'workspace', projectId })} />;
+  return <Workbench onCreate={() => setRoute({ page: 'create' })} onNavigate={navigatePlatform} onOpen={(projectId) => setRoute({ page: 'workspace', projectId })} />;
 }
 
 if (typeof document !== 'undefined') {
