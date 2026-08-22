@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { projectDocumentFields, projectFactsForDocument, projectNameForDocument, DOCUMENT_PROJECTION_POLICY_VERSION } from './document-projection-policy.js';
 
 export const BID_DOCUMENT_MODEL_VERSION = 'bid-document-v1';
 
@@ -63,6 +64,13 @@ function sectionBlocks(section) {
   return markdownBlocks(section.content_markdown || section.final_text || section.content || '');
 }
 
+export function normalizeHeadingText(value) {
+  return text(value)
+    .replace(/^第\s*[0-9一二三四五六七八九十百]+\s*章\s*/u, '')
+    .replace(/^\d+(?:\.\d+){0,5}[.)、]?\s+/u, '')
+    .trim();
+}
+
 export function buildBidDocumentModel({ project, version, approvedProjectFacts = [] }) {
   if (!project?.id || !version?.id) throw Object.assign(new Error('项目和文档版本不能为空。'), { code: 'DOCUMENT_MODEL_INPUT_INVALID', status: 422 });
   if (String(version.project_id) !== String(project.id)) throw Object.assign(new Error('文档版本不属于当前项目。'), { code: 'VERSION_PROJECT_MISMATCH', status: 409 });
@@ -78,13 +86,20 @@ export function buildBidDocumentModel({ project, version, approvedProjectFacts =
     heading_level: Math.max(1, Math.min(3, Number(section.heading_level) || 1)),
     content_blocks: sectionBlocks(section)
   })).sort((a, b) => a.order - b.order || a.section_id.localeCompare(b.section_id));
+  const projectedFacts = projectFactsForDocument(approvedProjectFacts);
+  const documentFields = projectDocumentFields({ project, approvedProjectFacts });
+  const documentProjectName = documentFields.project_name || projectNameForDocument(project);
   return {
     model_version: BID_DOCUMENT_MODEL_VERSION,
-    project: { id: project.id, name: text(project.name) },
+    projection_policy_version: DOCUMENT_PROJECTION_POLICY_VERSION,
+    project: { id: project.id, name: documentProjectName },
     version: { id: version.id, generation_id: version.generation_id || null, number: version.version_number, title: text(version.title || '技术响应') },
     source: { final_text_hash: hash(finalText), final_text_length: finalText.length },
-    title: text(version.title || `${project.name} 技术响应`),
-    approved_project_facts: (Array.isArray(approvedProjectFacts) ? approvedProjectFacts : []).map((fact) => ({ key: text(fact.key), value: text(fact.value) })).filter((fact) => fact.key),
+    title: text(version.title || `${documentProjectName} 技术响应`),
+    document_fields: documentFields,
+    // Kept for audit/model consumers, but the default renderer does not dump
+    // this list into a generic visible section.
+    approved_project_facts: projectedFacts,
     sections
   };
 }

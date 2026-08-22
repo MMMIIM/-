@@ -2,6 +2,7 @@ import { AppError } from '../errors.js';
 import { buildBidDocumentModel } from './bid-document-model.js';
 import { DOCUMENT_FORMAT_POLICY_VERSION, getDocumentFormatPolicy } from './document-format-policy.js';
 import { renderBidDocument } from './docx-renderer.js';
+import { projectNameForDocument } from './document-projection-policy.js';
 
 const WORD_MIME = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
 
@@ -41,7 +42,8 @@ export class DocumentDeliveryService {
   async exportWord({ projectId, versionId }) {
     const prepared = await this.prepareExport({ projectId, versionId });
     const buffer = await this.renderer(prepared.model, { policy: this.policy });
-    const fileName = `${safeFilePart(prepared.project.name)}-技术标-V${prepared.version.version_number}.docx`;
+    const documentName = projectNameForDocument(prepared.project);
+    const fileName = `${documentName ? `${safeFilePart(documentName)}-` : ''}技术标-V${prepared.version.version_number}.docx`;
     const storageKey = await this.storage.save({ projectId, originalName: fileName, buffer });
     const sourceHash = prepared.model.source.final_text_hash;
     const audit = await this.repository.createDocumentExport({

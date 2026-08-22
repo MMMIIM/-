@@ -2,8 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import JSZip from 'jszip';
 import { buildBidDocumentModel } from '../src/pipeline/bid-document-model.js';
+import { normalizeHeadingText } from '../src/pipeline/bid-document-model.js';
 import { DocumentDeliveryService } from '../src/pipeline/document-delivery-service.js';
-import { renderBidDocument } from '../src/pipeline/docx-renderer.js';
+import { renderBidDocument, tableCellMarginForPolicy, tableWidthForPolicy } from '../src/pipeline/docx-renderer.js';
+import { getDocumentFormatPolicy, getUsableBodyWidth } from '../src/pipeline/document-format-policy.js';
+import { projectFactsForDocument, projectNameForDocument } from '../src/pipeline/document-projection-policy.js';
 import { createApp } from '../src/app.js';
 
 const project = { id: 'project-word-1', name: '示例投标项目' };
@@ -19,7 +22,8 @@ test('Bid Document Model 保留稳定章节、标题、表格和分页内容块'
   assert.equal(model.sections[0].section_id, 'chapter-01');
   assert.deepEqual(model.sections[0].content_blocks.map((block) => block.kind), ['heading', 'paragraph', 'table', 'page_break', 'paragraph']);
   assert.equal(model.source.final_text_length, version.final_text.length);
-  assert.deepEqual(model.approved_project_facts, [{ key: '投标人', value: '示例公司' }]);
+  assert.deepEqual(model.approved_project_facts, [{ field: 'bidder', label: '投标人', value: '示例公司' }]);
+  assert.equal(model.project.name, '示例投标项目');
 });
 
 test('DOCX renderer 产生真实 Heading、目录字段、页眉页脚与正文', async () => {
@@ -28,14 +32,50 @@ test('DOCX renderer 产生真实 Heading、目录字段、页眉页脚与正文'
   const zip = await JSZip.loadAsync(buffer);
   const documentXml = await zip.file('word/document.xml').async('string');
   const settingsXml = await zip.file('word/settings.xml').async('string');
-  const footerXml = await zip.file('word/footer1.xml').async('string');
+  const footerFiles = Object.keys(zip.files).filter((name) => /^word\/footer\d+\.xml$/.test(name));
+  const footerXml = (await Promise.all(footerFiles.map((name) => zip.file(name).async('string')))).find((xml) => /instrText[^>]*>PAGE/.test(xml));
+  const coverFooterXml = await zip.file('word/footer1.xml').async('string');
   assert.match(documentXml, /w:val="Heading1"/);
+  assert.match(documentXml, /目 录/);
+  assert.match(documentXml, /目录页码将在 Word\/WPS 中更新目录后显示/);
   assert.match(documentXml, /TOC/);
+  assert.ok((documentXml.match(/w:sectPr/g) || []).length >= 3);
   assert.match(documentXml, /示例投标项目/);
   assert.match(documentXml, /示例公司/);
+  assert.match(documentXml, /SimSun/);
+  assert.match(documentXml, /SimHei/);
+  assert.doesNotMatch(documentXml, /项目统一信息/);
+  assert.doesNotMatch(documentXml, /data_classification|synthetic|DocumentVersion|generation-word-1/);
   assert.match(documentXml, /w:tbl/);
+  assert.match(documentXml, /w:tcMar/);
   assert.match(settingsXml, /updateFields/);
+  assert.doesNotMatch(coverFooterXml, /PAGE/);
   assert.match(footerXml, /instrText[^>]*>PAGE/);
+});
+
+test('Stage16-R1 文档投影只允许正式字段并拒绝技术/对象值', () => {
+  assert.equal(projectNameForDocument({ name: 'E2E-PROJECT [data_classification=synthetic]' }), '');
+  assert.deepEqual(projectFactsForDocument([
+    { key: 'bidder_name', value: '示例公司' },
+    { key: 'e2e.internal_id', value: 'PFACT-1' },
+    { key: 'debug_hash', value: 'abc' },
+    { key: 'project_name', value: { raw: '不应输出' } },
+    { key: 'unknown_field', value: '不应输出' }
+  ]), [{ field: 'bidder', label: '投标人', value: '示例公司' }]);
+});
+
+test('Stage16-R1 默认表格宽度不超过正文可用宽度且保留内边距', () => {
+  const policy = getDocumentFormatPolicy();
+  assert.equal(tableWidthForPolicy(policy), getUsableBodyWidth(policy));
+  assert.ok(tableWidthForPolicy(policy) <= policy.page.width_dxa - policy.page.margin_dxa.left - policy.page.margin_dxa.right);
+  assert.deepEqual(tableCellMarginForPolicy(policy), { top: 80, bottom: 80, left: 180, right: 180 });
+});
+
+test('Stage16-R1 标题编号由后端统一生成，源标题编号不会重复', () => {
+  assert.equal(normalizeHeadingText('1 项目理解'), '项目理解');
+  assert.equal(normalizeHeadingText('1.1 项目背景'), '项目背景');
+  assert.equal(normalizeHeadingText('第一章 项目概况'), '项目概况');
+  assert.equal(normalizeHeadingText('建设目标'), '建设目标');
 });
 
 test('Word export 复用版本风险门禁并记录审计，不接受严重风险版本', async () => {
@@ -52,6 +92,20 @@ test('Word export 复用版本风险门禁并记录审计，不接受严重风�
   assert.equal(saved[0].versionId, version.id);
   repository.getPipelineDocumentVersion = async () => ({ ...version, risk_status: 'critical' });
   await assert.rejects(() => service.exportWord({ projectId: project.id, versionId: version.id }), (error) => error.code === 'CRITICAL_RISK');
+});
+
+test('Word export 文件名移除已知内部项目标记', async () => {
+  const saved = [];
+  const repository = {
+    async getProject() { return { ...project, name: 'E2E-DEMO [data_classification=synthetic]' }; },
+    async getPipelineDocumentVersion() { return version; },
+    async createDocumentExport(value) { saved.push(value); return { id: 'export-safe-name', ...value }; }
+  };
+  const storage = { async save({ originalName }) { return originalName; } };
+  const service = new DocumentDeliveryService({ repository, storage, renderer: async () => Buffer.from('docx-fixture') });
+  const result = await service.exportWord({ projectId: project.id, versionId: version.id });
+  assert.equal(result.fileName, '技术标-V2.docx');
+  assert.equal(saved[0].fileName, result.fileName);
 });
 
 test('Stage 4 export route returns downloadable DOCX with audit header', async () => {
