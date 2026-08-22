@@ -74,6 +74,7 @@ test('DOCX renderer 产生真实 Heading、目录字段、页眉页脚与正文'
   const zip = await JSZip.loadAsync(buffer);
   const documentXml = await zip.file('word/document.xml').async('string');
   const settingsXml = await zip.file('word/settings.xml').async('string');
+  const numberingXml = await zip.file('word/numbering.xml').async('string');
   const footerFiles = Object.keys(zip.files).filter((name) => /^word\/footer\d+\.xml$/.test(name));
   const footerXml = (await Promise.all(footerFiles.map((name) => zip.file(name).async('string')))).find((xml) => /instrText[^>]*>PAGE/.test(xml));
   const coverFooterXml = await zip.file('word/footer1.xml').async('string');
@@ -91,6 +92,11 @@ test('DOCX renderer 产生真实 Heading、目录字段、页眉页脚与正文'
   assert.match(documentXml, /w:sz w:val="24"/);
   assert.match(documentXml, /w:firstLine="480"/);
   assert.match(documentXml, /w:spacing w:after="0" w:before="0" w:line="360"/);
+  assert.match(numberingXml, /w:suff w:val="space"/);
+  assert.doesNotMatch(numberingXml, /w:suff w:val="tab"/);
+  assert.match(numberingXml, /w:ind w:left="360" w:hanging="180"/);
+  assert.match(numberingXml, /w:ind w:left="720" w:hanging="180"/);
+  assert.match(numberingXml, /w:ind w:left="1080" w:hanging="180"/);
   assert.doesNotMatch(documentXml, /项目统一信息/);
   assert.doesNotMatch(documentXml, /data_classification|synthetic|DocumentVersion|generation-word-1/);
   assert.match(documentXml, /w:tbl/);

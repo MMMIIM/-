@@ -1,6 +1,6 @@
 # Current Stage
 
-## Stage 16-R1.2 — Heading Hierarchy Normalization
+## Stage 16-R1.2 — Heading Hierarchy & Numbering Spacing
 
 Priority: **P1**
 Status: **ACTIVE**
@@ -24,6 +24,7 @@ Chapter (H1) → Section (H2) → Subsection (H3)
 ## Scope
 
 - normalize and validate heading levels in the Bid Document Model;
+- use a normal-space numbering suffix with restrained H1/H2/H3 indentation;
 - preserve renderer-owned deterministic numbering, TOC behavior, typography,
   table layout, cover, page numbering and metadata projection;
 - keep the fix independent from Requirement, Evidence, Fact, Mapping, Claim

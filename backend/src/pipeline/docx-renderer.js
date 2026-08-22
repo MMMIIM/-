@@ -1,5 +1,5 @@
 import {
-  AlignmentType, BorderStyle, Document, Footer, Header, HeadingLevel, LevelFormat,
+  AlignmentType, BorderStyle, Document, Footer, Header, HeadingLevel, LevelFormat, LevelSuffix,
   PageBreak, PageNumber, Paragraph, Packer, SectionType, Table, TableCell, TableOfContents,
   TableRow, TextRun, WidthType
 } from 'docx';
@@ -181,13 +181,14 @@ export async function renderBidDocument(model, { policy = getDocumentFormatPolic
   };
   const bodySpacing = getParagraphSpacingTwips(policy, 'body');
   const bodyLine = getBodyLineSpacingTwips(policy);
-  const numbering = policy.heading_numbering || { left_dxa_per_level: 720, hanging_dxa: 360 };
+  const numbering = policy.heading_numbering || { left_dxa_per_level: 360, hanging_dxa: 180, suffix: 'space' };
+  const numberingSuffix = numbering.suffix === 'space' ? LevelSuffix.SPACE : numbering.suffix === 'nothing' ? LevelSuffix.NOTHING : LevelSuffix.TAB;
   const bodySection = policy.sections.body;
   const tocChildren = policy.toc.enabled === false ? [] : [new TableOfContents('', { hyperlink: true, headingStyleRange: policy.toc.heading_style_range, beginDirty: true })];
   const doc = new Document({
     creator: '政企标书平台', title: model.title, subject: '正式投标响应文档',
     features: { updateFields: true },
-    numbering: { config: [{ reference: 'bid-heading-numbering', levels: [0, 1, 2].map((level) => ({ level, format: LevelFormat.DECIMAL, text: level === 0 ? '%1' : level === 1 ? '%1.%2' : '%1.%2.%3', alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: numbering.left_dxa_per_level * (level + 1), hanging: numbering.hanging_dxa } } } })) }] },
+    numbering: { config: [{ reference: 'bid-heading-numbering', levels: [0, 1, 2].map((level) => ({ level, format: LevelFormat.DECIMAL, text: level === 0 ? '%1' : level === 1 ? '%1.%2' : '%1.%2.%3', suffix: numberingSuffix, alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: numbering.left_dxa_per_level * (level + 1), hanging: numbering.hanging_dxa } } } })) }] },
     styles: {
       default: { document: { run: { font: fontFor(policy, 'body'), size: policy.body.size_half_points }, paragraph: { spacing: { ...bodySpacing, line: bodyLine }, alignment: AlignmentType.JUSTIFIED } } },
       paragraphStyles: [

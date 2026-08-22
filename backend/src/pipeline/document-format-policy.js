@@ -54,7 +54,7 @@ export const PROFESSIONAL_WORD_POLICY = Object.freeze({
     2: { font: 'SimHei', eastAsiaFont: 'SimHei', hAnsi: 'SimHei', size_pt: 14, size_half_points: 28, bold: true, color: '000000', before_pt: 12, after_pt: 6, numbering_level: 1, page_break_before: false },
     3: { font: 'SimHei', eastAsiaFont: 'SimHei', hAnsi: 'SimHei', size_pt: 12, size_half_points: 24, bold: true, color: '000000', before_pt: 8, after_pt: 4, numbering_level: 2, page_break_before: false }
   },
-  heading_numbering: { left_dxa_per_level: 720, hanging_dxa: 360 },
+  heading_numbering: { left_dxa_per_level: 360, hanging_dxa: 180, suffix: 'space' },
   table: {
     font: 'SimSun', eastAsiaFont: 'SimSun', hAnsi: 'SimSun', size_pt: 10.5, size_half_points: 21,
     width_policy: 'usable_body_width', alignment: 'left', indent_dxa: 0,
