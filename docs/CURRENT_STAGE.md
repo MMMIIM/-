@@ -38,7 +38,9 @@ Heading styles, updateable TOC field, numbering definition, table, page break,
 header and PAGE footer field). The local render helper could not complete page
 PNG QA because no LibreOffice/soffice executable is installed; Stage 16
 therefore remains ACTIVE until a compatible Word processor is available for
-manual open and layout acceptance. The reuse spike and architecture decision
+manual open and layout acceptance. Browser acceptance is also pending a
+restart of the long-running local backend so the new export route is served.
+The reuse spike and architecture decision
 are recorded in `docs/WORD_REUSE_SPIKE.md` and
 `docs/decisions/007-document-model-docx-renderer.md`.
 
