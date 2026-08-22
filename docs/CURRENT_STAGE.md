@@ -3,7 +3,7 @@
 ## Stage 15 — Generation Workbench V1
 
 Priority: **P0**
-Status: **IMPLEMENTED · MANUAL ACCEPTANCE PARTIAL**
+Status: **PASS · FROZEN**
 
 Stage 13 — Material Processing / Review UX and Stage 14 — Platform Shell &
 Core Flow IA are both frozen with acceptance **PASS**.
@@ -41,19 +41,24 @@ Task, Guard, or Coverage terminology.
 
 Deterministic frontend fixtures and the local browser verified chapter
 directory, persisted task restoration, generating/checking/failed projections,
-partial-failure isolation, and absence of percentage progress. A synthetic
-multi-chapter run was attempted once; the local runtime was configured with
-`GENERATION_PROVIDER=semantic_gateway`, so two chapters received the existing
-safe gateway failure audit (two attempts each, four gateway request attempts in
-total) and no completed version was produced. No retry or additional gateway
-call is authorized in this stage. Stage 15 therefore remains partial until a
-mock-provider or explicitly authorized runtime can demonstrate a completed
-chapter preview and the final 投标检查 handoff.
+partial-failure isolation, absence of percentage progress, and persisted
+completed previews. A deterministic local Mock Provider acceptance run then
+used the existing formal Writer path: three real chapter tasks were created,
+all three succeeded, a finalized `pass` version was persisted, refresh restored
+the chapter states and正文, and the existing 开始投标检查 action entered Stage
+4. No fake progress, direct database insertion, Writer bypass, or new lifecycle
+state was used.
+
+The earlier `GENERATION_PROVIDER=semantic_gateway` run remains a separate
+known operational blocker: two chapters received the safe gateway failure
+audit (two attempts each, four gateway request attempts in total). It was not
+changed or retried during this acceptance.
 
 ## Stop conditions
 
 Stop before any external model/provider call, contract semantic change, new
 formal state, queue/worker infrastructure, or destructive DB/Git action.
 
-External authorization: **none**. ADR required: **no**. Roadmap change: **no**.
-Merge, push, and deploy: **none**.
+External authorization: **none** for this acceptance; external AI calls in this
+run: **0**. ADR required: **no**. Roadmap change: **no**. Merge, push, and
+deploy: **none**.
