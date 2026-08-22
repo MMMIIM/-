@@ -3,7 +3,7 @@
 ## Stage 17 — Enterprise Knowledge / RAG Productization
 
 Priority: **P1**
-Status: **IN_PROGRESS**
+Status: **PASS / FROZEN**
 
 Stage 16 — Document Delivery & Word V1 is **PASS / FROZEN**.
 The system default page policy is frozen: the cover hides its page number,
@@ -49,14 +49,20 @@ Bid Document Model → Format Policy → DOCX Renderer
 - heading hierarchy, numbering, pagination, tables and metadata allow-list
   remain covered by the consolidated OOXML acceptance.
 
-## Stage 17 acceptance gate
+## Stage 17 acceptance result
 
 - enterprise materials can be processed and indexed;
 - retrieval preserves material/document/chunk/source lineage;
 - project and selected-material scope filtering is enforced;
 - no-answer is explicit;
-- deterministic retrieval evaluation reports Recall@K and ranking quality;
-- retrieval cannot bypass Evidence, Fact, Mapping, Claim Gate or Writer auth.
+- deterministic retrieval evaluation reports Recall@5 **90%**, MRR **1.000**,
+  source traceability **100%**, scope violation **0%**, duplicate retrieval
+  **0%**, and no-answer accuracy **100%**;
+- retrieval cannot bypass Evidence, Fact, Mapping, Claim Gate or Writer auth;
+- backend, frontend, PostgreSQL, build, lint and diff checks all pass.
+
+The next roadmap direction is Stage 18 — Bid Copilot / Agent Foundation. It is
+not started in this checkpoint because it materially expands product scope.
 
 ## Stop conditions
 
