@@ -2,11 +2,16 @@ import React,{useEffect,useState}from'react';
 import{api}from'./api.js';
 const LABEL={proposed:'待确认',needs_review:'需要复核',draft:'草稿待审',pending:'信息待补充',conflict:'事实冲突',insufficient:'材料不足',restrict:'限制使用',reject:'禁止使用',rejected:'已拒绝',approved:'已批准',unknown:'未知状态（需人工核验）',blocked:'传播受阻',unresolved:'尚未解决'};
 const showValue=f=>typeof f.value==='object'?JSON.stringify(f.value,null,2):String(f.value??'');
+export function friendlyReviewError(error){
+ if(error?.code==='EVIDENCE_FACT_INVALIDATED')return'这条材料证明内容的来源刚刚发生变化，系统已将它移出确认列表；请按最新材料重新核验。';
+ if(error?.code==='PROJECT_FACT_INVALIDATED')return'这条项目统一信息的依据刚刚发生变化，系统已将它移出确认列表；请按最新材料重新核验。';
+ return error?.message||'审核未完成，请稍后重试。';
+}
 export function ReviewWorkbench({projectId,focusMaterialId=null,onClearMaterialFocus,initialData=null}){
  const[state,setState]=useState({loading:!initialData,data:initialData,error:'',message:''}),[filter,setFilter]=useState('pending'),[edit,setEdit]=useState(null);
  async function load(){try{const data=await api.getReviewCenter(projectId);setState({loading:false,data,error:'',message:''});}catch(error){setState({loading:false,data:null,error:error.message,message:''});}}
  useEffect(()=>{if(!initialData)load();},[projectId]);
- async function act(work){try{await work();await load();}catch(error){setState(s=>({...s,error:error.message}));}}
+ async function act(work){try{await work();await load();}catch(error){try{await load();}catch(_refreshError){}setState(s=>({...s,error:friendlyReviewError(error)}));}}
  async function beginEdit(fact){try{setEdit({fact,impact:await api.getProjectFactImpact(projectId,fact.project_fact_id),newValue:showValue(fact),note:''});}catch(error){setState(s=>({...s,error:error.message}));}}
  async function saveEdit(){let next=edit.newValue;if(['structured','string_set'].includes(edit.fact.value_type)){try{next=JSON.parse(next);}catch{return setState(s=>({...s,error:'新值必须是合法 JSON。'}));}}const result=await api.editProjectFact(edit.fact.project_fact_id,{value:next,value_status:'known'},edit.note);setEdit(null);await load();setState(s=>({...s,message:`事实已生成新版本；${result.propagation.affected_target_count} 个目标和 ${result.propagation.mention_count} 条引用已进入传播失效控制。`}));}
  if(state.loading)return <section className="card">正在加载审核中心…</section>;
