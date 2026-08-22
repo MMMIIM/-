@@ -12,6 +12,7 @@
     "reconcile:sources": "node scripts/reconcile-requirement-sources.js",
     "eval:requirements": "node scripts/eval-requirements.js",
     "eval:enterprise-retrieval": "node scripts/eval-enterprise-retrieval.js",
+    "eval:retrieval": "node eval/retrieval-eval/benchmark.js",
     "eval:evidence-gold": "node eval/evidence-gold/run.js",
     "audit:semantic-boundary": "node eval/semantic-boundary/audit-runner.js",
     "snapshot:semantic-boundary": "node eval/semantic-boundary/snapshot.js",

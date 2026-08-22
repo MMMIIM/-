@@ -35,19 +35,19 @@ function render(result = review()) {
 afterEach(() => vi.unstubAllGlobals());
 
 describe('Evidence Review UI v1', () => {
-  it('展示通用 Requirement、Top-K、来源预览，并明确相关度不是支撑结论', () => {
+  it('展示招标要求、企业材料来源，并明确相关度不是支撑结论', () => {
     const html = render();
     expect(html).toContain('REQ-030');
     expect(html).toContain(requirement.content);
     expect(html).toContain('integration_special');
     expect(html).toContain('实质性要求');
-    expect(html).toContain('Retrieval Top-K');
-    expect(html).toContain('检索相关度 87.6%');
-    expect(html).toContain('不代表证据可信度、需求满足度或支撑强度');
+    expect(html).toContain('找到的企业材料');
+    expect(html).toContain('相关程度 87.6%');
+    expect(html).toContain('不代表已经证明需求、可以直接承诺或可以跳过人工确认');
     expect(html).toContain('产品文档');
     expect(html).toContain('产品支持标准接口协议和数据交换能力。');
     expect(html).toContain('第 2 页 · 第 3 段');
-    expect(html).toContain('创建 Evidence Candidate');
+    expect(html).toContain('保存为待确认证明');
   });
 
   it('显示 Evidence 审批、有效性及 Mapping 人工审核动作', () => {
@@ -55,13 +55,13 @@ describe('Evidence Review UI v1', () => {
       evidence_id: 'evidence-internal-id', approval_status: 'approved', validity_status: 'active',
       evidence_scope: ['接口能力'], capability_tags: ['开放接口']
     }));
-    expect(candidate).toContain('批准为企业证据');
-    expect(candidate).toContain('拒绝 Evidence');
+    expect(candidate).toContain('确认可作为企业证明');
+    expect(candidate).toContain('确认不能作为证明');
     expect(candidate).toContain('保存有效性');
     expect(candidate).toContain('完整支撑');
     expect(candidate).toContain('部分支撑');
     expect(candidate).toContain('仅供参考');
-    expect(candidate).toContain('创建 proposed Mapping');
+    expect(candidate).toContain('保存匹配建议');
     expect(candidate).not.toContain('evidence-internal-id');
 
     const mapped = render(review({
@@ -70,8 +70,8 @@ describe('Evidence Review UI v1', () => {
       support_level: 'reference_only', review_notes: '仅证明相关能力，不能证明完整履约。'
     }));
     expect(mapped).toContain('reference_only');
-    expect(mapped).toContain('批准 Mapping');
-    expect(mapped).toContain('拒绝 Mapping');
+    expect(mapped).toContain('确认匹配');
+    expect(mapped).toContain('确认不匹配');
     expect(mapped).toContain('仅证明相关能力，不能证明完整履约。');
     expect(mapped).not.toContain('mapping-internal-id');
   });
@@ -86,7 +86,7 @@ describe('Evidence Review UI v1', () => {
   });
 
   it('同一套 Candidate 与 support level UI 支持通用和医疗器械风格 Requirement', () => {
-    expect(render()).toContain('创建 Evidence Candidate');
+    expect(render()).toContain('保存为待确认证明');
     const medical = '投标产品须具有有效医疗器械注册证。';
     const html = renderToStaticMarkup(<EvidenceReview
       projectId="project-1"
