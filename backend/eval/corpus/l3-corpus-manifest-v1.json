@@ -1,0 +1,97 @@
+{
+  "schema_version": "4.3-corpus-l3-manifest-v1",
+  "frozen_at": "2026-08-23T09:00:00.000Z",
+  "policy": {
+    "active_requires_review_and_usage_status": true,
+    "synthetic_materials_are_eval_only": true,
+    "no_automatic_evidence_or_claim_permission": true,
+    "no_external_provider_calls": true
+  },
+  "scopes": {
+    "general": {
+      "label": "通用资料",
+      "target_active_min": 10,
+      "target_active_max": 15,
+      "active_materials": 0,
+      "candidate_materials": 0,
+      "status": "GAP"
+    },
+    "government": {
+      "label": "行业资料 / 政企平台",
+      "target_active_min": 15,
+      "target_active_max": 25,
+      "active_materials": 0,
+      "candidate_materials": 0,
+      "status": "GAP"
+    },
+    "healthcare": {
+      "label": "行业资料 / 医疗行业",
+      "target_active_min": 15,
+      "target_active_max": 25,
+      "active_materials": 0,
+      "candidate_materials": 0,
+      "status": "GAP"
+    },
+    "enterprise": {
+      "label": "企业资料",
+      "target_active_min": 15,
+      "target_active_max": 20,
+      "active_materials": 17,
+      "candidate_materials": 21,
+      "status": "ACTIVE_EVAL_ONLY",
+      "manifest": "l3-synthetic-enterprise/manifest.json"
+    }
+  },
+  "source_inventory": [
+    {
+      "material_id": "PUBLIC-NEUSOFT-001",
+      "scope": "enterprise",
+      "industry": "政企平台",
+      "title": "智慧城市公开资料",
+      "source_reference": "real-public/neusoft-smart-city.md",
+      "source_authority": "corporate_primary",
+      "usage_status": "METADATA_ONLY",
+      "review_status": "pending",
+      "lifecycle": ["DISCOVERED", "SCREENED"]
+    },
+    {
+      "material_id": "PUBLIC-NEUSOFT-002",
+      "scope": "enterprise",
+      "industry": "政企平台",
+      "title": "系统集成公开资料",
+      "source_reference": "real-public/neusoft-system-integration.md",
+      "source_authority": "corporate_primary",
+      "usage_status": "METADATA_ONLY",
+      "review_status": "pending",
+      "lifecycle": ["DISCOVERED", "SCREENED"]
+    },
+    {
+      "material_id": "PUBLIC-NEUSOFT-003",
+      "scope": "enterprise",
+      "industry": "政企平台",
+      "title": "资质公开资料",
+      "source_reference": "real-public/neusoft-qualifications.md",
+      "source_authority": "corporate_primary",
+      "usage_status": "METADATA_ONLY",
+      "review_status": "pending",
+      "lifecycle": ["DISCOVERED", "SCREENED"]
+    },
+    {
+      "material_id": "PUBLIC-NEUSOFT-004",
+      "scope": "enterprise",
+      "industry": "政企平台",
+      "title": "政府采购公开项目资料",
+      "source_reference": "real-public/ccgp-neusoft-project.md",
+      "source_authority": "government_primary",
+      "usage_status": "METADATA_ONLY",
+      "review_status": "pending",
+      "lifecycle": ["DISCOVERED", "SCREENED"]
+    }
+  ],
+  "acquisition_gaps": [
+    { "gap_id": "CORPUS_GAP-GENERAL-001", "scope": "general", "topic": "政府采购与电子招投标现行规则", "priority": "P0", "status": "open" },
+    { "gap_id": "CORPUS_GAP-GOV-001", "scope": "government", "topic": "数字政府、数据共享与系统集成现行政策", "priority": "P0", "status": "open" },
+    { "gap_id": "CORPUS_GAP-HEALTH-001", "scope": "healthcare", "topic": "医院信息平台、电子病历与互联互通现行规范", "priority": "P0", "status": "open" },
+    { "gap_id": "CORPUS_GAP-ENTERPRISE-001", "scope": "enterprise", "topic": "可审计的当前服务指标和客户验收记录", "priority": "P1", "status": "open" }
+  ]
+}

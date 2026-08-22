@@ -17,6 +17,13 @@ Status: **PARTIAL / BLOCKED — REAL_PROVIDER_OPERATIONAL_BLOCKED**
 三种业务范围，SSH 隧道仅是开发环境访问方式。当前网关不可达继续单独记为
 `DEVELOPMENT_ENVIRONMENT_OPERATIONAL_BLOCKER`，不阻断独立产品验收。
 
+Stage20 当前并行推进 Corpus Readiness L3：以业务问题覆盖、来源权威性、有效期、
+使用许可、可追溯性和人工审核覆盖衡量语料是否可支撑投标业务，不以文档数量替代
+验收。当前 L3 为 `IN_PROGRESS`；Stage17 检索架构保持冻结，详见
+`docs/RAG_CORPUS_L3_PLAN.md` 与 `npm run eval:corpus-l3 -w backend`。
+当前离线基线：业务问题覆盖 17.4%、Recall@5 90%、MRR 1.000、来源可追溯 100%、
+范围违规 0%、无答案准确率 100%；语料缺口保持显式记录，不通过降低规则掩盖。
+
 验收产物：`docs/STAGE20_PRODUCTION_BETA_ACCEPTANCE.md` 与离线合成 E2E 夹具。
 Stage 19 及之前的冻结规则继续有效。
 

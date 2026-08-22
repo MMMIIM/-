@@ -46,6 +46,37 @@ current-project usage and the “证明确认后才能作为正式依据” boun
 covered by `frontend/src/material-library.test.jsx` and browser inspection.
 No separate vector store or retrieval architecture was introduced.
 
+## Corpus Readiness L3 checkpoint
+
+The first L3 inventory and offline evaluator are now repository-owned:
+
+- `backend/eval/corpus/l3-corpus-manifest-v1.json`
+- `backend/eval/corpus/l3-gold-questions-v1.json`
+- `backend/eval/corpus/l3-synthetic-enterprise/`
+- `npm run eval:corpus-l3 -w backend`
+
+Current offline result (23 curated questions, external calls **0**):
+
+| Metric | Current | L3 target | Result |
+| --- | ---: | ---: | --- |
+| Business Question Coverage | 17.4% | ≥95% | GAP |
+| Recall@5 | 90.0% | ≥95% | GAP; frozen Stage17 baseline |
+| MRR | 1.000 | ≥0.85 | PASS |
+| Source Traceability | 100% | 100% | PASS |
+| Scope Violation Rate | 0% | 0% | PASS |
+| Obsolete Preference Errors | 0 | 0 | PASS |
+| No-answer Accuracy | 100% | ≥95% | PASS |
+| ACTIVE Material Review Coverage | 100% | 100% | PASS |
+| Usage Status Coverage | 100% | 100% | PASS |
+| Formal Safety Boundary Violations | 0 | 0 | PASS |
+
+Inventory: general 0 ACTIVE, government-platform 0 ACTIVE (no admitted official
+government candidates yet), healthcare 0 ACTIVE, and 17 ACTIVE eval-only
+synthetic enterprise materials. Four public-source enterprise candidates remain
+`METADATA_ONLY`/pending. Nineteen `CORPUS_GAP-*` question gaps
+remain; controlled negative cases are retained intentionally. Corpus L3 is
+`IN_PROGRESS`, not a retrieval architecture failure.
+
 ## Acceptance evidence
 
 | Area | Result | Evidence |

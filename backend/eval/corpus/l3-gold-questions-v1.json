@@ -1,0 +1,28 @@
+{
+  "schema_version": "4.3-corpus-l3-gold-questions-v1",
+  "questions": [
+    { "query_id": "GEN-001", "scope": "general", "text": "当前政府采购文件中电子投标文件的合规要求是什么？", "expected_material_ids": ["GEN-PROCUREMENT-001"] },
+    { "query_id": "GEN-002", "scope": "general", "text": "网络安全和数据安全相关的通用投标依据有哪些？", "expected_material_ids": ["GEN-SECURITY-001"] },
+    { "query_id": "GEN-003", "scope": "general", "text": "信息系统项目治理通常需要哪些交付和验收记录？", "expected_material_ids": ["GEN-GOVERNANCE-001"] },
+    { "query_id": "GEN-004", "scope": "general", "text": "个人信息保护在项目实施材料中应如何留痕？", "expected_material_ids": ["GEN-PRIVACY-001"] },
+    { "query_id": "GEN-005", "scope": "general", "text": "电子招投标的文件签名和归档要求是什么？", "expected_material_ids": ["GEN-E-BID-001"] },
+    { "query_id": "GOV-001", "scope": "government", "text": "数字政府项目的数据共享和目录治理要求有哪些？", "expected_material_ids": ["GOV-DATA-001"] },
+    { "query_id": "GOV-002", "scope": "government", "text": "政务服务平台的统一身份和审计要求是什么？", "expected_material_ids": ["GOV-SERVICE-001"] },
+    { "query_id": "GOV-003", "scope": "government", "text": "智慧城市系统集成项目通常需要哪些实施边界？", "expected_material_ids": ["GOV-INTEGRATION-001"] },
+    { "query_id": "GOV-004", "scope": "government", "text": "政务数据交换接口和安全责任如何界定？", "expected_material_ids": ["GOV-EXCHANGE-001"] },
+    { "query_id": "GOV-005", "scope": "government", "text": "政府信息化项目验收应保留哪些证据？", "expected_material_ids": ["GOV-ACCEPTANCE-001"] },
+    { "query_id": "HEALTH-001", "scope": "healthcare", "text": "医院信息平台的主数据和接口互联互通有哪些要求？", "expected_material_ids": ["HEALTH-INTEROP-001"] },
+    { "query_id": "HEALTH-002", "scope": "healthcare", "text": "电子病历系统建设的安全和审计要求是什么？", "expected_material_ids": ["HEALTH-EMR-001"] },
+    { "query_id": "HEALTH-003", "scope": "healthcare", "text": "医院数据平台项目的验收指标如何留痕？", "expected_material_ids": ["HEALTH-ACCEPTANCE-001"] },
+    { "query_id": "HEALTH-004", "scope": "healthcare", "text": "基层医疗信息化项目的服务范围如何界定？", "expected_material_ids": ["HEALTH-GRASSROOT-001"] },
+    { "query_id": "HEALTH-005", "scope": "healthcare", "text": "医疗数据跨系统交换的责任边界是什么？", "expected_material_ids": ["HEALTH-DATA-001"] },
+    { "query_id": "ENT-001", "scope": "enterprise", "industry": "政企平台", "text": "企业是否具备数据治理和共享交换实施能力？", "expected_material_ids": ["L3-ENT-009", "L3-ENT-010"] },
+    { "query_id": "ENT-002", "scope": "enterprise", "industry": "医疗行业", "text": "企业是否有医院数据集成产品能力？", "expected_material_ids": ["L3-ENT-007"] },
+    { "query_id": "ENT-003", "scope": "enterprise", "industry": "政企平台", "text": "企业是否有当前有效的质量管理资格？", "expected_material_ids": ["L3-ENT-002"] },
+    { "query_id": "ENT-004", "scope": "enterprise", "industry": "政企平台", "text": "企业是否有已完成的城市治理平台案例？", "expected_material_ids": ["L3-ENT-004"] },
+    { "query_id": "ENT-005", "scope": "enterprise", "industry": "政企平台", "text": "企业能否承诺99.99%可用性和5分钟响应？", "expected_material_ids": ["L3-ENT-016"], "requires_supported_source": true },
+    { "query_id": "ENT-006", "scope": "enterprise", "industry": "政企平台", "text": "企业规模到底是86人还是96人？", "expected_material_ids": ["L3-ENT-014", "L3-ENT-015"], "requires_conflict_review": true },
+    { "query_id": "ENT-007", "scope": "enterprise", "industry": "政企平台", "text": "企业能否把第三方数据库能力直接作为自有能力承诺？", "expected_material_ids": ["L3-ENT-012"], "requires_supported_source": true },
+    { "query_id": "ENT-008", "scope": "enterprise", "industry": "医疗行业", "text": "医院试点案例是否已有正式验收？", "expected_material_ids": ["L3-ENT-005"], "requires_supported_source": true }
+  ]
+}

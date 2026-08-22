@@ -21,12 +21,17 @@ Word delivery uses one product-owned document model, one professional default
 format policy, and a compatible DOCX renderer. Customer templates, browser Word
 editing, and pagination guarantees are later evidence-driven work.
 
-## P1 — PLANNED: Enterprise knowledge base / RAG
+## P1 — ACTIVE WITHIN STAGE20: Corpus Readiness L3
 
-Keep Production Retrieval stable. Expand only when real evaluation, misses,
-complex documents, or user problems justify it. Compatible projects such as
-RAGFlow, AnythingLLM, LangChain.js, MinerU, or Docling are reference/reuse
-options, not automatic additions.
+The bid-usable knowledge/material target is Corpus Readiness L3. It is a
+quality, provenance and coverage gate—not a document-count race and not a new
+retrieval architecture. Keep Production Retrieval stable while curating
+general, government-platform, healthcare and synthetic-enterprise scopes.
+See [`RAG_CORPUS_L3_PLAN.md`](RAG_CORPUS_L3_PLAN.md) and the offline
+`npm run eval:corpus-l3 -w backend` report.
+
+Compatible projects such as RAGFlow, AnythingLLM, LangChain.js, MinerU, or
+Docling remain reference/reuse options, not automatic additions.
 
 ## P2 — PLANNED: Users, organizations, and permissions
 
