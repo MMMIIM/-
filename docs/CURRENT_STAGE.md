@@ -3,7 +3,7 @@
 ## Stage 20 — Production Beta Hardening / Real E2E
 
 Priority: **P0/P1**
-Status: **PARTIAL — CORPUS_L3_IN_PROGRESS / REAL_E2E_PENDING**
+Status: **PARTIAL — CORPUS_L3_IN_PROGRESS / REAL_E2E_BLOCKED_EMBEDDING**
 
 本阶段只验证现有产品能力能否作为一条可恢复、可追溯的完整业务流运行：
 项目准备 → 招标解析 → 需求基线 → 材料检索与复核 → 生成准备 → 标书生成 →
@@ -23,8 +23,10 @@ Status: **PARTIAL — CORPUS_L3_IN_PROGRESS / REAL_E2E_PENDING**
   合成企业基线 17；17 份合成企业资料已通过 `CompanyMaterialService` 实际导入并索引（51 chunks），
   正式生产检索夹具另保留 21 份材料、329 个 chunk。Golden V2 共 139 个领域问题，业务覆盖 96.8%，
   4 个范围边界缺口已记录为 non-critical；冻结检索基线 Recall@5 仍为 90%。
-- Track B — Real Provider E2E：`AUTHORIZED_PENDING_EXECUTION`。本次 GPT 决策授权一次现有
-  `semantic_gateway` 代表性公共招标 E2E；只读网关检查已通过，尚未发起受控调用。
+- Track B — Real Provider E2E：`BLOCKED — EMBEDDING_NETWORK_ERROR`。已使用公开的
+  江阴市国有企业集中采购 PDF 完成实际上传、解析、4 个网关分片和需求基线确认；
+  140 条需求、17 份合成企业材料已通过正式服务落库。首次真实检索调用在现有
+  `V43_EMBEDDING_API_BASE` 上失败，未进入正文生成、章节修订、Copilot 或 Word，且未重试。
 - Track C — Deterministic / Offline Product Acceptance：`PASS`（已达到范围内）。
 
 Stage20 当前并行推进 Corpus Readiness L3：以业务问题覆盖、来源权威性、有效期、
@@ -37,6 +39,22 @@ Stage20 当前并行推进 Corpus Readiness L3：以业务问题覆盖、来源�
 100%、范围违规 0%、无答案准确率 100%。整体 L3 仍为 `IN_PROGRESS`：官方语料数量
 已达到各范围的下限，合成企业基线仍单独保留；更广泛的问题覆盖和冻结的检索基线仍未达标，
 未以摘录评测替代完整正文授权。
+
+### Stage20 public E2E evidence (2026-08-22)
+
+- Representative tender: public 江阴市国有企业集中采购 PDF (政企/智慧城市项目)，
+  project `91ab7f01-2bfb-4d49-8a81-ddfcb20ee903`。
+- Tender parse job `1e5d7007-ad2d-4121-8929-2257d7a95dd6` succeeded in 122,728 ms;
+  4/4 chunks, 144 candidates, 140 mandatory, 0 parse warnings, 130 verified / 10 suggested /
+  4 unresolved source locations. After explicit review decisions, 140 requirements were frozen
+  in the confirmed baseline; no requirement text or ID was changed.
+- 17 fictional `杭州景云数科有限公司` materials were imported through
+  `CompanyMaterialService` into the project and indexed. The first retrieval call used
+  GENERAL + GOVERNMENT_ENTERPRISE + ENTERPRISE_PRIVATE scope with the existing embedding
+  configuration, but failed with safe code `EMBEDDING_NETWORK_ERROR` after 67 ms.
+- No real Writer/Provider generation, Copilot, Bid Check, or Word export was started after
+  the retrieval blocker; no automatic retry was performed. The remaining action is to restore
+  the existing Embedding endpoint/network, then rerun the explicitly authorized E2E once.
 
 验收产物：`docs/STAGE20_PRODUCTION_BETA_ACCEPTANCE.md` 与离线合成 E2E 夹具。
 Stage 19 及之前的冻结规则继续有效。

@@ -175,9 +175,11 @@ the SSH/tunnel configuration was not modified.
 
 ## Real-provider status
 
-**REAL_PROVIDER_OPERATIONAL_BLOCKED.** The deterministic production-shaped path
-remains independently validated, but the authorized provider could not be
-reached. This is an operational stop, not a contract or validation result.
+**REAL_PROVIDER_OPERATIONAL_BLOCKED.** The authorized public E2E reached the
+real parse path and completed 4/4 requirement-extraction chunks, but the first
+retrieval call failed safely with `EMBEDDING_NETWORK_ERROR` from the existing
+Embedding endpoint. This is an operational stop, not a contract or validation
+result; no retry or configuration switch was performed.
 
 ## Stage20 boundary result
 
@@ -190,16 +192,17 @@ reached. This is an operational stop, not a contract or validation result.
 | 行业资料 | **PASS** | Scope tab and industry-specific empty state are business-readable |
 | 企业资料 | **PASS** | Project-scoped material list shows category, processing state and usage boundary |
 | Retrieval scope | **PASS (offline)** | Existing retrieval Eval records project/selected-material isolation and zero scope violations |
-| Tender parse / canonical requirements | **PROVIDER_BLOCKED** | No fake Provider output and no parse retry |
-| Retrieval / Evidence review / readiness / generation / Bid Check / Word | **NOT REACHED for new public tender** | Existing deterministic Stage20 fixture and frozen Evals remain PASS separately |
-| Product flow status | **PARTIAL — PROVIDER BOUNDARY** | Independent UI, material scope and deterministic downstream mechanics pass |
-| Real Provider status | **DEVELOPMENT_ENVIRONMENT_OPERATIONAL_BLOCKER** | SSH tunnel / gateway unreachable; no external request made |
+| Tender parse / canonical requirements | **PASS for public E2E** | 4 chunks, 144 candidates, 140 mandatory; 140 confirmed requirements after explicit source decisions |
+| Retrieval / Evidence review / readiness / generation / Bid Check / Word | **BLOCKED at first retrieval call** | Existing Embedding endpoint returned `EMBEDDING_NETWORK_ERROR` after 67 ms; no downstream Provider call |
+| Product flow status | **PARTIAL — EMBEDDING BOUNDARY** | Public parse and synthetic enterprise import pass; retrieval endpoint is the only live blocker |
+| Real Provider status | **DEVELOPMENT_ENVIRONMENT_OPERATIONAL_BLOCKER** | Existing Embedding network path unavailable; no retry or fallback |
 
 ## Remaining production risks / manual items
 
-1. The fresh browser write path is complete through project, tender and
-   material persistence; parse and all downstream formal steps remain blocked by
-   the explicitly unauthorized Semantic Gateway call.
+1. The authorized public E2E has persisted the project, tender, confirmed
+   requirement baseline and 17 fictional enterprise materials. Retrieval and
+   downstream formal steps remain blocked until the existing Embedding network
+   path is restored.
 2. Real Office visual acceptance remains the frozen Stage 16 gate and must be
    performed in Word/WPS/LibreOffice before customer delivery.
 3. Stage20 failure injections were validated offline and in targeted
@@ -211,5 +214,5 @@ reached. This is an operational stop, not a contract or validation result.
 Engineering changes for this checkpoint are limited to the reusable synthetic
 fixture, deterministic acceptance runner/test, and stage documentation. No
 P0/P1 safety defect was found. Stage 20 remains **PARTIAL / BLOCKED** because
-the configured requirement parser needs an external Provider that this decision
-does not authorize; it is not frozen and no Provider PASS is inferred.
+the existing Embedding endpoint is unreachable; it is not frozen and no real
+generation or Word PASS is inferred.
