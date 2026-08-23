@@ -17,10 +17,9 @@ Authoritative detail: `ARCHITECTURE.md`, `docs/CURRENT_STAGE.md`, `docs/ROADMAP.
 ## Repository state
 
 - Branch: `feat/v4.3-semantic-boundary-routing`
-- HEAD: `e52fd79` (`docs: record legacy mapping debt`) before the current local
-  Gateway contract work; update after local commits are created.
-- Git status: local Gateway contract changes in progress; no secrets or generated
-  documents are tracked.
+- HEAD: latest local Stage20-S Gateway Contract checkpoint (see `git log -1`;
+  feature, test and documentation commits are local only).
+- Git status: clean; no secrets or generated documents are tracked.
 
 ## Frozen stages
 
