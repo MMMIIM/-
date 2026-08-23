@@ -17,7 +17,7 @@ Authoritative detail: `ARCHITECTURE.md`, `docs/CURRENT_STAGE.md`, `docs/ROADMAP.
 ## Repository state
 
 - Branch: `feat/v4.3-semantic-boundary-routing`
-- HEAD: `9ea109a` (`feat: add stage21-a runtime connectivity foundation`)
+- HEAD: pending local checkpoint commit for Stage21-A PASS
 - Git status: clean
 
 ## Frozen stages
@@ -27,10 +27,10 @@ Authoritative detail: `ARCHITECTURE.md`, `docs/CURRENT_STAGE.md`, `docs/ROADMAP.
 
 ## Current stage
 
-Stage 21-A — Runtime Connectivity Foundation, currently **IMPLEMENTATION IN PROGRESS / transport not verified**.
-The code-side foundation exists, but the authorized SSH target and SOCKS path are not
-available to the current shell. This is a controlled prerequisite only; Stage20 must
-resume after connectivity PASS.
+Stage 21-A — Runtime Connectivity Foundation: **PASS / FROZEN**.
+One managed SSH session now provides the gateway forward and SOCKS egress; Gateway,
+SOCKS HTTPS, repeated real Embedding smoke, readiness, and monitor recovery passed.
+Stage20 is the active re-entry stage; do not start full Stage21.
 
 ## Acceptance tracks
 
@@ -48,9 +48,9 @@ resume after connectivity PASS.
 
 ## Active blocker and next step
 
-The first authorized retrieval call failed with safe code `EMBEDDING_NETWORK_ERROR` after 67 ms. Local DNS passes but direct TCP to the existing SiliconFlow endpoint fails. The authenticated semantic_gateway tunnel is healthy; the remote SSH shell context for a separate egress check is not available to the current shell. Code-side Stage21-A transport, preflight, readiness and smoke paths are now implemented, but no real Embedding call has been made.
-
-Next step: use the user's existing authorized SSH target to establish one managed `-L`/`-D` session, verify SOCKS transport without provider data, then run the explicitly authorized one-request Embedding smoke. Do not switch providers or embedding models to bypass the blocker.
+The prior retrieval call failed with safe code `EMBEDDING_NETWORK_ERROR`; the development
+transport blocker is now resolved without changing Retrieval. Next step is the authorized
+Stage20 Re-entry using the existing Project/Parse Job through `EnterpriseRetrievalService`.
 
 ## Frozen boundaries
 
@@ -63,7 +63,9 @@ Next step: use the user's existing authorized SSH target to establish one manage
 
 - Formal path: Backend Control Plane → `semantic_gateway` adapter.
 - Gateway health check: PASS; requirement extraction used 4 successful calls.
-- Embedding runtime: existing `V43_EMBEDDING_*` configuration, optional dev-only `EMBEDDING_PROXY_URL`, currently direct network-blocked; no real smoke yet.
+- Embedding runtime: existing `V43_EMBEDDING_*` configuration with temporary dev-only
+  `EMBEDDING_PROXY_URL`; SiliconFlow Qwen/Qwen3-Embedding-0.6B, dimension 1024; real
+  smoke passed through managed SOCKS. Production remains direct-network oriented.
 - Writer external calls in the public E2E: 0.
 
 ## Git restrictions

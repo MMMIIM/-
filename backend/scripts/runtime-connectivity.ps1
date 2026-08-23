@@ -56,9 +56,9 @@ function Get-Target {
   return $target.Trim()
 }
 
-function Get-ProcessAlive([int]$Pid) {
-  if (-not $Pid) { return $false }
-  return [bool](Get-Process -Id $Pid -ErrorAction SilentlyContinue)
+function Get-ProcessAlive([int]$ProcessId) {
+  if (-not $ProcessId) { return $false }
+  return [bool](Get-Process -Id $ProcessId -ErrorAction SilentlyContinue)
 }
 
 function Start-Ssh($Target) {
@@ -108,8 +108,8 @@ function Stop-Managed {
   if (-not $state) { Write-Result @{ status = 'stopped'; managed = $false }; return }
   New-Item -ItemType Directory -Path $StateDir -Force | Out-Null
   New-Item -ItemType File -Path $StopPath -Force | Out-Null
-  foreach ($pid in @([int]$state.supervisor_pid, [int]$state.ssh_pid)) {
-    if (Get-ProcessAlive $pid) { Stop-Process -Id $pid -ErrorAction SilentlyContinue }
+  foreach ($processId in @([int]$state.supervisor_pid, [int]$state.ssh_pid)) {
+    if (Get-ProcessAlive $processId) { Stop-Process -Id $processId -ErrorAction SilentlyContinue }
   }
   Start-Sleep -Milliseconds 300
   Remove-Item -LiteralPath $StatePath, $StopPath -Force -ErrorAction SilentlyContinue

@@ -3,7 +3,7 @@
 ## Stage 21-A — Runtime Connectivity Foundation
 
 Priority: **P0 prerequisite for Stage20 completion**
-Status: **IMPLEMENTATION IN PROGRESS — TRANSPORT NOT YET VERIFIED**
+Status: **PASS / FROZEN — RETURNED TO STAGE20 RE-ENTRY**
 
 本阶段是经 sequencing decision 批准的受控前置阶段，不等同于完整 Stage 21。
 目标是建立可重复的开发运行时连通性：Database、semantic_gateway、Embedding
@@ -11,21 +11,19 @@ Provider 的启动前检查、分层错误分类和最小安全观测。Stage17 
 以及 Stage16–19 冻结规则不变；Stage21-A 完成后必须返回 Stage20，继续 Corpus
 L3 和 Real Business E2E，不能直接进入 Release Readiness。
 
-当前诊断证据：本机直连 `api.siliconflow.cn:443` DNS 通过但 TCP 失败；
-`127.0.0.1:18080` semantic_gateway SSH 隧道及认证 `/info` 通过。已实现开发态
-SOCKS per-request transport、被动连通性预检、脱敏 readiness API、一次性 Embedding
-smoke 命令和受控 SSH 管理脚本；真实远端出口与 SOCKS 尚未由当前 shell 验证，
-因此尚未调用 Embedding 或业务模型。
+验收已完成：用户配置的 reusable SSH key/agent 通过 BatchMode；单一 managed SSH
+session 同时承载 18080 LocalForward 和 18081 SOCKS；Gateway `/info`、SOCKS
+远端 DNS/TCP/TLS/HTTPS 和 4 次串行真实 Embedding smoke 均通过，模型维度为
+1024。monitor 重启验证通过且无重复监听。开发态被动预检和 degraded 启动测试仍保留。
 
-本阶段允许：开发环境 transport、startup connectivity preflight、分层网络错误
-分类和脱敏 observability 的最小实现；不新增 Provider、模型、fallback、retry
-架构，不修改 Retrieval business contract，不部署、不合并、不推送。具体决策见
+本阶段已冻结；不新增 Provider、模型、fallback、retry 架构，不修改 Retrieval
+business contract。Stage20 重新进入现有正式 Retrieval 边界，具体决策见
 `docs/decisions/009-runtime-connectivity-foundation.md`。
 
 ## Stage 20 — Production Beta Hardening / Real E2E
 
 Priority: **P0/P1**
-Status: **PARTIAL — CORPUS_L3_IN_PROGRESS / REAL_E2E_BLOCKED_EMBEDDING**
+Status: **RE-ENTRY AUTHORIZED — CORPUS_L3_IN_PROGRESS**
 
 本阶段只验证现有产品能力能否作为一条可恢复、可追溯的完整业务流运行：
 项目准备 → 招标解析 → 需求基线 → 材料检索与复核 → 生成准备 → 标书生成 →
@@ -45,7 +43,7 @@ Status: **PARTIAL — CORPUS_L3_IN_PROGRESS / REAL_E2E_BLOCKED_EMBEDDING**
   合成企业基线 17；17 份合成企业资料已通过 `CompanyMaterialService` 实际导入并索引（51 chunks），
   正式生产检索夹具另保留 21 份材料、329 个 chunk。Golden V2 共 139 个领域问题，业务覆盖 96.8%，
   4 个范围边界缺口已记录为 non-critical；冻结检索基线 Recall@5 仍为 90%。
-- Track B — Real Provider E2E：`BLOCKED — EMBEDDING_NETWORK_ERROR`。已使用公开的
+- Track B — Real Provider E2E：`RE-ENTRY READY — EMBEDDING TRANSPORT PASS`。已使用公开的
   江阴市国有企业集中采购 PDF 完成实际上传、解析、4 个网关分片和需求基线确认；
   140 条需求、17 份合成企业材料已通过正式服务落库。首次真实检索调用在现有
   `V43_EMBEDDING_API_BASE` 上失败，未进入正文生成、章节修订、Copilot 或 Word，且未重试。
