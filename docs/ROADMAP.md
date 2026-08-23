@@ -3,6 +3,25 @@
 Roadmap priority is not implementation authorization. Only
 [`CURRENT_STAGE.md`](CURRENT_STAGE.md) can select the next work.
 
+## Product priority policy
+
+Priority is assigned by user impact and correctness, not by implementation
+layer. P0 covers the Core Experience: anything that blocks the core workflow,
+correctness, trust, continuity or an obvious user-facing path. This includes
+the standalone semantic gateway/real-provider foundation, requirement and
+retrieval correctness, evidence safety, generation stability, revision and Word
+correctness. A P1, P1.5 or P2 item is promoted to P0 when a concrete defect
+blocks that core experience.
+
+P1 covers high-value product differentiators that do not block the foundation,
+including valuable RAG, Agent and Word enhancements. P1.5 covers high-value
+platform capabilities outside those differentiators, such as provider/model
+management, advanced enterprise-material administration, collaboration,
+advanced Bid Check, version audit and operations analytics. P2 covers
+enhancements or high-complexity/high-risk work such as GraphRAG, multi-agent
+autonomy, automatic provider routing, cost-aware routing, advanced AI layout
+and self-learning retrieval.
+
 ## P0 — FROZEN: Core product UX and generation flow
 
 The core workflow is real, stable, reviewable, traceable, and easy to use:
