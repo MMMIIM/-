@@ -1,0 +1,177 @@
+{
+  "schema_version": "4.3-sufficiency-calibration-v1",
+  "classification": "REPRESENTATIVE_SYNTHETIC / NOT_REAL_CUSTOMER_DATA",
+  "cases": [
+    {
+      "id": "CAL-GENERAL-DIRECT-001",
+      "domain": "GENERAL",
+      "query": "政府采购法适用范围和基本原则",
+      "expected_status": "EVIDENCE_REVIEW_READY",
+      "candidate": {
+        "candidate_id": "CAL-C-001",
+        "score": 0.86,
+        "source_type": "public_policy",
+        "scope": "GENERAL",
+        "lifecycle_status": "ACTIVE",
+        "effective_status": "current",
+        "source_excerpt": "政府采购法规定适用范围和公开、公平、公正原则。"
+      },
+      "semantic_status": "DIRECT_SUPPORT",
+      "support_span": "政府采购法规定适用范围和公开、公平、公正原则。"
+    },
+    {
+      "id": "CAL-GOV-DIRECT-001",
+      "domain": "GOVERNMENT_ENTERPRISE",
+      "query": "政务平台项目实施交付范围",
+      "expected_status": "EVIDENCE_REVIEW_READY",
+      "candidate": {
+        "candidate_id": "CAL-C-002",
+        "score": 0.82,
+        "source_type": "delivery_capability",
+        "scope": "ENTERPRISE_PRIVATE",
+        "lifecycle_status": "ACTIVE",
+        "effective_status": "current",
+        "source_excerpt": "企业材料明确列出政务平台实施交付范围。"
+      },
+      "semantic_status": "DIRECT_SUPPORT",
+      "support_span": "企业材料明确列出政务平台实施交付范围。"
+    },
+    {
+      "id": "CAL-HEALTH-DIRECT-001",
+      "domain": "HEALTHCARE",
+      "query": "医疗信息平台集成案例",
+      "expected_status": "EVIDENCE_REVIEW_READY",
+      "candidate": {
+        "candidate_id": "CAL-C-003",
+        "score": 0.78,
+        "source_type": "project_case",
+        "scope": "ENTERPRISE_PRIVATE",
+        "lifecycle_status": "ACTIVE",
+        "effective_status": "current",
+        "source_excerpt": "医院信息平台集成案例及实施范围。"
+      },
+      "semantic_status": "DIRECT_SUPPORT",
+      "support_span": "医院信息平台集成案例及实施范围。"
+    },
+    {
+      "id": "CAL-ENTERPRISE-PARTIAL-001",
+      "domain": "ENTERPRISE_PRIVATE",
+      "query": "企业是否具备三年固定SLA",
+      "expected_status": "INSUFFICIENT_EVIDENCE",
+      "candidate": {
+        "candidate_id": "CAL-C-004",
+        "score": 0.72,
+        "source_type": "delivery_capability",
+        "scope": "ENTERPRISE_PRIVATE",
+        "lifecycle_status": "ACTIVE",
+        "effective_status": "current",
+        "source_excerpt": "材料描述运维服务范围，但未给出三年固定SLA。"
+      },
+      "semantic_status": "PARTIAL_SUPPORT",
+      "support_span": "材料描述运维服务范围，但未给出三年固定SLA。"
+    },
+    {
+      "id": "CAL-ENTERPRISE-CONTEXT-001",
+      "domain": "ENTERPRISE_PRIVATE",
+      "query": "企业组织架构背景",
+      "expected_status": "INSUFFICIENT_EVIDENCE",
+      "candidate": {
+        "candidate_id": "CAL-C-005",
+        "score": 0.56,
+        "source_type": "company_profile",
+        "scope": "ENTERPRISE_PRIVATE",
+        "lifecycle_status": "ACTIVE",
+        "effective_status": "current",
+        "source_excerpt": "企业简介提供组织背景信息。"
+      },
+      "semantic_status": "CONTEXT_ONLY",
+      "support_span": "企业简介提供组织背景信息。"
+    },
+    {
+      "id": "CAL-GENERAL-UNRELATED-001",
+      "domain": "GENERAL",
+      "query": "某厂商加密认证编号",
+      "expected_status": "NO_RELEVANT_EVIDENCE",
+      "candidate": {
+        "candidate_id": "CAL-C-006",
+        "score": 0.32,
+        "source_type": "public_policy",
+        "scope": "GENERAL",
+        "lifecycle_status": "ACTIVE",
+        "effective_status": "current",
+        "source_excerpt": "公共政策材料未包含厂商认证编号。"
+      },
+      "semantic_status": "UNRELATED",
+      "support_span": null
+    },
+    {
+      "id": "CAL-GOV-OBSOLETE-001",
+      "domain": "GOVERNMENT_ENTERPRISE",
+      "query": "当前有效企业资质",
+      "expected_status": "INSUFFICIENT_EVIDENCE",
+      "candidate": {
+        "candidate_id": "CAL-C-007",
+        "score": 0.74,
+        "source_type": "qualification",
+        "scope": "ENTERPRISE_PRIVATE",
+        "lifecycle_status": "ACTIVE",
+        "effective_status": "expired",
+        "source_excerpt": "历史资质材料已过有效期。"
+      },
+      "semantic_status": "PARTIAL_SUPPORT",
+      "support_span": "历史资质材料已过有效期。"
+    },
+    {
+      "id": "CAL-ENTERPRISE-CONFLICT-001",
+      "domain": "ENTERPRISE_PRIVATE",
+      "query": "企业规模事实是否冲突",
+      "expected_status": "CONFLICTING_EVIDENCE",
+      "candidate": {
+        "candidate_id": "CAL-C-008",
+        "score": 0.84,
+        "source_type": "company_profile",
+        "scope": "ENTERPRISE_PRIVATE",
+        "lifecycle_status": "ACTIVE",
+        "effective_status": "current",
+        "conflict_group": "company_size",
+        "source_excerpt": "材料版本A记载86人，版本B记载96人。"
+      },
+      "semantic_status": "CONTRADICTORY",
+      "support_span": "材料版本A记载86人，版本B记载96人。"
+    },
+    {
+      "id": "CAL-ENTERPRISE-AUTH-001",
+      "domain": "ENTERPRISE_PRIVATE",
+      "query": "第三方产品授权责任边界",
+      "expected_status": "INSUFFICIENT_EVIDENCE",
+      "candidate": {
+        "candidate_id": "CAL-C-009",
+        "score": 0.71,
+        "source_type": "authorization",
+        "scope": "ENTERPRISE_PRIVATE",
+        "lifecycle_status": "ACTIVE",
+        "effective_status": "current",
+        "source_excerpt": "授权材料说明可使用第三方产品，但不证明企业自有能力。"
+      },
+      "semantic_status": "PARTIAL_SUPPORT",
+      "support_span": "授权材料说明可使用第三方产品，但不证明企业自有能力。"
+    },
+    {
+      "id": "CAL-HEALTH-CONTEXT-001",
+      "domain": "HEALTHCARE",
+      "query": "医院项目正式验收记录",
+      "expected_status": "INSUFFICIENT_EVIDENCE",
+      "candidate": {
+        "candidate_id": "CAL-C-010",
+        "score": 0.69,
+        "source_type": "project_case",
+        "scope": "ENTERPRISE_PRIVATE",
+        "lifecycle_status": "ACTIVE",
+        "effective_status": "current",
+        "source_excerpt": "材料描述医院试点，但未提供正式验收记录。"
+      },
+      "semantic_status": "PARTIAL_SUPPORT",
+      "support_span": "材料描述医院试点，但未提供正式验收记录。"
+    }
+  ]
+}

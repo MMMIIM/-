@@ -17,6 +17,7 @@
     "eval:agent": "node eval/agent-eval/benchmark.js",
     "eval:agent-v2": "node eval/agent-eval-v2/benchmark.js",
     "eval:stage20": "node eval/stage20/acceptance.js",
+    "eval:sufficiency": "node eval/sufficiency/experiment.js",
     "eval:corpus-l3": "node eval/corpus/l3-eval.js",
     "ingest:corpus-l3": "node scripts/ingest-corpus-l3.js",
     "prepare:l3-enterprise": "node scripts/prepare-l3-enterprise-path.js",
