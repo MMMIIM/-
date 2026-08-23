@@ -149,3 +149,37 @@ test('provider schema violations are classified as OUTPUT_SCHEMA_INVALID', async
     await new Promise(resolve => server.close(resolve));
   }
 });
+
+test('provider technical errors keep the controlled Gateway error code', async () => {
+  const cases = [
+    ['PROVIDER_UNAVAILABLE', 502],
+    ['PROVIDER_TIMEOUT', 504],
+    ['PROVIDER_OUTPUT_INVALID', 502],
+    ['INTERNAL_GATEWAY_ERROR', 500]
+  ];
+  for (const [code, expectedStatus] of cases) {
+    const key = `gateway-${code.toLowerCase()}`;
+    const server = createStandaloneGatewayServer({
+      config: {
+        apiKey: key,
+        providerName: 'mock',
+        provider: {
+          model: 'fixture-error',
+          async invoke() { throw Object.assign(new Error('fixture provider failure'), { code }); }
+        }
+      }
+    });
+    await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+    try {
+      const response = await fetch(`http://127.0.0.1:${server.address().port}/workflows/run`, {
+        method: 'POST',
+        headers: { authorization: `Bearer ${key}`, 'content-type': 'application/json' },
+        body: JSON.stringify({ inputs: { task_type: 'requirement_extraction', task_instruction: 'x', task_payload_json: '{}' } })
+      });
+      assert.equal(response.status, expectedStatus);
+      assert.equal((await response.json()).error_code, code);
+    } finally {
+      await new Promise(resolve => server.close(resolve));
+    }
+  }
+});

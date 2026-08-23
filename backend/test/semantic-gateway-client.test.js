@@ -37,6 +37,17 @@ function gatewayResponse(responsePayloadJson, extraOutputs = {}) {
   });
 }
 
+function structuredErrorResponse(errorCode, { status = 422, contentType = 'application/json; charset=utf-8', requestId = 'gateway-error-test' } = {}) {
+  return new Response(JSON.stringify({
+    error_code: errorCode,
+    message: 'safe gateway message must not be trusted by the client',
+    request_id: requestId
+  }), {
+    status,
+    headers: { 'Content-Type': contentType }
+  });
+}
+
 function client(fetchImpl, timeoutMs = 100) {
   return new SemanticGatewayClient({
     apiBase: 'https://gateway.invalid/v1',
@@ -164,6 +175,64 @@ test('非法 gateway envelope 与 HTTP 失败分别审计', async () => {
   await assert.rejects(
     () => client(async () => new Response('unavailable', { status: 503 })).run(request),
     (error) => error.code === 'GATEWAY_HTTP_ERROR' && error.audit.http_status === 503
+  );
+});
+
+test('合法 Gateway structured error 保留受控 technical error code', async () => {
+  const cases = [
+    ['AUTH_INVALID', 401],
+    ['TASK_UNSUPPORTED', 422],
+    ['INPUT_SCHEMA_INVALID', 422],
+    ['PROVIDER_UNAVAILABLE', 502],
+    ['PROVIDER_TIMEOUT', 504],
+    ['PROVIDER_HTTP_FAILURE', 502],
+    ['PROVIDER_OUTPUT_INVALID', 502],
+    ['OUTPUT_SCHEMA_INVALID', 422],
+    ['SUPPORT_SPAN_INVALID', 422],
+    ['INTERNAL_GATEWAY_ERROR', 500]
+  ];
+  for (const [errorCode, status] of cases) {
+    await assert.rejects(
+      () => client(async () => structuredErrorResponse(errorCode, { status })).run(request),
+      error => error.code === errorCode
+        && error.audit.http_status === status
+        && error.audit.gateway_error_code === errorCode
+        && error.audit.request_id === 'gateway-error-test'
+        && !('message' in error.audit)
+    );
+  }
+});
+
+test('unknown、非法 JSON、HTML 与空 body 安全回退为 GATEWAY_HTTP_ERROR', async () => {
+  const responses = [
+    new Response(JSON.stringify({ error_code: 'PROVIDER_SECRET_LEAK', message: 'do not propagate' }), {
+      status: 500, headers: { 'Content-Type': 'application/json' }
+    }),
+    new Response('{bad-json', { status: 500, headers: { 'Content-Type': 'application/json' } }),
+    new Response('<html>provider failure</html>', { status: 500, headers: { 'Content-Type': 'text/html' } }),
+    new Response('', { status: 500, headers: { 'Content-Type': 'application/json' } }),
+    new Response(JSON.stringify({ error_code: 'PROVIDER_TIMEOUT' }), { status: 504 })
+  ];
+  for (const response of responses) {
+    await assert.rejects(
+      () => client(async () => response).run(request),
+      error => error.code === 'GATEWAY_HTTP_ERROR'
+        && error.audit.http_status >= 500
+        && !JSON.stringify(error.audit).includes('provider failure')
+        && !JSON.stringify(error.audit).includes('SECRET')
+    );
+  }
+});
+
+test('legacy Dify-compatible non-structured error remains generic and safe', async () => {
+  await assert.rejects(
+    () => client(async () => new Response(JSON.stringify({ code: 'invalid_workflow', detail: 'legacy body' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' }
+    })).run(request),
+    error => error.code === 'GATEWAY_HTTP_ERROR'
+      && error.audit.http_status === 400
+      && !JSON.stringify(error.audit).includes('legacy body')
   );
 });
 
