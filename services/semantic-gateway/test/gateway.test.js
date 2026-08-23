@@ -1,0 +1,125 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { createStandaloneGatewayServer } from '../src/gateway.js';
+import { SemanticGatewayClient } from '../../../backend/src/pipeline/semantic-gateway-client.js';
+import { adaptRetrievalCandidate, aggregateEvidenceSufficiency } from '../../../backend/src/pipeline/evidence-support-assessment-contract-v1.js';
+import { SemanticGatewayEvidenceSupportEvaluator } from '../../../backend/src/pipeline/semantic-gateway-evidence-support-evaluator.js';
+
+async function withGateway(fn, { provider = 'mock', key = 'gateway-test-key' } = {}) {
+  const server = createStandaloneGatewayServer({
+    env: { SEMANTIC_GATEWAY_PROVIDER: provider, SEMANTIC_GATEWAY_API_KEY: key, SEMANTIC_GATEWAY_MODEL: 'mock-semantic-v1' }
+  });
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  const port = server.address().port;
+  try { return await fn({ port, key }); } finally { await new Promise(resolve => server.close(resolve)); }
+}
+
+function client(port, key = 'gateway-test-key') {
+  return new SemanticGatewayClient({
+    apiBase: `http://127.0.0.1:${port}`,
+    apiKey: key,
+    user: 'standalone-test',
+    timeoutMs: 5000
+  });
+}
+
+test('standalone gateway health/readiness/auth are explicit', async () => {
+  await withGateway(async ({ port, key }) => {
+    const health = await fetch(`http://127.0.0.1:${port}/health`);
+    assert.equal(health.status, 200);
+    assert.equal((await health.json()).status, 'ok');
+    const ready = await fetch(`http://127.0.0.1:${port}/ready`);
+    assert.equal(ready.status, 200);
+    assert.equal((await ready.json()).provider, 'mock');
+    const unauthorized = await fetch(`http://127.0.0.1:${port}/workflows/run`, { method: 'POST', body: '{}' });
+    assert.equal(unauthorized.status, 401);
+    const authorized = await fetch(`http://127.0.0.1:${port}/workflows/run`, {
+      method: 'POST',
+      headers: { authorization: `Bearer ${key}`, 'content-type': 'application/json' },
+      body: JSON.stringify({ inputs: { task_type: 'requirement_extraction', task_instruction: 'ignored by resolver', task_payload_json: '{}' } })
+    });
+    assert.equal(authorized.status, 200);
+  });
+});
+
+test('backend SemanticGatewayClient uses the same /workflows/run transport contract', async () => {
+  await withGateway(async ({ port, key }) => {
+    const result = await client(port, key).run({ task_type: 'requirement_extraction', task_instruction: 'backend instruction', task_payload_json: '{}' });
+    assert.equal(result.envelope.schema_version, '4.3-requirement-extraction');
+    assert.equal(result.envelope.task_type, 'requirement_extraction');
+    assert.deepEqual(result.envelope.data, { requirements: [] });
+  });
+});
+
+test('all existing formal tasks dispatch through the same mock provider contract', async () => {
+  await withGateway(async ({ port, key }) => {
+    const cases = [
+      ['requirement_extraction', {}, '4.3-requirement-extraction', data => Array.isArray(data.requirements)],
+      ['response_planning', { requirements: [{ req_id: 'REQ-001' }] }, '4.3-response-planning', data => Array.isArray(data.response_plans)],
+      ['claim_generation', { plans: [{ requirement_id: 'REQ-001', response_summary: 'x' }] }, '4.3-claim-generation', data => Array.isArray(data.claims)],
+      ['section_drafting', { chapter_id: 'chapter-1' }, '4.3-section-drafting', data => typeof data.content_markdown === 'string'],
+      ['targeted_revision', { paragraph: '待修订文本' }, '4.3-targeted-revision', data => typeof data.revised_text === 'string']
+    ];
+    for (const [taskType, payload, version, predicate] of cases) {
+      const result = await client(port, key).run({ task_type: taskType, task_instruction: 'formal instruction', task_payload_json: JSON.stringify(payload) });
+      assert.equal(result.envelope.schema_version, version);
+      assert.equal(result.envelope.task_type, taskType);
+      assert.equal(predicate(result.envelope.data), true);
+    }
+  });
+});
+
+test('evidence support Top5 integrates through standalone gateway and deterministic aggregation', async () => {
+  await withGateway(async ({ port, key }) => {
+    const requirement = { req_id: 'REQ-001', text: '系统应支持统一身份认证。' };
+    const texts = [
+      '系统应支持统一身份认证。',
+      '系统提供统一身份认证能力。[[partial]]',
+      '这是背景介绍。[[unrelated]]',
+      '状态为已上线。[[conflict:approved]]',
+      '状态为建设中。[[conflict:rejected]]'
+    ];
+    const adapters = texts.map((sourceText, index) => adaptRetrievalCandidate({
+      requirement,
+      candidate: { candidate_id: `C-${index + 1}` },
+      sourceSpan: { source_span_id: `SPAN-${index + 1}`, source_text: sourceText },
+      lineage: { material_id: `MAT-${index + 1}`, chunk_id: `CHUNK-${index + 1}` }
+    }));
+    const evaluator = new SemanticGatewayEvidenceSupportEvaluator({ client: client(port, key) });
+    const result = await evaluator.assess({ requirement, adapters });
+    assert.equal(result.assessments.length, 5);
+    assert.ok(result.assessments.some(item => item.semantic_relationship === 'direct'));
+    assert.ok(result.assessments.some(item => item.semantic_relationship === 'partial'));
+    assert.ok(result.assessments.some(item => item.semantic_relationship === 'unrelated'));
+    assert.ok(result.assessments.every(item => item.support_observations[0].support_excerpt.length > 0));
+    const aggregate = aggregateEvidenceSufficiency(result.assessments);
+    assert.equal(aggregate.status, 'CONFLICTING_EVIDENCE');
+    assert.equal(result.audit.task_type, 'evidence_support_assessment');
+  });
+});
+
+test('unknown semantic observation remains unknown and does not become a business allow', async () => {
+  await withGateway(async ({ port, key }) => {
+    const requirement = { req_id: 'REQ-002', text: '系统应支持日志审计。' };
+    const adapter = adaptRetrievalCandidate({
+      requirement,
+      candidate: { candidate_id: 'C-UNKNOWN' },
+      sourceSpan: { source_span_id: 'SPAN-UNKNOWN', source_text: '无法判断。[[unknown]]' }
+    });
+    const result = await new SemanticGatewayEvidenceSupportEvaluator({ client: client(port, key) }).assess({ requirement, adapters: [adapter] });
+    assert.equal(result.assessments[0].semantic_relationship, 'unknown');
+    assert.equal(aggregateEvidenceSufficiency(result.assessments).status, 'ASSESSMENT_UNAVAILABLE');
+  });
+});
+
+test('strict output validation rejects unsupported gateway fields', async () => {
+  await withGateway(async ({ port, key }) => {
+    const response = await fetch(`http://127.0.0.1:${port}/workflows/run`, {
+      method: 'POST',
+      headers: { authorization: `Bearer ${key}`, 'content-type': 'application/json' },
+      body: JSON.stringify({ inputs: { task_type: 'not_registered', task_instruction: 'x', task_payload_json: '{}' } })
+    });
+    assert.equal(response.status, 422);
+    assert.equal((await response.json()).error_code, 'TASK_UNSUPPORTED');
+  });
+});

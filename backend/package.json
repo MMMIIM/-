@@ -65,6 +65,7 @@
     "test:postgres": "node --test --test-concurrency=1 integration/postgres.integration.js integration/deterministic.integration.js integration/document-delivery.integration.js integration/agent-actions.integration.js integration/corpus-l3.integration.js"
   },
   "dependencies": {
+    "@bid/semantic-contracts": "*",
     "cors": "^2.8.5",
     "docx": "^9.6.1",
     "dotenv": "^16.4.7",
