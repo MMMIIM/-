@@ -17,8 +17,10 @@ Authoritative detail: `ARCHITECTURE.md`, `docs/CURRENT_STAGE.md`, `docs/ROADMAP.
 ## Repository state
 
 - Branch: `feat/v4.3-semantic-boundary-routing`
-- HEAD: `28f01c3` (`feat: add evidence support assessment core`)
-- Git status: clean
+- HEAD: `e52fd79` (`docs: record legacy mapping debt`) before the current local
+  Gateway contract work; update after local commits are created.
+- Git status: local Gateway contract changes in progress; no secrets or generated
+  documents are tracked.
 
 ## Frozen stages
 
@@ -31,15 +33,18 @@ Stage 21-A — Runtime Connectivity Foundation: **PASS / FROZEN**.
 One managed SSH session now provides the gateway forward and SOCKS egress; Gateway,
 SOCKS HTTPS, repeated real Embedding smoke, readiness, and monitor recovery passed.
 Stage20 is the active re-entry stage; Stage20-S shared Evidence Support
-Assessment foundation is implemented offline. Do not start full Stage21.
+Assessment foundation and the local shared Gateway Contract are implemented
+offline. The task is not remotely published and no live model call is
+authorized. Do not start full Stage21.
 
 ## Acceptance tracks
 
 - Stage20 Corpus L3: IN_PROGRESS.
 - Stage20 public tender E2E: parse and baseline PASS; retrieval blocked by existing Embedding network.
 - Deterministic/offline acceptance: PASS.
-- Stage20-S Evidence Support Assessment shared core: implementation complete;
-  no live Gateway task or model call authorized.
+- Stage20-S Evidence Support Assessment shared core and local
+  `evidence_support_assessment` Gateway Contract: implemented offline;
+  no remote publish or live model call authorized.
 
 ## Critical metrics
 

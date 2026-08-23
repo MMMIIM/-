@@ -51,8 +51,24 @@ Evidence Fact 通过显式 Adapter 输入；来源片段必须可由后端从 so
 
 已有 Evidence Review 和 Requirement-Evidence-Fact Mapping 仅通过 additive
 兼容投影复用共享语义，旧 `requirement_evidence_mappings` 路径保持不变。
-本轮没有数据库迁移、Gateway/模型调用或正式 `sufficiency_assessment` task。
+本轮没有数据库迁移、远端发布或模型调用；本地共享 Gateway Contract 的
+实现状态见下方 addendum。
 详见 `docs/decisions/010-evidence-support-assessment-boundary.md`。
+
+### Stage20-S shared Gateway contract (2026-08-24)
+
+`evidence_support_assessment` 已完成本地 Gateway Contract、task registry、
+严格 envelope/schema validator、Raw Retrieval Candidate / approved Evidence
+Fact adapters 与 provider-neutral evaluator adapter。契约版本为
+`4.3-evidence-support-assessment-v1`；模型只返回 source-bound semantic
+observations 和 cross-source conflict observations，最终业务状态继续由后端
+`aggregateEvidenceSufficiency()` 确定。严格模式只允许 BOM/外层空白规范化，
+不接受 result/text/answer/message/raw_response，不做 JSON 修复。
+
+当前状态：**LOCAL IMPLEMENTED / NOT REMOTELY PUBLISHED — NO LIVE MODEL CALL**。
+没有数据库迁移、Evidence/Fact/Mapping/Claim/Writer 生命周期写入或 Retrieval/MMR
+变更；Stage20 仍为 `BLOCKED`（等待正式 live evidence sufficiency validation），
+Corpus L3 仍为 `IN_PROGRESS`。
 
 ### Stage20 parallel acceptance tracks
 

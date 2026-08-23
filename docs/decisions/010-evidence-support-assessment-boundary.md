@@ -51,3 +51,36 @@ Sufficiency, Evidence Review, and future Mapping evaluation can share one
 validated source-support vocabulary without creating a second Mapping lifecycle.
 The next independent decision is whether a provider-backed
 `evidence_support_assessment` Gateway task should be formally published.
+
+## Addendum — shared Semantic Gateway contract (2026-08-24)
+
+The provider-backed boundary is now implemented locally, but is **not remotely
+published** and has no live-model authorization. The formal task is:
+
+```text
+task_type: evidence_support_assessment
+contract_version: 4.3-evidence-support-assessment-v1
+```
+
+It reuses the existing blocking `POST /workflows/run` transport and the one
+allowed outer response field, `data.outputs.response_payload_json`. The task
+registry records the common input schema, parser mode, output schema descriptor
+and validator. This task uses strict transport handling: only BOM/outer
+whitespace normalization is allowed; no think/fence stripping, JSON repair, or
+fallback fields are permitted.
+
+The input accepts multiple source adapters in one request, including a Raw
+Retrieval Candidate or an approved Evidence Fact. The model emits only
+source-bound semantic observations and conflict observations. Backend validation
+binds source IDs/spans to the request, verifies every support excerpt is an
+exact substring of the submitted source text, and preserves the existing
+deterministic `aggregateEvidenceSufficiency()` status calculation. Business
+statuses, Evidence/Fact/Mapping IDs, approvals, Readiness, Claim Gate and
+Writer remain backend-owned and are not part of this task output.
+
+The adapter maps transport and contract failures to the required technical
+classes (`GATEWAY_HTTP_FAILURE`, `TASK_UNSUPPORTED`, `ENVELOPE_INVALID`,
+`OUTPUT_MISSING`, `OUTPUT_NOT_JSON`, `SCHEMA_INVALID`,
+`SUPPORT_SPAN_INVALID`, `PROVIDER_FAILURE`, and
+`ASSESSMENT_UNAVAILABLE`) while retaining the lower-level code in audit data.
+`ProviderNeutralEvidenceSupportEvaluator` remains unavailable by default.
