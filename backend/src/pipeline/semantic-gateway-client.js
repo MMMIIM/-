@@ -1,3 +1,5 @@
+import { getSemanticGatewayTask } from './semantic-gateway-task-registry.js';
+
 const VALID_GATEWAY_STATUSES = new Set(['success', 'failed']);
 
 function normalizeBaseUrl(value) {
@@ -52,7 +54,7 @@ export class SemanticGatewayError extends Error {
   }
 }
 
-export function normalizeGatewayTransport(raw) {
+export function normalizeGatewayTransport(raw, { mode = 'legacy_deterministic' } = {}) {
   if (typeof raw !== 'string') {
     throw new SemanticGatewayError(
       'GATEWAY_ENVELOPE_INVALID',
@@ -60,14 +62,16 @@ export function normalizeGatewayTransport(raw) {
     );
   }
   let normalized = raw.replace(/^\uFEFF/, '').trim();
-  if (normalized.startsWith('<think>')) {
+  if (mode !== 'strict' && normalized.startsWith('<think>')) {
     const closingIndex = normalized.indexOf('</think>', '<think>'.length);
     if (closingIndex !== -1) {
       normalized = normalized.slice(closingIndex + '</think>'.length).trim();
     }
   }
-  const fence = normalized.match(/^```(?:json)?[ \t]*\r?\n([\s\S]*)\r?\n```$/i);
-  if (fence) normalized = fence[1].trim();
+  if (mode !== 'strict') {
+    const fence = normalized.match(/^```(?:json)?[ \t]*\r?\n([\s\S]*)\r?\n```$/i);
+    if (fence) normalized = fence[1].trim();
+  }
   return normalized;
 }
 
@@ -98,13 +102,20 @@ export function classifyGatewayPayload(raw, normalized = raw) {
   return 'extra_commentary';
 }
 
-function validateGatewayEnvelope(value, requestedTaskType, rawResponsePayloadJson) {
+function validateGatewayEnvelope(value, requestedTaskType, rawResponsePayloadJson, taskSpec = getSemanticGatewayTask(requestedTaskType)) {
   const audit = auditFor(requestedTaskType, { raw_response_payload_json: rawResponsePayloadJson });
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     throw new SemanticGatewayError('GATEWAY_ENVELOPE_INVALID', '网关 envelope 必须是对象。', audit);
   }
-  const schemas={requirement_extraction:'4.3-requirement-extraction',response_planning:'4.3-response-planning',claim_generation:'4.3-claim-generation',section_drafting:'4.3-section-drafting',targeted_revision:'4.3-targeted-revision'};
-  const expectedSchemaVersion=schemas[requestedTaskType]||'4.3-gateway';
+  const expectedSchemaVersion = taskSpec?.schema_version;
+  if (!expectedSchemaVersion) {
+    throw new SemanticGatewayError(
+      'TASK_UNSUPPORTED',
+      'Semantic Gateway task_type 未注册。',
+      audit,
+      422
+    );
+  }
   if (value.schema_version !== expectedSchemaVersion) {
     throw new SemanticGatewayError('GATEWAY_ENVELOPE_INVALID', '网关 schema_version 无效。', audit);
   }
@@ -171,6 +182,15 @@ export class SemanticGatewayClient {
         'Semantic Gateway 请求字段无效。',
         auditFor(taskType),
         400
+      );
+    }
+    const taskSpec = getSemanticGatewayTask(taskType);
+    if (!taskSpec) {
+      throw new SemanticGatewayError(
+        'TASK_UNSUPPORTED',
+        'Semantic Gateway task_type 未注册。',
+        auditFor(taskType),
+        422
       );
     }
 
@@ -254,7 +274,9 @@ export class SemanticGatewayClient {
     const audit = auditFor(taskType, { raw_response_payload_json: rawResponsePayloadJson });
     let normalized;
     try {
-      normalized = normalizeGatewayTransport(rawResponsePayloadJson);
+      normalized = normalizeGatewayTransport(rawResponsePayloadJson, {
+        mode: taskSpec.transport_normalization
+      });
     } catch (error) {
       if (error instanceof SemanticGatewayError) {
         error.audit = { ...audit, error_code: error.code };
@@ -277,7 +299,7 @@ export class SemanticGatewayClient {
       );
     }
     try {
-      validateGatewayEnvelope(envelope, taskType, rawResponsePayloadJson);
+      validateGatewayEnvelope(envelope, taskType, rawResponsePayloadJson, taskSpec);
     } catch (error) {
       if (error instanceof SemanticGatewayError) {
         error.audit = { ...error.audit, response_classification: 'wrong_schema' };
