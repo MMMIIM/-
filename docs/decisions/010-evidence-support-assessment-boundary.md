@@ -32,7 +32,8 @@ state for unavailable/unknown assessments, blocks on conflict, and only returns
 Existing Evidence Review and Requirement-Evidence-Fact Mapping contracts consume
 additive compatibility projections. They retain their human approval gates.
 The legacy `requirement_evidence_mappings` path remains unchanged until a
-separate migration decision.
+separate migration decision; this is recorded as
+`LEGACY_MAPPING_TECH_DEBT` only.
 
 ## Invariants
 

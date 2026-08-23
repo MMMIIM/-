@@ -17,7 +17,7 @@ Authoritative detail: `ARCHITECTURE.md`, `docs/CURRENT_STAGE.md`, `docs/ROADMAP.
 ## Repository state
 
 - Branch: `feat/v4.3-semantic-boundary-routing`
-- HEAD: `90fac4d` (`eval: add live sufficiency calibration harness`)
+- HEAD: `28f01c3` (`feat: add evidence support assessment core`)
 - Git status: clean
 
 ## Frozen stages
