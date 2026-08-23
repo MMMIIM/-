@@ -17,7 +17,7 @@ Authoritative detail: `ARCHITECTURE.md`, `docs/CURRENT_STAGE.md`, `docs/ROADMAP.
 ## Repository state
 
 - Branch: `feat/v4.3-semantic-boundary-routing`
-- HEAD: pending local checkpoint commit for Stage21-A PASS
+- HEAD: `4f81a50` (`fix: validate managed runtime cutover`)
 - Git status: clean
 
 ## Frozen stages
