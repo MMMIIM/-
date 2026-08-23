@@ -17,7 +17,7 @@ Authoritative detail: `ARCHITECTURE.md`, `docs/CURRENT_STAGE.md`, `docs/ROADMAP.
 ## Repository state
 
 - Branch: `feat/v4.3-semantic-boundary-routing`
-- HEAD: `4f81a50` (`fix: validate managed runtime cutover`)
+- HEAD: `90fac4d` (`eval: add live sufficiency calibration harness`)
 - Git status: clean
 
 ## Frozen stages
@@ -30,13 +30,16 @@ Authoritative detail: `ARCHITECTURE.md`, `docs/CURRENT_STAGE.md`, `docs/ROADMAP.
 Stage 21-A — Runtime Connectivity Foundation: **PASS / FROZEN**.
 One managed SSH session now provides the gateway forward and SOCKS egress; Gateway,
 SOCKS HTTPS, repeated real Embedding smoke, readiness, and monitor recovery passed.
-Stage20 is the active re-entry stage; do not start full Stage21.
+Stage20 is the active re-entry stage; Stage20-S shared Evidence Support
+Assessment foundation is implemented offline. Do not start full Stage21.
 
 ## Acceptance tracks
 
 - Stage20 Corpus L3: IN_PROGRESS.
 - Stage20 public tender E2E: parse and baseline PASS; retrieval blocked by existing Embedding network.
 - Deterministic/offline acceptance: PASS.
+- Stage20-S Evidence Support Assessment shared core: implementation complete;
+  no live Gateway task or model call authorized.
 
 ## Critical metrics
 
@@ -67,6 +70,8 @@ Stage20 Re-entry using the existing Project/Parse Job through `EnterpriseRetriev
   `EMBEDDING_PROXY_URL`; SiliconFlow Qwen/Qwen3-Embedding-0.6B, dimension 1024; real
   smoke passed through managed SOCKS. Production remains direct-network oriented.
 - Writer external calls in the public E2E: 0.
+- Shared assessment provider: provider-neutral unavailable/unknown by default;
+  no external calls in this foundation.
 
 ## Git restrictions
 

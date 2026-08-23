@@ -37,6 +37,23 @@ Status: **RE-ENTRY AUTHORIZED — CORPUS_L3_IN_PROGRESS**
 三种业务范围，SSH 隧道仅是开发环境访问方式。最近一次只读网关检查已通过；
 不得把手工 SSH 隧道当作正式产品运行要求。
 
+## Stage20-S — Evidence Support Assessment Shared Core
+
+Priority: **P0/P1**
+Status: **IMPLEMENTATION COMPLETE — OFFLINE / NO LIVE MODEL**
+
+本子阶段建立 `EvidenceSupportAssessment` 共享语义边界：它只观察
+Requirement 与来源之间的支持关系，不创建 Evidence、Fact、Mapping、Claim，
+不改变审批、Readiness 或 Writer 状态。Raw Retrieval Candidate 与 approved
+Evidence Fact 通过显式 Adapter 输入；来源片段必须可由后端从 source text
+验证并带 hash；冲突只记录，不自动裁决。默认 provider-neutral evaluator
+返回不可用状态，不能伪装为 capable/direct。
+
+已有 Evidence Review 和 Requirement-Evidence-Fact Mapping 仅通过 additive
+兼容投影复用共享语义，旧 `requirement_evidence_mappings` 路径保持不变。
+本轮没有数据库迁移、Gateway/模型调用或正式 `sufficiency_assessment` task。
+详见 `docs/decisions/010-evidence-support-assessment-boundary.md`。
+
 ### Stage20 parallel acceptance tracks
 
 - Track A — Corpus Readiness L3：`IN_PROGRESS`。当前真实公共资料为通用 10、政企 15、医疗 15，
