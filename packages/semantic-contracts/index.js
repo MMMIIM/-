@@ -10,6 +10,19 @@ export const GATEWAY_INPUT_SCHEMA = Object.freeze({
   })
 });
 
+export const SEMANTIC_GATEWAY_ERROR_CODES = Object.freeze([
+  'AUTH_INVALID',
+  'TASK_UNSUPPORTED',
+  'INPUT_SCHEMA_INVALID',
+  'PROVIDER_UNAVAILABLE',
+  'PROVIDER_TIMEOUT',
+  'PROVIDER_HTTP_FAILURE',
+  'PROVIDER_OUTPUT_INVALID',
+  'OUTPUT_SCHEMA_INVALID',
+  'SUPPORT_SPAN_INVALID',
+  'INTERNAL_GATEWAY_ERROR'
+]);
+
 export const SEMANTIC_TASK_CONTRACTS = Object.freeze({
   requirement_extraction: Object.freeze({
     task_type: 'requirement_extraction',

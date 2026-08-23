@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import http from 'node:http';
 import {
   SEMANTIC_TASK_TYPES,
+  SEMANTIC_GATEWAY_ERROR_CODES,
   getSemanticTaskContract,
   resolveSemanticTaskInstruction,
   createGatewayEnvelope,
@@ -10,11 +11,7 @@ import {
 import { createMockProvider } from './provider/mock-provider.js';
 import { OpenAICompatibleProvider } from './provider/openai-compatible-provider.js';
 
-const safeErrorCodes = new Set([
-  'AUTH_INVALID', 'TASK_UNSUPPORTED', 'INPUT_SCHEMA_INVALID', 'PROVIDER_UNAVAILABLE',
-  'PROVIDER_TIMEOUT', 'PROVIDER_HTTP_FAILURE', 'PROVIDER_OUTPUT_INVALID',
-  'OUTPUT_SCHEMA_INVALID', 'SUPPORT_SPAN_INVALID', 'INTERNAL_GATEWAY_ERROR'
-]);
+const safeErrorCodes = new Set(SEMANTIC_GATEWAY_ERROR_CODES);
 
 function configFromEnv(env = process.env) {
   const providerName = String(env.SEMANTIC_GATEWAY_PROVIDER || 'mock').trim();

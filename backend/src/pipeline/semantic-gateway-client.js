@@ -1,6 +1,8 @@
 import { getSemanticGatewayTask } from './semantic-gateway-task-registry.js';
+import { SEMANTIC_GATEWAY_ERROR_CODES } from '../../../packages/semantic-contracts/index.js';
 
 const VALID_GATEWAY_STATUSES = new Set(['success', 'failed']);
+const CONTROLLED_GATEWAY_ERROR_CODES = new Set(SEMANTIC_GATEWAY_ERROR_CODES);
 
 function normalizeBaseUrl(value) {
   return String(value || '').trim().replace(/\/+$/, '');
@@ -42,6 +44,28 @@ function safeGatewayTarget(apiBase) {
 
 function auditFor(taskType, extras = {}) {
   return { provider: 'semantic_gateway', task_type: taskType, ...extras };
+}
+
+function safeContentType(response) {
+  const contentType = String(response?.headers?.get?.('content-type') || '').toLowerCase();
+  return contentType.startsWith('application/json') || contentType.startsWith('application/problem+json');
+}
+
+async function parseStructuredGatewayError(response) {
+  if (!safeContentType(response)) return null;
+  let body;
+  try {
+    body = await response.json();
+  } catch (_error) {
+    return null;
+  }
+  if (!body || typeof body !== 'object' || Array.isArray(body)
+    || !CONTROLLED_GATEWAY_ERROR_CODES.has(body.error_code)) return null;
+  const audit = { http_status: response.status, gateway_error_code: body.error_code };
+  if (typeof body.request_id === 'string' && body.request_id.length > 0 && body.request_id.length <= 128) {
+    audit.request_id = body.request_id;
+  }
+  return { code: body.error_code, audit };
 }
 
 export class SemanticGatewayError extends Error {
@@ -238,7 +262,16 @@ export class SemanticGatewayClient {
     }
 
     if (!response.ok) {
-      this.diagnose('GATEWAY_HTTP_ERROR');
+      const structuredError = await parseStructuredGatewayError(response);
+      this.diagnose(structuredError?.code || 'GATEWAY_HTTP_ERROR');
+      if (structuredError) {
+        throw new SemanticGatewayError(
+          structuredError.code,
+          `Semantic Gateway request failed: ${structuredError.code}.`,
+          auditFor(taskType, structuredError.audit),
+          response.status >= 500 ? 502 : 400
+        );
+      }
       throw new SemanticGatewayError(
         'GATEWAY_HTTP_ERROR',
         'Semantic Gateway 返回非成功 HTTP 状态。',
