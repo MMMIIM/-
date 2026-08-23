@@ -1,5 +1,25 @@
 # Current Stage
 
+## Stage 21-A — Runtime Connectivity Foundation
+
+Priority: **P0 prerequisite for Stage20 completion**
+Status: **DIAGNOSIS — NOT IMPLEMENTED**
+
+本阶段是经 sequencing decision 批准的受控前置阶段，不等同于完整 Stage 21。
+目标是建立可重复的开发运行时连通性：Database、semantic_gateway、Embedding
+Provider 的启动前检查、分层错误分类和最小安全观测。Stage17 Retrieval Engine
+以及 Stage16–19 冻结规则不变；Stage21-A 完成后必须返回 Stage20，继续 Corpus
+L3 和 Real Business E2E，不能直接进入 Release Readiness。
+
+当前诊断证据：本机直连 `api.siliconflow.cn:443` DNS 通过但 TCP 失败；
+`127.0.0.1:18080` semantic_gateway SSH 隧道及认证 `/info` 通过。现有 Backend
+使用 `EmbeddingClient` 的生产路径尚未支持 SOCKS runtime 注入，尚未实施任何
+代理或拓扑修改。本轮仅完成架构/运行时诊断，不调用 Embedding 或业务模型。
+
+本阶段允许：开发环境 transport、startup connectivity preflight、分层网络错误
+分类和脱敏 observability 的最小实现；不新增 Provider、模型、fallback、retry
+架构，不修改 Retrieval business contract，不部署、不合并、不推送。
+
 ## Stage 20 — Production Beta Hardening / Real E2E
 
 Priority: **P0/P1**

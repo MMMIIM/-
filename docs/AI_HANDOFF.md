@@ -17,7 +17,7 @@ Authoritative detail: `ARCHITECTURE.md`, `docs/CURRENT_STAGE.md`, `docs/ROADMAP.
 ## Repository state
 
 - Branch: `feat/v4.3-semantic-boundary-routing`
-- HEAD: `ce51320`
+- HEAD: `f2b8c16`
 - Git status: clean
 
 ## Frozen stages
@@ -27,12 +27,13 @@ Authoritative detail: `ARCHITECTURE.md`, `docs/CURRENT_STAGE.md`, `docs/ROADMAP.
 
 ## Current stage
 
-Stage 20 — Corpus L3 + Real Business E2E, currently **PARTIAL / BLOCKED at Embedding**.
+Stage 21-A — Runtime Connectivity Foundation, currently **DIAGNOSIS / NOT IMPLEMENTED**.
+This is a controlled prerequisite only; Stage20 must resume after connectivity PASS.
 
 ## Acceptance tracks
 
-- Corpus L3: IN_PROGRESS.
-- Public tender E2E: parse and baseline PASS; retrieval blocked by existing Embedding network.
+- Stage20 Corpus L3: IN_PROGRESS.
+- Stage20 public tender E2E: parse and baseline PASS; retrieval blocked by existing Embedding network.
 - Deterministic/offline acceptance: PASS.
 
 ## Critical metrics
@@ -45,9 +46,9 @@ Stage 20 — Corpus L3 + Real Business E2E, currently **PARTIAL / BLOCKED at Emb
 
 ## Active blocker and next step
 
-The first authorized retrieval call failed with safe code `EMBEDDING_NETWORK_ERROR` after 67 ms. No Writer, Copilot, Bid Check or Word call was started and no retry occurred.
+The first authorized retrieval call failed with safe code `EMBEDDING_NETWORK_ERROR` after 67 ms. Local DNS passes but direct TCP to the existing SiliconFlow endpoint fails. The authenticated semantic_gateway tunnel is healthy; the remote SSH shell context for a separate egress check is not available to the current shell. No Writer, Copilot, Bid Check or Word call was started and no retry occurred.
 
-Next step: restore the existing Embedding endpoint/network, then run the explicitly authorized public E2E once. Do not switch providers or embedding models to bypass the blocker.
+Next step: complete Stage21-A runtime topology diagnosis, then implement only the minimum approved connectivity/preflight change. Do not switch providers or embedding models to bypass the blocker.
 
 ## Frozen boundaries
 
