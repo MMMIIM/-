@@ -1,11 +1,34 @@
+import { Socks5ProxyAgent } from 'undici';
+
 export class EmbeddingError extends Error{
   constructor(code,message,status=502){super(message);this.name='EmbeddingError';this.code=code;this.status=status;}
 }
 
 const positive=(value,fallback)=>{const parsed=Number(value);return Number.isInteger(parsed)&&parsed>0?parsed:fallback;};
 const base=(value)=>String(value||'').trim().replace(/\/+$/,'');
+const proxy=(value)=>String(value||'').trim();
 
-export function parseEmbeddingConfig(env={}){return Object.freeze({apiBase:base(env.V43_EMBEDDING_API_BASE),apiKey:String(env.V43_EMBEDDING_API_KEY||'').trim(),model:String(env.V43_EMBEDDING_MODEL||'text-embedding-3-small').trim(),version:String(env.V43_EMBEDDING_VERSION||'1').trim(),dimension:positive(env.V43_EMBEDDING_DIMENSION,1536),timeoutMs:positive(env.V43_EMBEDDING_TIMEOUT_MS,30000)});}
+export function parseEmbeddingConfig(env={}){return Object.freeze({apiBase:base(env.V43_EMBEDDING_API_BASE),apiKey:String(env.V43_EMBEDDING_API_KEY||'').trim(),model:String(env.V43_EMBEDDING_MODEL||'text-embedding-3-small').trim(),version:String(env.V43_EMBEDDING_VERSION||'1').trim(),dimension:positive(env.V43_EMBEDDING_DIMENSION,1536),timeoutMs:positive(env.V43_EMBEDDING_TIMEOUT_MS,30000),proxyUrl:proxy(env.EMBEDDING_PROXY_URL)});}
+
+function validateProxyUrl(value){
+  if(!value)return null;
+  let parsed;
+  try{parsed=new URL(value);}catch{throw new EmbeddingError('EMBEDDING_PROXY_INVALID','Embedding 代理地址无效。',500);}
+  if(!['socks5:','socks:'].includes(parsed.protocol))throw new EmbeddingError('EMBEDDING_PROXY_INVALID','Embedding 代理仅支持 socks5://。',500);
+  if(!parsed.hostname||!parsed.port)throw new EmbeddingError('EMBEDDING_PROXY_INVALID','Embedding 代理必须包含主机和端口。',500);
+  return parsed.toString();
+}
+
+export function createEmbeddingFetchFromEnv({env=process.env,baseFetch=fetch,agentFactory=(url)=>new Socks5ProxyAgent(url)}={}){
+  const proxyUrl=validateProxyUrl(env.EMBEDDING_PROXY_URL);
+  if(!proxyUrl)return Object.freeze({proxyUrl:null,fetchImpl:baseFetch,close:async()=>{}});
+  const agent=agentFactory(proxyUrl);
+  return Object.freeze({
+    proxyUrl,
+    fetchImpl:(url,options={})=>baseFetch(url,{...options,dispatcher:agent}),
+    close:async()=>{if(typeof agent.close==='function')await agent.close();}
+  });
+}
 
 export class EmbeddingClient{
   constructor({apiBase,apiKey,model,version,dimension,timeoutMs=30000,fetchImpl=fetch}){Object.assign(this,{apiBase:base(apiBase),apiKey:String(apiKey||'').trim(),model,version,dimension,timeoutMs,fetchImpl});}
@@ -21,4 +44,4 @@ export class EmbeddingClient{
   }
 }
 
-export const createEmbeddingClientFromEnv=({env=process.env,fetchImpl=fetch}={})=>new EmbeddingClient({...parseEmbeddingConfig(env),fetchImpl});
+export const createEmbeddingClientFromEnv=({env=process.env,fetchImpl}={})=>new EmbeddingClient({...parseEmbeddingConfig(env),fetchImpl:fetchImpl||createEmbeddingFetchFromEnv({env}).fetchImpl});

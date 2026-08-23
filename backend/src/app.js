@@ -16,7 +16,7 @@ function sendData(res, data, status = 200) {
   return res.status(status).json({ ok: true, data });
 }
 
-export function createApp({ repository, storage, generationService, requirementParseService, requirementSourceService, productionBetaService, companyMaterialService, evidenceService, evidenceFactService, enterpriseRetrievalService, documentGenerationService, reviewCenterService, evidenceReadinessService, materialProcessingCenterService, evidenceReviewService, evidenceSourceFactService, requirementEvidenceFactMappingService, projectFactControlService, documentDeliveryService, agentContextResolver, agentOrchestrator, agentActionExecutor, corsOrigin }) {
+export function createApp({ repository, storage, generationService, requirementParseService, requirementSourceService, productionBetaService, companyMaterialService, evidenceService, evidenceFactService, enterpriseRetrievalService, documentGenerationService, reviewCenterService, evidenceReadinessService, materialProcessingCenterService, evidenceReviewService, evidenceSourceFactService, requirementEvidenceFactMappingService, projectFactControlService, documentDeliveryService, agentContextResolver, agentOrchestrator, agentActionExecutor, connectivityPreflight, corsOrigin }) {
   const app = express();
   app.use(cors({ origin: corsOrigin || 'http://localhost:5173' }));
   app.use(express.json({ limit: '2mb' }));
@@ -184,6 +184,15 @@ export function createApp({ repository, storage, generationService, requirementP
   app.get('/api/projects/:projectId/company-materials', async (req, res, next) => {
     try { sendData(res, await companyMaterialService.list(req.params.projectId)); }
     catch (error) { next(error); }
+  });
+
+  app.get('/api/runtime/readiness', (_req, res) => {
+    res.json(connectivityPreflight?.getSnapshot?.() || {
+      status: 'degraded',
+      services: {},
+      checked_at: null,
+      error_class: 'NOT_CONFIGURED'
+    });
   });
 
   app.get('/api/material-library/public', async (req, res, next) => {

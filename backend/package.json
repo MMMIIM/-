@@ -9,6 +9,7 @@
     "db:migrate": "node src/migrate.js",
     "check:gateway": "node scripts/gateway-check.js",
     "smoke:gateway": "node scripts/gateway-smoke.js",
+    "smoke:embedding": "node scripts/smoke-embedding.js",
     "reconcile:sources": "node scripts/reconcile-requirement-sources.js",
     "eval:requirements": "node scripts/eval-requirements.js",
     "eval:enterprise-retrieval": "node scripts/eval-enterprise-retrieval.js",
@@ -69,7 +70,8 @@
     "mammoth": "^1.12.1",
     "multer": "^2.0.2",
     "pdf-parse": "^2.4.5",
-    "pg": "^8.13.1"
+    "pg": "^8.13.1",
+    "undici": "7.29.0"
   },
   "devDependencies": {
     "jszip": "^3.10.1"

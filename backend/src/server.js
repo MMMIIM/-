@@ -16,8 +16,9 @@ import { EvidenceService } from './evidence-service.js';
 import { EvidenceFactService } from './evidence-fact-service.js';
 import { createWriterProvider } from './pipeline/writer-provider.js';
 import { DocumentGenerationService } from './pipeline/document-generation-service.js';
-import { createEmbeddingClientFromEnv } from './pipeline/embedding-client.js';
+import { createEmbeddingClientFromEnv, createEmbeddingFetchFromEnv } from './pipeline/embedding-client.js';
 import { EnterpriseRetrievalService } from './pipeline/enterprise-retrieval-service.js';
+import { ConnectivityPreflight } from './runtime/connectivity-preflight.js';
 import { EvidenceReviewService } from './evidence-review-service.js';
 import { EvidenceSourceFactService } from './evidence-source-fact-service.js';
 import { ProjectFactControlService } from './project-fact-control-service.js';
@@ -59,7 +60,14 @@ const requirementSourceService = new RequirementSourceService({ repository, stor
 const companyMaterialService = new CompanyMaterialService({ repository, storage, textExtractor: extractTenderText });
 const evidenceService = new EvidenceService({ repository });
 const evidenceFactService = new EvidenceFactService({ repository });
-const enterpriseRetrievalService = new EnterpriseRetrievalService({ repository, embeddingClient:createEmbeddingClientFromEnv({env:runtimeEnv}), defaultTopK:runtimeEnv.V43_RETRIEVAL_TOP_K || 5 });
+const embeddingTransport = createEmbeddingFetchFromEnv({ env: runtimeEnv });
+const embeddingClient = createEmbeddingClientFromEnv({ env: runtimeEnv, fetchImpl: embeddingTransport.fetchImpl });
+const enterpriseRetrievalService = new EnterpriseRetrievalService({ repository, embeddingClient, defaultTopK:runtimeEnv.V43_RETRIEVAL_TOP_K || 5 });
+const connectivityPreflight = new ConnectivityPreflight({
+  env: runtimeEnv,
+  repository,
+  logger: (event) => console.info('[runtime-connectivity]', JSON.stringify(event))
+});
 const documentGenerationService = new DocumentGenerationService({ repository, provider:createWriterProvider({env:runtimeEnv}), concurrency:runtimeEnv.V43_WRITER_CONCURRENCY || 2 });
 const evidenceReviewService = new EvidenceReviewService({ repository });
 const evidenceSourceFactService = new EvidenceSourceFactService({ repository });
@@ -105,15 +113,18 @@ const app = createApp({
   agentContextResolver,
   agentOrchestrator,
   agentActionExecutor,
+  connectivityPreflight,
   corsOrigin: runtimeEnv.CORS_ORIGIN
 });
 
 const port = Number(runtimeEnv.PORT || 3001);
 const host = runtimeEnv.HOST || '127.0.0.1';
 const server = app.listen(port, host, () => console.log(`Backend listening on http://${host}:${port}`));
+void connectivityPreflight.run().catch((error) => console.error('[runtime-connectivity]', JSON.stringify({ result: 'fail', error_class: error?.code || 'PREFLIGHT_FAILED' })));
 
 async function shutdown() {
   server.close(async () => {
+    await embeddingTransport.close();
     await pool.end();
     process.exit(0);
   });
