@@ -17,8 +17,8 @@ Authoritative detail: `ARCHITECTURE.md`, `docs/CURRENT_STAGE.md`, `docs/ROADMAP.
 ## Repository state
 
 - Branch: `feat/v4.3-semantic-boundary-routing`
-- HEAD: `7df3bbc` (runtime connectivity implementation in progress)
-- Git status: working tree contains the Stage21-A runtime changes until regression commit
+- HEAD: `9ea109a` (`feat: add stage21-a runtime connectivity foundation`)
+- Git status: clean
 
 ## Frozen stages
 
