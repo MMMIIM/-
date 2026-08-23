@@ -123,3 +123,29 @@ test('strict output validation rejects unsupported gateway fields', async () => 
     assert.equal((await response.json()).error_code, 'TASK_UNSUPPORTED');
   });
 });
+
+test('provider schema violations are classified as OUTPUT_SCHEMA_INVALID', async () => {
+  const key = 'gateway-schema-key';
+  const server = createStandaloneGatewayServer({
+    config: {
+      apiKey: key,
+      providerName: 'mock',
+      provider: {
+        model: 'fixture-invalid',
+        async invoke() { return { data: { requirements: 'not-an-array' } }; }
+      }
+    }
+  });
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  try {
+    const response = await fetch(`http://127.0.0.1:${server.address().port}/workflows/run`, {
+      method: 'POST',
+      headers: { authorization: `Bearer ${key}`, 'content-type': 'application/json' },
+      body: JSON.stringify({ inputs: { task_type: 'requirement_extraction', task_instruction: 'x', task_payload_json: '{}' } })
+    });
+    assert.equal(response.status, 422);
+    assert.equal((await response.json()).error_code, 'OUTPUT_SCHEMA_INVALID');
+  } finally {
+    await new Promise(resolve => server.close(resolve));
+  }
+});

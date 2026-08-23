@@ -41,7 +41,7 @@ function providerReady(config) {
 
 function errorCode(error) {
   if (safeErrorCodes.has(error?.code)) return error.code;
-  if (error?.message === 'source excerpt is not source-bound') return 'SUPPORT_SPAN_INVALID';
+  if (error?.message === 'source excerpt is not source-bound' || error?.message === 'support excerpt is not source-bound' || error?.message === 'conflict excerpt is not source-bound') return 'SUPPORT_SPAN_INVALID';
   if (error?.message === 'TASK_UNSUPPORTED') return 'TASK_UNSUPPORTED';
   return 'INTERNAL_GATEWAY_ERROR';
 }
@@ -124,7 +124,15 @@ export function createStandaloneGatewayHandler({ env = process.env, config = con
       const instruction = resolveSemanticTaskInstruction(taskType);
       if (!instruction) throw Object.assign(new Error('task instruction missing'), { code: 'TASK_UNSUPPORTED' });
       const providerResult = await config.provider.invoke({ taskType, instruction, payload });
-      const data = validateTaskData(taskType, providerResult?.data, payload);
+      let data;
+      try {
+        data = validateTaskData(taskType, providerResult?.data, payload);
+      } catch (validationError) {
+        if (!validationError.code) validationError.code = validationError.message.includes('source-bound')
+          ? 'SUPPORT_SPAN_INVALID'
+          : 'OUTPUT_SCHEMA_INVALID';
+        throw validationError;
+      }
       const envelope = createGatewayEnvelope({ taskType, data, warnings: [] });
       const elapsed = Date.now() - started;
       logger?.info?.('Semantic gateway request', {
