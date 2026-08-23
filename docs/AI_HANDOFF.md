@@ -9,7 +9,7 @@
 - Backend is the formal Control Plane; models discover, backend finalizes.
 - Requirement → Evidence → Fact → Mapping → Claim → Writer is a strict lineage chain.
 - Unknown stays unknown; retrieval only produces candidates and never grants formal permission.
-- Dify/semantic gateway is an execution adapter only; the backend owns validation, rules, audit and versions.
+- Semantic execution target is Backend Control Plane → standalone semantic gateway → Provider Adapter → model; the current Dify path remains a legacy compatibility shim.
 - No `result`/`text`/`answer` fallback and no JSON repair by bracket guessing.
 
 Authoritative detail: `ARCHITECTURE.md`, `docs/CURRENT_STAGE.md`, `docs/ROADMAP.md`, and relevant ADRs.
@@ -36,6 +36,12 @@ Assessment foundation and the local shared Gateway Contract are implemented
 offline. The task is not remotely published and no live model call is
 authorized. Do not start full Stage21.
 
+The standalone semantic gateway foundation is implemented locally under
+`services/semantic-gateway`, with single-source contracts in
+`packages/semantic-contracts`. It uses only the mock provider in this stage;
+Backend still points at the legacy Dify-compatible endpoint until a separate
+cutover decision.
+
 ## Acceptance tracks
 
 - Stage20 Corpus L3: IN_PROGRESS.
@@ -44,6 +50,7 @@ authorized. Do not start full Stage21.
 - Stage20-S Evidence Support Assessment shared core and local
   `evidence_support_assessment` Gateway Contract: implemented offline;
   no remote publish or live model call authorized.
+- Standalone Semantic Gateway runtime foundation: local tests PASS; remote deploy and Backend cutover are not authorized.
 
 ## Critical metrics
 
@@ -55,9 +62,10 @@ authorized. Do not start full Stage21.
 
 ## Active blocker and next step
 
-The prior retrieval call failed with safe code `EMBEDDING_NETWORK_ERROR`; the development
-transport blocker is now resolved without changing Retrieval. Next step is the authorized
-Stage20 Re-entry using the existing Project/Parse Job through `EnterpriseRetrievalService`.
+The prior retrieval transport blocker was resolved without changing Retrieval. Stage20
+now remains blocked at live semantic evidence-support validation; the standalone Gateway
+foundation is local-only. Next step is a separate Backend base-URL cutover decision and
+local contract smoke, not remote deployment or a real model call.
 
 ## Frozen boundaries
 
@@ -68,7 +76,8 @@ Stage20 Re-entry using the existing Project/Parse Job through `EnterpriseRetriev
 
 ## Provider/runtime
 
-- Formal path: Backend Control Plane → `semantic_gateway` adapter.
+- Current runtime: Backend Control Plane → `SemanticGatewayClient` → legacy Dify-compatible endpoint.
+- Target runtime: Backend Control Plane → standalone semantic gateway → OpenAI-compatible Provider Adapter.
 - Gateway health check: PASS; requirement extraction used 4 successful calls.
 - Embedding runtime: existing `V43_EMBEDDING_*` configuration with temporary dev-only
   `EMBEDDING_PROXY_URL`; SiliconFlow Qwen/Qwen3-Embedding-0.6B, dimension 1024; real

@@ -70,6 +70,18 @@ observations 和 cross-source conflict observations，最终业务状态继续�
 变更；Stage20 仍为 `BLOCKED`（等待正式 live evidence sufficiency validation），
 Corpus L3 仍为 `IN_PROGRESS`。
 
+### Standalone Semantic Gateway foundation (2026-08-24)
+
+本地已实现独立无状态 Node Gateway：`services/semantic-gateway`。共享语义
+Contract 唯一来源为 `packages/semantic-contracts`，Backend task registry 通过
+该路径消费；服务提供 `/health`、`/ready` 与兼容 `POST /workflows/run`，支持
+六类正式 Task，另保留 `draft_sections` 兼容入口。当前仅使用注入式 mock
+Provider，OpenAI-compatible adapter 只完成本地严格 JSON 路径；不调用真实模型，
+不连接业务数据库，不写 Evidence/Fact/Mapping/Review/Readiness/Claim/Writer。
+
+当前 Backend 默认仍指向 Legacy Dify-compatible runtime，未执行 cutover。远端
+Dify 不修改、不部署；下一步需单独决定本地 cutover 与真实 Provider 验证。
+
 ### Stage20 parallel acceptance tracks
 
 - Track A — Corpus Readiness L3：`IN_PROGRESS`。当前真实公共资料为通用 10、政企 15、医疗 15，
