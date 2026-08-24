@@ -18,6 +18,7 @@
     "eval:agent-v2": "node eval/agent-eval-v2/benchmark.js",
     "eval:stage20": "node eval/stage20/acceptance.js",
     "eval:sufficiency": "node eval/sufficiency/experiment.js",
+    "eval:sufficiency-offline": "node eval/evidence-support/calibration-v2/evidence-sufficiency-offline.js",
     "audit:evidence-support-v2": "node eval/evidence-support/calibration-v2/audit.js",
     "build:evidence-support-v2-review": "node eval/evidence-support/calibration-v2/build-review-packet.js",
     "reconcile:evidence-support-v2-lineage": "node eval/evidence-support/calibration-v2/build-remediated-pool.js",

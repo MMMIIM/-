@@ -1,0 +1,3620 @@
+{
+  "schema_version": "stage20-evidence-sufficiency-offline-v1",
+  "title": "Stage20 Evidence Sufficiency Offline Validation Baseline",
+  "generated_at": "2026-08-24",
+  "dataset_classification": "REPRESENTATIVE_SYNTHETIC / FROZEN_STAGE17_CAPTURE",
+  "evaluation_scope": "EvidenceSupportAssessment only; not Retrieval Hit@K evaluation",
+  "source_capture": "backend/eval/evidence-support/calibration-v2/GPT_REVIEW_PACKET_STAGE17_FINAL_LIVE_6.json",
+  "evaluator": {
+    "version": "offline-fixture-evaluator-v1",
+    "mode": "deterministic fixture assessment over frozen evidence inputs",
+    "provider_neutral_behavior": "ASSESSMENT_UNAVAILABLE; never capable/direct",
+    "no_model_calls": true
+  },
+  "cases": [
+    {
+      "case_id": "V2R-001-PERF-DIRECT",
+      "requirement": {
+        "requirement_id": "V2R-001-PERF-DIRECT",
+        "text": "企业应提供可核验的数据交换平台性能测试记录。",
+        "exact": true
+      },
+      "oracle_provenance": {
+        "runtime_assessment": "AUTO_DRAFT",
+        "expected_assessment": "GPT_REVIEWED",
+        "human_gold": "NONE",
+        "promotion": "NOT_PERMITTED"
+      },
+      "frozen_evidence_inputs": [
+        {
+          "candidate_id": "MCH-770B6FE8E57173DCC72914CFFB7376F8",
+          "chunk_id": "MCH-770B6FE8E57173DCC72914CFFB7376F8",
+          "raw_rank": 2,
+          "raw_similarity": 0.6545740365982056,
+          "source_text": "产品：澄明数据交换平台 V3.2\n能力：REST API 接入、数据目录、交换任务调度、运行日志。\n未声明未列出的协议、吞吐量或 SLA。",
+          "source_text_hash": "2ded84bc0d6960c9a09c74c40d06690ff022688f668592eba9db5ac677fcf43b",
+          "chunk_role": "BUSINESS_CONTENT",
+          "source_eligibility": "ELIGIBLE",
+          "substantive_class": "SUBSTANTIVE_CANDIDATE",
+          "requirement_relative_classification": "TOPIC_RELEVANT_ONLY",
+          "lineage": {
+            "material_id": "8821b9fa-2bde-4329-9cbf-908395c1270d",
+            "document_id": "8821b9fa-2bde-4329-9cbf-908395c1270d",
+            "chunk_id": "MCH-770B6FE8E57173DCC72914CFFB7376F8"
+          }
+        },
+        {
+          "candidate_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
+          "chunk_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
+          "raw_rank": 4,
+          "raw_similarity": 0.5710718291359059,
+          "source_text": "产品：澄明数据交换平台 V3.2\n环境：8 vCPU、32 GB 内存、PostgreSQL 14、千兆局域网\n条件：50 并发、100 万条基准数据、缓存预热后执行 30 分钟\n指标：数据目录查询平均响应时间\n结果：平均 1.4 秒，P95 1.9 秒。\n日期：2025-05-16。",
+          "source_text_hash": "5a54f61d10c64f26414f8dcfb93f3c1eb25076f1063d97f8200f42cad981843c",
+          "chunk_role": "BUSINESS_CONTENT",
+          "source_eligibility": "ELIGIBLE",
+          "substantive_class": "SUBSTANTIVE_CANDIDATE",
+          "requirement_relative_classification": "EVIDENCE_BEARING",
+          "lineage": {
+            "material_id": "3c81671f-376e-401b-8525-be26929d5b92",
+            "document_id": "3c81671f-376e-401b-8525-be26929d5b92",
+            "chunk_id": "MCH-0FBD3599DAF932016F62EB9634B997AF"
+          }
+        },
+        {
+          "candidate_id": "MCH-3A8FB2B6257892D70EAFEF97417EEB23",
+          "chunk_id": "MCH-3A8FB2B6257892D70EAFEF97417EEB23",
+          "raw_rank": 11,
+          "raw_similarity": 0.503727942927358,
+          "source_text": "项目：北川新区数据协同平台项目（虚构）\n双方：澄明数科（示范）有限公司；北川新区数字服务中心（虚构）\n签订日期：2024-02-01\n范围：数据目录、交换任务和实施服务。",
+          "source_text_hash": "b6887075859d89855f682be6c01c0dbe6a4dcb7e2469d4bbc23bc6045f2e0a8b",
+          "chunk_role": "BUSINESS_CONTENT",
+          "source_eligibility": "ELIGIBLE",
+          "substantive_class": "SUBSTANTIVE_CANDIDATE",
+          "requirement_relative_classification": "TOPIC_RELEVANT_ONLY",
+          "lineage": {
+            "material_id": "edc27231-e615-4b30-afcf-c6be41469db3",
+            "document_id": "edc27231-e615-4b30-afcf-c6be41469db3",
+            "chunk_id": "MCH-3A8FB2B6257892D70EAFEF97417EEB23"
+          }
+        },
+        {
+          "candidate_id": "MCH-268A148B9BD7EA6BF0B470DDE0EA8425",
+          "chunk_id": "MCH-268A148B9BD7EA6BF0B470DDE0EA8425",
+          "raw_rank": 12,
+          "raw_similarity": 0.503096610123122,
+          "source_text": "项目：北川新区数据协同平台项目（虚构）\n客户：北川新区数字服务中心（虚构）\n验收日期：2024-09-20\n结论：虚构项目约定范围通过验收；不外推至其他环境。",
+          "source_text_hash": "71ae1d9a780c6a56708acb2d8a90692bf6f7ba873464ab78b4a5b41d8506ac78",
+          "chunk_role": "BUSINESS_CONTENT",
+          "source_eligibility": "ELIGIBLE",
+          "substantive_class": "SUBSTANTIVE_CANDIDATE",
+          "requirement_relative_classification": "TOPIC_RELEVANT_ONLY",
+          "lineage": {
+            "material_id": "b472e07b-3065-4645-9b0b-a6abadaa70b7",
+            "document_id": "b472e07b-3065-4645-9b0b-a6abadaa70b7",
+            "chunk_id": "MCH-268A148B9BD7EA6BF0B470DDE0EA8425"
+          }
+        }
+      ],
+      "frozen_raw_candidate_pool": [
+        {
+          "candidate_id": "MCH-B4FF02295DBB6DCDF6E2763F057076F6",
+          "raw_rank": 1,
+          "raw_similarity": 0.820653070250338,
+          "source_text": "# 数据交换平台性能测试记录",
+          "source_text_hash": "b39d0175f9ba8fd41b225f5b6d7b28dc51d850f4b5e80fe6159ae1af3e4ea189",
+          "chunk_role": "HEADING",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "METADATA_OR_HEADER",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "3c81671f-376e-401b-8525-be26929d5b92",
+            "document_id": "3c81671f-376e-401b-8525-be26929d5b92",
+            "chunk_id": "MCH-B4FF02295DBB6DCDF6E2763F057076F6"
+          }
+        },
+        {
+          "candidate_id": "MCH-770B6FE8E57173DCC72914CFFB7376F8",
+          "raw_rank": 2,
+          "raw_similarity": 0.6545740365982056,
+          "source_text": "产品：澄明数据交换平台 V3.2\n能力：REST API 接入、数据目录、交换任务调度、运行日志。\n未声明未列出的协议、吞吐量或 SLA。",
+          "source_text_hash": "2ded84bc0d6960c9a09c74c40d06690ff022688f668592eba9db5ac677fcf43b",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "EVIDENCE_ELIGIBLE",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "TOPIC_RELEVANT_ONLY",
+          "final_phase_rank": 1,
+          "final_eligible": true,
+          "lineage": {
+            "material_id": "8821b9fa-2bde-4329-9cbf-908395c1270d",
+            "document_id": "8821b9fa-2bde-4329-9cbf-908395c1270d",
+            "chunk_id": "MCH-770B6FE8E57173DCC72914CFFB7376F8"
+          }
+        },
+        {
+          "candidate_id": "MCH-C9F466EAC2C29977E40F4A3BFE38A6E4",
+          "raw_rank": 3,
+          "raw_similarity": 0.6524852514266968,
+          "source_text": "# 数据交换平台产品说明",
+          "source_text_hash": "9110a1b3eaaa2a432da18e1b924c87ff11d5331af07da9ae5f5b0510dd9895d1",
+          "chunk_role": "HEADING",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "METADATA_OR_HEADER",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "8821b9fa-2bde-4329-9cbf-908395c1270d",
+            "document_id": "8821b9fa-2bde-4329-9cbf-908395c1270d",
+            "chunk_id": "MCH-C9F466EAC2C29977E40F4A3BFE38A6E4"
+          }
+        },
+        {
+          "candidate_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
+          "raw_rank": 4,
+          "raw_similarity": 0.5710718291359059,
+          "source_text": "产品：澄明数据交换平台 V3.2\n环境：8 vCPU、32 GB 内存、PostgreSQL 14、千兆局域网\n条件：50 并发、100 万条基准数据、缓存预热后执行 30 分钟\n指标：数据目录查询平均响应时间\n结果：平均 1.4 秒，P95 1.9 秒。\n日期：2025-05-16。",
+          "source_text_hash": "5a54f61d10c64f26414f8dcfb93f3c1eb25076f1063d97f8200f42cad981843c",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "EVIDENCE_ELIGIBLE",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "EVIDENCE_BEARING",
+          "final_phase_rank": 2,
+          "final_eligible": true,
+          "lineage": {
+            "material_id": "3c81671f-376e-401b-8525-be26929d5b92",
+            "document_id": "3c81671f-376e-401b-8525-be26929d5b92",
+            "chunk_id": "MCH-0FBD3599DAF932016F62EB9634B997AF"
+          }
+        },
+        {
+          "candidate_id": "MCH-5B3A5D4F1299B7E362FE0D195F33C161",
+          "raw_rank": 5,
+          "raw_similarity": 0.5241128489903907,
+          "source_text": "记录已经验证的核心原则：",
+          "source_text_hash": "127e8943c87423c2cc0c7240f255a9b39982bc1dfacaf3464caef7b0d73b1857",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "TOPIC_RELEVANT_ONLY",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-5B3A5D4F1299B7E362FE0D195F33C161"
+          }
+        },
+        {
+          "candidate_id": "MCH-F6FE125F46AD101C81DA541D50D7AE47",
+          "raw_rank": 6,
+          "raw_similarity": 0.5180168747901917,
+          "source_text": "可控\n可追溯\n可审核\n可修改\n可交付",
+          "source_text_hash": "d3170af4ab5e1b36935a5aad51b577567f93b158d140dd4e4c331296af5a3128",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-F6FE125F46AD101C81DA541D50D7AE47"
+          }
+        },
+        {
+          "candidate_id": "MCH-DEA320F82E7EEC727D332134D9C2E87A",
+          "raw_rank": 7,
+          "raw_similarity": 0.5172624588012695,
+          "source_text": "# 项目A验收记录",
+          "source_text_hash": "ad9de59b748780e49abca2cb04e4c7a9ce9ed7d305206925463942c9bd3cc070",
+          "chunk_role": "HEADING",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "METADATA_OR_HEADER",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "b472e07b-3065-4645-9b0b-a6abadaa70b7",
+            "document_id": "b472e07b-3065-4645-9b0b-a6abadaa70b7",
+            "chunk_id": "MCH-DEA320F82E7EEC727D332134D9C2E87A"
+          }
+        },
+        {
+          "candidate_id": "MCH-555802B2C6B93AE17E478E4ECC99308A",
+          "raw_rank": 8,
+          "raw_similarity": 0.5129590034484863,
+          "source_text": "核心业务流程真实可用、\n稳定、可审核、可追溯、易操作。",
+          "source_text_hash": "57d372478a59be99ea4f8dcf1c8ebebea4c37b8763a3e12b6c4ebee5b5e6db01",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-555802B2C6B93AE17E478E4ECC99308A"
+          }
+        },
+        {
+          "candidate_id": "MCH-57FE3B83C106C09B70C731182F48FFA4",
+          "raw_rank": 9,
+          "raw_similarity": 0.510559008469495,
+          "source_text": "# 产品兼容性矩阵",
+          "source_text_hash": "1c32ff7e9aa4f1d01011898c0c195da9bd25953712aa1fdae988dfaed0d4ffea",
+          "chunk_role": "HEADING",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "METADATA_OR_HEADER",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "3f9dacfb-2e48-4796-a477-98c60b506831",
+            "document_id": "3f9dacfb-2e48-4796-a477-98c60b506831",
+            "chunk_id": "MCH-57FE3B83C106C09B70C731182F48FFA4"
+          }
+        },
+        {
+          "candidate_id": "MCH-0820CC5A439CB986C62E46213029CC71",
+          "raw_rank": 10,
+          "raw_similarity": 0.5049018859863281,
+          "source_text": "# ISO 27001 受控记录",
+          "source_text_hash": "e4bbd720010befabbdd08b947acc803b7f0c52b5ccdbf8da7f5b169e76f19215",
+          "chunk_role": "HEADING",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "METADATA_OR_HEADER",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+            "document_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+            "chunk_id": "MCH-0820CC5A439CB986C62E46213029CC71"
+          }
+        },
+        {
+          "candidate_id": "MCH-3A8FB2B6257892D70EAFEF97417EEB23",
+          "raw_rank": 11,
+          "raw_similarity": 0.503727942927358,
+          "source_text": "项目：北川新区数据协同平台项目（虚构）\n双方：澄明数科（示范）有限公司；北川新区数字服务中心（虚构）\n签订日期：2024-02-01\n范围：数据目录、交换任务和实施服务。",
+          "source_text_hash": "b6887075859d89855f682be6c01c0dbe6a4dcb7e2469d4bbc23bc6045f2e0a8b",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "EVIDENCE_ELIGIBLE",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "TOPIC_RELEVANT_ONLY",
+          "final_phase_rank": 3,
+          "final_eligible": true,
+          "lineage": {
+            "material_id": "edc27231-e615-4b30-afcf-c6be41469db3",
+            "document_id": "edc27231-e615-4b30-afcf-c6be41469db3",
+            "chunk_id": "MCH-3A8FB2B6257892D70EAFEF97417EEB23"
+          }
+        },
+        {
+          "candidate_id": "MCH-268A148B9BD7EA6BF0B470DDE0EA8425",
+          "raw_rank": 12,
+          "raw_similarity": 0.503096610123122,
+          "source_text": "项目：北川新区数据协同平台项目（虚构）\n客户：北川新区数字服务中心（虚构）\n验收日期：2024-09-20\n结论：虚构项目约定范围通过验收；不外推至其他环境。",
+          "source_text_hash": "71ae1d9a780c6a56708acb2d8a90692bf6f7ba873464ab78b4a5b41d8506ac78",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "EVIDENCE_ELIGIBLE",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "TOPIC_RELEVANT_ONLY",
+          "final_phase_rank": 4,
+          "final_eligible": true,
+          "lineage": {
+            "material_id": "b472e07b-3065-4645-9b0b-a6abadaa70b7",
+            "document_id": "b472e07b-3065-4645-9b0b-a6abadaa70b7",
+            "chunk_id": "MCH-268A148B9BD7EA6BF0B470DDE0EA8425"
+          }
+        },
+        {
+          "candidate_id": "MCH-52CC0CDE792C8009A7790CA3F184A28E",
+          "raw_rank": 13,
+          "raw_similarity": 0.49970918893814087,
+          "source_text": "Customer Private Data externalization",
+          "source_text_hash": "aad4d18abbca69abbf1f344573370c19a54d2ecc28ff275df932faa7518ec76a",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-52CC0CDE792C8009A7790CA3F184A28E"
+          }
+        },
+        {
+          "candidate_id": "MCH-DDCF46F5C7751B5B84EA724E094CBCFB",
+          "raw_rank": 14,
+          "raw_similarity": 0.49467182191182335,
+          "source_text": "Decision:\nEvidence / Fact / Mapping / Claim Permission\nare separate business layers.",
+          "source_text_hash": "6a52cc5e55a2edc8b9af0afe57cca9a7929c08fd6c508d1605acb16f4ad9a51f",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-DDCF46F5C7751B5B84EA724E094CBCFB"
+          }
+        },
+        {
+          "candidate_id": "MCH-6E0F7A565A662E6590ED1177FB815E36",
+          "raw_rank": 15,
+          "raw_similarity": 0.49002274989810934,
+          "source_text": "政企标书 AI 平台。",
+          "source_text_hash": "3c1b5387b4ed1880f9ee5b2f04d68d7558aa509e67330d446b1aeecd47bf2968",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "TOPIC_RELEVANT_ONLY",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-6E0F7A565A662E6590ED1177FB815E36"
+          }
+        },
+        {
+          "candidate_id": "MCH-4CD255B113BCA08DB085732B30803FE0",
+          "raw_rank": 16,
+          "raw_similarity": 0.4858574875678139,
+          "source_text": "REPRESENTATIVE_SYNTHETIC\nNOT_REAL_CUSTOMER_DATA\nmaterial_id: SME-014\nsubject: 澄明数科（示范）有限公司",
+          "source_text_hash": "b2ee96d3439537674e527ceb34c9f9bb71b7014583ec1fd54e63e072f52a3a02",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "METADATA_OR_HEADER",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "3a49c72a-c8c6-4124-8e78-9812800c9eb3",
+            "document_id": "3a49c72a-c8c6-4124-8e78-9812800c9eb3",
+            "chunk_id": "MCH-4CD255B113BCA08DB085732B30803FE0"
+          }
+        },
+        {
+          "candidate_id": "MCH-30CF9829A40D0869FA0E0B7B5582ACDE",
+          "raw_rank": 17,
+          "raw_similarity": 0.48584982668458476,
+          "source_text": "Provider / Model / Project data scope change",
+          "source_text_hash": "117806c2825909960aa2e84c26f20ea665411c7598cc659d73a32a7def4d9d8f",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-30CF9829A40D0869FA0E0B7B5582ACDE"
+          }
+        },
+        {
+          "candidate_id": "MCH-FD985F70FBE8CB464869FD32A02F08DD",
+          "raw_rank": 18,
+          "raw_similarity": 0.48469583644556535,
+          "source_text": "REPRESENTATIVE_SYNTHETIC\nNOT_REAL_CUSTOMER_DATA\nmaterial_id: SME-020\nsubject: 澄明数科（示范）有限公司",
+          "source_text_hash": "e67e122fca4194aff98da3b03af9b07199b6520fdbaa167edf6c00b6519676e8",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "METADATA_OR_HEADER",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "74ed566b-18c0-41a1-ba55-59cbe182251c",
+            "document_id": "74ed566b-18c0-41a1-ba55-59cbe182251c",
+            "chunk_id": "MCH-FD985F70FBE8CB464869FD32A02F08DD"
+          }
+        },
+        {
+          "candidate_id": "MCH-D32448917B3E8CAD1214641F8E85D86A",
+          "raw_rank": 19,
+          "raw_similarity": 0.48440846893737,
+          "source_text": "REPRESENTATIVE_SYNTHETIC\nNOT_REAL_CUSTOMER_DATA\nmaterial_id: SME-004\nsubject: 澄明数科（示范）有限公司",
+          "source_text_hash": "421e2b4a69e39fb4513d347d6912f1808b6e9acafe7bb14c8bd9cc70086a30e4",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "METADATA_OR_HEADER",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "3c81671f-376e-401b-8525-be26929d5b92",
+            "document_id": "3c81671f-376e-401b-8525-be26929d5b92",
+            "chunk_id": "MCH-D32448917B3E8CAD1214641F8E85D86A"
+          }
+        },
+        {
+          "candidate_id": "MCH-E9E21B41FF80EEC1B95691D18E4F84BE",
+          "raw_rank": 20,
+          "raw_similarity": 0.48404449224472046,
+          "source_text": "REPRESENTATIVE_SYNTHETIC\nNOT_REAL_CUSTOMER_DATA\nmaterial_id: SME-010\nsubject: 澄明数科（示范）有限公司",
+          "source_text_hash": "0765ff11f40f3e1314fbc8c3685204d998741e13057904e520b7fa31ba6b8728",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "METADATA_OR_HEADER",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "edc27231-e615-4b30-afcf-c6be41469db3",
+            "document_id": "edc27231-e615-4b30-afcf-c6be41469db3",
+            "chunk_id": "MCH-E9E21B41FF80EEC1B95691D18E4F84BE"
+          }
+        }
+      ],
+      "selected_evidence_ids": [
+        "MCH-0FBD3599DAF932016F62EB9634B997AF"
+      ],
+      "evidence_detail": [
+        {
+          "source_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
+          "source_text": "产品：澄明数据交换平台 V3.2\n环境：8 vCPU、32 GB 内存、PostgreSQL 14、千兆局域网\n条件：50 并发、100 万条基准数据、缓存预热后执行 30 分钟\n指标：数据目录查询平均响应时间\n结果：平均 1.4 秒，P95 1.9 秒。\n日期：2025-05-16。",
+          "source_text_hash": "5a54f61d10c64f26414f8dcfb93f3c1eb25076f1063d97f8200f42cad981843c",
+          "exact_span": {
+            "span_id": "OFFLINE-SPAN-MCH-0FBD3599DAF932016F62EB9634B997AF",
+            "start_offset": 106,
+            "end_offset": 128,
+            "support_excerpt": "结果：平均 1.4 秒，P95 1.9 秒。",
+            "support_excerpt_hash": "5980678b45f598767ad1292854206d1932f733644ecd14f24b59ffd62fefea68"
+          },
+          "context_window": [
+            {
+              "chunk_id": "MCH-770B6FE8E57173DCC72914CFFB7376F8",
+              "raw_rank": 2,
+              "source_text": "产品：澄明数据交换平台 V3.2\n能力：REST API 接入、数据目录、交换任务调度、运行日志。\n未声明未列出的协议、吞吐量或 SLA。",
+              "role": "context_only"
+            },
+            {
+              "chunk_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
+              "raw_rank": 4,
+              "source_text": "产品：澄明数据交换平台 V3.2\n环境：8 vCPU、32 GB 内存、PostgreSQL 14、千兆局域网\n条件：50 并发、100 万条基准数据、缓存预热后执行 30 分钟\n指标：数据目录查询平均响应时间\n结果：平均 1.4 秒，P95 1.9 秒。\n日期：2025-05-16。",
+              "role": "selected_source"
+            },
+            {
+              "chunk_id": "MCH-3A8FB2B6257892D70EAFEF97417EEB23",
+              "raw_rank": 11,
+              "source_text": "项目：北川新区数据协同平台项目（虚构）\n双方：澄明数科（示范）有限公司；北川新区数字服务中心（虚构）\n签订日期：2024-02-01\n范围：数据目录、交换任务和实施服务。",
+              "role": "context_only"
+            }
+          ],
+          "lineage": {
+            "material_id": "3c81671f-376e-401b-8525-be26929d5b92",
+            "document_id": "3c81671f-376e-401b-8525-be26929d5b92",
+            "chunk_id": "MCH-0FBD3599DAF932016F62EB9634B997AF"
+          }
+        }
+      ],
+      "runtime_assessment": {
+        "assessment_id": "ESA-9160B668301C403833B7133E0A12B01A",
+        "assessment_version": "evidence-support-assessment-v1",
+        "evaluator_version": "offline-fixture-evaluator-v1",
+        "assessment_status": "available",
+        "input_kind": "retrieval_candidate",
+        "requirement": {
+          "requirement_id": "V2R-001-PERF-DIRECT",
+          "text": "企业应提供可核验的数据交换平台性能测试记录。",
+          "text_hash": "13b54062a469433e1e86438423597c56377f553087a6898724efeb86b35feefc"
+        },
+        "source": {
+          "source_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
+          "source_kind": "retrieval_candidate",
+          "source_span_id": "OFFLINE-SPAN-MCH-0FBD3599DAF932016F62EB9634B997AF",
+          "source_text_hash": "5a54f61d10c64f26414f8dcfb93f3c1eb25076f1063d97f8200f42cad981843c",
+          "lineage": {
+            "material_id": "3c81671f-376e-401b-8525-be26929d5b92",
+            "document_id": "3c81671f-376e-401b-8525-be26929d5b92",
+            "chunk_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
+            "source_span_resolution": "OFFLINE_FROZEN_CAPTURE"
+          },
+          "material": {
+            "material_id": "3c81671f-376e-401b-8525-be26929d5b92",
+            "document_id": "3c81671f-376e-401b-8525-be26929d5b92",
+            "source_eligibility": "ELIGIBLE"
+          }
+        },
+        "semantic_relevance": "relevant",
+        "evidence_capability": "capable",
+        "support_level": "full_support",
+        "semantic_relationship": "direct",
+        "review_dimensions": {
+          "subject_match": "match",
+          "scope_match": "match",
+          "status_match": "match",
+          "quantitative_match": "match",
+          "entity_match": "match",
+          "validity_match": "match",
+          "source_authority": "match",
+          "support_sufficiency": "match"
+        },
+        "reason_codes": [],
+        "support_observations": [
+          {
+            "source_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
+            "source_span_id": "OFFLINE-SPAN-MCH-0FBD3599DAF932016F62EB9634B997AF",
+            "support_excerpt": "结果：平均 1.4 秒，P95 1.9 秒。",
+            "support_excerpt_hash": "5980678b45f598767ad1292854206d1932f733644ecd14f24b59ffd62fefea68",
+            "observation_type": "direct_support",
+            "reason_codes": []
+          }
+        ],
+        "conflict_observations": []
+      },
+      "runtime_aggregate": {
+        "status": "EVIDENCE_REVIEW_READY",
+        "assessment_count": 1,
+        "blocking_conflicts": [],
+        "reason_codes": []
+      },
+      "expected": {
+        "status": "EVIDENCE_REVIEW_READY",
+        "reason_codes": [],
+        "assessment_rationale": "direct source-bound support",
+        "required_dimensions": {
+          "subject_match": {
+            "classification": "REQUIRED_DIMENSION",
+            "expected": "match"
+          },
+          "entity_match": {
+            "classification": "REQUIRED_DIMENSION",
+            "expected": "match"
+          },
+          "scope_match": {
+            "classification": "REQUIRED_DIMENSION",
+            "expected": "match"
+          },
+          "status_match": {
+            "classification": "REQUIRED_DIMENSION",
+            "expected": "match"
+          },
+          "validity_match": {
+            "classification": "SUPPORTING_DIMENSION",
+            "expected": "match"
+          },
+          "quantitative_match": {
+            "classification": "REQUIRED_DIMENSION",
+            "expected": "match"
+          }
+        },
+        "unresolved_required_dimensions": [],
+        "adverse_evidence": false,
+        "conflict_observations": [],
+        "technical_status": "NOT_APPLICABLE"
+      },
+      "technical_status": "SUCCESS",
+      "side_effects": {
+        "evidence_support_assessment_persisted": false,
+        "evidence_review_created": false,
+        "evidence_created": false,
+        "evidence_fact_created": false,
+        "mapping_created": false,
+        "approval_changed": false,
+        "readiness_changed": false,
+        "claim_gate_triggered": false,
+        "writer_triggered": false
+      }
+    },
+    {
+      "case_id": "V2R-002-PERF-PARTIAL",
+      "requirement": {
+        "requirement_id": "V2R-002-PERF-PARTIAL",
+        "text": "企业应证明接口 P95 响应时间不超过 1 秒。",
+        "exact": true
+      },
+      "oracle_provenance": {
+        "runtime_assessment": "AUTO_DRAFT",
+        "expected_assessment": "GPT_REVIEWED",
+        "human_gold": "NONE",
+        "promotion": "NOT_PERMITTED"
+      },
+      "frozen_evidence_inputs": [
+        {
+          "candidate_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
+          "chunk_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
+          "raw_rank": 1,
+          "raw_similarity": 0.5491645604869995,
+          "source_text": "产品：澄明数据交换平台 V3.2\n环境：8 vCPU、32 GB 内存、PostgreSQL 14、千兆局域网\n条件：50 并发、100 万条基准数据、缓存预热后执行 30 分钟\n指标：数据目录查询平均响应时间\n结果：平均 1.4 秒，P95 1.9 秒。\n日期：2025-05-16。",
+          "source_text_hash": "5a54f61d10c64f26414f8dcfb93f3c1eb25076f1063d97f8200f42cad981843c",
+          "chunk_role": "BUSINESS_CONTENT",
+          "source_eligibility": "ELIGIBLE",
+          "substantive_class": "SUBSTANTIVE_CANDIDATE",
+          "requirement_relative_classification": "EVIDENCE_BEARING",
+          "lineage": {
+            "material_id": "3c81671f-376e-401b-8525-be26929d5b92",
+            "document_id": "3c81671f-376e-401b-8525-be26929d5b92",
+            "chunk_id": "MCH-0FBD3599DAF932016F62EB9634B997AF"
+          }
+        },
+        {
+          "candidate_id": "MCH-08A2CF3D5D2423E41CECF8BB230F574A",
+          "chunk_id": "MCH-08A2CF3D5D2423E41CECF8BB230F574A",
+          "raw_rank": 3,
+          "raw_similarity": 0.5155732938988989,
+          "source_text": "企业通常提供工作日 9:00-18:00 服务台、远程诊断和必要时现场支持。\n无经审核的 7×24、5 分钟响应或 99.99% SLA。",
+          "source_text_hash": "783e1943f923c1b24f32697f9ebc4079271581587f0d7fada70935eadf867ed2",
+          "chunk_role": "BUSINESS_CONTENT",
+          "source_eligibility": "ELIGIBLE",
+          "substantive_class": "SUBSTANTIVE_CANDIDATE",
+          "requirement_relative_classification": "TOPIC_RELEVANT_ONLY",
+          "lineage": {
+            "material_id": "7b29cc2e-458c-4ed9-ab5a-81f99a3ddace",
+            "document_id": "7b29cc2e-458c-4ed9-ab5a-81f99a3ddace",
+            "chunk_id": "MCH-08A2CF3D5D2423E41CECF8BB230F574A"
+          }
+        },
+        {
+          "candidate_id": "MCH-770B6FE8E57173DCC72914CFFB7376F8",
+          "chunk_id": "MCH-770B6FE8E57173DCC72914CFFB7376F8",
+          "raw_rank": 7,
+          "raw_similarity": 0.44436025619506836,
+          "source_text": "产品：澄明数据交换平台 V3.2\n能力：REST API 接入、数据目录、交换任务调度、运行日志。\n未声明未列出的协议、吞吐量或 SLA。",
+          "source_text_hash": "2ded84bc0d6960c9a09c74c40d06690ff022688f668592eba9db5ac677fcf43b",
+          "chunk_role": "BUSINESS_CONTENT",
+          "source_eligibility": "ELIGIBLE",
+          "substantive_class": "SUBSTANTIVE_CANDIDATE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "lineage": {
+            "material_id": "8821b9fa-2bde-4329-9cbf-908395c1270d",
+            "document_id": "8821b9fa-2bde-4329-9cbf-908395c1270d",
+            "chunk_id": "MCH-770B6FE8E57173DCC72914CFFB7376F8"
+          }
+        }
+      ],
+      "frozen_raw_candidate_pool": [
+        {
+          "candidate_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
+          "raw_rank": 1,
+          "raw_similarity": 0.5491645604869995,
+          "source_text": "产品：澄明数据交换平台 V3.2\n环境：8 vCPU、32 GB 内存、PostgreSQL 14、千兆局域网\n条件：50 并发、100 万条基准数据、缓存预热后执行 30 分钟\n指标：数据目录查询平均响应时间\n结果：平均 1.4 秒，P95 1.9 秒。\n日期：2025-05-16。",
+          "source_text_hash": "5a54f61d10c64f26414f8dcfb93f3c1eb25076f1063d97f8200f42cad981843c",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "EVIDENCE_ELIGIBLE",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "EVIDENCE_BEARING",
+          "final_phase_rank": 1,
+          "final_eligible": true,
+          "lineage": {
+            "material_id": "3c81671f-376e-401b-8525-be26929d5b92",
+            "document_id": "3c81671f-376e-401b-8525-be26929d5b92",
+            "chunk_id": "MCH-0FBD3599DAF932016F62EB9634B997AF"
+          }
+        },
+        {
+          "candidate_id": "MCH-B4FF02295DBB6DCDF6E2763F057076F6",
+          "raw_rank": 2,
+          "raw_similarity": 0.5277375297389951,
+          "source_text": "# 数据交换平台性能测试记录",
+          "source_text_hash": "b39d0175f9ba8fd41b225f5b6d7b28dc51d850f4b5e80fe6159ae1af3e4ea189",
+          "chunk_role": "HEADING",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "METADATA_OR_HEADER",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "3c81671f-376e-401b-8525-be26929d5b92",
+            "document_id": "3c81671f-376e-401b-8525-be26929d5b92",
+            "chunk_id": "MCH-B4FF02295DBB6DCDF6E2763F057076F6"
+          }
+        },
+        {
+          "candidate_id": "MCH-08A2CF3D5D2423E41CECF8BB230F574A",
+          "raw_rank": 3,
+          "raw_similarity": 0.5155732938988989,
+          "source_text": "企业通常提供工作日 9:00-18:00 服务台、远程诊断和必要时现场支持。\n无经审核的 7×24、5 分钟响应或 99.99% SLA。",
+          "source_text_hash": "783e1943f923c1b24f32697f9ebc4079271581587f0d7fada70935eadf867ed2",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "EVIDENCE_ELIGIBLE",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "TOPIC_RELEVANT_ONLY",
+          "final_phase_rank": 2,
+          "final_eligible": true,
+          "lineage": {
+            "material_id": "7b29cc2e-458c-4ed9-ab5a-81f99a3ddace",
+            "document_id": "7b29cc2e-458c-4ed9-ab5a-81f99a3ddace",
+            "chunk_id": "MCH-08A2CF3D5D2423E41CECF8BB230F574A"
+          }
+        },
+        {
+          "candidate_id": "MCH-A9CA772011E7045D8F035A43E6681BE8",
+          "raw_rank": 4,
+          "raw_similarity": 0.472814679145813,
+          "source_text": "Prompt =\nbackend-owned business instruction,\nversioned independently of model.",
+          "source_text_hash": "e6556be44e28e5c11cf8c67ebceefa64d5244e2570aa9629fda633d555c21851",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-A9CA772011E7045D8F035A43E6681BE8"
+          }
+        },
+        {
+          "candidate_id": "MCH-F6FE125F46AD101C81DA541D50D7AE47",
+          "raw_rank": 5,
+          "raw_similarity": 0.4511462152004242,
+          "source_text": "可控\n可追溯\n可审核\n可修改\n可交付",
+          "source_text_hash": "d3170af4ab5e1b36935a5aad51b577567f93b158d140dd4e4c331296af5a3128",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-F6FE125F46AD101C81DA541D50D7AE47"
+          }
+        },
+        {
+          "candidate_id": "MCH-2A5877154432915455907D6094C3959B",
+          "raw_rank": 6,
+          "raw_similarity": 0.44523435831069946,
+          "source_text": "用户界面优先回答：",
+          "source_text_hash": "280edae46b20d8e3b2ff1f273f86a7e2e77051e26103b0c0be3aaca7c0831de3",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-2A5877154432915455907D6094C3959B"
+          }
+        },
+        {
+          "candidate_id": "MCH-770B6FE8E57173DCC72914CFFB7376F8",
+          "raw_rank": 7,
+          "raw_similarity": 0.44436025619506836,
+          "source_text": "产品：澄明数据交换平台 V3.2\n能力：REST API 接入、数据目录、交换任务调度、运行日志。\n未声明未列出的协议、吞吐量或 SLA。",
+          "source_text_hash": "2ded84bc0d6960c9a09c74c40d06690ff022688f668592eba9db5ac677fcf43b",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "EVIDENCE_ELIGIBLE",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": 3,
+          "final_eligible": true,
+          "lineage": {
+            "material_id": "8821b9fa-2bde-4329-9cbf-908395c1270d",
+            "document_id": "8821b9fa-2bde-4329-9cbf-908395c1270d",
+            "chunk_id": "MCH-770B6FE8E57173DCC72914CFFB7376F8"
+          }
+        },
+        {
+          "candidate_id": "MCH-C9F466EAC2C29977E40F4A3BFE38A6E4",
+          "raw_rank": 8,
+          "raw_similarity": 0.444134920835495,
+          "source_text": "# 数据交换平台产品说明",
+          "source_text_hash": "9110a1b3eaaa2a432da18e1b924c87ff11d5331af07da9ae5f5b0510dd9895d1",
+          "chunk_role": "HEADING",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "METADATA_OR_HEADER",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "8821b9fa-2bde-4329-9cbf-908395c1270d",
+            "document_id": "8821b9fa-2bde-4329-9cbf-908395c1270d",
+            "chunk_id": "MCH-C9F466EAC2C29977E40F4A3BFE38A6E4"
+          }
+        },
+        {
+          "candidate_id": "MCH-D37B061257382C31A3C757430BDD2CA6",
+          "raw_rank": 9,
+          "raw_similarity": 0.44165509939193726,
+          "source_text": "# ISO 9001 受控记录",
+          "source_text_hash": "5ce2c17155abf56dc3ae9930236f4cab65e0f0263aa88c8547a7034433e0b2ea",
+          "chunk_role": "HEADING",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "METADATA_OR_HEADER",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "c5395bc4-0531-4e6f-9f0c-3562cee0a2f1",
+            "document_id": "c5395bc4-0531-4e6f-9f0c-3562cee0a2f1",
+            "chunk_id": "MCH-D37B061257382C31A3C757430BDD2CA6"
+          }
+        },
+        {
+          "candidate_id": "MCH-9F70D2B858350FCFD93FFDA7C66F95DE",
+          "raw_rank": 10,
+          "raw_similarity": 0.44138771644903996,
+          "source_text": "没有 E2E / Eval / 用户问题证据，\n不要增加复杂架构。",
+          "source_text_hash": "17cbcd0d92367a7c16186629a814bcd9f5ef2f2bdacebb57a167f528e8686d40",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-9F70D2B858350FCFD93FFDA7C66F95DE"
+          }
+        },
+        {
+          "candidate_id": "MCH-DDCF46F5C7751B5B84EA724E094CBCFB",
+          "raw_rank": 11,
+          "raw_similarity": 0.4377259351178454,
+          "source_text": "Decision:\nEvidence / Fact / Mapping / Claim Permission\nare separate business layers.",
+          "source_text_hash": "6a52cc5e55a2edc8b9af0afe57cca9a7929c08fd6c508d1605acb16f4ad9a51f",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-DDCF46F5C7751B5B84EA724E094CBCFB"
+          }
+        },
+        {
+          "candidate_id": "MCH-555802B2C6B93AE17E478E4ECC99308A",
+          "raw_rank": 12,
+          "raw_similarity": 0.4374869465827942,
+          "source_text": "核心业务流程真实可用、\n稳定、可审核、可追溯、易操作。",
+          "source_text_hash": "57d372478a59be99ea4f8dcf1c8ebebea4c37b8763a3e12b6c4ebee5b5e6db01",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-555802B2C6B93AE17E478E4ECC99308A"
+          }
+        },
+        {
+          "candidate_id": "MCH-9B3CAB55A63FBAA2806BD5521C1FF6BF",
+          "raw_rank": 13,
+          "raw_similarity": 0.43561697389978404,
+          "source_text": "系统负责确定性传播",
+          "source_text_hash": "7d2efbd1fe1845e9593aed6ac6f3f1a7a9f37dfb61f112d2f240bd13588d93bc",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-9B3CAB55A63FBAA2806BD5521C1FF6BF"
+          }
+        },
+        {
+          "candidate_id": "MCH-9FE710C2607E0ED6EA6762BA9F0E4871",
+          "raw_rank": 14,
+          "raw_similarity": 0.4320729374885559,
+          "source_text": "# 交付能力说明",
+          "source_text_hash": "07330717a5bc0d852692c90ccfd2a5b4efe1322be51c904c5bf7837e0e8993dc",
+          "chunk_role": "HEADING",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "METADATA_OR_HEADER",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "41e26bce-9dcf-4e2d-8270-b5012361cbc9",
+            "document_id": "41e26bce-9dcf-4e2d-8270-b5012361cbc9",
+            "chunk_id": "MCH-9FE710C2607E0ED6EA6762BA9F0E4871"
+          }
+        },
+        {
+          "candidate_id": "MCH-0820CC5A439CB986C62E46213029CC71",
+          "raw_rank": 15,
+          "raw_similarity": 0.42792609333992004,
+          "source_text": "# ISO 27001 受控记录",
+          "source_text_hash": "e4bbd720010befabbdd08b947acc803b7f0c52b5ccdbf8da7f5b169e76f19215",
+          "chunk_role": "HEADING",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "METADATA_OR_HEADER",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+            "document_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+            "chunk_id": "MCH-0820CC5A439CB986C62E46213029CC71"
+          }
+        },
+        {
+          "candidate_id": "MCH-57FE3B83C106C09B70C731182F48FFA4",
+          "raw_rank": 16,
+          "raw_similarity": 0.4267210745860124,
+          "source_text": "# 产品兼容性矩阵",
+          "source_text_hash": "1c32ff7e9aa4f1d01011898c0c195da9bd25953712aa1fdae988dfaed0d4ffea",
+          "chunk_role": "HEADING",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "METADATA_OR_HEADER",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "3f9dacfb-2e48-4796-a477-98c60b506831",
+            "document_id": "3f9dacfb-2e48-4796-a477-98c60b506831",
+            "chunk_id": "MCH-57FE3B83C106C09B70C731182F48FFA4"
+          }
+        },
+        {
+          "candidate_id": "MCH-E963DFF403E8C8673352C3A42FE096F2",
+          "raw_rank": 17,
+          "raw_similarity": 0.4264688618918916,
+          "source_text": "P3 — PLANNED",
+          "source_text_hash": "647ec4b5630d875acd22925b12f824361beaa367b9ff5a61aaad02bb1edb8d1f",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "EVIDENCE_BEARING",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-E963DFF403E8C8673352C3A42FE096F2"
+          }
+        },
+        {
+          "candidate_id": "MCH-AA33E31CB1E95FD98A4FE61518207F35",
+          "raw_rank": 18,
+          "raw_similarity": 0.4260544776916504,
+          "source_text": "P0",
+          "source_text_hash": "2842de9d43a98b535ed75b3176a95e9bb11fd5c7f04979b329a35f578f7e0ba2",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "EVIDENCE_BEARING",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-AA33E31CB1E95FD98A4FE61518207F35"
+          }
+        },
+        {
+          "candidate_id": "MCH-B17B19F31A9ECF45AFF293B874DF8A14",
+          "raw_rank": 19,
+          "raw_similarity": 0.42520394921302795,
+          "source_text": "核心链路问题优先于所有后续功能。",
+          "source_text_hash": "8515750bb05744b399fc21f310090a834acc6102ba8b8a8d2881411264b5cf5d",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-B17B19F31A9ECF45AFF293B874DF8A14"
+          }
+        },
+        {
+          "candidate_id": "MCH-889DDF9919EF0E6485406DAB6A159A11",
+          "raw_rank": 20,
+          "raw_similarity": 0.42471766471862793,
+          "source_text": "SUPPORTED\n→ 材料已满足",
+          "source_text_hash": "c0f667ac9cf6428b1e9f8a29f652bbff6e46d3a270bd83b1cd10f97dace2e091",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-889DDF9919EF0E6485406DAB6A159A11"
+          }
+        }
+      ],
+      "selected_evidence_ids": [
+        "MCH-0FBD3599DAF932016F62EB9634B997AF"
+      ],
+      "evidence_detail": [
+        {
+          "source_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
+          "source_text": "产品：澄明数据交换平台 V3.2\n环境：8 vCPU、32 GB 内存、PostgreSQL 14、千兆局域网\n条件：50 并发、100 万条基准数据、缓存预热后执行 30 分钟\n指标：数据目录查询平均响应时间\n结果：平均 1.4 秒，P95 1.9 秒。\n日期：2025-05-16。",
+          "source_text_hash": "5a54f61d10c64f26414f8dcfb93f3c1eb25076f1063d97f8200f42cad981843c",
+          "exact_span": {
+            "span_id": "OFFLINE-SPAN-MCH-0FBD3599DAF932016F62EB9634B997AF",
+            "start_offset": 106,
+            "end_offset": 128,
+            "support_excerpt": "结果：平均 1.4 秒，P95 1.9 秒。",
+            "support_excerpt_hash": "5980678b45f598767ad1292854206d1932f733644ecd14f24b59ffd62fefea68"
+          },
+          "context_window": [
+            {
+              "chunk_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
+              "raw_rank": 1,
+              "source_text": "产品：澄明数据交换平台 V3.2\n环境：8 vCPU、32 GB 内存、PostgreSQL 14、千兆局域网\n条件：50 并发、100 万条基准数据、缓存预热后执行 30 分钟\n指标：数据目录查询平均响应时间\n结果：平均 1.4 秒，P95 1.9 秒。\n日期：2025-05-16。",
+              "role": "selected_source"
+            },
+            {
+              "chunk_id": "MCH-08A2CF3D5D2423E41CECF8BB230F574A",
+              "raw_rank": 3,
+              "source_text": "企业通常提供工作日 9:00-18:00 服务台、远程诊断和必要时现场支持。\n无经审核的 7×24、5 分钟响应或 99.99% SLA。",
+              "role": "context_only"
+            }
+          ],
+          "lineage": {
+            "material_id": "3c81671f-376e-401b-8525-be26929d5b92",
+            "document_id": "3c81671f-376e-401b-8525-be26929d5b92",
+            "chunk_id": "MCH-0FBD3599DAF932016F62EB9634B997AF"
+          }
+        }
+      ],
+      "runtime_assessment": {
+        "assessment_id": "ESA-1067DA47640DC143B2CC18E7C831828F",
+        "assessment_version": "evidence-support-assessment-v1",
+        "evaluator_version": "offline-fixture-evaluator-v1",
+        "assessment_status": "available",
+        "input_kind": "retrieval_candidate",
+        "requirement": {
+          "requirement_id": "V2R-002-PERF-PARTIAL",
+          "text": "企业应证明接口 P95 响应时间不超过 1 秒。",
+          "text_hash": "ad1e1a7fca50b9e22b10bf59ccb23c64e088c04ab9d9a9f985074968fcca607d"
+        },
+        "source": {
+          "source_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
+          "source_kind": "retrieval_candidate",
+          "source_span_id": "OFFLINE-SPAN-MCH-0FBD3599DAF932016F62EB9634B997AF",
+          "source_text_hash": "5a54f61d10c64f26414f8dcfb93f3c1eb25076f1063d97f8200f42cad981843c",
+          "lineage": {
+            "material_id": "3c81671f-376e-401b-8525-be26929d5b92",
+            "document_id": "3c81671f-376e-401b-8525-be26929d5b92",
+            "chunk_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
+            "source_span_resolution": "OFFLINE_FROZEN_CAPTURE"
+          },
+          "material": {
+            "material_id": "3c81671f-376e-401b-8525-be26929d5b92",
+            "document_id": "3c81671f-376e-401b-8525-be26929d5b92",
+            "source_eligibility": "ELIGIBLE"
+          }
+        },
+        "semantic_relevance": "relevant",
+        "evidence_capability": "capable",
+        "support_level": "insufficient",
+        "semantic_relationship": "partial",
+        "review_dimensions": {
+          "subject_match": "match",
+          "scope_match": "match",
+          "status_match": "match",
+          "quantitative_match": "mismatch",
+          "entity_match": "match",
+          "validity_match": "match",
+          "source_authority": "match",
+          "support_sufficiency": "match"
+        },
+        "reason_codes": [
+          "QUANTITATIVE_MISMATCH",
+          "SUPPORT_INSUFFICIENT"
+        ],
+        "support_observations": [
+          {
+            "source_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
+            "source_span_id": "OFFLINE-SPAN-MCH-0FBD3599DAF932016F62EB9634B997AF",
+            "support_excerpt": "结果：平均 1.4 秒，P95 1.9 秒。",
+            "support_excerpt_hash": "5980678b45f598767ad1292854206d1932f733644ecd14f24b59ffd62fefea68",
+            "observation_type": "partial_support",
+            "reason_codes": [
+              "QUANTITATIVE_MISMATCH"
+            ]
+          }
+        ],
+        "conflict_observations": []
+      },
+      "runtime_aggregate": {
+        "status": "INSUFFICIENT_EVIDENCE",
+        "assessment_count": 1,
+        "blocking_conflicts": [],
+        "reason_codes": [
+          "SUPPORT_INSUFFICIENT"
+        ]
+      },
+      "expected": {
+        "status": "INSUFFICIENT_EVIDENCE",
+        "reason_codes": [
+          "QUANTITATIVE_MISMATCH",
+          "SUPPORT_INSUFFICIENT"
+        ],
+        "assessment_rationale": null,
+        "required_dimensions": {
+          "subject_match": {
+            "classification": "REQUIRED_DIMENSION",
+            "expected": "match"
+          },
+          "entity_match": {
+            "classification": "REQUIRED_DIMENSION",
+            "expected": "match"
+          },
+          "scope_match": {
+            "classification": "REQUIRED_DIMENSION",
+            "expected": "match"
+          },
+          "status_match": {
+            "classification": "SUPPORTING_DIMENSION",
+            "expected": "match"
+          },
+          "validity_match": {
+            "classification": "SUPPORTING_DIMENSION",
+            "expected": "match"
+          },
+          "quantitative_match": {
+            "classification": "REQUIRED_DIMENSION",
+            "expected": "mismatch"
+          }
+        },
+        "unresolved_required_dimensions": [],
+        "adverse_evidence": true,
+        "conflict_observations": [],
+        "technical_status": "NOT_APPLICABLE"
+      },
+      "technical_status": "SUCCESS",
+      "side_effects": {
+        "evidence_support_assessment_persisted": false,
+        "evidence_review_created": false,
+        "evidence_created": false,
+        "evidence_fact_created": false,
+        "mapping_created": false,
+        "approval_changed": false,
+        "readiness_changed": false,
+        "claim_gate_triggered": false,
+        "writer_triggered": false
+      }
+    },
+    {
+      "case_id": "V2R-003-COMP-DIRECT",
+      "requirement": {
+        "requirement_id": "V2R-003-COMP-DIRECT",
+        "text": "企业应说明产品在 x86_64、Ubuntu 和 PostgreSQL 环境的兼容性。",
+        "exact": true
+      },
+      "oracle_provenance": {
+        "runtime_assessment": "AUTO_DRAFT",
+        "expected_assessment": "GPT_REVIEWED",
+        "human_gold": "NONE",
+        "promotion": "NOT_PERMITTED"
+      },
+      "frozen_evidence_inputs": [
+        {
+          "candidate_id": "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0",
+          "chunk_id": "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0",
+          "raw_rank": 1,
+          "raw_similarity": 0.7036605234550806,
+          "source_text": "x86_64 + Ubuntu 22.04 + PostgreSQL 14：tested\n鲲鹏 920 + 麒麟 V10 + 达梦 8：partially_tested（完成安装和基础交换用例，未完成压力测试）\n海光 + 统信 UOS + 人大金仓：not_verified\n国产数据库组合：unknown",
+          "source_text_hash": "623f699df461219e4f6ce813596a352300ed47692c630db6482a97cfc41d37d5",
+          "chunk_role": "BUSINESS_CONTENT",
+          "source_eligibility": "ELIGIBLE",
+          "substantive_class": "SUBSTANTIVE_CANDIDATE",
+          "requirement_relative_classification": "EVIDENCE_BEARING",
+          "lineage": {
+            "material_id": "3f9dacfb-2e48-4796-a477-98c60b506831",
+            "document_id": "3f9dacfb-2e48-4796-a477-98c60b506831",
+            "chunk_id": "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0"
+          }
+        },
+        {
+          "candidate_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
+          "chunk_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
+          "raw_rank": 6,
+          "raw_similarity": 0.5020534393723679,
+          "source_text": "产品：澄明数据交换平台 V3.2\n环境：8 vCPU、32 GB 内存、PostgreSQL 14、千兆局域网\n条件：50 并发、100 万条基准数据、缓存预热后执行 30 分钟\n指标：数据目录查询平均响应时间\n结果：平均 1.4 秒，P95 1.9 秒。\n日期：2025-05-16。",
+          "source_text_hash": "5a54f61d10c64f26414f8dcfb93f3c1eb25076f1063d97f8200f42cad981843c",
+          "chunk_role": "BUSINESS_CONTENT",
+          "source_eligibility": "ELIGIBLE",
+          "substantive_class": "SUBSTANTIVE_CANDIDATE",
+          "requirement_relative_classification": "TOPIC_RELEVANT_ONLY",
+          "lineage": {
+            "material_id": "3c81671f-376e-401b-8525-be26929d5b92",
+            "document_id": "3c81671f-376e-401b-8525-be26929d5b92",
+            "chunk_id": "MCH-0FBD3599DAF932016F62EB9634B997AF"
+          }
+        }
+      ],
+      "frozen_raw_candidate_pool": [
+        {
+          "candidate_id": "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0",
+          "raw_rank": 1,
+          "raw_similarity": 0.7036605234550806,
+          "source_text": "x86_64 + Ubuntu 22.04 + PostgreSQL 14：tested\n鲲鹏 920 + 麒麟 V10 + 达梦 8：partially_tested（完成安装和基础交换用例，未完成压力测试）\n海光 + 统信 UOS + 人大金仓：not_verified\n国产数据库组合：unknown",
+          "source_text_hash": "623f699df461219e4f6ce813596a352300ed47692c630db6482a97cfc41d37d5",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "EVIDENCE_ELIGIBLE",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "EVIDENCE_BEARING",
+          "final_phase_rank": 1,
+          "final_eligible": true,
+          "lineage": {
+            "material_id": "3f9dacfb-2e48-4796-a477-98c60b506831",
+            "document_id": "3f9dacfb-2e48-4796-a477-98c60b506831",
+            "chunk_id": "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0"
+          }
+        },
+        {
+          "candidate_id": "MCH-57FE3B83C106C09B70C731182F48FFA4",
+          "raw_rank": 2,
+          "raw_similarity": 0.6561677651455405,
+          "source_text": "# 产品兼容性矩阵",
+          "source_text_hash": "1c32ff7e9aa4f1d01011898c0c195da9bd25953712aa1fdae988dfaed0d4ffea",
+          "chunk_role": "HEADING",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "METADATA_OR_HEADER",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "3f9dacfb-2e48-4796-a477-98c60b506831",
+            "document_id": "3f9dacfb-2e48-4796-a477-98c60b506831",
+            "chunk_id": "MCH-57FE3B83C106C09B70C731182F48FFA4"
+          }
+        },
+        {
+          "candidate_id": "MCH-238ABC8850F42BCC571A0913A7E2AF08",
+          "raw_rank": 3,
+          "raw_similarity": 0.5235348315793477,
+          "source_text": "优先成熟 MIT / Apache-2.0 等兼容开源组件。",
+          "source_text_hash": "f4c00f8cb0dd727ef1581e6948eb8cb9a9da64f064f8272bf55dfb04650ae548",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "TOPIC_RELEVANT_ONLY",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-238ABC8850F42BCC571A0913A7E2AF08"
+          }
+        },
+        {
+          "candidate_id": "MCH-7251629B4230317EE57F8F2659926A1F",
+          "raw_rank": 4,
+          "raw_similarity": 0.5070773354676562,
+          "source_text": "企业软件基础能力，\n安全、够用。",
+          "source_text_hash": "b179ac612aa11feab83c269ca5569cec1c26807c9aa8469881e5ba11bd4943a0",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "TOPIC_RELEVANT_ONLY",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-7251629B4230317EE57F8F2659926A1F"
+          }
+        },
+        {
+          "candidate_id": "MCH-889DDF9919EF0E6485406DAB6A159A11",
+          "raw_rank": 5,
+          "raw_similarity": 0.5034373698569921,
+          "source_text": "SUPPORTED\n→ 材料已满足",
+          "source_text_hash": "c0f667ac9cf6428b1e9f8a29f652bbff6e46d3a270bd83b1cd10f97dace2e091",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-889DDF9919EF0E6485406DAB6A159A11"
+          }
+        },
+        {
+          "candidate_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
+          "raw_rank": 6,
+          "raw_similarity": 0.5020534393723679,
+          "source_text": "产品：澄明数据交换平台 V3.2\n环境：8 vCPU、32 GB 内存、PostgreSQL 14、千兆局域网\n条件：50 并发、100 万条基准数据、缓存预热后执行 30 分钟\n指标：数据目录查询平均响应时间\n结果：平均 1.4 秒，P95 1.9 秒。\n日期：2025-05-16。",
+          "source_text_hash": "5a54f61d10c64f26414f8dcfb93f3c1eb25076f1063d97f8200f42cad981843c",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "EVIDENCE_ELIGIBLE",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "TOPIC_RELEVANT_ONLY",
+          "final_phase_rank": 2,
+          "final_eligible": true,
+          "lineage": {
+            "material_id": "3c81671f-376e-401b-8525-be26929d5b92",
+            "document_id": "3c81671f-376e-401b-8525-be26929d5b92",
+            "chunk_id": "MCH-0FBD3599DAF932016F62EB9634B997AF"
+          }
+        },
+        {
+          "candidate_id": "MCH-10C2129A5D37AB29824CE98DF6E32F0D",
+          "raw_rank": 7,
+          "raw_similarity": 0.49322542507800804,
+          "source_text": "Primary\nSupporting\nAudit / Technical",
+          "source_text_hash": "4b9b069f5001870f9b26e307318706cab2dfbd29aaa8f8ac2f69bedf04248b41",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-10C2129A5D37AB29824CE98DF6E32F0D"
+          }
+        },
+        {
+          "candidate_id": "MCH-650DE173A9B8AA958EEB850251D70FE2",
+          "raw_rank": 8,
+          "raw_similarity": 0.49202448272267385,
+          "source_text": "Ensure:",
+          "source_text_hash": "ce4f9b0c3247f5ed5100b4f861269ead8df993f0065fcc71788d114aecbd5cd3",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-650DE173A9B8AA958EEB850251D70FE2"
+          }
+        },
+        {
+          "candidate_id": "MCH-B4FF02295DBB6DCDF6E2763F057076F6",
+          "raw_rank": 9,
+          "raw_similarity": 0.49198529124260304,
+          "source_text": "# 数据交换平台性能测试记录",
+          "source_text_hash": "b39d0175f9ba8fd41b225f5b6d7b28dc51d850f4b5e80fe6159ae1af3e4ea189",
+          "chunk_role": "HEADING",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "METADATA_OR_HEADER",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "3c81671f-376e-401b-8525-be26929d5b92",
+            "document_id": "3c81671f-376e-401b-8525-be26929d5b92",
+            "chunk_id": "MCH-B4FF02295DBB6DCDF6E2763F057076F6"
+          }
+        },
+        {
+          "candidate_id": "MCH-C9F466EAC2C29977E40F4A3BFE38A6E4",
+          "raw_rank": 10,
+          "raw_similarity": 0.48965182962108766,
+          "source_text": "# 数据交换平台产品说明",
+          "source_text_hash": "9110a1b3eaaa2a432da18e1b924c87ff11d5331af07da9ae5f5b0510dd9895d1",
+          "chunk_role": "HEADING",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "METADATA_OR_HEADER",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "8821b9fa-2bde-4329-9cbf-908395c1270d",
+            "document_id": "8821b9fa-2bde-4329-9cbf-908395c1270d",
+            "chunk_id": "MCH-C9F466EAC2C29977E40F4A3BFE38A6E4"
+          }
+        },
+        {
+          "candidate_id": "MCH-631BC2CA11EF7F634D9FADB7A3A764B3",
+          "raw_rank": 11,
+          "raw_similarity": 0.48804295134288456,
+          "source_text": "docx\ndocx-templates\n兼容许可的成熟实现。",
+          "source_text_hash": "5eb033f66a6dd9d8fea88cf949d42787ab2a8be763693f913cbbcb975efdc489",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "TOPIC_RELEVANT_ONLY",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-631BC2CA11EF7F634D9FADB7A3A764B3"
+          }
+        },
+        {
+          "candidate_id": "MCH-77CE3E3DD5C828887DC6CBC2B67CD9BD",
+          "raw_rank": 12,
+          "raw_similarity": 0.484377951361064,
+          "source_text": "D. Open Source Policy",
+          "source_text_hash": "8560cc2d50ba018136100a297b29a0ef23d9a7740417255c82453e6436f095c7",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-77CE3E3DD5C828887DC6CBC2B67CD9BD"
+          }
+        },
+        {
+          "candidate_id": "MCH-8D8E6DEED2728713414578C20C3BEB12",
+          "raw_rank": 13,
+          "raw_similarity": 0.48225252383194983,
+          "source_text": "Unknown automatically upgraded",
+          "source_text_hash": "1124efdfa352da9ad22a3043bce1772f191be35f3d9f091c78fc216b12e070ce",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-8D8E6DEED2728713414578C20C3BEB12"
+          }
+        },
+        {
+          "candidate_id": "MCH-B73C33CB10B6F50BB313418C65735B71",
+          "raw_rank": 14,
+          "raw_similarity": 0.4820098589652869,
+          "source_text": "Keycloak / compatible IdP。",
+          "source_text_hash": "99010f03b9877a98ab120a2f0491a15a60137728a1ed255cc6763ed62af0f454",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-B73C33CB10B6F50BB313418C65735B71"
+          }
+        },
+        {
+          "candidate_id": "MCH-2C953B6DF28287F832936576CCA2EB2D",
+          "raw_rank": 15,
+          "raw_similarity": 0.47626266024931396,
+          "source_text": "AGPL:\nREFERENCE_ONLY by default.",
+          "source_text_hash": "ceebac7ce34e920a4ac189f60c68170c93b9cc27c8aa361b75ba6c447b5f3be6",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-2C953B6DF28287F832936576CCA2EB2D"
+          }
+        },
+        {
+          "candidate_id": "MCH-100E24B05482CB58EF735205603EBBF1",
+          "raw_rank": 16,
+          "raw_similarity": 0.46301942843315325,
+          "source_text": "CORE BID PRODUCT FLOW",
+          "source_text_hash": "513de12b29582734a1475ba087e15983c273e8f00e3ec0fa75cf64f3ce1349ac",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-100E24B05482CB58EF735205603EBBF1"
+          }
+        },
+        {
+          "candidate_id": "MCH-F19555DDB9A3CE4B924909683404FE8C",
+          "raw_rank": 17,
+          "raw_similarity": 0.4629885278351,
+          "source_text": "005-open-source-reuse.md",
+          "source_text_hash": "05f89e72beadd0f9e3b03671f4584a795d1f3b7ff7c9f2b5093cc14e08650c82",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-F19555DDB9A3CE4B924909683404FE8C"
+          }
+        },
+        {
+          "candidate_id": "MCH-D39B57E75A9DF6AB623AC2D8B109B2A7",
+          "raw_rank": 18,
+          "raw_similarity": 0.4628466710035001,
+          "source_text": "Architecture source-of-truth location",
+          "source_text_hash": "b60b80bfc03067d48461097c448e1cdb72b89bae8b9ba91ce93099470c2f63d9",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-D39B57E75A9DF6AB623AC2D8B109B2A7"
+          }
+        },
+        {
+          "candidate_id": "MCH-9F70D2B858350FCFD93FFDA7C66F95DE",
+          "raw_rank": 19,
+          "raw_similarity": 0.46036333318193756,
+          "source_text": "没有 E2E / Eval / 用户问题证据，\n不要增加复杂架构。",
+          "source_text_hash": "17cbcd0d92367a7c16186629a814bcd9f5ef2f2bdacebb57a167f528e8686d40",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "TOPIC_RELEVANT_ONLY",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-9F70D2B858350FCFD93FFDA7C66F95DE"
+          }
+        },
+        {
+          "candidate_id": "MCH-C76DB22C55B4C2E8CEC6A464F590DD4E",
+          "raw_rank": 20,
+          "raw_similarity": 0.4564427001344371,
+          "source_text": "技术 enum/code\n只在高级/审计详情显示。",
+          "source_text_hash": "cab5b4ecd50d6d04287b681e80c1af43a2fd4eaaf14f3404f4b9cb1465e41693",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-C76DB22C55B4C2E8CEC6A464F590DD4E"
+          }
+        }
+      ],
+      "selected_evidence_ids": [
+        "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0"
+      ],
+      "evidence_detail": [
+        {
+          "source_id": "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0",
+          "source_text": "x86_64 + Ubuntu 22.04 + PostgreSQL 14：tested\n鲲鹏 920 + 麒麟 V10 + 达梦 8：partially_tested（完成安装和基础交换用例，未完成压力测试）\n海光 + 统信 UOS + 人大金仓：not_verified\n国产数据库组合：unknown",
+          "source_text_hash": "623f699df461219e4f6ce813596a352300ed47692c630db6482a97cfc41d37d5",
+          "exact_span": {
+            "span_id": "OFFLINE-SPAN-MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0",
+            "start_offset": 0,
+            "end_offset": 44,
+            "support_excerpt": "x86_64 + Ubuntu 22.04 + PostgreSQL 14：tested",
+            "support_excerpt_hash": "fb69ced1a0d476fb84cfc8ec4afbc090ac31d42d64ddc8af7837da4908b84828"
+          },
+          "context_window": [
+            {
+              "chunk_id": "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0",
+              "raw_rank": 1,
+              "source_text": "x86_64 + Ubuntu 22.04 + PostgreSQL 14：tested\n鲲鹏 920 + 麒麟 V10 + 达梦 8：partially_tested（完成安装和基础交换用例，未完成压力测试）\n海光 + 统信 UOS + 人大金仓：not_verified\n国产数据库组合：unknown",
+              "role": "selected_source"
+            },
+            {
+              "chunk_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
+              "raw_rank": 6,
+              "source_text": "产品：澄明数据交换平台 V3.2\n环境：8 vCPU、32 GB 内存、PostgreSQL 14、千兆局域网\n条件：50 并发、100 万条基准数据、缓存预热后执行 30 分钟\n指标：数据目录查询平均响应时间\n结果：平均 1.4 秒，P95 1.9 秒。\n日期：2025-05-16。",
+              "role": "context_only"
+            }
+          ],
+          "lineage": {
+            "material_id": "3f9dacfb-2e48-4796-a477-98c60b506831",
+            "document_id": "3f9dacfb-2e48-4796-a477-98c60b506831",
+            "chunk_id": "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0"
+          }
+        }
+      ],
+      "runtime_assessment": {
+        "assessment_id": "ESA-805B11D5C9E62108D2941F6EB670042F",
+        "assessment_version": "evidence-support-assessment-v1",
+        "evaluator_version": "offline-fixture-evaluator-v1",
+        "assessment_status": "available",
+        "input_kind": "retrieval_candidate",
+        "requirement": {
+          "requirement_id": "V2R-003-COMP-DIRECT",
+          "text": "企业应说明产品在 x86_64、Ubuntu 和 PostgreSQL 环境的兼容性。",
+          "text_hash": "792cd5e1ad29d95a5ab0c22954d76606e5ad810caf73e1382e3b00f333c3aa34"
+        },
+        "source": {
+          "source_id": "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0",
+          "source_kind": "retrieval_candidate",
+          "source_span_id": "OFFLINE-SPAN-MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0",
+          "source_text_hash": "623f699df461219e4f6ce813596a352300ed47692c630db6482a97cfc41d37d5",
+          "lineage": {
+            "material_id": "3f9dacfb-2e48-4796-a477-98c60b506831",
+            "document_id": "3f9dacfb-2e48-4796-a477-98c60b506831",
+            "chunk_id": "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0",
+            "source_span_resolution": "OFFLINE_FROZEN_CAPTURE"
+          },
+          "material": {
+            "material_id": "3f9dacfb-2e48-4796-a477-98c60b506831",
+            "document_id": "3f9dacfb-2e48-4796-a477-98c60b506831",
+            "source_eligibility": "ELIGIBLE"
+          }
+        },
+        "semantic_relevance": "relevant",
+        "evidence_capability": "capable",
+        "support_level": "full_support",
+        "semantic_relationship": "direct",
+        "review_dimensions": {
+          "subject_match": "match",
+          "scope_match": "match",
+          "status_match": "match",
+          "quantitative_match": "unknown",
+          "entity_match": "match",
+          "validity_match": "unknown",
+          "source_authority": "match",
+          "support_sufficiency": "match"
+        },
+        "reason_codes": [],
+        "support_observations": [
+          {
+            "source_id": "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0",
+            "source_span_id": "OFFLINE-SPAN-MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0",
+            "support_excerpt": "x86_64 + Ubuntu 22.04 + PostgreSQL 14：tested",
+            "support_excerpt_hash": "fb69ced1a0d476fb84cfc8ec4afbc090ac31d42d64ddc8af7837da4908b84828",
+            "observation_type": "direct_support",
+            "reason_codes": []
+          }
+        ],
+        "conflict_observations": []
+      },
+      "runtime_aggregate": {
+        "status": "EVIDENCE_REVIEW_READY",
+        "assessment_count": 1,
+        "blocking_conflicts": [],
+        "reason_codes": []
+      },
+      "expected": {
+        "status": "EVIDENCE_REVIEW_READY",
+        "reason_codes": [],
+        "assessment_rationale": "direct source-bound support",
+        "required_dimensions": {
+          "subject_match": {
+            "classification": "REQUIRED_DIMENSION",
+            "expected": "match"
+          },
+          "entity_match": {
+            "classification": "REQUIRED_DIMENSION",
+            "expected": "match"
+          },
+          "scope_match": {
+            "classification": "REQUIRED_DIMENSION",
+            "expected": "match"
+          },
+          "status_match": {
+            "classification": "REQUIRED_DIMENSION",
+            "expected": "match"
+          },
+          "quantitative_match": {
+            "classification": "NOT_APPLICABLE",
+            "expected": "unknown"
+          },
+          "validity_match": {
+            "classification": "SUPPORTING_DIMENSION",
+            "expected": "unknown"
+          }
+        },
+        "unresolved_required_dimensions": [],
+        "adverse_evidence": false,
+        "conflict_observations": [],
+        "technical_status": "NOT_APPLICABLE"
+      },
+      "technical_status": "SUCCESS",
+      "side_effects": {
+        "evidence_support_assessment_persisted": false,
+        "evidence_review_created": false,
+        "evidence_created": false,
+        "evidence_fact_created": false,
+        "mapping_created": false,
+        "approval_changed": false,
+        "readiness_changed": false,
+        "claim_gate_triggered": false,
+        "writer_triggered": false
+      }
+    },
+    {
+      "case_id": "V2R-004-COMP-PARTIAL",
+      "requirement": {
+        "requirement_id": "V2R-004-COMP-PARTIAL",
+        "text": "企业应证明所有国产数据库组合均已完成压力测试。",
+        "exact": true
+      },
+      "oracle_provenance": {
+        "runtime_assessment": "AUTO_DRAFT",
+        "expected_assessment": "GPT_REVIEWED",
+        "human_gold": "NONE",
+        "promotion": "NOT_PERMITTED"
+      },
+      "frozen_evidence_inputs": [
+        {
+          "candidate_id": "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0",
+          "chunk_id": "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0",
+          "raw_rank": 1,
+          "raw_similarity": 0.7040744600251652,
+          "source_text": "x86_64 + Ubuntu 22.04 + PostgreSQL 14：tested\n鲲鹏 920 + 麒麟 V10 + 达梦 8：partially_tested（完成安装和基础交换用例，未完成压力测试）\n海光 + 统信 UOS + 人大金仓：not_verified\n国产数据库组合：unknown",
+          "source_text_hash": "623f699df461219e4f6ce813596a352300ed47692c630db6482a97cfc41d37d5",
+          "chunk_role": "BUSINESS_CONTENT",
+          "source_eligibility": "ELIGIBLE",
+          "substantive_class": "SUBSTANTIVE_CANDIDATE",
+          "requirement_relative_classification": "EVIDENCE_BEARING",
+          "lineage": {
+            "material_id": "3f9dacfb-2e48-4796-a477-98c60b506831",
+            "document_id": "3f9dacfb-2e48-4796-a477-98c60b506831",
+            "chunk_id": "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0"
+          }
+        },
+        {
+          "candidate_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
+          "chunk_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
+          "raw_rank": 5,
+          "raw_similarity": 0.4748999789416811,
+          "source_text": "产品：澄明数据交换平台 V3.2\n环境：8 vCPU、32 GB 内存、PostgreSQL 14、千兆局域网\n条件：50 并发、100 万条基准数据、缓存预热后执行 30 分钟\n指标：数据目录查询平均响应时间\n结果：平均 1.4 秒，P95 1.9 秒。\n日期：2025-05-16。",
+          "source_text_hash": "5a54f61d10c64f26414f8dcfb93f3c1eb25076f1063d97f8200f42cad981843c",
+          "chunk_role": "BUSINESS_CONTENT",
+          "source_eligibility": "ELIGIBLE",
+          "substantive_class": "SUBSTANTIVE_CANDIDATE",
+          "requirement_relative_classification": "TOPIC_RELEVANT_ONLY",
+          "lineage": {
+            "material_id": "3c81671f-376e-401b-8525-be26929d5b92",
+            "document_id": "3c81671f-376e-401b-8525-be26929d5b92",
+            "chunk_id": "MCH-0FBD3599DAF932016F62EB9634B997AF"
+          }
+        },
+        {
+          "candidate_id": "MCH-268A148B9BD7EA6BF0B470DDE0EA8425",
+          "chunk_id": "MCH-268A148B9BD7EA6BF0B470DDE0EA8425",
+          "raw_rank": 11,
+          "raw_similarity": 0.44927087728554826,
+          "source_text": "项目：北川新区数据协同平台项目（虚构）\n客户：北川新区数字服务中心（虚构）\n验收日期：2024-09-20\n结论：虚构项目约定范围通过验收；不外推至其他环境。",
+          "source_text_hash": "71ae1d9a780c6a56708acb2d8a90692bf6f7ba873464ab78b4a5b41d8506ac78",
+          "chunk_role": "BUSINESS_CONTENT",
+          "source_eligibility": "ELIGIBLE",
+          "substantive_class": "SUBSTANTIVE_CANDIDATE",
+          "requirement_relative_classification": "TOPIC_RELEVANT_ONLY",
+          "lineage": {
+            "material_id": "b472e07b-3065-4645-9b0b-a6abadaa70b7",
+            "document_id": "b472e07b-3065-4645-9b0b-a6abadaa70b7",
+            "chunk_id": "MCH-268A148B9BD7EA6BF0B470DDE0EA8425"
+          }
+        },
+        {
+          "candidate_id": "MCH-70376020855F97D43106A81E5F040C7F",
+          "chunk_id": "MCH-70376020855F97D43106A81E5F040C7F",
+          "raw_rank": 12,
+          "raw_similarity": 0.43510189265620147,
+          "source_text": "企业持有在有效期内的 ISO/IEC 27001 受控记录。该事实不证明任一产品已实现特定安全等级、等保级别或具体安全功能。",
+          "source_text_hash": "c5ea4f48363c4c562e78cfe9c0197562cf18a98f645cac95e50475fa29bf0d7d",
+          "chunk_role": "BUSINESS_CONTENT",
+          "source_eligibility": "ELIGIBLE",
+          "substantive_class": "SUBSTANTIVE_CANDIDATE",
+          "requirement_relative_classification": "TOPIC_RELEVANT_ONLY",
+          "lineage": {
+            "material_id": "74ed566b-18c0-41a1-ba55-59cbe182251c",
+            "document_id": "74ed566b-18c0-41a1-ba55-59cbe182251c",
+            "chunk_id": "MCH-70376020855F97D43106A81E5F040C7F"
+          }
+        }
+      ],
+      "frozen_raw_candidate_pool": [
+        {
+          "candidate_id": "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0",
+          "raw_rank": 1,
+          "raw_similarity": 0.7040744600251652,
+          "source_text": "x86_64 + Ubuntu 22.04 + PostgreSQL 14：tested\n鲲鹏 920 + 麒麟 V10 + 达梦 8：partially_tested（完成安装和基础交换用例，未完成压力测试）\n海光 + 统信 UOS + 人大金仓：not_verified\n国产数据库组合：unknown",
+          "source_text_hash": "623f699df461219e4f6ce813596a352300ed47692c630db6482a97cfc41d37d5",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "EVIDENCE_ELIGIBLE",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "EVIDENCE_BEARING",
+          "final_phase_rank": 1,
+          "final_eligible": true,
+          "lineage": {
+            "material_id": "3f9dacfb-2e48-4796-a477-98c60b506831",
+            "document_id": "3f9dacfb-2e48-4796-a477-98c60b506831",
+            "chunk_id": "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0"
+          }
+        },
+        {
+          "candidate_id": "MCH-B4FF02295DBB6DCDF6E2763F057076F6",
+          "raw_rank": 2,
+          "raw_similarity": 0.5661619047023011,
+          "source_text": "# 数据交换平台性能测试记录",
+          "source_text_hash": "b39d0175f9ba8fd41b225f5b6d7b28dc51d850f4b5e80fe6159ae1af3e4ea189",
+          "chunk_role": "HEADING",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "METADATA_OR_HEADER",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "3c81671f-376e-401b-8525-be26929d5b92",
+            "document_id": "3c81671f-376e-401b-8525-be26929d5b92",
+            "chunk_id": "MCH-B4FF02295DBB6DCDF6E2763F057076F6"
+          }
+        },
+        {
+          "candidate_id": "MCH-6BA94F47BCD831E596F751A2BEA49AB8",
+          "raw_rank": 3,
+          "raw_similarity": 0.49553072452545166,
+          "source_text": "commit 前：\n相关 tests PASS。",
+          "source_text_hash": "c2ee2141540acc1f83f48c4c89eef0a5ce4f5ff6c8784936cfbbc2fc373969b1",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-6BA94F47BCD831E596F751A2BEA49AB8"
+          }
+        },
+        {
+          "candidate_id": "MCH-57FE3B83C106C09B70C731182F48FFA4",
+          "raw_rank": 4,
+          "raw_similarity": 0.49169252738588,
+          "source_text": "# 产品兼容性矩阵",
+          "source_text_hash": "1c32ff7e9aa4f1d01011898c0c195da9bd25953712aa1fdae988dfaed0d4ffea",
+          "chunk_role": "HEADING",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "METADATA_OR_HEADER",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "3f9dacfb-2e48-4796-a477-98c60b506831",
+            "document_id": "3f9dacfb-2e48-4796-a477-98c60b506831",
+            "chunk_id": "MCH-57FE3B83C106C09B70C731182F48FFA4"
+          }
+        },
+        {
+          "candidate_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
+          "raw_rank": 5,
+          "raw_similarity": 0.4748999789416811,
+          "source_text": "产品：澄明数据交换平台 V3.2\n环境：8 vCPU、32 GB 内存、PostgreSQL 14、千兆局域网\n条件：50 并发、100 万条基准数据、缓存预热后执行 30 分钟\n指标：数据目录查询平均响应时间\n结果：平均 1.4 秒，P95 1.9 秒。\n日期：2025-05-16。",
+          "source_text_hash": "5a54f61d10c64f26414f8dcfb93f3c1eb25076f1063d97f8200f42cad981843c",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "EVIDENCE_ELIGIBLE",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "TOPIC_RELEVANT_ONLY",
+          "final_phase_rank": 2,
+          "final_eligible": true,
+          "lineage": {
+            "material_id": "3c81671f-376e-401b-8525-be26929d5b92",
+            "document_id": "3c81671f-376e-401b-8525-be26929d5b92",
+            "chunk_id": "MCH-0FBD3599DAF932016F62EB9634B997AF"
+          }
+        },
+        {
+          "candidate_id": "MCH-650DE173A9B8AA958EEB850251D70FE2",
+          "raw_rank": 6,
+          "raw_similarity": 0.4634121700033972,
+          "source_text": "Ensure:",
+          "source_text_hash": "ce4f9b0c3247f5ed5100b4f861269ead8df993f0065fcc71788d114aecbd5cd3",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-650DE173A9B8AA958EEB850251D70FE2"
+          }
+        },
+        {
+          "candidate_id": "MCH-2684A33DDF84C68B4CA59C348136BB30",
+          "raw_rank": 7,
+          "raw_similarity": 0.4578753113746643,
+          "source_text": "当前直接相关代码和测试。",
+          "source_text_hash": "832b742e2c3b41906a78107e464bdf8547938628b655f95f0383e5ad3e9d30e2",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "TOPIC_RELEVANT_ONLY",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-2684A33DDF84C68B4CA59C348136BB30"
+          }
+        },
+        {
+          "candidate_id": "MCH-0820CC5A439CB986C62E46213029CC71",
+          "raw_rank": 8,
+          "raw_similarity": 0.456261545419693,
+          "source_text": "# ISO 27001 受控记录",
+          "source_text_hash": "e4bbd720010befabbdd08b947acc803b7f0c52b5ccdbf8da7f5b169e76f19215",
+          "chunk_role": "HEADING",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "METADATA_OR_HEADER",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+            "document_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+            "chunk_id": "MCH-0820CC5A439CB986C62E46213029CC71"
+          }
+        },
+        {
+          "candidate_id": "MCH-7251629B4230317EE57F8F2659926A1F",
+          "raw_rank": 9,
+          "raw_similarity": 0.45404401695466023,
+          "source_text": "企业软件基础能力，\n安全、够用。",
+          "source_text_hash": "b179ac612aa11feab83c269ca5569cec1c26807c9aa8469881e5ba11bd4943a0",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "TOPIC_RELEVANT_ONLY",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-7251629B4230317EE57F8F2659926A1F"
+          }
+        },
+        {
+          "candidate_id": "MCH-889DDF9919EF0E6485406DAB6A159A11",
+          "raw_rank": 10,
+          "raw_similarity": 0.4523088335990906,
+          "source_text": "SUPPORTED\n→ 材料已满足",
+          "source_text_hash": "c0f667ac9cf6428b1e9f8a29f652bbff6e46d3a270bd83b1cd10f97dace2e091",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-889DDF9919EF0E6485406DAB6A159A11"
+          }
+        },
+        {
+          "candidate_id": "MCH-268A148B9BD7EA6BF0B470DDE0EA8425",
+          "raw_rank": 11,
+          "raw_similarity": 0.44927087728554826,
+          "source_text": "项目：北川新区数据协同平台项目（虚构）\n客户：北川新区数字服务中心（虚构）\n验收日期：2024-09-20\n结论：虚构项目约定范围通过验收；不外推至其他环境。",
+          "source_text_hash": "71ae1d9a780c6a56708acb2d8a90692bf6f7ba873464ab78b4a5b41d8506ac78",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "EVIDENCE_ELIGIBLE",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "TOPIC_RELEVANT_ONLY",
+          "final_phase_rank": 3,
+          "final_eligible": true,
+          "lineage": {
+            "material_id": "b472e07b-3065-4645-9b0b-a6abadaa70b7",
+            "document_id": "b472e07b-3065-4645-9b0b-a6abadaa70b7",
+            "chunk_id": "MCH-268A148B9BD7EA6BF0B470DDE0EA8425"
+          }
+        },
+        {
+          "candidate_id": "MCH-70376020855F97D43106A81E5F040C7F",
+          "raw_rank": 12,
+          "raw_similarity": 0.43510189265620147,
+          "source_text": "企业持有在有效期内的 ISO/IEC 27001 受控记录。该事实不证明任一产品已实现特定安全等级、等保级别或具体安全功能。",
+          "source_text_hash": "c5ea4f48363c4c562e78cfe9c0197562cf18a98f645cac95e50475fa29bf0d7d",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "EVIDENCE_ELIGIBLE",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "TOPIC_RELEVANT_ONLY",
+          "final_phase_rank": 4,
+          "final_eligible": true,
+          "lineage": {
+            "material_id": "74ed566b-18c0-41a1-ba55-59cbe182251c",
+            "document_id": "74ed566b-18c0-41a1-ba55-59cbe182251c",
+            "chunk_id": "MCH-70376020855F97D43106A81E5F040C7F"
+          }
+        },
+        {
+          "candidate_id": "MCH-10C2129A5D37AB29824CE98DF6E32F0D",
+          "raw_rank": 13,
+          "raw_similarity": 0.43485557256407725,
+          "source_text": "Primary\nSupporting\nAudit / Technical",
+          "source_text_hash": "4b9b069f5001870f9b26e307318706cab2dfbd29aaa8f8ac2f69bedf04248b41",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-10C2129A5D37AB29824CE98DF6E32F0D"
+          }
+        },
+        {
+          "candidate_id": "MCH-363BD137AFF31336472D4E7F4F537C8F",
+          "raw_rank": 14,
+          "raw_similarity": 0.4335419873272196,
+          "source_text": "NO_EVIDENCE\n→ 缺少证明材料",
+          "source_text_hash": "3075e666fe9ef193db819fc14731d7143ef2316b45419c3a298eab94d871fa55",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "TOPIC_RELEVANT_ONLY",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-363BD137AFF31336472D4E7F4F537C8F"
+          }
+        },
+        {
+          "candidate_id": "MCH-DDCF46F5C7751B5B84EA724E094CBCFB",
+          "raw_rank": 15,
+          "raw_similarity": 0.433229718611854,
+          "source_text": "Decision:\nEvidence / Fact / Mapping / Claim Permission\nare separate business layers.",
+          "source_text_hash": "6a52cc5e55a2edc8b9af0afe57cca9a7929c08fd6c508d1605acb16f4ad9a51f",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-DDCF46F5C7751B5B84EA724E094CBCFB"
+          }
+        },
+        {
+          "candidate_id": "MCH-107E91200B42880F817E8A10EAAC2CE5",
+          "raw_rank": 16,
+          "raw_similarity": 0.4317475042644169,
+          "source_text": "不要自研：",
+          "source_text_hash": "7ea4460c85eb3f6482e4ca6707987629eba975a33ebd86764a7e2f171f1f8029",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-107E91200B42880F817E8A10EAAC2CE5"
+          }
+        },
+        {
+          "candidate_id": "MCH-9B3CAB55A63FBAA2806BD5521C1FF6BF",
+          "raw_rank": 17,
+          "raw_similarity": 0.4316388111329794,
+          "source_text": "系统负责确定性传播",
+          "source_text_hash": "7d2efbd1fe1845e9593aed6ac6f3f1a7a9f37dfb61f112d2f240bd13588d93bc",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-9B3CAB55A63FBAA2806BD5521C1FF6BF"
+          }
+        },
+        {
+          "candidate_id": "MCH-6C5184095004206B21BD148F5A31242B",
+          "raw_rank": 18,
+          "raw_similarity": 0.43059787154197693,
+          "source_text": "检查仓库是否已经存在：",
+          "source_text_hash": "f37702e553f579214b8944d878026196ee6b1b9bb902f3d288d9abee96a02a0f",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-6C5184095004206B21BD148F5A31242B"
+          }
+        },
+        {
+          "candidate_id": "MCH-5B3A5D4F1299B7E362FE0D195F33C161",
+          "raw_rank": 19,
+          "raw_similarity": 0.42875236697480945,
+          "source_text": "记录已经验证的核心原则：",
+          "source_text_hash": "127e8943c87423c2cc0c7240f255a9b39982bc1dfacaf3464caef7b0d73b1857",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-5B3A5D4F1299B7E362FE0D195F33C161"
+          }
+        },
+        {
+          "candidate_id": "MCH-DEA320F82E7EEC727D332134D9C2E87A",
+          "raw_rank": 20,
+          "raw_similarity": 0.4273471236228943,
+          "source_text": "# 项目A验收记录",
+          "source_text_hash": "ad9de59b748780e49abca2cb04e4c7a9ce9ed7d305206925463942c9bd3cc070",
+          "chunk_role": "HEADING",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "METADATA_OR_HEADER",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "b472e07b-3065-4645-9b0b-a6abadaa70b7",
+            "document_id": "b472e07b-3065-4645-9b0b-a6abadaa70b7",
+            "chunk_id": "MCH-DEA320F82E7EEC727D332134D9C2E87A"
+          }
+        }
+      ],
+      "selected_evidence_ids": [
+        "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0"
+      ],
+      "evidence_detail": [
+        {
+          "source_id": "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0",
+          "source_text": "x86_64 + Ubuntu 22.04 + PostgreSQL 14：tested\n鲲鹏 920 + 麒麟 V10 + 达梦 8：partially_tested（完成安装和基础交换用例，未完成压力测试）\n海光 + 统信 UOS + 人大金仓：not_verified\n国产数据库组合：unknown",
+          "source_text_hash": "623f699df461219e4f6ce813596a352300ed47692c630db6482a97cfc41d37d5",
+          "exact_span": {
+            "span_id": "OFFLINE-SPAN-MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0",
+            "start_offset": 138,
+            "end_offset": 153,
+            "support_excerpt": "国产数据库组合：unknown",
+            "support_excerpt_hash": "b41c391e87dc630652372b2bcbecf3e95ba43fafbace39abda569b7cebec1185"
+          },
+          "context_window": [
+            {
+              "chunk_id": "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0",
+              "raw_rank": 1,
+              "source_text": "x86_64 + Ubuntu 22.04 + PostgreSQL 14：tested\n鲲鹏 920 + 麒麟 V10 + 达梦 8：partially_tested（完成安装和基础交换用例，未完成压力测试）\n海光 + 统信 UOS + 人大金仓：not_verified\n国产数据库组合：unknown",
+              "role": "selected_source"
+            },
+            {
+              "chunk_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
+              "raw_rank": 5,
+              "source_text": "产品：澄明数据交换平台 V3.2\n环境：8 vCPU、32 GB 内存、PostgreSQL 14、千兆局域网\n条件：50 并发、100 万条基准数据、缓存预热后执行 30 分钟\n指标：数据目录查询平均响应时间\n结果：平均 1.4 秒，P95 1.9 秒。\n日期：2025-05-16。",
+              "role": "context_only"
+            }
+          ],
+          "lineage": {
+            "material_id": "3f9dacfb-2e48-4796-a477-98c60b506831",
+            "document_id": "3f9dacfb-2e48-4796-a477-98c60b506831",
+            "chunk_id": "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0"
+          }
+        }
+      ],
+      "runtime_assessment": {
+        "assessment_id": "ESA-26A668B6CAB6FAE3E46A87A6FD26E4ED",
+        "assessment_version": "evidence-support-assessment-v1",
+        "evaluator_version": "offline-fixture-evaluator-v1",
+        "assessment_status": "available",
+        "input_kind": "retrieval_candidate",
+        "requirement": {
+          "requirement_id": "V2R-004-COMP-PARTIAL",
+          "text": "企业应证明所有国产数据库组合均已完成压力测试。",
+          "text_hash": "3334fd3b1de5d13a227fd5efdca5a390e6a0c9ee526945d3dc42b1236089e96b"
+        },
+        "source": {
+          "source_id": "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0",
+          "source_kind": "retrieval_candidate",
+          "source_span_id": "OFFLINE-SPAN-MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0",
+          "source_text_hash": "623f699df461219e4f6ce813596a352300ed47692c630db6482a97cfc41d37d5",
+          "lineage": {
+            "material_id": "3f9dacfb-2e48-4796-a477-98c60b506831",
+            "document_id": "3f9dacfb-2e48-4796-a477-98c60b506831",
+            "chunk_id": "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0",
+            "source_span_resolution": "OFFLINE_FROZEN_CAPTURE"
+          },
+          "material": {
+            "material_id": "3f9dacfb-2e48-4796-a477-98c60b506831",
+            "document_id": "3f9dacfb-2e48-4796-a477-98c60b506831",
+            "source_eligibility": "ELIGIBLE"
+          }
+        },
+        "semantic_relevance": "relevant",
+        "evidence_capability": "capable",
+        "support_level": "partial_support",
+        "semantic_relationship": "partial",
+        "review_dimensions": {
+          "subject_match": "match",
+          "scope_match": "unknown",
+          "status_match": "unknown",
+          "quantitative_match": "unknown",
+          "entity_match": "unknown",
+          "validity_match": "unknown",
+          "source_authority": "match",
+          "support_sufficiency": "mismatch"
+        },
+        "reason_codes": [
+          "SUPPORT_INSUFFICIENT",
+          "STATUS_UNKNOWN"
+        ],
+        "support_observations": [
+          {
+            "source_id": "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0",
+            "source_span_id": "OFFLINE-SPAN-MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0",
+            "support_excerpt": "国产数据库组合：unknown",
+            "support_excerpt_hash": "b41c391e87dc630652372b2bcbecf3e95ba43fafbace39abda569b7cebec1185",
+            "observation_type": "partial_support",
+            "reason_codes": [
+              "SUPPORT_INSUFFICIENT",
+              "STATUS_UNKNOWN"
+            ]
+          }
+        ],
+        "conflict_observations": []
+      },
+      "runtime_aggregate": {
+        "status": "INSUFFICIENT_EVIDENCE",
+        "assessment_count": 1,
+        "blocking_conflicts": [],
+        "reason_codes": [
+          "SUPPORT_INSUFFICIENT"
+        ]
+      },
+      "expected": {
+        "status": "INSUFFICIENT_EVIDENCE",
+        "reason_codes": [
+          "SUPPORT_INSUFFICIENT",
+          "STATUS_UNKNOWN"
+        ],
+        "assessment_rationale": null,
+        "required_dimensions": {
+          "subject_match": {
+            "classification": "REQUIRED_DIMENSION",
+            "expected": "match"
+          },
+          "entity_match": {
+            "classification": "REQUIRED_DIMENSION",
+            "expected": "unknown"
+          },
+          "scope_match": {
+            "classification": "UNRESOLVED_REQUIRED_DIMENSION",
+            "expected": "unknown"
+          },
+          "status_match": {
+            "classification": "UNRESOLVED_REQUIRED_DIMENSION",
+            "expected": "unknown"
+          },
+          "quantitative_match": {
+            "classification": "UNRESOLVED_REQUIRED_DIMENSION",
+            "expected": "unknown"
+          },
+          "validity_match": {
+            "classification": "SUPPORTING_DIMENSION",
+            "expected": "unknown"
+          }
+        },
+        "unresolved_required_dimensions": [
+          "scope_match",
+          "status_match",
+          "quantitative_match"
+        ],
+        "adverse_evidence": false,
+        "conflict_observations": [],
+        "technical_status": "NOT_APPLICABLE"
+      },
+      "technical_status": "SUCCESS",
+      "side_effects": {
+        "evidence_support_assessment_persisted": false,
+        "evidence_review_created": false,
+        "evidence_created": false,
+        "evidence_fact_created": false,
+        "mapping_created": false,
+        "approval_changed": false,
+        "readiness_changed": false,
+        "claim_gate_triggered": false,
+        "writer_triggered": false
+      }
+    },
+    {
+      "case_id": "V2R-005-ISO-DIRECT",
+      "requirement": {
+        "requirement_id": "V2R-005-ISO-DIRECT",
+        "text": "企业应提供当前有效的 ISO/IEC 27001 认证信息。",
+        "exact": true
+      },
+      "oracle_provenance": {
+        "runtime_assessment": "AUTO_DRAFT",
+        "expected_assessment": "GPT_REVIEWED",
+        "human_gold": "NONE",
+        "promotion": "NOT_PERMITTED"
+      },
+      "frozen_evidence_inputs": [
+        {
+          "candidate_id": "MCH-70376020855F97D43106A81E5F040C7F",
+          "chunk_id": "MCH-70376020855F97D43106A81E5F040C7F",
+          "raw_rank": 1,
+          "raw_similarity": 0.7175531387329153,
+          "source_text": "企业持有在有效期内的 ISO/IEC 27001 受控记录。该事实不证明任一产品已实现特定安全等级、等保级别或具体安全功能。",
+          "source_text_hash": "c5ea4f48363c4c562e78cfe9c0197562cf18a98f645cac95e50475fa29bf0d7d",
+          "chunk_role": "BUSINESS_CONTENT",
+          "source_eligibility": "ELIGIBLE",
+          "substantive_class": "SUBSTANTIVE_CANDIDATE",
+          "requirement_relative_classification": "EVIDENCE_BEARING",
+          "lineage": {
+            "material_id": "74ed566b-18c0-41a1-ba55-59cbe182251c",
+            "document_id": "74ed566b-18c0-41a1-ba55-59cbe182251c",
+            "chunk_id": "MCH-70376020855F97D43106A81E5F040C7F"
+          }
+        },
+        {
+          "candidate_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
+          "chunk_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
+          "raw_rank": 2,
+          "raw_similarity": 0.6661979755045202,
+          "source_text": "名称：ISO/IEC 27001\n编号：CM-Q-27001-2024\n状态：active\n有效至：2027-11-30",
+          "source_text_hash": "4aad371afadcb5d360f7461d405d06e706132aa072271064a297010ab458572f",
+          "chunk_role": "BUSINESS_CONTENT",
+          "source_eligibility": "ELIGIBLE",
+          "substantive_class": "SUBSTANTIVE_CANDIDATE",
+          "requirement_relative_classification": "EVIDENCE_BEARING",
+          "lineage": {
+            "material_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+            "document_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+            "chunk_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84"
+          }
+        },
+        {
+          "candidate_id": "MCH-A160D3E488BD50C27E5F6267363E57B1",
+          "chunk_id": "MCH-A160D3E488BD50C27E5F6267363E57B1",
+          "raw_rank": 5,
+          "raw_similarity": 0.5497893363362956,
+          "source_text": "名称：ISO 9001\n编号：CM-Q-9001-2025\n状态：active\n有效至：2028-03-31",
+          "source_text_hash": "b1c3295063f75def254033770e23992804cba4b5c7d1a139b94705fb69135d68",
+          "chunk_role": "BUSINESS_CONTENT",
+          "source_eligibility": "ELIGIBLE",
+          "substantive_class": "SUBSTANTIVE_CANDIDATE",
+          "requirement_relative_classification": "TOPIC_RELEVANT_ONLY",
+          "lineage": {
+            "material_id": "c5395bc4-0531-4e6f-9f0c-3562cee0a2f1",
+            "document_id": "c5395bc4-0531-4e6f-9f0c-3562cee0a2f1",
+            "chunk_id": "MCH-A160D3E488BD50C27E5F6267363E57B1"
+          }
+        }
+      ],
+      "frozen_raw_candidate_pool": [
+        {
+          "candidate_id": "MCH-70376020855F97D43106A81E5F040C7F",
+          "raw_rank": 1,
+          "raw_similarity": 0.7175531387329153,
+          "source_text": "企业持有在有效期内的 ISO/IEC 27001 受控记录。该事实不证明任一产品已实现特定安全等级、等保级别或具体安全功能。",
+          "source_text_hash": "c5ea4f48363c4c562e78cfe9c0197562cf18a98f645cac95e50475fa29bf0d7d",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "EVIDENCE_ELIGIBLE",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "EVIDENCE_BEARING",
+          "final_phase_rank": 1,
+          "final_eligible": true,
+          "lineage": {
+            "material_id": "74ed566b-18c0-41a1-ba55-59cbe182251c",
+            "document_id": "74ed566b-18c0-41a1-ba55-59cbe182251c",
+            "chunk_id": "MCH-70376020855F97D43106A81E5F040C7F"
+          }
+        },
+        {
+          "candidate_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
+          "raw_rank": 2,
+          "raw_similarity": 0.6661979755045202,
+          "source_text": "名称：ISO/IEC 27001\n编号：CM-Q-27001-2024\n状态：active\n有效至：2027-11-30",
+          "source_text_hash": "4aad371afadcb5d360f7461d405d06e706132aa072271064a297010ab458572f",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "EVIDENCE_ELIGIBLE",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "EVIDENCE_BEARING",
+          "final_phase_rank": 2,
+          "final_eligible": true,
+          "lineage": {
+            "material_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+            "document_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+            "chunk_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84"
+          }
+        },
+        {
+          "candidate_id": "MCH-0820CC5A439CB986C62E46213029CC71",
+          "raw_rank": 3,
+          "raw_similarity": 0.6532460061761148,
+          "source_text": "# ISO 27001 受控记录",
+          "source_text_hash": "e4bbd720010befabbdd08b947acc803b7f0c52b5ccdbf8da7f5b169e76f19215",
+          "chunk_role": "HEADING",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "METADATA_OR_HEADER",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+            "document_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+            "chunk_id": "MCH-0820CC5A439CB986C62E46213029CC71"
+          }
+        },
+        {
+          "candidate_id": "MCH-D37B061257382C31A3C757430BDD2CA6",
+          "raw_rank": 4,
+          "raw_similarity": 0.6045245763942863,
+          "source_text": "# ISO 9001 受控记录",
+          "source_text_hash": "5ce2c17155abf56dc3ae9930236f4cab65e0f0263aa88c8547a7034433e0b2ea",
+          "chunk_role": "HEADING",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "METADATA_OR_HEADER",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "c5395bc4-0531-4e6f-9f0c-3562cee0a2f1",
+            "document_id": "c5395bc4-0531-4e6f-9f0c-3562cee0a2f1",
+            "chunk_id": "MCH-D37B061257382C31A3C757430BDD2CA6"
+          }
+        },
+        {
+          "candidate_id": "MCH-A160D3E488BD50C27E5F6267363E57B1",
+          "raw_rank": 5,
+          "raw_similarity": 0.5497893363362956,
+          "source_text": "名称：ISO 9001\n编号：CM-Q-9001-2025\n状态：active\n有效至：2028-03-31",
+          "source_text_hash": "b1c3295063f75def254033770e23992804cba4b5c7d1a139b94705fb69135d68",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "EVIDENCE_ELIGIBLE",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "TOPIC_RELEVANT_ONLY",
+          "final_phase_rank": 3,
+          "final_eligible": true,
+          "lineage": {
+            "material_id": "c5395bc4-0531-4e6f-9f0c-3562cee0a2f1",
+            "document_id": "c5395bc4-0531-4e6f-9f0c-3562cee0a2f1",
+            "chunk_id": "MCH-A160D3E488BD50C27E5F6267363E57B1"
+          }
+        },
+        {
+          "candidate_id": "MCH-F8EB706177885912067E9E74510E09D1",
+          "raw_rank": 6,
+          "raw_similarity": 0.4659926654113542,
+          "source_text": "信息分：",
+          "source_text_hash": "293e71e220827b2142f35519c1534698495dfd0d9e4576ede57fd827e310662d",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "TOPIC_RELEVANT_ONLY",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-F8EB706177885912067E9E74510E09D1"
+          }
+        },
+        {
+          "candidate_id": "MCH-DD698C97CF11CC2C5A98532E65244E29",
+          "raw_rank": 7,
+          "raw_similarity": 0.463654490491481,
+          "source_text": "I. Required Documents",
+          "source_text_hash": "5517e549b642331b75619ad725c0b5cd5699e957b98c0e5c830f9900b2c31bbf",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-DD698C97CF11CC2C5A98532E65244E29"
+          }
+        },
+        {
+          "candidate_id": "MCH-61777E281A96F7E35D2F6849CF915DE0",
+          "raw_rank": 8,
+          "raw_similarity": 0.4526071576710258,
+          "source_text": "关键信息基础设施安全保护条例用于规范关键信息基础设施安全保护工作，建立和完善保护制度，保障关键信息基础设施安全稳定运行。",
+          "source_text_hash": "7bb9d055e9991e46c1e193a37435c6e222b34946b03daa2e68d8d5f8d43c993e",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "EVIDENCE_ELIGIBLE",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "TOPIC_RELEVANT_ONLY",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "ffa84366-9aae-42e1-86bb-ab4fc47428e0",
+            "document_id": "ffa84366-9aae-42e1-86bb-ab4fc47428e0",
+            "chunk_id": "MCH-61777E281A96F7E35D2F6849CF915DE0"
+          }
+        },
+        {
+          "candidate_id": "MCH-10C2129A5D37AB29824CE98DF6E32F0D",
+          "raw_rank": 9,
+          "raw_similarity": 0.43651029089155247,
+          "source_text": "Primary\nSupporting\nAudit / Technical",
+          "source_text_hash": "4b9b069f5001870f9b26e307318706cab2dfbd29aaa8f8ac2f69bedf04248b41",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-10C2129A5D37AB29824CE98DF6E32F0D"
+          }
+        },
+        {
+          "candidate_id": "MCH-C8CADCA6BBE3DD2675BECD37620FD998",
+          "raw_rank": 10,
+          "raw_similarity": 0.43640130758285833,
+          "source_text": "# 关键信息基础设施安全保护条例",
+          "source_text_hash": "d0e36ce25c9c0cb0d0ef56853b059fb7836fc0d8e0809668df6803650e516fa2",
+          "chunk_role": "HEADING",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "METADATA_OR_HEADER",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "ffa84366-9aae-42e1-86bb-ab4fc47428e0",
+            "document_id": "ffa84366-9aae-42e1-86bb-ab4fc47428e0",
+            "chunk_id": "MCH-C8CADCA6BBE3DD2675BECD37620FD998"
+          }
+        },
+        {
+          "candidate_id": "MCH-264B4BD4C24A8706D129F3A80046CC94",
+          "raw_rank": 11,
+          "raw_similarity": 0.43622073911304915,
+          "source_text": "来源机构：工业和信息化部\n文号：国务院令第613号",
+          "source_text_hash": "12adf357786a8f5caadead88a41b65ce44867128e186c3c11ce67df50ea6934d",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "EVIDENCE_ELIGIBLE",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "TOPIC_RELEVANT_ONLY",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "2f14965f-d44f-4fd0-9bb4-f88b9af5da28",
+            "document_id": "2f14965f-d44f-4fd0-9bb4-f88b9af5da28",
+            "chunk_id": "MCH-264B4BD4C24A8706D129F3A80046CC94"
+          }
+        },
+        {
+          "candidate_id": "MCH-CFFC5F79FB5E48DAEB1A7F4CC503E88A",
+          "raw_rank": 12,
+          "raw_similarity": 0.43590033818479323,
+          "source_text": "必须明确：",
+          "source_text_hash": "9eb7eac0482838aa34bfe12dfc911d534812a8166fc97ae9a558a458badbf2ac",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-CFFC5F79FB5E48DAEB1A7F4CC503E88A"
+          }
+        },
+        {
+          "candidate_id": "MCH-B73C33CB10B6F50BB313418C65735B71",
+          "raw_rank": 13,
+          "raw_similarity": 0.43159157445481044,
+          "source_text": "Keycloak / compatible IdP。",
+          "source_text_hash": "99010f03b9877a98ab120a2f0491a15a60137728a1ed255cc6763ed62af0f454",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-B73C33CB10B6F50BB313418C65735B71"
+          }
+        },
+        {
+          "candidate_id": "MCH-017601318242AF5A8A8DF378FF69EEDF",
+          "raw_rank": 14,
+          "raw_similarity": 0.43121254444122625,
+          "source_text": "# 信息安全管理边界",
+          "source_text_hash": "b92144fe09597cb5cad440063dd2e2446822824916d1051bbff2404d778c8036",
+          "chunk_role": "HEADING",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "METADATA_OR_HEADER",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "74ed566b-18c0-41a1-ba55-59cbe182251c",
+            "document_id": "74ed566b-18c0-41a1-ba55-59cbe182251c",
+            "chunk_id": "MCH-017601318242AF5A8A8DF378FF69EEDF"
+          }
+        },
+        {
+          "candidate_id": "MCH-F6FE125F46AD101C81DA541D50D7AE47",
+          "raw_rank": 15,
+          "raw_similarity": 0.42910382574177897,
+          "source_text": "可控\n可追溯\n可审核\n可修改\n可交付",
+          "source_text_hash": "d3170af4ab5e1b36935a5aad51b577567f93b158d140dd4e4c331296af5a3128",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-F6FE125F46AD101C81DA541D50D7AE47"
+          }
+        },
+        {
+          "candidate_id": "MCH-61991967853A9EEF1CC482FB71FA352A",
+          "raw_rank": 16,
+          "raw_similarity": 0.4273946626547187,
+          "source_text": "REPRESENTATIVE_SYNTHETIC\nNOT_REAL_CUSTOMER_DATA\nmaterial_id: SME-017\nsubject: 澄明数科（示范）有限公司",
+          "source_text_hash": "ea56ab31ac1358cf2665f4c67efdca5f703a20de9c6b7095b0588b34c94de009",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "METADATA_OR_HEADER",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "5d846692-9c13-4be6-b969-3c33f0579f5e",
+            "document_id": "5d846692-9c13-4be6-b969-3c33f0579f5e",
+            "chunk_id": "MCH-61991967853A9EEF1CC482FB71FA352A"
+          }
+        },
+        {
+          "candidate_id": "MCH-FD985F70FBE8CB464869FD32A02F08DD",
+          "raw_rank": 17,
+          "raw_similarity": 0.4270181230599265,
+          "source_text": "REPRESENTATIVE_SYNTHETIC\nNOT_REAL_CUSTOMER_DATA\nmaterial_id: SME-020\nsubject: 澄明数科（示范）有限公司",
+          "source_text_hash": "e67e122fca4194aff98da3b03af9b07199b6520fdbaa167edf6c00b6519676e8",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "METADATA_OR_HEADER",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "74ed566b-18c0-41a1-ba55-59cbe182251c",
+            "document_id": "74ed566b-18c0-41a1-ba55-59cbe182251c",
+            "chunk_id": "MCH-FD985F70FBE8CB464869FD32A02F08DD"
+          }
+        },
+        {
+          "candidate_id": "MCH-2D294EB24D5AADE6FD7D2E4A2F6A119A",
+          "raw_rank": 18,
+          "raw_similarity": 0.4257597669506219,
+          "source_text": "REPRESENTATIVE_SYNTHETIC\nNOT_REAL_CUSTOMER_DATA\nmaterial_id: SME-007\nsubject: 澄明数科（示范）有限公司",
+          "source_text_hash": "95e1fcefa49e0747f8be2ef1965a21793919d226bfe91a6cd9ace4b1635a89b5",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "METADATA_OR_HEADER",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+            "document_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+            "chunk_id": "MCH-2D294EB24D5AADE6FD7D2E4A2F6A119A"
+          }
+        },
+        {
+          "candidate_id": "MCH-447430F161ECB423FC46585DB4BED35B",
+          "raw_rank": 19,
+          "raw_similarity": 0.4254798083925475,
+          "source_text": "必须包含：",
+          "source_text_hash": "9b51cc5d3199e45ede4730094a8e9661db0b61a82c89ff5373a80ea9b7da1c25",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-447430F161ECB423FC46585DB4BED35B"
+          }
+        },
+        {
+          "candidate_id": "MCH-BC48FC5FB68490896E8081BC1078B8CA",
+          "raw_rank": 20,
+          "raw_similarity": 0.4252582833016949,
+          "source_text": "REPRESENTATIVE_SYNTHETIC\nNOT_REAL_CUSTOMER_DATA\nmaterial_id: SME-011\nsubject: 澄明数科（示范）有限公司",
+          "source_text_hash": "a87d4d6d764df545d00cb90ff7a7e063979f81975d6e6823929a5dd4b142901a",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "METADATA_OR_HEADER",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "6c7a4ff1-75b8-47ef-aa71-a44d8e0d075c",
+            "document_id": "6c7a4ff1-75b8-47ef-aa71-a44d8e0d075c",
+            "chunk_id": "MCH-BC48FC5FB68490896E8081BC1078B8CA"
+          }
+        }
+      ],
+      "selected_evidence_ids": [
+        "MCH-A4C2632EF9126FADD349C3004E1C2D84"
+      ],
+      "evidence_detail": [
+        {
+          "source_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
+          "source_text": "名称：ISO/IEC 27001\n编号：CM-Q-27001-2024\n状态：active\n有效至：2027-11-30",
+          "source_text_hash": "4aad371afadcb5d360f7461d405d06e706132aa072271064a297010ab458572f",
+          "exact_span": {
+            "span_id": "OFFLINE-SPAN-MCH-A4C2632EF9126FADD349C3004E1C2D84",
+            "start_offset": 0,
+            "end_offset": 60,
+            "support_excerpt": "名称：ISO/IEC 27001\n编号：CM-Q-27001-2024\n状态：active\n有效至：2027-11-30",
+            "support_excerpt_hash": "4aad371afadcb5d360f7461d405d06e706132aa072271064a297010ab458572f"
+          },
+          "context_window": [
+            {
+              "chunk_id": "MCH-70376020855F97D43106A81E5F040C7F",
+              "raw_rank": 1,
+              "source_text": "企业持有在有效期内的 ISO/IEC 27001 受控记录。该事实不证明任一产品已实现特定安全等级、等保级别或具体安全功能。",
+              "role": "context_only"
+            },
+            {
+              "chunk_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
+              "raw_rank": 2,
+              "source_text": "名称：ISO/IEC 27001\n编号：CM-Q-27001-2024\n状态：active\n有效至：2027-11-30",
+              "role": "selected_source"
+            },
+            {
+              "chunk_id": "MCH-A160D3E488BD50C27E5F6267363E57B1",
+              "raw_rank": 5,
+              "source_text": "名称：ISO 9001\n编号：CM-Q-9001-2025\n状态：active\n有效至：2028-03-31",
+              "role": "context_only"
+            }
+          ],
+          "lineage": {
+            "material_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+            "document_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+            "chunk_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84"
+          }
+        }
+      ],
+      "runtime_assessment": {
+        "assessment_id": "ESA-229C2B81D2FF35AF8DC0790122D079E0",
+        "assessment_version": "evidence-support-assessment-v1",
+        "evaluator_version": "offline-fixture-evaluator-v1",
+        "assessment_status": "available",
+        "input_kind": "retrieval_candidate",
+        "requirement": {
+          "requirement_id": "V2R-005-ISO-DIRECT",
+          "text": "企业应提供当前有效的 ISO/IEC 27001 认证信息。",
+          "text_hash": "15f7c01da8997b743f5face42bd21f2cefc4e27124790a72bd69804c367248d6"
+        },
+        "source": {
+          "source_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
+          "source_kind": "retrieval_candidate",
+          "source_span_id": "OFFLINE-SPAN-MCH-A4C2632EF9126FADD349C3004E1C2D84",
+          "source_text_hash": "4aad371afadcb5d360f7461d405d06e706132aa072271064a297010ab458572f",
+          "lineage": {
+            "material_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+            "document_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+            "chunk_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
+            "source_span_resolution": "OFFLINE_FROZEN_CAPTURE"
+          },
+          "material": {
+            "material_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+            "document_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+            "source_eligibility": "ELIGIBLE"
+          }
+        },
+        "semantic_relevance": "relevant",
+        "evidence_capability": "capable",
+        "support_level": "full_support",
+        "semantic_relationship": "direct",
+        "review_dimensions": {
+          "subject_match": "match",
+          "scope_match": "match",
+          "status_match": "match",
+          "quantitative_match": "unknown",
+          "entity_match": "match",
+          "validity_match": "match",
+          "source_authority": "match",
+          "support_sufficiency": "match"
+        },
+        "reason_codes": [],
+        "support_observations": [
+          {
+            "source_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
+            "source_span_id": "OFFLINE-SPAN-MCH-A4C2632EF9126FADD349C3004E1C2D84",
+            "support_excerpt": "名称：ISO/IEC 27001\n编号：CM-Q-27001-2024\n状态：active\n有效至：2027-11-30",
+            "support_excerpt_hash": "4aad371afadcb5d360f7461d405d06e706132aa072271064a297010ab458572f",
+            "observation_type": "direct_support",
+            "reason_codes": []
+          }
+        ],
+        "conflict_observations": []
+      },
+      "runtime_aggregate": {
+        "status": "EVIDENCE_REVIEW_READY",
+        "assessment_count": 1,
+        "blocking_conflicts": [],
+        "reason_codes": []
+      },
+      "expected": {
+        "status": "EVIDENCE_REVIEW_READY",
+        "reason_codes": [],
+        "assessment_rationale": "direct source-bound support",
+        "required_dimensions": {
+          "subject_match": {
+            "classification": "REQUIRED_DIMENSION",
+            "expected": "match"
+          },
+          "entity_match": {
+            "classification": "REQUIRED_DIMENSION",
+            "expected": "match"
+          },
+          "scope_match": {
+            "classification": "REQUIRED_DIMENSION",
+            "expected": "match"
+          },
+          "status_match": {
+            "classification": "REQUIRED_DIMENSION",
+            "expected": "match"
+          },
+          "validity_match": {
+            "classification": "REQUIRED_DIMENSION",
+            "expected": "match"
+          },
+          "quantitative_match": {
+            "classification": "NOT_APPLICABLE",
+            "expected": "unknown"
+          }
+        },
+        "unresolved_required_dimensions": [],
+        "adverse_evidence": false,
+        "conflict_observations": [],
+        "technical_status": "NOT_APPLICABLE"
+      },
+      "technical_status": "SUCCESS",
+      "side_effects": {
+        "evidence_support_assessment_persisted": false,
+        "evidence_review_created": false,
+        "evidence_created": false,
+        "evidence_fact_created": false,
+        "mapping_created": false,
+        "approval_changed": false,
+        "readiness_changed": false,
+        "claim_gate_triggered": false,
+        "writer_triggered": false
+      }
+    },
+    {
+      "case_id": "V2R-006-ISO-SCOPE",
+      "requirement": {
+        "requirement_id": "V2R-006-ISO-SCOPE",
+        "text": "企业应提供指定项目主体的 ISO/IEC 27001 证书。",
+        "exact": true
+      },
+      "oracle_provenance": {
+        "runtime_assessment": "AUTO_DRAFT",
+        "expected_assessment": "GPT_REVIEWED",
+        "human_gold": "NONE",
+        "promotion": "NOT_PERMITTED"
+      },
+      "frozen_evidence_inputs": [
+        {
+          "candidate_id": "MCH-70376020855F97D43106A81E5F040C7F",
+          "chunk_id": "MCH-70376020855F97D43106A81E5F040C7F",
+          "raw_rank": 1,
+          "raw_similarity": 0.7064820528030445,
+          "source_text": "企业持有在有效期内的 ISO/IEC 27001 受控记录。该事实不证明任一产品已实现特定安全等级、等保级别或具体安全功能。",
+          "source_text_hash": "c5ea4f48363c4c562e78cfe9c0197562cf18a98f645cac95e50475fa29bf0d7d",
+          "chunk_role": "BUSINESS_CONTENT",
+          "source_eligibility": "ELIGIBLE",
+          "substantive_class": "SUBSTANTIVE_CANDIDATE",
+          "requirement_relative_classification": "EVIDENCE_BEARING",
+          "lineage": {
+            "material_id": "74ed566b-18c0-41a1-ba55-59cbe182251c",
+            "document_id": "74ed566b-18c0-41a1-ba55-59cbe182251c",
+            "chunk_id": "MCH-70376020855F97D43106A81E5F040C7F"
+          }
+        },
+        {
+          "candidate_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
+          "chunk_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
+          "raw_rank": 3,
+          "raw_similarity": 0.6393421507273834,
+          "source_text": "名称：ISO/IEC 27001\n编号：CM-Q-27001-2024\n状态：active\n有效至：2027-11-30",
+          "source_text_hash": "4aad371afadcb5d360f7461d405d06e706132aa072271064a297010ab458572f",
+          "chunk_role": "BUSINESS_CONTENT",
+          "source_eligibility": "ELIGIBLE",
+          "substantive_class": "SUBSTANTIVE_CANDIDATE",
+          "requirement_relative_classification": "EVIDENCE_BEARING",
+          "lineage": {
+            "material_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+            "document_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+            "chunk_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84"
+          }
+        },
+        {
+          "candidate_id": "MCH-A160D3E488BD50C27E5F6267363E57B1",
+          "chunk_id": "MCH-A160D3E488BD50C27E5F6267363E57B1",
+          "raw_rank": 5,
+          "raw_similarity": 0.5089393550789749,
+          "source_text": "名称：ISO 9001\n编号：CM-Q-9001-2025\n状态：active\n有效至：2028-03-31",
+          "source_text_hash": "b1c3295063f75def254033770e23992804cba4b5c7d1a139b94705fb69135d68",
+          "chunk_role": "BUSINESS_CONTENT",
+          "source_eligibility": "ELIGIBLE",
+          "substantive_class": "SUBSTANTIVE_CANDIDATE",
+          "requirement_relative_classification": "TOPIC_RELEVANT_ONLY",
+          "lineage": {
+            "material_id": "c5395bc4-0531-4e6f-9f0c-3562cee0a2f1",
+            "document_id": "c5395bc4-0531-4e6f-9f0c-3562cee0a2f1",
+            "chunk_id": "MCH-A160D3E488BD50C27E5F6267363E57B1"
+          }
+        }
+      ],
+      "frozen_raw_candidate_pool": [
+        {
+          "candidate_id": "MCH-70376020855F97D43106A81E5F040C7F",
+          "raw_rank": 1,
+          "raw_similarity": 0.7064820528030445,
+          "source_text": "企业持有在有效期内的 ISO/IEC 27001 受控记录。该事实不证明任一产品已实现特定安全等级、等保级别或具体安全功能。",
+          "source_text_hash": "c5ea4f48363c4c562e78cfe9c0197562cf18a98f645cac95e50475fa29bf0d7d",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "EVIDENCE_ELIGIBLE",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "EVIDENCE_BEARING",
+          "final_phase_rank": 1,
+          "final_eligible": true,
+          "lineage": {
+            "material_id": "74ed566b-18c0-41a1-ba55-59cbe182251c",
+            "document_id": "74ed566b-18c0-41a1-ba55-59cbe182251c",
+            "chunk_id": "MCH-70376020855F97D43106A81E5F040C7F"
+          }
+        },
+        {
+          "candidate_id": "MCH-0820CC5A439CB986C62E46213029CC71",
+          "raw_rank": 2,
+          "raw_similarity": 0.6684556801047528,
+          "source_text": "# ISO 27001 受控记录",
+          "source_text_hash": "e4bbd720010befabbdd08b947acc803b7f0c52b5ccdbf8da7f5b169e76f19215",
+          "chunk_role": "HEADING",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "METADATA_OR_HEADER",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+            "document_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+            "chunk_id": "MCH-0820CC5A439CB986C62E46213029CC71"
+          }
+        },
+        {
+          "candidate_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
+          "raw_rank": 3,
+          "raw_similarity": 0.6393421507273834,
+          "source_text": "名称：ISO/IEC 27001\n编号：CM-Q-27001-2024\n状态：active\n有效至：2027-11-30",
+          "source_text_hash": "4aad371afadcb5d360f7461d405d06e706132aa072271064a297010ab458572f",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "EVIDENCE_ELIGIBLE",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "EVIDENCE_BEARING",
+          "final_phase_rank": 2,
+          "final_eligible": true,
+          "lineage": {
+            "material_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+            "document_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+            "chunk_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84"
+          }
+        },
+        {
+          "candidate_id": "MCH-D37B061257382C31A3C757430BDD2CA6",
+          "raw_rank": 4,
+          "raw_similarity": 0.6162579884375352,
+          "source_text": "# ISO 9001 受控记录",
+          "source_text_hash": "5ce2c17155abf56dc3ae9930236f4cab65e0f0263aa88c8547a7034433e0b2ea",
+          "chunk_role": "HEADING",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "METADATA_OR_HEADER",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "c5395bc4-0531-4e6f-9f0c-3562cee0a2f1",
+            "document_id": "c5395bc4-0531-4e6f-9f0c-3562cee0a2f1",
+            "chunk_id": "MCH-D37B061257382C31A3C757430BDD2CA6"
+          }
+        },
+        {
+          "candidate_id": "MCH-A160D3E488BD50C27E5F6267363E57B1",
+          "raw_rank": 5,
+          "raw_similarity": 0.5089393550789749,
+          "source_text": "名称：ISO 9001\n编号：CM-Q-9001-2025\n状态：active\n有效至：2028-03-31",
+          "source_text_hash": "b1c3295063f75def254033770e23992804cba4b5c7d1a139b94705fb69135d68",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "EVIDENCE_ELIGIBLE",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "TOPIC_RELEVANT_ONLY",
+          "final_phase_rank": 3,
+          "final_eligible": true,
+          "lineage": {
+            "material_id": "c5395bc4-0531-4e6f-9f0c-3562cee0a2f1",
+            "document_id": "c5395bc4-0531-4e6f-9f0c-3562cee0a2f1",
+            "chunk_id": "MCH-A160D3E488BD50C27E5F6267363E57B1"
+          }
+        },
+        {
+          "candidate_id": "MCH-61777E281A96F7E35D2F6849CF915DE0",
+          "raw_rank": 6,
+          "raw_similarity": 0.4896540349928129,
+          "source_text": "关键信息基础设施安全保护条例用于规范关键信息基础设施安全保护工作，建立和完善保护制度，保障关键信息基础设施安全稳定运行。",
+          "source_text_hash": "7bb9d055e9991e46c1e193a37435c6e222b34946b03daa2e68d8d5f8d43c993e",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "EVIDENCE_ELIGIBLE",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "ffa84366-9aae-42e1-86bb-ab4fc47428e0",
+            "document_id": "ffa84366-9aae-42e1-86bb-ab4fc47428e0",
+            "chunk_id": "MCH-61777E281A96F7E35D2F6849CF915DE0"
+          }
+        },
+        {
+          "candidate_id": "MCH-DD698C97CF11CC2C5A98532E65244E29",
+          "raw_rank": 7,
+          "raw_similarity": 0.48475873561151506,
+          "source_text": "I. Required Documents",
+          "source_text_hash": "5517e549b642331b75619ad725c0b5cd5699e957b98c0e5c830f9900b2c31bbf",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-DD698C97CF11CC2C5A98532E65244E29"
+          }
+        },
+        {
+          "candidate_id": "MCH-CFFC5F79FB5E48DAEB1A7F4CC503E88A",
+          "raw_rank": 8,
+          "raw_similarity": 0.471615377471998,
+          "source_text": "必须明确：",
+          "source_text_hash": "9eb7eac0482838aa34bfe12dfc911d534812a8166fc97ae9a558a458badbf2ac",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-CFFC5F79FB5E48DAEB1A7F4CC503E88A"
+          }
+        },
+        {
+          "candidate_id": "MCH-C8CADCA6BBE3DD2675BECD37620FD998",
+          "raw_rank": 9,
+          "raw_similarity": 0.46567958593368863,
+          "source_text": "# 关键信息基础设施安全保护条例",
+          "source_text_hash": "d0e36ce25c9c0cb0d0ef56853b059fb7836fc0d8e0809668df6803650e516fa2",
+          "chunk_role": "HEADING",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "METADATA_OR_HEADER",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "ffa84366-9aae-42e1-86bb-ab4fc47428e0",
+            "document_id": "ffa84366-9aae-42e1-86bb-ab4fc47428e0",
+            "chunk_id": "MCH-C8CADCA6BBE3DD2675BECD37620FD998"
+          }
+        },
+        {
+          "candidate_id": "MCH-F6FE125F46AD101C81DA541D50D7AE47",
+          "raw_rank": 10,
+          "raw_similarity": 0.4575414980923245,
+          "source_text": "可控\n可追溯\n可审核\n可修改\n可交付",
+          "source_text_hash": "d3170af4ab5e1b36935a5aad51b577567f93b158d140dd4e4c331296af5a3128",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-F6FE125F46AD101C81DA541D50D7AE47"
+          }
+        },
+        {
+          "candidate_id": "MCH-264B4BD4C24A8706D129F3A80046CC94",
+          "raw_rank": 11,
+          "raw_similarity": 0.4534430829618532,
+          "source_text": "来源机构：工业和信息化部\n文号：国务院令第613号",
+          "source_text_hash": "12adf357786a8f5caadead88a41b65ce44867128e186c3c11ce67df50ea6934d",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "EVIDENCE_ELIGIBLE",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "2f14965f-d44f-4fd0-9bb4-f88b9af5da28",
+            "document_id": "2f14965f-d44f-4fd0-9bb4-f88b9af5da28",
+            "chunk_id": "MCH-264B4BD4C24A8706D129F3A80046CC94"
+          }
+        },
+        {
+          "candidate_id": "MCH-9B3CAB55A63FBAA2806BD5521C1FF6BF",
+          "raw_rank": 12,
+          "raw_similarity": 0.4531220253560513,
+          "source_text": "系统负责确定性传播",
+          "source_text_hash": "7d2efbd1fe1845e9593aed6ac6f3f1a7a9f37dfb61f112d2f240bd13588d93bc",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-9B3CAB55A63FBAA2806BD5521C1FF6BF"
+          }
+        },
+        {
+          "candidate_id": "MCH-447430F161ECB423FC46585DB4BED35B",
+          "raw_rank": 13,
+          "raw_similarity": 0.4474525514301597,
+          "source_text": "必须包含：",
+          "source_text_hash": "9b51cc5d3199e45ede4730094a8e9661db0b61a82c89ff5373a80ea9b7da1c25",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-447430F161ECB423FC46585DB4BED35B"
+          }
+        },
+        {
+          "candidate_id": "MCH-B73C33CB10B6F50BB313418C65735B71",
+          "raw_rank": 14,
+          "raw_similarity": 0.44178402770852954,
+          "source_text": "Keycloak / compatible IdP。",
+          "source_text_hash": "99010f03b9877a98ab120a2f0491a15a60137728a1ed255cc6763ed62af0f454",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-B73C33CB10B6F50BB313418C65735B71"
+          }
+        },
+        {
+          "candidate_id": "MCH-E15B1375164A2AF1529B29FF62D347EA",
+          "raw_rank": 15,
+          "raw_similarity": 0.4350980558932994,
+          "source_text": "来源机构：中央网络安全和信息化委员会办公室\n文号：无",
+          "source_text_hash": "f6b9859c10aca3bb2928cb99a35c9868ef83d5da25f289085421cb2c66399b21",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "EVIDENCE_ELIGIBLE",
+          "source_eligibility": "ELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "2fc1e753-1aac-4a9f-af37-a537ec28323b",
+            "document_id": "2fc1e753-1aac-4a9f-af37-a537ec28323b",
+            "chunk_id": "MCH-E15B1375164A2AF1529B29FF62D347EA"
+          }
+        },
+        {
+          "candidate_id": "MCH-10C2129A5D37AB29824CE98DF6E32F0D",
+          "raw_rank": 16,
+          "raw_similarity": 0.43288406329656715,
+          "source_text": "Primary\nSupporting\nAudit / Technical",
+          "source_text_hash": "4b9b069f5001870f9b26e307318706cab2dfbd29aaa8f8ac2f69bedf04248b41",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-10C2129A5D37AB29824CE98DF6E32F0D"
+          }
+        },
+        {
+          "candidate_id": "MCH-BCFDF157C5494565A4C6BE3EF900E608",
+          "raw_rank": 17,
+          "raw_similarity": 0.42976430477116745,
+          "source_text": "核心原则：",
+          "source_text_hash": "3b77c79de139f70fa5424c78dc110d277aed912512629511f58c66bcc4c73e5e",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-BCFDF157C5494565A4C6BE3EF900E608"
+          }
+        },
+        {
+          "candidate_id": "MCH-2F96B9DD896D5632BD6F39023E7ECEE6",
+          "raw_rank": 18,
+          "raw_similarity": 0.42841521758851797,
+          "source_text": "保持自己的 Control Plane。",
+          "source_text_hash": "9ad7a4f6a437a62c6f098a7e397b1c444eb1f4907ad94363df1f53dd3b5b8dc6",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-2F96B9DD896D5632BD6F39023E7ECEE6"
+          }
+        },
+        {
+          "candidate_id": "MCH-555802B2C6B93AE17E478E4ECC99308A",
+          "raw_rank": 19,
+          "raw_similarity": 0.4260520681111779,
+          "source_text": "核心业务流程真实可用、\n稳定、可审核、可追溯、易操作。",
+          "source_text_hash": "57d372478a59be99ea4f8dcf1c8ebebea4c37b8763a3e12b6c4ebee5b5e6db01",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "IRRELEVANT",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "document_id": "9905462c-a58b-4168-a721-b5c156c74b0d",
+            "chunk_id": "MCH-555802B2C6B93AE17E478E4ECC99308A"
+          }
+        },
+        {
+          "candidate_id": "MCH-FD985F70FBE8CB464869FD32A02F08DD",
+          "raw_rank": 20,
+          "raw_similarity": 0.4230541460795971,
+          "source_text": "REPRESENTATIVE_SYNTHETIC\nNOT_REAL_CUSTOMER_DATA\nmaterial_id: SME-020\nsubject: 澄明数科（示范）有限公司",
+          "source_text_hash": "e67e122fca4194aff98da3b03af9b07199b6520fdbaa167edf6c00b6519676e8",
+          "chunk_role": "BUSINESS_CONTENT",
+          "candidate_eligibility": "CONTEXT_ONLY",
+          "source_eligibility": "INELIGIBLE",
+          "requirement_relative_classification": "METADATA_OR_HEADER",
+          "final_phase_rank": null,
+          "final_eligible": false,
+          "lineage": {
+            "material_id": "74ed566b-18c0-41a1-ba55-59cbe182251c",
+            "document_id": "74ed566b-18c0-41a1-ba55-59cbe182251c",
+            "chunk_id": "MCH-FD985F70FBE8CB464869FD32A02F08DD"
+          }
+        }
+      ],
+      "selected_evidence_ids": [
+        "MCH-A4C2632EF9126FADD349C3004E1C2D84"
+      ],
+      "evidence_detail": [
+        {
+          "source_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
+          "source_text": "名称：ISO/IEC 27001\n编号：CM-Q-27001-2024\n状态：active\n有效至：2027-11-30",
+          "source_text_hash": "4aad371afadcb5d360f7461d405d06e706132aa072271064a297010ab458572f",
+          "exact_span": {
+            "span_id": "OFFLINE-SPAN-MCH-A4C2632EF9126FADD349C3004E1C2D84",
+            "start_offset": 0,
+            "end_offset": 60,
+            "support_excerpt": "名称：ISO/IEC 27001\n编号：CM-Q-27001-2024\n状态：active\n有效至：2027-11-30",
+            "support_excerpt_hash": "4aad371afadcb5d360f7461d405d06e706132aa072271064a297010ab458572f"
+          },
+          "context_window": [
+            {
+              "chunk_id": "MCH-70376020855F97D43106A81E5F040C7F",
+              "raw_rank": 1,
+              "source_text": "企业持有在有效期内的 ISO/IEC 27001 受控记录。该事实不证明任一产品已实现特定安全等级、等保级别或具体安全功能。",
+              "role": "context_only"
+            },
+            {
+              "chunk_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
+              "raw_rank": 3,
+              "source_text": "名称：ISO/IEC 27001\n编号：CM-Q-27001-2024\n状态：active\n有效至：2027-11-30",
+              "role": "selected_source"
+            },
+            {
+              "chunk_id": "MCH-A160D3E488BD50C27E5F6267363E57B1",
+              "raw_rank": 5,
+              "source_text": "名称：ISO 9001\n编号：CM-Q-9001-2025\n状态：active\n有效至：2028-03-31",
+              "role": "context_only"
+            }
+          ],
+          "lineage": {
+            "material_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+            "document_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+            "chunk_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84"
+          }
+        }
+      ],
+      "runtime_assessment": {
+        "assessment_id": "ESA-99E23D65EED125BA67DD3FA2A44D6039",
+        "assessment_version": "evidence-support-assessment-v1",
+        "evaluator_version": "offline-fixture-evaluator-v1",
+        "assessment_status": "available",
+        "input_kind": "retrieval_candidate",
+        "requirement": {
+          "requirement_id": "V2R-006-ISO-SCOPE",
+          "text": "企业应提供指定项目主体的 ISO/IEC 27001 证书。",
+          "text_hash": "e22571d3a46f931b91fb21046695b2204c386f971effe4df5e417c662d485ab6"
+        },
+        "source": {
+          "source_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
+          "source_kind": "retrieval_candidate",
+          "source_span_id": "OFFLINE-SPAN-MCH-A4C2632EF9126FADD349C3004E1C2D84",
+          "source_text_hash": "4aad371afadcb5d360f7461d405d06e706132aa072271064a297010ab458572f",
+          "lineage": {
+            "material_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+            "document_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+            "chunk_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
+            "source_span_resolution": "OFFLINE_FROZEN_CAPTURE"
+          },
+          "material": {
+            "material_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+            "document_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+            "source_eligibility": "ELIGIBLE"
+          }
+        },
+        "semantic_relevance": "relevant",
+        "evidence_capability": "capable",
+        "support_level": "insufficient",
+        "semantic_relationship": "partial",
+        "review_dimensions": {
+          "subject_match": "mismatch",
+          "scope_match": "mismatch",
+          "status_match": "unknown",
+          "quantitative_match": "unknown",
+          "entity_match": "mismatch",
+          "validity_match": "unknown",
+          "source_authority": "match",
+          "support_sufficiency": "mismatch"
+        },
+        "reason_codes": [
+          "SCOPE_MISMATCH",
+          "ENTITY_MISMATCH",
+          "SUPPORT_INSUFFICIENT"
+        ],
+        "support_observations": [
+          {
+            "source_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
+            "source_span_id": "OFFLINE-SPAN-MCH-A4C2632EF9126FADD349C3004E1C2D84",
+            "support_excerpt": "名称：ISO/IEC 27001\n编号：CM-Q-27001-2024\n状态：active\n有效至：2027-11-30",
+            "support_excerpt_hash": "4aad371afadcb5d360f7461d405d06e706132aa072271064a297010ab458572f",
+            "observation_type": "partial_support",
+            "reason_codes": [
+              "SCOPE_MISMATCH",
+              "ENTITY_MISMATCH"
+            ]
+          }
+        ],
+        "conflict_observations": []
+      },
+      "runtime_aggregate": {
+        "status": "INSUFFICIENT_EVIDENCE",
+        "assessment_count": 1,
+        "blocking_conflicts": [],
+        "reason_codes": [
+          "SUPPORT_INSUFFICIENT"
+        ]
+      },
+      "expected": {
+        "status": "INSUFFICIENT_EVIDENCE",
+        "reason_codes": [
+          "SCOPE_MISMATCH",
+          "ENTITY_MISMATCH",
+          "SUPPORT_INSUFFICIENT"
+        ],
+        "assessment_rationale": null,
+        "required_dimensions": {
+          "subject_match": {
+            "classification": "REQUIRED_DIMENSION",
+            "expected": "mismatch"
+          },
+          "entity_match": {
+            "classification": "REQUIRED_DIMENSION",
+            "expected": "mismatch"
+          },
+          "scope_match": {
+            "classification": "REQUIRED_DIMENSION",
+            "expected": "mismatch"
+          },
+          "status_match": {
+            "classification": "SUPPORTING_DIMENSION",
+            "expected": "unknown"
+          },
+          "validity_match": {
+            "classification": "SUPPORTING_DIMENSION",
+            "expected": "unknown"
+          },
+          "quantitative_match": {
+            "classification": "NOT_APPLICABLE",
+            "expected": "unknown"
+          }
+        },
+        "unresolved_required_dimensions": [],
+        "adverse_evidence": false,
+        "conflict_observations": [],
+        "technical_status": "NOT_APPLICABLE"
+      },
+      "technical_status": "SUCCESS",
+      "side_effects": {
+        "evidence_support_assessment_persisted": false,
+        "evidence_review_created": false,
+        "evidence_created": false,
+        "evidence_fact_created": false,
+        "mapping_created": false,
+        "approval_changed": false,
+        "readiness_changed": false,
+        "claim_gate_triggered": false,
+        "writer_triggered": false
+      }
+    }
+  ],
+  "negative_controls": [
+    {
+      "control_id": "ADVERSE_QUANTITATIVE_EVIDENCE",
+      "case_id": "V2R-002-PERF-PARTIAL",
+      "result_status": "INSUFFICIENT_EVIDENCE",
+      "passed": true
+    },
+    {
+      "control_id": "WRONG_SCOPE_BOUNDARY",
+      "case_id": "V2R-006-ISO-SCOPE",
+      "result_status": "INSUFFICIENT_EVIDENCE",
+      "passed": true
+    },
+    {
+      "control_id": "CONFLICTING_EVIDENCE",
+      "result_status": "CONFLICTING_EVIDENCE",
+      "passed": true,
+      "assessment_count": 2
+    },
+    {
+      "control_id": "TECHNICAL_FAILURE_SEPARATION",
+      "technical_status": "unavailable",
+      "result_status": "ASSESSMENT_UNAVAILABLE",
+      "passed": true,
+      "must_not_be_business_insufficient": true
+    }
+  ],
+  "metrics": {
+    "business_status_accuracy": {
+      "correct": 6,
+      "total": 6,
+      "rate": 1
+    },
+    "required_dimension_accuracy": {
+      "correct": 26,
+      "total": 26,
+      "rate": 1
+    },
+    "unresolved_required_dimension_accuracy": {
+      "correct": 3,
+      "total": 3,
+      "rate": 1
+    },
+    "adverse_evidence_recognition": {
+      "correct": 1,
+      "total": 1,
+      "rate": 1
+    },
+    "conflict_recognition": {
+      "correct": 1,
+      "total": 1,
+      "rate": 1
+    },
+    "technical_failure_separation": {
+      "correct": 1,
+      "total": 1,
+      "rate": 1
+    },
+    "false_supported_rate": {
+      "false_supported": 0,
+      "denominator": 3,
+      "rate": 0
+    },
+    "unsafe_false_supported": 0,
+    "baseline_created_on_failure": 0
+  },
+  "formal_db_mutations": {
+    "evidence_support_assessment": 0,
+    "evidence_review": 0,
+    "evidence": 0,
+    "evidence_fact": 0,
+    "mapping": 0,
+    "claim": 0,
+    "writer": 0,
+    "readiness": 0
+  },
+  "external_calls": {
+    "embedding": 0,
+    "llm": 0,
+    "dify": 0
+  },
+  "oracle_provenance": {
+    "runtime_assessment": "AUTO_DRAFT",
+    "expected_assessment": "GPT_REVIEWED",
+    "human_gold_cases": 0,
+    "auto_promotion": false
+  },
+  "gpt_review_status": "PENDING_REVIEW",
+  "eval_complete": false,
+  "stage_status": {
+    "stage17": "PASS / FROZEN",
+    "stage20": "PARTIAL / BLOCKED"
+  }
+}

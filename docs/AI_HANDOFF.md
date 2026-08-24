@@ -34,8 +34,14 @@ Authoritative detail: `ARCHITECTURE.md`, `docs/CURRENT_STAGE.md`, `docs/ROADMAP.
 
 ## Current stage
 
-Stage 20 — P0 Real Evidence Retrieval Revalidation: **PARTIAL / BLOCKED — SEPARATE
-EVIDENCE-SUFFICIENCY VALIDATION PENDING**.
+Stage 20-S — Evidence Sufficiency Offline Validation Baseline: **IN PROGRESS —
+OFFLINE BASELINE / GPT REVIEW PENDING**. The six frozen synthetic cases are
+evaluated through the side-effect-free EvidenceSupportAssessment contract; no
+Embedding, LLM or Dify call is allowed. Packet:
+`backend/eval/evidence-support/calibration-v2/GPT_REVIEW_PACKET_EVIDENCE_SUFFICIENCY_OFFLINE.md/.json`.
+Stage 20 overall remains **PARTIAL / BLOCKED** until independent review and
+formal evidence-sufficiency acceptance. Stage 20 — P0 Real Evidence Retrieval
+Revalidation remains the parent track.
 Stage 21-A Runtime Connectivity Foundation remains **PASS / FROZEN**. One managed
 SSH session provides the gateway forward and SOCKS egress; Gateway, SOCKS HTTPS,
 Embedding smoke, readiness, and monitor recovery passed. Stage20-S shared Evidence Support

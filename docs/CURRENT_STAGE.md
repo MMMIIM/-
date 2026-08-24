@@ -1,5 +1,22 @@
 # Current Stage
 
+## Stage 20-S — Evidence Sufficiency Offline Validation Baseline
+
+Priority: **P0**
+Status: **IN PROGRESS — OFFLINE BASELINE / GPT REVIEW PENDING**
+
+本轮只使用冻结的六个代表性合成案例和已保存的证据输入，验证
+`EvidenceSupportAssessment` 的业务状态、必需维度、反证识别、冲突识别以及
+技术失败隔离。该评测不是 Retrieval Hit@K，不调用 Embedding、LLM 或 Dify，
+不写 Evidence、Fact、Mapping、Claim、Readiness 或 Writer 状态。评测包位于
+`backend/eval/evidence-support/calibration-v2/GPT_REVIEW_PACKET_EVIDENCE_SUFFICIENCY_OFFLINE.md/.json`；
+`GPT_REVIEW_STATUS=PENDING_REVIEW`、`EVAL_COMPLETE=NO`。Stage17 Retrieval
+合同与指标保持 PASS / FROZEN；Stage20 总体仍为 PARTIAL / BLOCKED，不能据此
+宣称 Stage20 完成或自动进入 live calibration。
+
+下一步：等待独立 GPT / 人工复核离线包；在新的明确授权前不调用外部模型，
+不修改 Retrieval、排名、MMR、topK、Source Eligibility 或 Stage17 冻结规则。
+
 ## Stage 21-A — Runtime Connectivity Foundation
 
 Priority: **P0 prerequisite for Stage20 completion**
