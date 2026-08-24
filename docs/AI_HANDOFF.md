@@ -22,13 +22,14 @@ Authoritative detail: `ARCHITECTURE.md`, `docs/CURRENT_STAGE.md`, `docs/ROADMAP.
 
 ## Frozen stages
 
-- Stages 13–19: PASS / FROZEN, including Word foundation and deterministic Agent safety.
-- Stage 17 retrieval architecture remains frozen unless new evidence requires a decision.
+- Stages 13–16, 18–19: PASS / FROZEN, including Word foundation and deterministic Agent safety.
+- Stage 17: REOPENED_FOR_P0_FIX + METRIC_REBASE_REQUIRED; retrieval architecture
+  semantics remain frozen while candidate hygiene is reviewed.
 
 ## Current stage
 
 Stage 20 — P0 Real Evidence Retrieval Revalidation: **PARTIAL / BLOCKED — PENDING
-P0 CANDIDATE HYGIENE LIVE COMPARISON AND GPT REVIEW**.
+SUBSTANTIVE HYGIENE GPT REVIEW**.
 Stage 21-A Runtime Connectivity Foundation remains **PASS / FROZEN**. One managed
 SSH session provides the gateway forward and SOCKS egress; Gateway, SOCKS HTTPS,
 Embedding smoke, readiness, and monitor recovery passed. Stage20-S shared Evidence Support
@@ -72,13 +73,15 @@ cutover decision.
   corrected 9, explicit false positives 4, false negatives 0. V2R-006 is
   Evidence-Bearing with a boundary/partial scope; V2R-007 remains
   GOLD_DESIGN_AMBIGUOUS.
-- Candidate-hygiene pre-fix baseline for V2R-001..006 is Hit@1 4/6, Hit@3 5/6,
-  Hit@5 6/6, MRR 0.68056, with 10 metadata candidates in recorded Top5. The
-  single authorized post-fix run used exactly six Embedding queries: Hit@1 3/6,
-  Hit@3 6/6, Hit@5 6/6, MRR 0.75, metadata@5 0, and zero broken Gold cases.
-  V2R-001's Gold rank improved from corrected offline useful rank 4 to rank 2.
-  Packet: `GPT_REVIEW_PACKET_RETRIEVAL_HYGIENE_PRE_POST.md/.json`; GPT review
-  remains pending and `EVAL_COMPLETE=NO`.
+- Phase-1 candidate hygiene live comparison used exactly six Embedding queries:
+  metadata@5 0 and no Gold loss. Phase-2 offline replay uses the captured raw
+  pools only: POST_V2 exact Gold Hit@1/3/5 0.50/1.00/1.00, MRR 0.75,
+  Decision-Bearing Hit@1/3/5 0.8333/1.00/1.00, Decision-Bearing MRR 0.9167,
+  Metadata@5 0, NonSubstantive@5 0, substantive rate@5 100%.
+  V2R-001 decision-bearing rank is 4→2→2; V2R-006 boundary evidence remains
+  eligible; ISO9001 remains topic-only. Packet:
+  `GPT_REVIEW_PACKET_SUBSTANTIVE_HYGIENE_OFFLINE.md/.json`; GPT review remains
+  pending and `EVAL_COMPLETE=NO`.
 - Full case-level packet: all 12 cases persisted in `backend/eval/evidence-support/calibration-v2/GPT_REVIEW_PACKET.md` and `.json`; `GPT_REVIEW_STATUS=PENDING_REVIEW`, `EVAL_COMPLETE=NO`.
 - Gold qualification packet: `GPT_REVIEW_PACKET_GOLD_QUALIFICATION.md` and `.json` contain all 12 independent A–I checks; 7 `GOLD_READY_FOR_RETRIEVAL`, 5 `GOLD_PARTIAL`, current index verified 9/12.
 - Context recovery audit: 158 dimensions total (93 required, 65 not applicable),
@@ -86,15 +89,14 @@ cutover decision.
 
 ## Active blocker and next step
 
-The P0 context/retrieval audit and candidate-hygiene implementation preserve
-Retrieval ranking semantics and formal contracts. The former length-only
-Evidence-Bearing label was replaced by the Requirement-relative
-`evidence-bearing-classifier-v1`; Gold derivation now separates valid persisted
-multi-chunk spans from evaluation-only business-bearing chunks. The next step
-is the one authorized six-query live hygiene comparison, followed by GPT review
-of `GPT_REVIEW_PACKET_RETRIEVAL_HYGIENE_PRE_POST.md/.json`. Do not infer Gold
-from nearest Requirements or change ranking, chunking, topK, MMR, Provider, or
-retry architecture.
+The P0 context/retrieval audit and two-phase candidate-hygiene implementation
+preserve Retrieval ranking semantics and formal contracts. Phase-1 removes
+explicit heading/metadata pollution; Phase-2 deterministically rejects
+non-substantive fragments while retaining legitimate topic-only business text.
+The next step is GPT review of
+`GPT_REVIEW_PACKET_SUBSTANTIVE_HYGIENE_OFFLINE.md/.json`. Do not infer Gold
+from runtime heuristics or nearest Requirements, and do not change ranking,
+chunking, topK, MMR, Provider, or retry architecture.
 
 ## Frozen boundaries
 

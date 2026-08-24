@@ -120,11 +120,11 @@ deterministic manifest/span repair before inclusion.
 Four independent canonical synthetic Retrieval samples (`E2E-REQ-001..004`)
 remain diagnostic samples rather than the 12-case Gold metric.
 
-Stage17 remains **PASS / FROZEN UNDER P0 REGRESSION REVIEW**, not finally approved;
-Stage20 remains **PARTIAL**. Human Gold review stays paused. The next required
-action is GPT review of the seven-case packet below. Do not infer Gold from
-nearest Requirements, modify ranking, chunking, topK, MMR, or call another
-external model.
+Stage17 remains **REOPENED_FOR_P0_FIX + METRIC_REBASE_REQUIRED + PENDING_GPT_REVIEW**;
+Stage20 remains **PARTIAL / BLOCKED**. Human Gold review stays paused. The next
+required action is GPT review of the current substantive-hygiene packet. Do not
+infer Gold from nearest Requirements, modify ranking, chunking, topK, MMR, or
+call another external model.
 
 ### P0 7-case live Retrieval checkpoint (2026-08-24)
 
@@ -202,14 +202,21 @@ and no ranking boost. Migration `042_retrieval_candidate_hygiene.sql` persists
 the role and eligibility audit fields. Context headings remain available to
 context recovery.
 
-The six-case pre-fix baseline (V2R-001..006) is denominator 6: Hit@1 4/6,
-Hit@3 5/6, Hit@5 6/6, MRR 0.68056, and 10 metadata candidates in the recorded
-Top5. The one authorized post-fix run sent exactly six Embedding queries and
-produced Hit@1 3/6, Hit@3 6/6, Hit@5 6/6, MRR 0.75, metadata@5 0, and zero
-broken Gold cases. V2R-001's Gold rank is 2 post-fix versus the corrected
-offline pre-fix useful rank 4; no Gold was lost. The comparison packet is
-`GPT_REVIEW_PACKET_RETRIEVAL_HYGIENE_PRE_POST.md/.json`; GPT review remains
-`PENDING_REVIEW` and `EVAL_COMPLETE=NO`.
+The six-case Phase-1 baseline and live comparison are retained for audit only.
+An offline Phase-2 replay now uses the captured raw candidate pools and raw
+vector order, with independent GPT-reviewed decision labels. It separates
+Gold Evidence from Gold Context and produces:
+
+- PRE exact Gold Hit@1/3/5: 0.50 / 0.8333 / 1.00; MRR 0.68056;
+- POST_V1 exact Gold Hit@1/3/5: 0.50 / 1.00 / 1.00; MRR 0.75;
+- POST_V2 exact Gold Hit@1/3/5: 0.50 / 1.00 / 1.00; MRR 0.75;
+- POST_V2 Metadata@5: 0; NonSubstantive@5: 0; substantive rate@5: 100%;
+- V2R-001 first decision-bearing rank: PRE 4 → POST_V1 2 → POST_V2 2;
+- V2R-006 boundary evidence remains eligible; ISO9001 remains topic-only.
+
+The packet is `GPT_REVIEW_PACKET_SUBSTANTIVE_HYGIENE_OFFLINE.md/.json` with
+`GPT_REVIEW_STATUS=PENDING_REVIEW` and `EVAL_COMPLETE=NO`. No new Embedding,
+LLM or Dify call was made in Phase-2.
 
 ### Standalone Semantic Gateway foundation (2026-08-24)
 
