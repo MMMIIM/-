@@ -493,7 +493,7 @@ test('PostgreSQL 确认 Requirement 基线后禁止增删改合并', async () =>
       WHERE id = $1
     `, [parseJob.candidates[0].id]);
     await assert.rejects(
-      () => service.confirm(parseJob.id),
+      () => service.confirm(parseJob.id, { confirmed_by: 'integration-reviewer' }),
       (error) => error.code === 'REQUIREMENT_MANDATORY_METADATA_CONFLICT'
     );
     assert.equal(await repository.getRequirementBaseline(project.id), null);
@@ -502,7 +502,7 @@ test('PostgreSQL 确认 Requirement 基线后禁止增删改合并', async () =>
       SET is_mandatory = true, mandatory_marker = '★'
       WHERE id = $1
     `, [parseJob.candidates[0].id]);
-    const confirmed = await service.confirm(parseJob.id);
+    const confirmed = await service.confirm(parseJob.id, { confirmed_by: 'integration-reviewer' });
     assert.equal(confirmed.baseline.status, 'confirmed');
     const baseline = await repository.getRequirementBaseline(project.id);
     assert.equal(baseline.requirements.length, 1);
@@ -705,10 +705,10 @@ test('PostgreSQL 持久化人工来源范围、排除决定与审计', async () 
     for (const paragraph of [1, 2]) await pool.query(`INSERT INTO tender_document_paragraphs(parse_job_id,tender_file_id,page_number,paragraph_number,text,normalized_text,start_offset,end_offset,text_hash,extractor_version) VALUES($1,$2,$3,$4,$5,$5,$6,$7,$8,'test')`, [job.id,file.id,paragraph,paragraph,`第${paragraph}段`,(paragraph-1)*10,paragraph*10,`hash-${paragraph}`]);
     const range = await repository.getCandidateParagraphRange(candidate.id, 1, 2);
     assert.equal(range.length, 2);
-    const associated = await repository.saveCandidateSourceDecision({ candidateId: candidate.id, action: 'associate', reason: '人工核验', location: { source_page: 1, source_paragraph: 1, source_page_start: 1, source_page_end: 2, source_paragraph_start: 1, source_paragraph_end: 2, source_paragraphs_json: [{paragraph:1},{paragraph:2}], source_hash: 'verified-hash', source_match_type: 'manual', source_match_score: 1 } });
+    const associated = await repository.saveCandidateSourceDecision({ candidateId: candidate.id, action: 'associate', reason: '人工核验', confirmedBy: 'source-reviewer', location: { source_page: 1, source_paragraph: 1, source_page_start: 1, source_page_end: 2, source_paragraph_start: 1, source_paragraph_end: 2, source_paragraphs_json: [{paragraph:1},{paragraph:2}], source_hash: 'verified-hash', source_match_type: 'manual', source_match_score: 1 } });
     assert.equal(associated.source_verified, true);
     assert.equal(associated.candidate_decision, 'include');
-    const excluded = await repository.saveCandidateSourceDecision({ candidateId: candidate.id, action: 'exclude', reason: '不纳入' });
+    const excluded = await repository.saveCandidateSourceDecision({ candidateId: candidate.id, action: 'exclude', reason: '不纳入', confirmedBy: 'source-reviewer' });
     assert.equal(excluded.candidate_decision, 'exclude');
     const audit = await pool.query(`SELECT action FROM requirement_source_decision_audits WHERE candidate_id=$1 ORDER BY created_at`, [candidate.id]);
     assert.deepEqual(audit.rows.map((item) => item.action), ['associate', 'exclude']);

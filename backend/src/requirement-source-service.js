@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { AppError } from './errors.js';
 import { classifyTenderSections } from './pipeline/tender-section-classifier.js';
 import { hashSource, SourceLocationResolver } from './pipeline/source-location-resolver.js';
+import { requireFormalActorId } from './request-actor.js';
 
 export const TENDER_EXTRACTOR_VERSION = 'tender-text-extractor/pdf-parse-2.4.5/v1';
 const sha256 = (value) => createHash('sha256').update(value).digest('hex');
@@ -125,40 +126,42 @@ export class RequirementSourceService {
     assertUuid(candidateId, 'INVALID_CANDIDATE_ID', '候选需求 ID 格式无效。');
     const sourceStatus = String(input.source_status || '');
     if (!SOURCE_STATUSES.has(sourceStatus)) throw new AppError('SOURCE_STATUS_INVALID', 'source_status 必须为 verified、provisional 或 excluded。', 422);
-    return this.repository.setCandidateSourceStatus({ candidateId, sourceStatus, confirmedBy: String(input.confirmed_by || '').trim() || 'current_user' });
+    return this.repository.setCandidateSourceStatus({ candidateId, sourceStatus, confirmedBy: requireFormalActorId(input.confirmed_by) });
   }
 
   async confirmProvisional(candidateId, input = {}) {
     assertUuid(candidateId, 'INVALID_CANDIDATE_ID', '候选需求 ID 格式无效。');
-    return this.repository.saveCandidateProvisionalDecision({ candidateId, confirmedBy: String(input.confirmed_by || '').trim() || 'current_user' });
+    return this.repository.saveCandidateProvisionalDecision({ candidateId, confirmedBy: requireFormalActorId(input.confirmed_by) });
   }
 
   async excludeCandidate(candidateId, input = {}) {
     assertUuid(candidateId, 'INVALID_CANDIDATE_ID', '候选需求 ID 格式无效。');
-    return this.repository.saveCandidateSourceDecision({ candidateId, action: 'exclude', reason: String(input.reason || '').trim() || '人工排除', confirmedBy: String(input.confirmed_by || '').trim() || 'current_user' });
+    return this.repository.saveCandidateSourceDecision({ candidateId, action: 'exclude', reason: String(input.reason || '').trim() || '人工排除', confirmedBy: requireFormalActorId(input.confirmed_by) });
   }
 
-  async restoreCandidate(candidateId) {
+  async restoreCandidate(candidateId, input = {}) {
     assertUuid(candidateId, 'INVALID_CANDIDATE_ID', '候选需求 ID 格式无效。');
-    return this.repository.restoreCandidate(candidateId);
+    return this.repository.restoreCandidate(candidateId, requireFormalActorId(input.confirmed_by));
   }
 
   async updateClassification(candidateId, input = {}) {
     assertUuid(candidateId, 'INVALID_CANDIDATE_ID', '候选需求 ID 格式无效。');
     const category = String(input.requirement_category || '');
     if (!REQUIREMENT_CATEGORIES.has(category)) throw new AppError('REQUIREMENT_CATEGORY_INVALID', '需求用途分类无效。', 422);
-    const result = await this.repository.updateCandidateClassification({ candidateId, requirementCategory: category, writerEligible: WRITER_CATEGORIES.has(category) });
+    const confirmedBy = requireFormalActorId(input.confirmed_by);
+    const result = await this.repository.updateCandidateClassification({ candidateId, requirementCategory: category, writerEligible: WRITER_CATEGORIES.has(category), confirmedBy });
     if (!result) throw new AppError('REQUIREMENT_CANDIDATE_NOT_FOUND', '候选需求不存在或基线已冻结。', 404);
     return result;
   }
 
   async decideCandidateSource(candidateId, input) {
     assertUuid(candidateId, 'INVALID_CANDIDATE_ID', '候选需求 ID 格式无效。');
+    const confirmedBy = requireFormalActorId(input?.confirmed_by);
     if (input.action === 'exclude') {
-      return this.repository.saveCandidateSourceDecision({ candidateId, action: 'exclude', reason: String(input.reason || '').trim() || '人工排除', confirmedBy: String(input.confirmed_by || '').trim() || 'current_user' });
+      return this.repository.saveCandidateSourceDecision({ candidateId, action: 'exclude', reason: String(input.reason || '').trim() || '人工排除', confirmedBy });
     }
     if (input.action === 'include_provisional') {
-      return this.repository.saveCandidateProvisionalDecision({ candidateId, confirmedBy: String(input.confirmed_by || '').trim() || 'current_user' });
+      return this.repository.saveCandidateProvisionalDecision({ candidateId, confirmedBy });
     }
     if (input.action !== 'associate') throw new AppError('SOURCE_DECISION_INVALID', '来源处理动作无效。', 400);
     const start = Number(input.source_paragraph_start); const end = Number(input.source_paragraph_end);
@@ -171,7 +174,7 @@ export class RequirementSourceService {
     }
     const original = paragraphs.map((item) => item.text).join('\n');
     return this.repository.saveCandidateSourceDecision({
-      candidateId, action: 'associate', reason: String(input.reason || '').trim() || '人工关联来源', confirmedBy: String(input.confirmed_by || '').trim() || 'current_user',
+      candidateId, action: 'associate', reason: String(input.reason || '').trim() || '人工关联来源', confirmedBy,
       location: {
         source_page: paragraphs[0].page_number, source_paragraph: start,
         source_page_start: paragraphs[0].page_number, source_page_end: paragraphs.at(-1).page_number,
@@ -185,7 +188,7 @@ export class RequirementSourceService {
 
   async includeProvisionalBatch(parseJobId, input) {
     assertUuid(parseJobId, 'INVALID_JOB_ID', '需求解析任务 ID 格式无效。');
-    const confirmedBy = String(input.confirmed_by || '').trim() || 'current_user';
+    const confirmedBy = requireFormalActorId(input?.confirmed_by);
     return this.repository.includeProvisionalCandidates({ parseJobId, confirmedBy });
   }
 }

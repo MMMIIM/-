@@ -120,7 +120,7 @@ test('确认基线时 mandatory 信息缺失或矛盾会被阻止', async () => 
     }
   });
   await assert.rejects(
-    () => service.confirm(jobId),
+    () => service.confirm(jobId, { confirmed_by: 'baseline-owner' }),
     (error) => error.code === 'REQUIREMENT_MANDATORY_METADATA_CONFLICT' && error.status === 422
   );
   assert.equal(confirmed, false);

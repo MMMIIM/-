@@ -30,6 +30,16 @@ export function requireTrustedActor(actorResolver, req) {
   };
 }
 
+/** Domain services must receive an explicit actor from their owning boundary. */
+export function requireFormalActorId(value) {
+  const actorId = typeof value === 'object' ? value?.actor_id : value;
+  const normalized = String(actorId || '').trim();
+  if (!normalized || normalized === 'current_user') {
+    throw new AppError('AUTHENTICATED_ACTOR_REQUIRED', '当前操作需要已配置的审核人身份。', 401);
+  }
+  return normalized;
+}
+
 export function withTrustedActor(body = {}, actor, field = 'reviewer') {
   const next = { ...(body || {}) };
   delete next.reviewer;
@@ -37,6 +47,11 @@ export function withTrustedActor(body = {}, actor, field = 'reviewer') {
   delete next.decided_by;
   delete next.reviewed_by;
   delete next.confirmed_by;
+  delete next.created_by;
+  delete next.approved_by;
+  delete next.rejected_by;
+  delete next.invalidated_by;
+  delete next.edited_by;
   next[field] = actor.actor_id;
   return next;
 }

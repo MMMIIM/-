@@ -41,10 +41,10 @@ test('确定性 Plan 编辑保存 PostgreSQL 快照且 anchor 不可改',async()
   await pool.query(`UPDATE requirement_baselines SET status='confirmed',confirmed_at=now(),confirmed_by='test',confirmation_type='verified' WHERE id=$1`,[baseline.id]);
   const service=new ProductionBetaService({repository,provider:{responsePlanning:()=>{throw new Error('network forbidden')}}});await service.generatePlans(project.id);
   const before=(await repository.listResponsePlans(project.id)).plans[0];assert.equal(before.requirement_anchor,anchor);
-  await service.editPlan(project.id,'REQ-001',{response_status:'partial',implementation_actions:['人工动作'],conditions:['甲方提供接口'],capability_gap:'待补充能力',supporting_evidence_ids:[],edited_by:'reviewer',edit_reason:'人工复核'});
+  await service.editPlan(project.id,'REQ-001',{response_status:'partial',implementation_actions:['人工动作'],conditions:['甲方提供接口'],capability_gap:'待补充能力',supporting_evidence_ids:[],edited_by:'admin',edit_reason:'人工复核'},{actor_id:'reviewer'});
   const after=(await repository.listResponsePlans(project.id)).plans[0];assert.equal(after.requirement_anchor,anchor);assert.equal(after.response_status,'partial');
   const audits=(await pool.query(`SELECT * FROM response_plan_edit_audits WHERE response_plan_id=$1`,[after.id])).rows;assert.equal(audits.length,1);assert.equal(audits[0].previous_snapshot.requirement_anchor,anchor);assert.equal(audits[0].current_snapshot.capability_gap,'待补充能力');
-  await assert.rejects(()=>service.editPlan(project.id,'REQ-001',{requirement_anchor:'篡改',edited_by:'x',edit_reason:'x'}),(e)=>e.code==='RESPONSE_PLAN_IMMUTABLE_FIELD');
+  await assert.rejects(()=>service.editPlan(project.id,'REQ-001',{requirement_anchor:'篡改',edited_by:'x',edit_reason:'x'},{actor_id:'reviewer'}),(e)=>e.code==='RESPONSE_PLAN_IMMUTABLE_FIELD');
  }finally{await pool.query(`DELETE FROM projects WHERE id=$1`,[project.id]);await pool.end();}
 });
 

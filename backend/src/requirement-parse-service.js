@@ -16,6 +16,7 @@ import { SourceLocationResolver } from './pipeline/source-location-resolver.js';
 import { summarizeSourceReadiness } from './requirement-source-service.js';
 import { DocumentCapabilityDetector } from './pipeline/document-capability-detector.js';
 import { clearUnverifiedLocation, deriveCandidateSourceStatus } from './pipeline/requirement-source-status.js';
+import { requireFormalActorId } from './request-actor.js';
 
 const MAX_EXTRACTED_CHARACTERS = 300_000;
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -311,7 +312,7 @@ export class RequirementParseService {
     if (!readiness.included) {
       throw new AppError('INCLUDED_REQUIREMENTS_REQUIRED', '至少需要保留一条候选需求。', 422);
     }
-    const confirmedBy = String(input.confirmed_by || '').trim() || 'current_user';
+    const confirmedBy = requireFormalActorId(input.confirmed_by);
     let requirements;
     try {
       requirements = job.candidates.filter((candidate) => candidate.candidate_decision === undefined || candidate.candidate_decision === 'include').map((candidate) => {

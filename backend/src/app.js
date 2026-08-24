@@ -174,12 +174,12 @@ export function createApp({ repository, storage, generationService, requirementP
   });
 
   app.post('/api/requirement-candidates/:candidateId/restore', async (req, res, next) => {
-    try { sendData(res, { candidate: await requirementSourceService.restoreCandidate(req.params.candidateId) }); }
+    try { sendData(res, { candidate: await requirementSourceService.restoreCandidate(req.params.candidateId, withTrustedActor(req.body, trustedActor(req), 'confirmed_by')) }); }
     catch (error) { next(error); }
   });
 
   app.patch('/api/requirement-candidates/:candidateId/classification', async (req, res, next) => {
-    try { sendData(res, { candidate: await requirementSourceService.updateClassification(req.params.candidateId, req.body || {}) }); }
+    try { sendData(res, { candidate: await requirementSourceService.updateClassification(req.params.candidateId, withTrustedActor(req.body, trustedActor(req), 'confirmed_by')) }); }
     catch (error) { next(error); }
   });
 
@@ -238,7 +238,7 @@ export function createApp({ repository, storage, generationService, requirementP
   });
 
   app.post('/api/projects/:projectId/evidence-mappings',async(req,res,next)=>{
-    try{sendData(res,{mapping:await evidenceService.proposeMapping(req.params.projectId,req.body||{})},201);}catch(error){next(error);}
+    try{sendData(res,{mapping:await evidenceService.proposeMapping(req.params.projectId,withTrustedActor(req.body,trustedActor(req),'created_by'))},201);}catch(error){next(error);}
   });
   app.post('/api/evidence-mappings/:mappingId/approve',async(req,res,next)=>{
     try{sendData(res,{mapping:await evidenceService.decideMapping(req.params.mappingId,'approved',withTrustedActor(req.body,trustedActor(req),'reviewed_by'))});}catch(error){next(error);}
@@ -259,7 +259,7 @@ export function createApp({ repository, storage, generationService, requirementP
     try{sendData(res,await evidenceService.listApprovedForRequirement(req.params.projectId,req.params.requirementId));}catch(error){next(error);}
   });
   app.post('/api/projects/:projectId/evidences/:evidenceId/facts',async(req,res,next)=>{
-    try{sendData(res,{fact:await evidenceFactService.create(req.params.projectId,req.params.evidenceId,req.body||{})},201);}catch(error){next(error);}
+    try{sendData(res,{fact:await evidenceFactService.create(req.params.projectId,req.params.evidenceId,withTrustedActor(req.body,trustedActor(req),'created_by'))},201);}catch(error){next(error);}
   });
   app.get('/api/projects/:projectId/evidences/:evidenceId/facts',async(req,res,next)=>{
     try{sendData(res,await evidenceFactService.list(req.params.projectId,req.params.evidenceId));}catch(error){next(error);}
@@ -313,7 +313,7 @@ export function createApp({ repository, storage, generationService, requirementP
   app.get('/api/projects/:projectId/response-plans',async(req,res,next)=>{
     try{sendData(res,await productionBetaService.getPlans(req.params.projectId));}catch(error){next(error);}
   });
-  app.patch('/api/projects/:projectId/response-plans/:requirementId',async(req,res,next)=>{try{sendData(res,await productionBetaService.editPlan(req.params.projectId,req.params.requirementId,req.body||{}));}catch(error){next(error);}});
+  app.patch('/api/projects/:projectId/response-plans/:requirementId',async(req,res,next)=>{try{const actor=trustedActor(req);const input={...(req.body||{})};delete input.edited_by;sendData(res,await productionBetaService.editPlan(req.params.projectId,req.params.requirementId,input,actor));}catch(error){next(error);}});
   app.post('/api/projects/:projectId/claims/generate',async(req,res,next)=>{
     try{sendData(res,await productionBetaService.generateClaims(req.params.projectId),201);}catch(error){next(error);}
   });

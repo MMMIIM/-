@@ -249,13 +249,13 @@ test('确认服务只消费成功候选并由后端路由，已冻结基线拒�
     confirmRequirementBaseline: async (value) => { persisted = value; return { baseline: { status: 'confirmed' }, requirements: value.requirements }; }
   };
   const service = new RequirementParseService({ repository });
-  const result = await service.confirm(parseJobId);
+  const result = await service.confirm(parseJobId, { confirmed_by: 'baseline-owner' });
   assert.equal(result.baseline.status, 'confirmed');
   assert.deepEqual(persisted.requirements[0].target_sections, ['solution-design', 'security-compliance']);
 
   repository.confirmRequirementBaseline = async () => { throw Object.assign(new Error('frozen'), { code: 'REQUIREMENT_BASELINE_FROZEN' }); };
   await assert.rejects(
-    () => service.confirm(parseJobId),
+    () => service.confirm(parseJobId, { confirmed_by: 'baseline-owner' }),
     (error) => error.code === 'REQUIREMENT_BASELINE_FROZEN' && error.status === 409
   );
 });

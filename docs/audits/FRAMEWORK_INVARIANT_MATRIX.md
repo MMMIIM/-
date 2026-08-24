@@ -19,12 +19,14 @@ Status meanings: `ENFORCED` = contract and tests cover the boundary; `PARTIAL` =
 | I13 | Context Chunk != Evidence Hit | ARCHITECTURE.md | source span/context recovery services | context-only and exact-span tests | evidence spans FK to chunks | review input requires span | current DB uses material as document identity (P2-DATA-001) | PARTIAL |
 | I14 | Multi-chunk Evidence Span != single-chunk Retrieval Gold | EVAL_POLICY | source span resolver + eval integrity audit | multi-chunk span and Gold integrity tests | source_chunk_ids JSONB | evidence review reads span | human Gold still pending | PARTIAL |
 | I15 | Writer Output != Approved Fact | ARCHITECTURE.md; ADR 003 | writer auth, validator, mention ledger, critical guard | unauthorized refs/critical guard tests | writer contexts/mentions FKs | document generation/export routes | legacy Dify generation route is separate compatibility path | ENFORCED |
-| I16 | Warning != Confirmed without Explicit Acknowledgement | ARCHITECTURE.md; P0 remediation decision | `GenerationService.confirmVersion`, `assertVersionCanBeConfirmed` | warning HTTP confirmation tests | `review_decisions.confirmation_text` + `actor_id` | all confirmation routes use owning service | historical duplicate route bypassed warning gate; fixed in Batch 1 | CONTRADICTED |
+| I16 | Warning != Confirmed without Explicit Acknowledgement | ARCHITECTURE.md; P0 remediation decision | `GenerationService.confirmVersion`, `assertVersionCanBeConfirmed` | warning HTTP confirmation tests | `review_decisions.confirmation_text` + `actor_id` | all confirmation routes use owning service | historical violation P0-LIFE-001 retained for audit traceability | ENFORCED |
+| I17 | Client-Supplied Identity != Formal Audit Actor | P0 Actor Boundary Closure decision | `request-actor.js`, formal mutation services | actor spoof/missing negative controls and persistence assertions | formal actor columns receive trusted IDs; no placeholder defaults | protected routes resolve server-side actor and discard body identity | none found after P0 closure | ENFORCED |
 
 ## Cross-layer reading
 
 - No invariant-wide `MISSING` status was assigned from static inspection; `PARTIAL` marks missing independent proof or cross-layer centralization.
-- I06 remains enforced. I16 records the specific warning-confirmation violation found by the original audit; Batch 1 routes now use the owning service and its negative/positive HTTP tests.
+- I06 remains enforced. I16 is operationally enforced; its historical P0-LIFE-001 contradiction remains recorded in the audit snapshot and is not erased.
+- I17 is enforced only for production-reachable formal mutation paths covered by the actor closure tests; `BACKEND_DEV_ACTOR_ID` remains an explicit development adapter, not production authentication.
 - Database constraints are deliberately not treated as a substitute for owning-service transitions.
 
 ## Permanent entry-point coverage gate
@@ -60,6 +62,7 @@ the canonical contract.
 | I14 | YES | YES | YES | YES | PASS — independent Human Gold remains a separate acceptance gate |
 | I15 | YES | YES | YES | YES | PASS |
 | I16 | YES | YES | YES | YES | PASS — historical contradiction retained above for audit traceability |
+| I17 | YES | YES | YES | YES | PASS — client identity is discarded; trusted actor is required and persisted |
 
 The coverage gate is normative: a future invariant must be marked PARTIAL
 until all required dimensions are evidenced, even if its owning service has

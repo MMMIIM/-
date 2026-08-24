@@ -47,5 +47,5 @@ test('mandatory provisional 禁止批量确认，必须逐条人工确认', asyn
     getParseJob: async () => ({ id: JOB_ID, status: 'succeeded', candidates: [mandatory] }),
     confirmRequirementBaseline: async () => { throw new Error('不应持久化'); }
   } });
-  await assert.rejects(() => service.confirm(JOB_ID), (error) => error.code === 'MANDATORY_PROVISIONAL_CONFIRMATION_REQUIRED');
+  await assert.rejects(() => service.confirm(JOB_ID, { confirmed_by: 'baseline-owner' }), (error) => error.code === 'MANDATORY_PROVISIONAL_CONFIRMATION_REQUIRED');
 });
