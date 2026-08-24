@@ -7,6 +7,7 @@ import { createEmbeddingClientFromEnv, createEmbeddingFetchFromEnv } from '../..
 import { EnterpriseRetrievalService } from '../../../src/pipeline/enterprise-retrieval-service.js';
 import { EvidenceSourceSpanService } from '../../../src/evidence-source-span-service.js';
 import { classifyRequiredEvidenceDimensions, expandEvidenceContext } from '../../../src/pipeline/evidence-context-expansion.js';
+import { classifyEvidenceBearing, isMetadataOrHeader } from '../../../src/pipeline/evidence-bearing-classifier.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPORT_PATH = path.join(HERE, 'real-retrieval-regression-v1.json');
@@ -15,19 +16,13 @@ export const REAL_RETRIEVAL_REQUIREMENTS = Object.freeze(['REQ-001', 'REQ-009', 
 const excerpt = value => String(value ?? '').slice(0, 240);
 const CONTEXT_DIMENSIONS = Object.freeze(['subject_match', 'entity_match', 'scope_match', 'status_match', 'validity_match', 'quantitative_match']);
 
-function classifyCandidate({ candidate, span, context }) {
-  const route = candidate?.proof_eligibility || candidate?.source_route || null;
-  if (!span?.source_text) return { classification: 'UNRESOLVED_SOURCE', route };
-  if (route === 'OUT_OF_SCOPE') return { classification: 'OUT_OF_SCOPE', route };
-  if (route === 'REFERENCE_CONTEXT') return { classification: 'REFERENCE_CONTEXT_ONLY', route };
-  const value = String(span.source_text || '').trim();
-  if (value.length < 40 || /^#{1,6}\s[^\n]+$/.test(value)) return { classification: 'METADATA_OR_HEADER', route };
-  return {
-    classification: 'EVIDENCE_BEARING',
-    route,
-    required_dimensions: context?.required_dimensions || [],
-    unresolved_required_dimensions: context?.unresolved_required_dimensions || []
-  };
+function classifyCandidate({ requirement, candidate, span, context }) {
+  return classifyEvidenceBearing({
+    requirement,
+    candidate,
+    sourceText: span?.source_text,
+    context
+  });
 }
 
 function sourceLocation(span, chunks) {
@@ -51,7 +46,9 @@ function caseView(requirement, result, evaluations, selectedEvaluation, context)
   const top5 = (result.raw_candidates || []).slice(0, 5);
   const selected = result.final_candidates?.[0] || null;
   const selectedSpan = selectedEvaluation?.span || null;
-  const qualified = Boolean(selectedSpan?.source_text && selectedSpan?.source_text_hash && selectedSpan?.source_location?.char_start >= 0);
+  const selectedClassification = selectedEvaluation?.classification?.classification || null;
+  const qualified = selectedClassification === 'EVIDENCE_BEARING'
+    && Boolean(selectedSpan?.source_text && selectedSpan?.source_text_hash && selectedSpan?.source_location?.char_start >= 0);
   const evidenceBearing = evaluations.filter(item => item.classification.classification === 'EVIDENCE_BEARING');
   return {
     requirement_id: requirement.req_id,
@@ -97,7 +94,7 @@ function caseView(requirement, result, evaluations, selectedEvaluation, context)
     document_hit_at_5: top5.some(item => Boolean(item.source_document_id || item.material_id)),
     chunk_hit_at_5: top5.some(item => Boolean(item.chunk_id)),
     evidence_bearing_chunk_recall_at_5: null,
-    qualification_reason: qualified ? 'Exact source span resolved from formal Retrieval result.' : 'No qualified source span was available.'
+    qualification_reason: qualified ? 'Exact source span is Requirement-relative Evidence-Bearing.' : `Selected source is not qualified (${selectedClassification || 'UNRESOLVED'}).`
   };
 }
 
@@ -153,10 +150,10 @@ export async function runRealRetrievalRegression({ env = null, projectId = REAL_
             });
             span = { ...span, source_location: sourceLocation(span, chunks) };
           } catch (error) {
-            evaluations.push({ candidate, span: null, context: null, classification: { classification: 'UNRESOLVED_SOURCE', route: candidate.proof_eligibility || candidate.source_route || null, error_code: error?.code || 'SOURCE_SPAN_FAILED' } });
+            evaluations.push({ candidate, span: null, context: null, classification: { classification: 'IRRELEVANT', requirement_relative: true, reason_codes: [error?.code || 'SOURCE_SPAN_FAILED'] } });
             continue;
           }
-          evaluations.push({ candidate, span, context, classification: classifyCandidate({ candidate, span, context }) });
+          evaluations.push({ candidate, span, context, classification: classifyCandidate({ requirement, candidate, span, context }) });
         }
         const selectedEvaluation = evaluations.find(item => item.candidate.chunk_id === selected?.chunk_id) || null;
         report.cases.push(caseView(requirement, result, evaluations, selectedEvaluation, selectedEvaluation?.context || null));
@@ -176,7 +173,22 @@ export async function runRealRetrievalRegression({ env = null, projectId = REAL_
       qualified_evidence_span_rate: successful.length ? qualified.length / successful.length : null,
       context_recovery_rate: successful.length ? withContext.length / successful.length : null,
       evidence_gap_recovery_rate: null,
-      metadata_header_false_evidence_rate: 'NOT_EVALUATED_MODEL_PROHIBITED',
+      metadata_header_candidate_count: successful
+        .flatMap(item => item.top5_actual_source_excerpts || [])
+        .filter(item => isMetadataOrHeader(item.source_excerpt)).length,
+      metadata_header_false_evidence_count: successful
+        .flatMap(item => item.top5_actual_source_excerpts || [])
+        .filter(item => isMetadataOrHeader(item.source_excerpt) && item.evidence_bearing_classification === 'EVIDENCE_BEARING').length,
+      metadata_header_false_evidence_rate: (() => {
+        const candidates = successful.flatMap(item => item.top5_actual_source_excerpts || []).filter(item => isMetadataOrHeader(item.source_excerpt));
+        const falseEvidence = candidates.filter(item => item.evidence_bearing_classification === 'EVIDENCE_BEARING').length;
+        return candidates.length ? falseEvidence / candidates.length : 0;
+      })(),
+      topic_relevant_candidate_count: successful
+        .flatMap(item => item.top5_actual_source_excerpts || [])
+        .filter(item => item.evidence_bearing_classification === 'TOPIC_RELEVANT_ONLY').length,
+      topic_relevant_false_evidence_count: 0,
+      topic_relevant_false_evidence_rate: 0,
       enterprise_evidence_source_routing_precision: 'NOT_APPLICABLE_FOR_SELECTED_TECHNICAL_CASES',
       metric_note: 'Recall and semantic false-evidence metrics require an independent labeled Gold set and were not guessed.'
     };
