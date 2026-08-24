@@ -17,7 +17,7 @@ Authoritative detail: `ARCHITECTURE.md`, `docs/CURRENT_STAGE.md`, `docs/ROADMAP.
 ## Repository state
 
 - Branch: `feat/v4.3-semantic-boundary-routing`
-- HEAD: `1c73983` (`eval: normalize retrieval regression report`).
+- HEAD: `443ea89` (`docs: record retrieval revalidation checkpoint`).
 - Git status: clean; no secrets or generated documents are tracked.
 
 ## Frozen stages
