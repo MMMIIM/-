@@ -144,3 +144,19 @@ test('Dify 成功返回携带可持久化的外层响应审计', async () => {
 test('禁止从 result/text/answer 兜底读取正文', () => {
   assert.throws(() => extractResponsePayload({ data: { outputs: { result: '# 不应读取', text: '# 不应读取', answer: '# 不应读取' } } }), (error) => error.code === 'CONTRACT_INVALID');
 });
+
+test('语义输出只接受 data.outputs.response_payload_json', () => {
+  const valid = validPayload.data.outputs.response_payload_json;
+  const forbiddenEnvelopes = [
+    { outputs: { response_payload_json: valid } },
+    { data: { response_payload_json: valid } },
+    { data: { outputs: { response_payload_json: null } } },
+    { data: { outputs: { response_payload_json: 7 } } },
+    { data: { outputs: {} } },
+    { data: {} },
+    {}
+  ];
+  for (const payload of forbiddenEnvelopes) {
+    assert.throws(() => extractResponsePayload(payload), (error) => error.code === 'CONTRACT_INVALID');
+  }
+});

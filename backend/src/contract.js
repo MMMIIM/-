@@ -83,10 +83,10 @@ export function parseResponsePayload(rawValue) {
 }
 
 export function extractResponsePayload(difyPayload) {
-  const outputs = difyPayload?.data?.outputs ?? difyPayload?.outputs;
-  const rawValue = outputs && Object.prototype.hasOwnProperty.call(outputs, 'response_payload_json')
-    ? outputs.response_payload_json
-    : undefined;
+  // The v4.2 contract is intentionally strict: only the published nested
+  // envelope is trusted.  Do not add compatibility fallbacks here; doing so
+  // would allow an unowned provider field to become formal document state.
+  const rawValue = difyPayload?.data?.outputs?.response_payload_json;
   try {
     if (rawValue === undefined) invalid('output is missing');
     return parseResponsePayload(rawValue);
