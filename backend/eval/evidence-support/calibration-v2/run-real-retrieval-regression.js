@@ -6,18 +6,53 @@ import { createPool, PgRepository } from '../../../src/db.js';
 import { createEmbeddingClientFromEnv, createEmbeddingFetchFromEnv } from '../../../src/pipeline/embedding-client.js';
 import { EnterpriseRetrievalService } from '../../../src/pipeline/enterprise-retrieval-service.js';
 import { EvidenceSourceSpanService } from '../../../src/evidence-source-span-service.js';
-import { expandEvidenceContext } from '../../../src/pipeline/evidence-context-expansion.js';
+import { classifyRequiredEvidenceDimensions, expandEvidenceContext } from '../../../src/pipeline/evidence-context-expansion.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPORT_PATH = path.join(HERE, 'real-retrieval-regression-v1.json');
 export const REAL_RETRIEVAL_PROJECT_ID = '91ab7f01-2bfb-4d49-8a81-ddfcb20ee903';
 export const REAL_RETRIEVAL_REQUIREMENTS = Object.freeze(['REQ-001', 'REQ-009', 'REQ-012']);
 const excerpt = value => String(value ?? '').slice(0, 240);
+const CONTEXT_DIMENSIONS = Object.freeze(['subject_match', 'entity_match', 'scope_match', 'status_match', 'validity_match', 'quantitative_match']);
 
-function caseView(requirement, result, source, span, context) {
+function classifyCandidate({ candidate, span, context }) {
+  const route = candidate?.proof_eligibility || candidate?.source_route || null;
+  if (!span?.source_text) return { classification: 'UNRESOLVED_SOURCE', route };
+  if (route === 'OUT_OF_SCOPE') return { classification: 'OUT_OF_SCOPE', route };
+  if (route === 'REFERENCE_CONTEXT') return { classification: 'REFERENCE_CONTEXT_ONLY', route };
+  const value = String(span.source_text || '').trim();
+  if (value.length < 40 || /^#{1,6}\s[^\n]+$/.test(value)) return { classification: 'METADATA_OR_HEADER', route };
+  return {
+    classification: 'EVIDENCE_BEARING',
+    route,
+    required_dimensions: context?.required_dimensions || [],
+    unresolved_required_dimensions: context?.unresolved_required_dimensions || []
+  };
+}
+
+function sourceLocation(span, chunks) {
+  const ids = new Set(Array.isArray(span?.source_chunk_ids) ? span.source_chunk_ids : []);
+  const included = (Array.isArray(chunks) ? chunks : []).filter(item => ids.has(item.chunk_id));
+  const values = key => included.map(item => item[key]).filter(Number.isInteger);
+  const pages = [...values('page_start'), ...values('page_end')];
+  const paragraphs = [...values('paragraph_start'), ...values('paragraph_end')];
+  return {
+    char_start: span?.start_offset ?? null,
+    char_end: span?.end_offset ?? null,
+    page_start: pages.length ? Math.min(...pages) : null,
+    page_end: pages.length ? Math.max(...pages) : null,
+    paragraph_start: paragraphs.length ? Math.min(...paragraphs) : null,
+    paragraph_end: paragraphs.length ? Math.max(...paragraphs) : null,
+    heading_path: span?.heading_path || []
+  };
+}
+
+function caseView(requirement, result, evaluations, selectedEvaluation, context) {
   const top5 = (result.raw_candidates || []).slice(0, 5);
   const selected = result.final_candidates?.[0] || null;
-  const qualified = Boolean(span?.source_text && span?.source_text_hash && span?.source_location?.char_start >= 0);
+  const selectedSpan = selectedEvaluation?.span || null;
+  const qualified = Boolean(selectedSpan?.source_text && selectedSpan?.source_text_hash && selectedSpan?.source_location?.char_start >= 0);
+  const evidenceBearing = evaluations.filter(item => item.classification.classification === 'EVIDENCE_BEARING');
   return {
     requirement_id: requirement.req_id,
     requirement: requirement.text,
@@ -25,23 +60,36 @@ function caseView(requirement, result, source, span, context) {
     top_k: result.run?.top_k || 5,
     latency_ms: result.run?.latency_ms ?? null,
     answer_status: result.answer_status,
-    top5_actual_source_excerpts: top5.map(item => ({
-      material_id: item.material_id,
-      material_name: item.original_name,
-      corpus_scope: item.corpus_scope,
-      chunk_id: item.chunk_id,
-      similarity_score: item.similarity_score,
-      source_excerpt: excerpt(item.source_text)
+    top5_actual_source_excerpts: evaluations.map(item => ({
+      rank: item.candidate.rank,
+      material_id: item.candidate.material_id,
+      material_name: item.candidate.original_name,
+      document_id: item.candidate.source_document_id || item.candidate.material_id,
+      corpus_scope: item.candidate.corpus_scope,
+      chunk_id: item.candidate.chunk_id,
+      similarity_score: item.candidate.similarity_score,
+      proof_eligibility: item.candidate.proof_eligibility || item.candidate.source_route || null,
+      evidence_bearing_classification: item.classification.classification,
+      source_excerpt: excerpt(item.span?.source_text || item.candidate.source_text),
+      source_location: item.span?.source_location || null,
+      context_recovery: item.context ? {
+        recovery_state: item.context.recovery_state,
+        required_dimensions: item.context.required_dimensions,
+        unresolved_required_dimensions: item.context.unresolved_required_dimensions,
+        context_recovery_rate: item.context.context_recovery_rate
+      } : null
     })),
-    selected_exact_evidence_span: span ? {
-      source_span_id: span.span_id,
-      source_text: span.source_text,
-      source_text_hash: span.source_text_hash,
-      source_chunk_ids: span.source_chunk_ids,
-      source_location: span.source_location
+    selected_exact_evidence_span: selectedSpan ? {
+      source_span_id: selectedSpan.span_id,
+      source_text: selectedSpan.source_text,
+      source_text_hash: selectedSpan.source_text_hash,
+      source_chunk_ids: selectedSpan.source_chunk_ids,
+      source_location: selectedSpan.source_location
     } : null,
     context_window: context?.context_window || [],
     recovered_dimensions: context?.recovered_dimensions || {},
+    evidence_bearing_candidate_count: evidenceBearing.length,
+    evidence_bearing_candidates: evidenceBearing.map(item => item.candidate.chunk_id),
     evidence_span_qualification: qualified ? 'QUALIFIED' : 'NOT_QUALIFIED',
     final_semantic_result: 'NOT_EXECUTED_MODEL_PROHIBITED',
     source_routing: result.source_routing || null,
@@ -87,21 +135,31 @@ export async function runRealRetrievalRegression({ env = null, projectId = REAL_
       try {
         const result = await service.retrieve(requirement.id, { top_k: 5 });
         report.embedding_calls += 1;
-        let span = null;
-        let context = null;
         const selected = result.final_candidates?.[0];
-        if (selected) {
-          span = await spanService.resolveFromRetrieval({ projectId, requirementId: requirement.req_id, retrievalRunId: result.run.retrieval_run_id, anchorChunkId: selected.chunk_id });
-          const material = await repository.getCompanyMaterial(selected.material_id);
-          const chunks = await repository.listMaterialChunks(selected.material_id);
-          context = expandEvidenceContext({
-            exactSpan: { source_id: selected.chunk_id, source_span_id: span.span_id, anchor_chunk_id: selected.chunk_id, source_text: span.source_text },
-            material,
-            chunks,
-            missingDimensions: []
-          });
+        const evaluations = [];
+        for (const candidate of (result.raw_candidates || []).slice(0, 5)) {
+          let span = null;
+          let context = null;
+          try {
+            span = await spanService.resolveFromRetrieval({ projectId, requirementId: requirement.req_id, retrievalRunId: result.run.retrieval_run_id, anchorChunkId: candidate.chunk_id });
+            const material = await repository.getCompanyMaterial(candidate.material_id);
+            const chunks = await repository.listMaterialChunks(candidate.material_id);
+            context = expandEvidenceContext({
+              requirement,
+              exactSpan: { source_id: candidate.chunk_id, source_span_id: span.span_id, anchor_chunk_id: candidate.chunk_id, source_text: span.source_text },
+              material,
+              chunks,
+              missingDimensions: CONTEXT_DIMENSIONS
+            });
+            span = { ...span, source_location: sourceLocation(span, chunks) };
+          } catch (error) {
+            evaluations.push({ candidate, span: null, context: null, classification: { classification: 'UNRESOLVED_SOURCE', route: candidate.proof_eligibility || candidate.source_route || null, error_code: error?.code || 'SOURCE_SPAN_FAILED' } });
+            continue;
+          }
+          evaluations.push({ candidate, span, context, classification: classifyCandidate({ candidate, span, context }) });
         }
-        report.cases.push(caseView(requirement, result, selected || null, span, context));
+        const selectedEvaluation = evaluations.find(item => item.candidate.chunk_id === selected?.chunk_id) || null;
+        report.cases.push(caseView(requirement, result, evaluations, selectedEvaluation, selectedEvaluation?.context || null));
       } catch (error) {
         report.embedding_calls += 1;
         report.cases.push({ requirement_id: requirement.req_id, requirement: requirement.text, latency_ms: Date.now() - started, error_code: error?.code || 'RETRIEVAL_FAILED', error_message: error?.message || 'Retrieval failed.', final_semantic_result: 'NOT_REACHED', top5_actual_source_excerpts: [], selected_exact_evidence_span: null, context_window: [], recovered_dimensions: {} });

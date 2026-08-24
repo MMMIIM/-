@@ -1,0 +1,20 @@
+{
+  "schema_version": "4.3-targeted-evidence-bearing-retrieval-v1",
+  "purpose": "Retrieval-to-verified-span regression only; not an EvidenceSupport accuracy dataset.",
+  "model_calls": 0,
+  "provider_calls": 0,
+  "cases": [
+    { "case_id": "V2R-001-PERF-DIRECT", "class": "numeric_performance", "expected_material_id": "3c81671f-376e-401b-8525-be26929d5b92", "expected_chunk_id": "MCH-D32448917B3E8CAD1214641F8E85D86A", "expected_span_id": "ESPAN-F8209B2B73FCFC87DC5118C276BBF52D" },
+    { "case_id": "V2R-002-PERF-PARTIAL", "class": "numeric_performance", "expected_material_id": "3c81671f-376e-401b-8525-be26929d5b92", "expected_chunk_id": "MCH-D32448917B3E8CAD1214641F8E85D86A", "expected_span_id": "ESPAN-F8209B2B73FCFC87DC5118C276BBF52D" },
+    { "case_id": "V2R-003-COMP-DIRECT", "class": "compatibility", "expected_material_id": "3f9dacfb-2e48-4796-a477-98c60b506831", "expected_chunk_id": "MCH-EA8F9FC5473B4FA1539E99B748DA4071", "expected_span_id": "ESPAN-25517924C7F718BE23BD47529BE055D2" },
+    { "case_id": "V2R-004-COMP-PARTIAL", "class": "compatibility", "expected_material_id": "3f9dacfb-2e48-4796-a477-98c60b506831", "expected_chunk_id": "MCH-EA8F9FC5473B4FA1539E99B748DA4071", "expected_span_id": "ESPAN-25517924C7F718BE23BD47529BE055D2" },
+    { "case_id": "V2R-005-ISO-DIRECT", "class": "qualification", "expected_material_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e", "expected_chunk_id": "MCH-0820CC5A439CB986C62E46213029CC71", "expected_span_id": "ESPAN-7A5D661264A0C779ED903BDF21BC9E25" },
+    { "case_id": "V2R-006-ISO-SCOPE", "class": "wrong_entity", "expected_material_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e", "expected_chunk_id": "MCH-0820CC5A439CB986C62E46213029CC71", "expected_span_id": "ESPAN-7A5D661264A0C779ED903BDF21BC9E25" },
+    { "case_id": "V2R-007-PROJECT-STATUS", "class": "project_evidence", "expected_material_id": "75924286-5882-4658-bff9-ed587f70b927", "expected_chunk_id": "MCH-3D0A254CE926B207AFC696BF46520897", "expected_span_id": "ESPAN-B207B3874C1FCD381572F097CDA4BDF3" },
+    { "case_id": "V2R-010-CORPUS-01", "class": "reference_context_boundary", "expected_material_id": "e9bcafcd-c615-4f6d-b34e-9d1ffcdfef1c", "expected_chunk_id": "MCH-B349280E685FEB7ECD6B73AFFCF32228", "expected_span_id": "ESPAN-F9ECC31FE4FB66EAC197B56AEF1917B9" },
+    { "case_id": "V2R-015-CORPUS-06", "class": "reference_context_negative_control", "expected_material_id": "eef2ae66-8259-4954-9a88-2e184411fcc5", "expected_chunk_id": "MCH-F4CD0E67DBD66EC447EF06D0EDBB083A", "expected_span_id": "ESPAN-9364092E47249D44F9B86C33FB712A84" },
+    { "case_id": "V2R-021-CORPUS-12", "class": "third_party_boundary", "expected_material_id": "9876da6b-40c1-4f2d-b47b-290c7c150f4e", "expected_chunk_id": "MCH-A4211A94C5C7A077F478D979A3ADF86E", "expected_span_id": "ESPAN-403BC1522544E742C897D863B1EB8955" },
+    { "case_id": "V2R-024-CORPUS-15", "class": "project_evidence", "expected_material_id": "50467edc-0a5e-458f-ba69-1bbf488a115a", "expected_chunk_id": "MCH-DE72D8B87BB33D46100D0F2612B7C130", "expected_span_id": "ESPAN-3309A9E010D8E2060C639B659829A331" },
+    { "case_id": "V2R-030-CORPUS-21", "class": "project_evidence", "expected_material_id": "50467edc-0a5e-458f-ba69-1bbf488a115a", "expected_chunk_id": "MCH-3FD884E9C86C84ADD445F70EC81FADD9", "expected_span_id": "ESPAN-A9329BA2AE8E03755951632A45574198" }
+  ]
+}
