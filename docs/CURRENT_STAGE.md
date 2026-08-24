@@ -149,6 +149,42 @@ available, explicit empty TopK for the blocked cases and primary failure layers.
 `GPT_REVIEW_STATUS=PENDING_REVIEW`, and `EVAL_COMPLETE=NO`; aggregate metrics
 cannot freeze this P0 evaluation before independent review.
 
+### P0 Retrieval Eval Integrity Repair (2026-08-24)
+
+The prior 7-case Hit@5 **85.71%** is rejected as a formal quality result until
+Gold integrity is repaired. The offline audit found **0/7 persisted Gold
+bindings valid** under the invariant that the expected span must be an exact
+substring of the expected raw chunk and share its chunk identity; all **7/7**
+are `GOLD_LINEAGE_INVALID`. Deterministic evaluation-only slices rebind all
+seven cases to exact persisted chunk text (**7/7 valid**), without database
+writes, HUMAN_GOLD mutation, or production lifecycle use. V2R-005 and V2R-006
+were title-only-anchor / multi-chunk span mismatches; V2R-007 is
+`GOLD_DESIGN_AMBIGUOUS`, with rank-4 `MCH-268A...` retained as an equivalent
+supporting candidate requiring review rather than automatic Gold promotion.
+
+All 35 recorded Top5 candidates were re-audited offline. The previous runtime
+label marked 13 candidates `EVIDENCE_BEARING`; the corrected
+Requirement-relative classifier marks 7, with **6 explicit false positives**
+and 0 false negatives against the separate
+`GPT_REVIEW_EXPECTED_CLASSIFICATION` review expectation. This includes the
+three confirmed cases (V2R-001 rank 2 capability description, V2R-003 rank 3
+open-source policy, V2R-005 rank 5 ISO 9001) plus scope-boundary candidates in
+V2R-006. Metadata candidates total 14: 2 at rank 1, 10 within rank 3 and 14
+within rank 5 (40% of recorded candidates).
+
+Using only the existing recorded Top5 and repaired evaluation-only binding, the
+decision-bearing denominator is 5: Hit@1 **60%**, Hit@3 **80%**, Hit@5
+**100%**, MRR **0.75**. Useful first evidence ranks are 1 for four cases and 4
+for one case (V2R-001). V2R-006 remains a boundary case and V2R-007 remains
+excluded pending Gold design review. The complete offline packet is
+`backend/eval/evidence-support/calibration-v2/GPT_REVIEW_PACKET_RETRIEVAL_EVAL_INTEGRITY.md`
+and `.json`.
+
+Stage17 is now **PENDING_EVAL_INTEGRITY_REVIEW**; Stage20 remains **PARTIAL /
+BLOCKED** for formal evidence-retrieval acceptance. No Embedding, LLM, Dify or
+automatic retry calls were made. Do not change ranking, chunking, topK, MMR,
+Provider, or retry architecture from this audit.
+
 ### Standalone Semantic Gateway foundation (2026-08-24)
 
 本地已实现独立无状态 Node Gateway：`services/semantic-gateway`。共享语义

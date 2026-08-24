@@ -27,7 +27,8 @@ Authoritative detail: `ARCHITECTURE.md`, `docs/CURRENT_STAGE.md`, `docs/ROADMAP.
 
 ## Current stage
 
-Stage 20 — P0 Real Evidence Retrieval Revalidation: **PARTIAL / PENDING GPT REVIEW**.
+Stage 20 — P0 Real Evidence Retrieval Revalidation: **PARTIAL / BLOCKED — PENDING
+EVAL INTEGRITY REVIEW**.
 Stage 21-A Runtime Connectivity Foundation remains **PASS / FROZEN**. One managed
 SSH session provides the gateway forward and SOCKS egress; Gateway, SOCKS HTTPS,
 Embedding smoke, readiness, and monitor recovery passed. Stage20-S shared Evidence Support
@@ -64,6 +65,13 @@ cutover decision.
 - Calibration V2 re-audit: 36 active cases; 3 ready, 32 insufficient, 1 no-relevant, 0 conflict; Human Gold 0.
 - Evidence-bearing audit: 7 legacy metadata false labels and 4 legacy topic false labels corrected offline; targeted Gold qualification is 7 ready, 5 repairable, 0 rejected.
 - 7-case live Retrieval: 7/7 technical success, Hit@1 42.86%, Hit@3 71.43%, Hit@5 85.71%, Material/Document Hit@5 85.71%, MRR 0.5833; one metadata-pollution miss; GPT review pending.
+- Retrieval eval integrity audit: persisted Gold bindings 0/7 valid and 7/7
+  invalid under the exact span-in-expected-chunk invariant; 7/7 deterministic
+  evaluation-only repaired slices are valid and are not HUMAN_GOLD. All 35
+  recorded Top5 candidates were re-audited: previous Evidence-Bearing 13,
+  corrected 7, explicit false positives 6, false negatives 0. Decision-bearing
+  offline metrics (denominator 5) are Hit@1 60%, Hit@3 80%, Hit@5 100%, MRR
+  0.75; V2R-007 remains GOLD_DESIGN_AMBIGUOUS.
 - Full case-level packet: all 12 cases persisted in `backend/eval/evidence-support/calibration-v2/GPT_REVIEW_PACKET.md` and `.json`; `GPT_REVIEW_STATUS=PENDING_REVIEW`, `EVAL_COMPLETE=NO`.
 - Gold qualification packet: `GPT_REVIEW_PACKET_GOLD_QUALIFICATION.md` and `.json` contain all 12 independent A–I checks; 7 `GOLD_READY_FOR_RETRIEVAL`, 5 `GOLD_PARTIAL`, current index verified 9/12.
 - Context recovery audit: 158 dimensions total (93 required, 65 not applicable),
@@ -73,13 +81,13 @@ cutover decision.
 
 The P0 context/retrieval audit is complete without changing Retrieval ranking or
 contracts. The former length-only Evidence-Bearing label was replaced by the
-Requirement-relative `evidence-bearing-classifier-v1`; offline audit shows 7/7
-legacy metadata and 4/4 legacy topic false labels, while the corrected labels
-produce 0 current false-evidence labels. The targeted Gold qualification found 7
-independently executable cases and 5 deterministic-but-repairable cases. The
-seven ready cases have now completed one authorized live Retrieval run; the next
-step is GPT review of the complete packet. Do not infer Gold from nearest
-Requirements or change ranking, chunking, topK, MMR, Provider, or retry architecture.
+Requirement-relative `evidence-bearing-classifier-v1`; the integrity audit now
+rejects the previous 85.71% as formal quality evidence until Gold review closes
+the persisted lineage defects. V2R-005/V2R-006 are title-only-anchor versus
+multi-chunk span mismatches; V2R-007 is a Gold-design ambiguity with an
+equivalent rank-4 supporting candidate. The next step is GPT review of
+`GPT_REVIEW_PACKET_RETRIEVAL_EVAL_INTEGRITY.md/.json`. Do not infer Gold from
+nearest Requirements or change ranking, chunking, topK, MMR, Provider, or retry architecture.
 
 ## Frozen boundaries
 
