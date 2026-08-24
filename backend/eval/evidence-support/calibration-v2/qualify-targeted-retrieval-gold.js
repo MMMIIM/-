@@ -118,9 +118,9 @@ function readinessFor(mapping, dimensions, { transientSourceResolved, spanVerifi
   }
   if (mapping.verified_span_id && (!dimensions.span_source_exact_in_expected_chunk || !dimensions.span_chunk_identity)) {
     return {
-      status: 'GOLD_LINEAGE_INVALID',
-      group: 'REJECT_REBUILD',
-      reasons: ['expected_span_must_be_exact_substring_of_expected_chunk', 'expected_chunk_must_equal_span_chunk_identity']
+      status: 'RETRIEVAL_GOLD_BINDING_REQUIRES_DERIVATION',
+      group: 'DERIVE_BUSINESS_BEARING_CHUNKS',
+      reasons: ['multi_chunk_span_cannot_directly_serve_single_chunk_gold', 'derive_business_bearing_chunk_from_persisted_span']
     };
   }
   if (mapping.verified_span_id && spanVerified && currentIndex) {
@@ -239,7 +239,7 @@ function qualifyCase(mapping, snapshot, corpus, index) {
 function aggregate(cases) {
   const count = (selector) => cases.filter(selector).length;
   const statusCounts = Object.fromEntries([
-    'GOLD_READY_FOR_RETRIEVAL', 'GOLD_PARTIAL', 'GOLD_STALE', 'GOLD_LINEAGE_INVALID',
+    'GOLD_READY_FOR_RETRIEVAL', 'GOLD_PARTIAL', 'GOLD_STALE', 'GOLD_LINEAGE_INVALID', 'RETRIEVAL_GOLD_BINDING_REQUIRES_DERIVATION',
     'GOLD_REQUIREMENT_INVALID', 'GOLD_CORPUS_MISMATCH', 'GOLD_LEAKAGE_RISK'
   ].map((status) => [status, count((item) => item.readiness.status === status)]));
   return {

@@ -4,6 +4,7 @@ import { EmbeddingError } from './embedding-client.js';
 import { PRODUCTION_CANDIDATE_K,PRODUCTION_REVIEW_K,RERANK_VERSION,RETRIEVAL_CONTRACT_VERSION,rerankProductionCandidates } from './semantic-retrieval-reranker.js';
 import { PUBLIC_CORPUS_PROJECT_ID } from './corpus-contract.js';
 import { routeEnterpriseProofCandidates } from './enterprise-evidence-source-router.js';
+import { partitionRetrievalCandidates } from './retrieval-chunk-role.js';
 
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const TYPES=new Set(['company_profile','qualification','case','project_case','product','product_documentation','personnel','technical_solution','technical_whitepaper','delivery_capability','historical_bid','other']);
@@ -28,10 +29,12 @@ export class EnterpriseRetrievalService{
     try{
       const chunks=await this.repository.listChunksForRetrieval({projectId:requirement.project_id,materialTypes,materialIds:selectedMaterialIds,corpusScopes,corpusProjectId:PUBLIC_CORPUS_PROJECT_ID,...config});if(chunks.some((item)=>item.embedding_id&&Number(item.embedding_dimension)!==config.dimension))throw new AppError('EMBEDDING_IDENTITY_CONFLICT','同一 embedding model/version 的维度不一致，请更新 embedding_version。',409);const missing=chunks.filter((item)=>!item.embedding_id);const vectors=await this.embeddingClient.embed([requirement.text,...missing.map((item)=>item.source_text)]);const queryVector=vectors[0];const newEmbeddings=missing.map((chunk,index)=>({chunkId:chunk.chunk_id,chunkHash:chunk.chunk_hash,embedding:vectors[index+1],...config}));
       const rawCandidates=await this.repository.prepareRetrievalCandidates({queryVector,newEmbeddings,projectId:requirement.project_id,materialTypes,materialIds:selectedMaterialIds,corpusScopes,corpusProjectId:PUBLIC_CORPUS_PROJECT_ID,...config,candidateK:PRODUCTION_CANDIDATE_K});
-      const sourceRouting=routeEnterpriseProofCandidates({requirement,candidates:rawCandidates});
-      const ranking=rerankProductionCandidates(sourceRouting.intent?sourceRouting.proof_candidates:rawCandidates,semanticMetadata);const selected=ranking.final_candidates.slice(0,Math.min(PRODUCTION_REVIEW_K,legacyLimit));
-      const result=await this.repository.completeRetrievalRun({runId:run.retrieval_run_id,ranking:{...ranking,final_candidates:selected},latencyMs:Math.max(0,this.clock()-started),...config});
-      return{...result,answer_status:selected.length?'CANDIDATES_FOUND':'NO_RELEVANT_EVIDENCE',no_answer_code:selected.length?null:'NO_RELEVANT_EVIDENCE',source_routing:sourceRouting,reference_candidates:sourceRouting.reference_candidates};
+      const hygiene=partitionRetrievalCandidates({requirement,candidates:rawCandidates});
+      const sourceRouting=routeEnterpriseProofCandidates({requirement,candidates:hygiene.eligible_candidates});
+      const ranking=rerankProductionCandidates(sourceRouting.intent?sourceRouting.proof_candidates:hygiene.eligible_candidates,semanticMetadata);const selected=ranking.final_candidates.slice(0,Math.min(PRODUCTION_REVIEW_K,legacyLimit));
+      const rankingWithHygiene={...ranking,raw_candidates:hygiene.all_candidates,reranked_candidates:ranking.reranked_candidates,final_candidates:selected};
+      const result=await this.repository.completeRetrievalRun({runId:run.retrieval_run_id,ranking:rankingWithHygiene,latencyMs:Math.max(0,this.clock()-started),...config});
+      return{...result,answer_status:selected.length?'CANDIDATES_FOUND':'NO_RELEVANT_EVIDENCE',no_answer_code:selected.length?null:'NO_RELEVANT_EVIDENCE',source_routing:sourceRouting,reference_candidates:sourceRouting.reference_candidates,candidate_hygiene:{...hygiene,final_evidence_candidate_count:selected.length}};
     }catch(error){const code=error instanceof EmbeddingError?error.code:error instanceof AppError?error.code:'RETRIEVAL_FAILED';const message=error instanceof EmbeddingError?error.message:'Enterprise Retrieval 执行失败。';await this.repository.failRetrievalRun({runId:run.retrieval_run_id,errorCode:code,errorMessage:message,latencyMs:Math.max(0,this.clock()-started)});throw error instanceof EmbeddingError?error:new AppError(code,message,error instanceof AppError?error.status:500);}
   }
   async get(runId){if(!UUID.test(String(runId||'')))throw new AppError('INVALID_RETRIEVAL_RUN_ID','Retrieval Run ID 格式无效。',400);const result=await this.repository.getRetrievalRun(runId);if(!result)throw new AppError('RETRIEVAL_RUN_NOT_FOUND','Retrieval Run 不存在。',404);return result;}

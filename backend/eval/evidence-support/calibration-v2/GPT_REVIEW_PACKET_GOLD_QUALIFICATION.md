@@ -11,14 +11,15 @@
   "GOLD_READY_FOR_RETRIEVAL": 0,
   "GOLD_PARTIAL": 5,
   "GOLD_STALE": 0,
-  "GOLD_LINEAGE_INVALID": 7,
+  "GOLD_LINEAGE_INVALID": 0,
+  "RETRIEVAL_GOLD_BINDING_REQUIRES_DERIVATION": 7,
   "GOLD_REQUIREMENT_INVALID": 0,
   "GOLD_CORPUS_MISMATCH": 0,
   "GOLD_LEAKAGE_RISK": 0,
-  "rejected": 7,
+  "rejected": 0,
   "group_ready": 0,
   "group_repairable": 5,
-  "group_reject_rebuild": 7,
+  "group_reject_rebuild": 0,
   "material_verified": 12,
   "document_verified": 12,
   "chunk_verified": 12,
@@ -57,7 +58,7 @@
 ## Next executable set
 
 - READY：NONE
-- EXCLUDED：V2R-001-PERF-DIRECT (GOLD_LINEAGE_INVALID: expected_span_must_be_exact_substring_of_expected_chunk; expected_chunk_must_equal_span_chunk_identity), V2R-002-PERF-PARTIAL (GOLD_LINEAGE_INVALID: expected_span_must_be_exact_substring_of_expected_chunk; expected_chunk_must_equal_span_chunk_identity), V2R-003-COMP-DIRECT (GOLD_LINEAGE_INVALID: expected_span_must_be_exact_substring_of_expected_chunk; expected_chunk_must_equal_span_chunk_identity), V2R-004-COMP-PARTIAL (GOLD_LINEAGE_INVALID: expected_span_must_be_exact_substring_of_expected_chunk; expected_chunk_must_equal_span_chunk_identity), V2R-005-ISO-DIRECT (GOLD_LINEAGE_INVALID: expected_span_must_be_exact_substring_of_expected_chunk; expected_chunk_must_equal_span_chunk_identity), V2R-006-ISO-SCOPE (GOLD_LINEAGE_INVALID: expected_span_must_be_exact_substring_of_expected_chunk; expected_chunk_must_equal_span_chunk_identity), V2R-007-PROJECT-STATUS (GOLD_LINEAGE_INVALID: expected_span_must_be_exact_substring_of_expected_chunk; expected_chunk_must_equal_span_chunk_identity), V2R-010-CORPUS-01 (GOLD_PARTIAL: exact_source_chunk_resolved_deterministically; source_span_or_eval_manifest_binding_not_persisted), V2R-015-CORPUS-06 (GOLD_PARTIAL: exact_source_chunk_resolved_deterministically; source_span_or_eval_manifest_binding_not_persisted), V2R-021-CORPUS-12 (GOLD_PARTIAL: exact_source_chunk_resolved_deterministically; source_span_or_eval_manifest_binding_not_persisted; current_embedding_index_missing), V2R-024-CORPUS-15 (GOLD_PARTIAL: exact_source_chunk_resolved_deterministically; source_span_or_eval_manifest_binding_not_persisted; current_embedding_index_missing), V2R-030-CORPUS-21 (GOLD_PARTIAL: exact_source_chunk_resolved_deterministically; source_span_or_eval_manifest_binding_not_persisted; current_embedding_index_missing)
+- EXCLUDED：V2R-001-PERF-DIRECT (RETRIEVAL_GOLD_BINDING_REQUIRES_DERIVATION: multi_chunk_span_cannot_directly_serve_single_chunk_gold; derive_business_bearing_chunk_from_persisted_span), V2R-002-PERF-PARTIAL (RETRIEVAL_GOLD_BINDING_REQUIRES_DERIVATION: multi_chunk_span_cannot_directly_serve_single_chunk_gold; derive_business_bearing_chunk_from_persisted_span), V2R-003-COMP-DIRECT (RETRIEVAL_GOLD_BINDING_REQUIRES_DERIVATION: multi_chunk_span_cannot_directly_serve_single_chunk_gold; derive_business_bearing_chunk_from_persisted_span), V2R-004-COMP-PARTIAL (RETRIEVAL_GOLD_BINDING_REQUIRES_DERIVATION: multi_chunk_span_cannot_directly_serve_single_chunk_gold; derive_business_bearing_chunk_from_persisted_span), V2R-005-ISO-DIRECT (RETRIEVAL_GOLD_BINDING_REQUIRES_DERIVATION: multi_chunk_span_cannot_directly_serve_single_chunk_gold; derive_business_bearing_chunk_from_persisted_span), V2R-006-ISO-SCOPE (RETRIEVAL_GOLD_BINDING_REQUIRES_DERIVATION: multi_chunk_span_cannot_directly_serve_single_chunk_gold; derive_business_bearing_chunk_from_persisted_span), V2R-007-PROJECT-STATUS (RETRIEVAL_GOLD_BINDING_REQUIRES_DERIVATION: multi_chunk_span_cannot_directly_serve_single_chunk_gold; derive_business_bearing_chunk_from_persisted_span), V2R-010-CORPUS-01 (GOLD_PARTIAL: exact_source_chunk_resolved_deterministically; source_span_or_eval_manifest_binding_not_persisted), V2R-015-CORPUS-06 (GOLD_PARTIAL: exact_source_chunk_resolved_deterministically; source_span_or_eval_manifest_binding_not_persisted), V2R-021-CORPUS-12 (GOLD_PARTIAL: exact_source_chunk_resolved_deterministically; source_span_or_eval_manifest_binding_not_persisted; current_embedding_index_missing), V2R-024-CORPUS-15 (GOLD_PARTIAL: exact_source_chunk_resolved_deterministically; source_span_or_eval_manifest_binding_not_persisted; current_embedding_index_missing), V2R-030-CORPUS-21 (GOLD_PARTIAL: exact_source_chunk_resolved_deterministically; source_span_or_eval_manifest_binding_not_persisted; current_embedding_index_missing)
 - Mapping evaluation：NOT_EXECUTED
 
 ## All 12 case-level qualification results
@@ -98,10 +99,10 @@
 日期：2025-05-16。
 ```
 
-### Gold readiness：GOLD_LINEAGE_INVALID
+### Gold readiness：RETRIEVAL_GOLD_BINDING_REQUIRES_DERIVATION
 
-- Group：REJECT_REBUILD
-- Reasons：expected_span_must_be_exact_substring_of_expected_chunk; expected_chunk_must_equal_span_chunk_identity
+- Group：DERIVE_BUSINESS_BEARING_CHUNKS
+- Reasons：multi_chunk_span_cannot_directly_serve_single_chunk_gold; derive_business_bearing_chunk_from_persisted_span
 - Semantic notes：none
 
 ### Execution / safety
@@ -150,10 +151,10 @@
 日期：2025-05-16。
 ```
 
-### Gold readiness：GOLD_LINEAGE_INVALID
+### Gold readiness：RETRIEVAL_GOLD_BINDING_REQUIRES_DERIVATION
 
-- Group：REJECT_REBUILD
-- Reasons：expected_span_must_be_exact_substring_of_expected_chunk; expected_chunk_must_equal_span_chunk_identity
+- Group：DERIVE_BUSINESS_BEARING_CHUNKS
+- Reasons：multi_chunk_span_cannot_directly_serve_single_chunk_gold; derive_business_bearing_chunk_from_persisted_span
 - Semantic notes：none
 
 ### Execution / safety
@@ -200,10 +201,10 @@ x86_64 + Ubuntu 22.04 + PostgreSQL 14：tested
 国产数据库组合：unknown
 ```
 
-### Gold readiness：GOLD_LINEAGE_INVALID
+### Gold readiness：RETRIEVAL_GOLD_BINDING_REQUIRES_DERIVATION
 
-- Group：REJECT_REBUILD
-- Reasons：expected_span_must_be_exact_substring_of_expected_chunk; expected_chunk_must_equal_span_chunk_identity
+- Group：DERIVE_BUSINESS_BEARING_CHUNKS
+- Reasons：multi_chunk_span_cannot_directly_serve_single_chunk_gold; derive_business_bearing_chunk_from_persisted_span
 - Semantic notes：none
 
 ### Execution / safety
@@ -250,10 +251,10 @@ x86_64 + Ubuntu 22.04 + PostgreSQL 14：tested
 国产数据库组合：unknown
 ```
 
-### Gold readiness：GOLD_LINEAGE_INVALID
+### Gold readiness：RETRIEVAL_GOLD_BINDING_REQUIRES_DERIVATION
 
-- Group：REJECT_REBUILD
-- Reasons：expected_span_must_be_exact_substring_of_expected_chunk; expected_chunk_must_equal_span_chunk_identity
+- Group：DERIVE_BUSINESS_BEARING_CHUNKS
+- Reasons：multi_chunk_span_cannot_directly_serve_single_chunk_gold; derive_business_bearing_chunk_from_persisted_span
 - Semantic notes：none
 
 ### Execution / safety
@@ -300,10 +301,10 @@ x86_64 + Ubuntu 22.04 + PostgreSQL 14：tested
 有效至：2027-11-30
 ```
 
-### Gold readiness：GOLD_LINEAGE_INVALID
+### Gold readiness：RETRIEVAL_GOLD_BINDING_REQUIRES_DERIVATION
 
-- Group：REJECT_REBUILD
-- Reasons：expected_span_must_be_exact_substring_of_expected_chunk; expected_chunk_must_equal_span_chunk_identity
+- Group：DERIVE_BUSINESS_BEARING_CHUNKS
+- Reasons：multi_chunk_span_cannot_directly_serve_single_chunk_gold; derive_business_bearing_chunk_from_persisted_span
 - Semantic notes：none
 
 ### Execution / safety
@@ -350,10 +351,10 @@ x86_64 + Ubuntu 22.04 + PostgreSQL 14：tested
 有效至：2027-11-30
 ```
 
-### Gold readiness：GOLD_LINEAGE_INVALID
+### Gold readiness：RETRIEVAL_GOLD_BINDING_REQUIRES_DERIVATION
 
-- Group：REJECT_REBUILD
-- Reasons：expected_span_must_be_exact_substring_of_expected_chunk; expected_chunk_must_equal_span_chunk_identity
+- Group：DERIVE_BUSINESS_BEARING_CHUNKS
+- Reasons：multi_chunk_span_cannot_directly_serve_single_chunk_gold; derive_business_bearing_chunk_from_persisted_span
 - Semantic notes：none
 
 ### Execution / safety
@@ -400,10 +401,10 @@ x86_64 + Ubuntu 22.04 + PostgreSQL 14：tested
 状态不完整，不得推断完工或验收。
 ```
 
-### Gold readiness：GOLD_LINEAGE_INVALID
+### Gold readiness：RETRIEVAL_GOLD_BINDING_REQUIRES_DERIVATION
 
-- Group：REJECT_REBUILD
-- Reasons：expected_span_must_be_exact_substring_of_expected_chunk; expected_chunk_must_equal_span_chunk_identity
+- Group：DERIVE_BUSINESS_BEARING_CHUNKS
+- Reasons：multi_chunk_span_cannot_directly_serve_single_chunk_gold; derive_business_bearing_chunk_from_persisted_span
 - Semantic notes：none
 
 ### Execution / safety

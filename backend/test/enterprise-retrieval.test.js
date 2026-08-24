@@ -42,6 +42,34 @@ test('Enterprise proof retrieval never promotes government reference material in
   assert.equal(completed.ranking.final_candidates.length,0);
 });
 
+test('formal evidence retrieval filters heading and metadata candidates before final TopK', async () => {
+  let completed;
+  const repository = {
+    getCanonicalRequirementForRetrieval: async () => ({ id: REQUIREMENT_ID, project_id: PROJECT_ID, req_id: 'REQ-001', text: '系统应提供可核验的测试记录。', requirement_category: 'technical' }),
+    createRetrievalRun: async (value) => ({ retrieval_run_id: 'run', ...value }),
+    listChunksForRetrieval: async () => [
+      { chunk_id: 'heading', chunk_hash: 'H1', source_text: '# ISO 27001 受控记录', material_id: 'M1', embedding_id: null },
+      { chunk_id: 'business', chunk_hash: 'H2', source_text: '名称：ISO/IEC 27001\n状态：active\n有效至：2027-11-30', material_id: 'M1', embedding_id: null },
+      { chunk_id: 'wrong-heading', chunk_hash: 'H3', source_text: '# ISO 9001 受控记录', material_id: 'M2', embedding_id: null }
+    ],
+    prepareRetrievalCandidates: async () => [
+      { chunk_id: 'heading', chunk_hash: 'H1', source_text: '# ISO 27001 受控记录', material_id: 'M1', embedding_id: 'E1', similarity_score: 0.99, rank: 1 },
+      { chunk_id: 'business', chunk_hash: 'H2', source_text: '名称：ISO/IEC 27001\n状态：active\n有效至：2027-11-30', material_id: 'M1', embedding_id: 'E2', similarity_score: 0.8, rank: 2 },
+      { chunk_id: 'wrong-heading', chunk_hash: 'H3', source_text: '# ISO 9001 受控记录', material_id: 'M2', embedding_id: 'E3', similarity_score: 0.7, rank: 3 }
+    ],
+    completeRetrievalRun: async (value) => { completed = value; return { run: { status: 'succeeded' }, raw_candidates: value.ranking.raw_candidates, final_candidates: value.ranking.final_candidates, results: value.ranking.final_candidates }; },
+    failRetrievalRun: async () => {}
+  };
+  const embeddingClient = { model: 'fixture', version: 'v1', dimension: 3, embed: async (texts) => texts.map(() => [1, 0, 0]) };
+  const result = await new EnterpriseRetrievalService({ repository, embeddingClient, defaultTopK: 5 }).retrieve(REQUIREMENT_ID);
+  assert.deepEqual(result.final_candidates.map((item) => item.chunk_id), ['business']);
+  assert.deepEqual(result.candidate_hygiene.excluded_candidates.map((item) => item.chunk_id), ['heading', 'wrong-heading']);
+  assert.equal(result.candidate_hygiene.internal_candidate_pool_size, 3);
+  assert.equal(result.candidate_hygiene.eligible_candidate_pool_size, 1);
+  assert.equal(completed.ranking.raw_candidates.length, 3);
+  assert.equal(completed.ranking.final_candidates[0].chunk_role, 'BUSINESS_CONTENT');
+});
+
 test('Embedding failure 必须持久化 failed run 且不伪造向量',async()=>{
   let failure;let completed=false;const repository={getCanonicalRequirementForRetrieval:async()=>({id:REQUIREMENT_ID,project_id:PROJECT_ID,req_id:'REQ-001',text:'query'}),createRetrievalRun:async()=>({retrieval_run_id:'run'}),listChunksForRetrieval:async()=>[{chunk_id:'C1',chunk_hash:'H1',source_text:'chunk'}],prepareRetrievalCandidates:async()=>[],completeRetrievalRun:async()=>{completed=true;},failRetrievalRun:async(value)=>{failure=value;}};const client={model:'fixture',version:'v1',dimension:3,embed:async()=>{throw new EmbeddingError('EMBEDDING_TIMEOUT','Embedding 服务超时。',504);}};
   await assert.rejects(()=>new EnterpriseRetrievalService({repository,embeddingClient:client}).retrieve(REQUIREMENT_ID),(error)=>error.code==='EMBEDDING_TIMEOUT');assert.equal(failure.errorCode,'EMBEDDING_TIMEOUT');assert.equal(completed,false);

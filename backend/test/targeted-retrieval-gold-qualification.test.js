@@ -18,7 +18,8 @@ test('targeted Retrieval Gold is qualified per case instead of blanket GOLD_INVA
   assert.equal(packet.aggregate.GOLD_READY_FOR_RETRIEVAL, 0);
   assert.equal(packet.aggregate.GOLD_PARTIAL, 5);
   assert.equal(packet.aggregate.GOLD_REQUIREMENT_INVALID, 0);
-  assert.equal(packet.aggregate.GOLD_LINEAGE_INVALID, 7);
+  assert.equal(packet.aggregate.GOLD_LINEAGE_INVALID, 0);
+  assert.equal(packet.aggregate.RETRIEVAL_GOLD_BINDING_REQUIRES_DERIVATION, 7);
   assert.equal(packet.aggregate.GOLD_CORPUS_MISMATCH, 0);
   assert.equal(packet.aggregate.span_verified, 0);
   assert.equal(packet.aggregate.current_index_verified, 9);
@@ -38,7 +39,7 @@ test('targeted Retrieval Gold is qualified per case instead of blanket GOLD_INVA
   }
   assert.deepEqual(packet.cases.filter((item) => item.readiness.status === 'GOLD_READY_FOR_RETRIEVAL'), []);
   for (const item of packet.cases.filter((item) => item.case_id.startsWith('V2R-00'))) {
-    assert.equal(item.readiness.status, 'GOLD_LINEAGE_INVALID');
+    assert.equal(item.readiness.status, 'RETRIEVAL_GOLD_BINDING_REQUIRES_DERIVATION');
     assert.equal(item.dimensions.span_source_exact_in_expected_chunk, false);
     assert.equal(item.dimensions.span_chunk_identity, true);
   }

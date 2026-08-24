@@ -180,10 +180,34 @@ excluded pending Gold design review. The complete offline packet is
 `backend/eval/evidence-support/calibration-v2/GPT_REVIEW_PACKET_RETRIEVAL_EVAL_INTEGRITY.md`
 and `.json`.
 
-Stage17 is now **PENDING_EVAL_INTEGRITY_REVIEW**; Stage20 remains **PARTIAL /
-BLOCKED** for formal evidence-retrieval acceptance. No Embedding, LLM, Dify or
-automatic retry calls were made. Do not change ranking, chunking, topK, MMR,
-Provider, or retry architecture from this audit.
+Stage17 is **REOPENED_FOR_P0_FIX + METRIC_REBASE_REQUIRED + PENDING_GPT_REVIEW**;
+Stage20 remains **PARTIAL / BLOCKED** for formal evidence-retrieval acceptance.
+The persisted multi-chunk Evidence Spans are valid records (7/7); the 7/7
+direct single-chunk Retrieval Gold bindings require deterministic derivation of
+business-bearing chunks and must not mutate the formal spans. V2R-006 is
+Evidence-Bearing with a boundary/partial scope, not topic-only. No Embedding,
+LLM, Dify or automatic retry calls were made by this offline correction. Do
+not change ranking, chunking, topK, MMR, Provider, or retry architecture from
+this audit.
+
+### P0 Retrieval candidate hygiene (2026-08-24)
+
+Deterministic chunk-role classification and candidate eligibility are now
+implemented in the formal `EnterpriseRetrievalService` path. The existing raw
+candidate pool (20) is preserved for audit/context recovery; before final TopK,
+HEADING, METADATA and FRONT_MATTER candidates are excluded from the formal
+Evidence lane unless the Requirement explicitly requests metadata.
+BUSINESS_CONTENT and TABLE_ROW remain eligible, with original similarity order
+and no ranking boost. Migration `042_retrieval_candidate_hygiene.sql` persists
+the role and eligibility audit fields. Context headings remain available to
+context recovery.
+
+The six-case pre-fix baseline (V2R-001..006) is denominator 6: Hit@1 4/6,
+Hit@3 5/6, Hit@5 6/6, MRR 0.68056, and 10 metadata candidates in the recorded
+Top5. The post-fix comparison runner and packet are implemented but the single
+authorized six-query live Embedding run is pending external execution approval;
+no post-fix claim is made here. GPT review remains `PENDING_REVIEW` and
+`EVAL_COMPLETE=NO`.
 
 ### Standalone Semantic Gateway foundation (2026-08-24)
 

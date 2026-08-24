@@ -11,8 +11,9 @@ test('Gold lineage invariant rejects persisted multi-chunk spans and records det
   const packet = JSON.parse(fs.readFileSync(path.join(HERE, 'GPT_REVIEW_PACKET_RETRIEVAL_EVAL_INTEGRITY.json'), 'utf8'));
   assert.equal(packet.external_calls.embedding, 0);
   assert.equal(packet.gold_binding_audit.length, 7);
-  assert.equal(packet.gold_binding_audit.filter(item => item.classification === 'GOLD_LINEAGE_INVALID').length, 7);
-  assert.equal(packet.gold_binding_audit.filter(item => item.repaired_binding?.status === 'GOLD_BINDING_VALID').length, 7);
+  assert.equal(packet.gold_binding_audit.filter(item => item.persisted_span_validity === 'VALID_MULTI_CHUNK_EVIDENCE_SPAN').length, 7);
+  assert.equal(packet.gold_binding_audit.filter(item => item.classification === 'RETRIEVAL_GOLD_BINDING_REQUIRES_DERIVATION').length, 7);
+  assert.equal(packet.gold_binding_audit.filter(item => item.repaired_binding?.status === 'RETRIEVAL_GOLD_DERIVED').length, 7);
   const iso = packet.gold_binding_audit.find(item => item.case_id === 'V2R-005-ISO-DIRECT');
   assert.equal(iso.expected.chunk_id, 'MCH-0820CC5A439CB986C62E46213029CC71');
   assert.equal(iso.repaired_binding.chunk_id, 'MCH-A4C2632EF9126FADD349C3004E1C2D84');
@@ -31,7 +32,13 @@ test('35-candidate audit is separate from runtime classifier and records review 
   assert.equal(packet.metadata_pollution.metadata_at_3.candidate_count, 10);
   assert.equal(packet.metadata_pollution.metadata_at_5.candidate_count, 14);
   assert.equal(packet.offline_metrics.decision_bearing_hit_at_5, 1);
-  assert.equal(packet.offline_metrics.gold_expected_rank_mrr, 0.75);
+  assert.equal(packet.offline_metrics.denominator, 6);
+  assert.equal(packet.offline_metrics.decision_bearing_hit_at_3, 5 / 6);
+  assert.equal(packet.offline_metrics.gold_expected_rank_mrr, 0.6805555555555555);
+  assert.equal(packet.audit_summary.corrected_evidence_bearing_count, 9);
+  assert.equal(packet.audit_summary.false_positive_count, 4);
+  assert.equal(packet.audit_summary.persisted_evidence_spans_valid, 7);
+  assert.equal(packet.audit_summary.repaired_eval_bindings_valid, 7);
 });
 
 test('classifier audit expectations reject the three confirmed false positives', () => {
@@ -55,6 +62,7 @@ test('classifier audit expectations reject the three confirmed false positives',
 test('qualification packet has no READY Gold after exact-span invariant enforcement', () => {
   const packet = JSON.parse(fs.readFileSync(path.join(HERE, 'GPT_REVIEW_PACKET_GOLD_QUALIFICATION.json'), 'utf8'));
   assert.equal(packet.aggregate.GOLD_READY_FOR_RETRIEVAL, 0);
-  assert.equal(packet.aggregate.GOLD_LINEAGE_INVALID, 7);
+  assert.equal(packet.aggregate.GOLD_LINEAGE_INVALID, 0);
+  assert.equal(packet.aggregate.RETRIEVAL_GOLD_BINDING_REQUIRES_DERIVATION, 7);
   assert.equal(packet.external_calls.embedding, 0);
 });

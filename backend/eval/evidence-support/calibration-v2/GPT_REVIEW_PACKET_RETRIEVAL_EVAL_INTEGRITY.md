@@ -11,7 +11,8 @@
   {
     "case_id": "V2R-001-PERF-DIRECT",
     "gold_role": "SUPPORTING",
-    "classification": "GOLD_LINEAGE_INVALID",
+    "classification": "RETRIEVAL_GOLD_BINDING_REQUIRES_DERIVATION",
+    "persisted_span_validity": "VALID_MULTI_CHUNK_EVIDENCE_SPAN",
     "checks": {
       "expected_material_exists": true,
       "expected_chunk_exists": true,
@@ -21,7 +22,9 @@
       "span_material_identity": true,
       "span_document_identity": true,
       "span_hash_exact": true,
-      "span_offsets_present": true
+      "span_offsets_present": true,
+      "span_source_chunks_exist": true,
+      "span_source_chunks_same_material": true
     },
     "expected": {
       "material_id": "3c81671f-376e-401b-8525-be26929d5b92",
@@ -39,9 +42,25 @@
         "MCH-0FBD3599DAF932016F62EB9634B997AF"
       ]
     },
+    "derived_gold_evidence_set": [
+      {
+        "chunk_id": "MCH-B4FF02295DBB6DCDF6E2763F057076F6",
+        "chunk_role": "HEADING",
+        "retrieval_gold_role": "CONTEXT_HEADING_CHUNK",
+        "counts_as_decision_bearing_gold": false,
+        "source_hash": "b39d0175f9ba8fd41b225f5b6d7b28dc51d850f4b5e80fe6159ae1af3e4ea189"
+      },
+      {
+        "chunk_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
+        "chunk_role": "BUSINESS_CONTENT",
+        "retrieval_gold_role": "SUPPORTING",
+        "counts_as_decision_bearing_gold": true,
+        "source_hash": "5a54f61d10c64f26414f8dcfb93f3c1eb25076f1063d97f8200f42cad981843c"
+      }
+    ],
     "alternate_business_bearing_chunks": [],
     "repaired_binding": {
-      "status": "GOLD_BINDING_VALID",
+      "status": "RETRIEVAL_GOLD_DERIVED",
       "material_id": "3c81671f-376e-401b-8525-be26929d5b92",
       "document_id": "3c81671f-376e-401b-8525-be26929d5b92",
       "chunk_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
@@ -50,7 +69,7 @@
       "source_hash": "5a54f61d10c64f26414f8dcfb93f3c1eb25076f1063d97f8200f42cad981843c",
       "source_match_type": "EXACT_SUBSTRING_OF_PERSISTED_MULTI_CHUNK_SPAN",
       "source_resolution_method": "OFFLINE_GOLD_LINEAGE_REPAIR",
-      "note": "Evaluation-only deterministic slice; not persisted as Evidence Source Span and not HUMAN_GOLD."
+      "note": "Evaluation-only deterministic business-bearing chunk derived from a valid multi-chunk Evidence Span; not persisted as Evidence Source Span and not HUMAN_GOLD."
     },
     "root_cause": null,
     "repair_action": "REBIND_TO_REPAIRED_EXACT_CHUNK_SLICE_AFTER_INDEPENDENT_LINEAGE_CHECK"
@@ -58,7 +77,8 @@
   {
     "case_id": "V2R-002-PERF-PARTIAL",
     "gold_role": "ADVERSE",
-    "classification": "GOLD_LINEAGE_INVALID",
+    "classification": "RETRIEVAL_GOLD_BINDING_REQUIRES_DERIVATION",
+    "persisted_span_validity": "VALID_MULTI_CHUNK_EVIDENCE_SPAN",
     "checks": {
       "expected_material_exists": true,
       "expected_chunk_exists": true,
@@ -68,7 +88,9 @@
       "span_material_identity": true,
       "span_document_identity": true,
       "span_hash_exact": true,
-      "span_offsets_present": true
+      "span_offsets_present": true,
+      "span_source_chunks_exist": true,
+      "span_source_chunks_same_material": true
     },
     "expected": {
       "material_id": "3c81671f-376e-401b-8525-be26929d5b92",
@@ -86,9 +108,25 @@
         "MCH-0FBD3599DAF932016F62EB9634B997AF"
       ]
     },
+    "derived_gold_evidence_set": [
+      {
+        "chunk_id": "MCH-B4FF02295DBB6DCDF6E2763F057076F6",
+        "chunk_role": "HEADING",
+        "retrieval_gold_role": "CONTEXT_HEADING_CHUNK",
+        "counts_as_decision_bearing_gold": false,
+        "source_hash": "b39d0175f9ba8fd41b225f5b6d7b28dc51d850f4b5e80fe6159ae1af3e4ea189"
+      },
+      {
+        "chunk_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
+        "chunk_role": "BUSINESS_CONTENT",
+        "retrieval_gold_role": "ADVERSE",
+        "counts_as_decision_bearing_gold": true,
+        "source_hash": "5a54f61d10c64f26414f8dcfb93f3c1eb25076f1063d97f8200f42cad981843c"
+      }
+    ],
     "alternate_business_bearing_chunks": [],
     "repaired_binding": {
-      "status": "GOLD_BINDING_VALID",
+      "status": "RETRIEVAL_GOLD_DERIVED",
       "material_id": "3c81671f-376e-401b-8525-be26929d5b92",
       "document_id": "3c81671f-376e-401b-8525-be26929d5b92",
       "chunk_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
@@ -97,7 +135,7 @@
       "source_hash": "5a54f61d10c64f26414f8dcfb93f3c1eb25076f1063d97f8200f42cad981843c",
       "source_match_type": "EXACT_SUBSTRING_OF_PERSISTED_MULTI_CHUNK_SPAN",
       "source_resolution_method": "OFFLINE_GOLD_LINEAGE_REPAIR",
-      "note": "Evaluation-only deterministic slice; not persisted as Evidence Source Span and not HUMAN_GOLD."
+      "note": "Evaluation-only deterministic business-bearing chunk derived from a valid multi-chunk Evidence Span; not persisted as Evidence Source Span and not HUMAN_GOLD."
     },
     "root_cause": null,
     "repair_action": "REBIND_TO_REPAIRED_EXACT_CHUNK_SLICE_AFTER_INDEPENDENT_LINEAGE_CHECK"
@@ -105,7 +143,8 @@
   {
     "case_id": "V2R-003-COMP-DIRECT",
     "gold_role": "SUPPORTING",
-    "classification": "GOLD_LINEAGE_INVALID",
+    "classification": "RETRIEVAL_GOLD_BINDING_REQUIRES_DERIVATION",
+    "persisted_span_validity": "VALID_MULTI_CHUNK_EVIDENCE_SPAN",
     "checks": {
       "expected_material_exists": true,
       "expected_chunk_exists": true,
@@ -115,7 +154,9 @@
       "span_material_identity": true,
       "span_document_identity": true,
       "span_hash_exact": true,
-      "span_offsets_present": true
+      "span_offsets_present": true,
+      "span_source_chunks_exist": true,
+      "span_source_chunks_same_material": true
     },
     "expected": {
       "material_id": "3f9dacfb-2e48-4796-a477-98c60b506831",
@@ -133,9 +174,25 @@
         "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0"
       ]
     },
+    "derived_gold_evidence_set": [
+      {
+        "chunk_id": "MCH-57FE3B83C106C09B70C731182F48FFA4",
+        "chunk_role": "HEADING",
+        "retrieval_gold_role": "CONTEXT_HEADING_CHUNK",
+        "counts_as_decision_bearing_gold": false,
+        "source_hash": "1c32ff7e9aa4f1d01011898c0c195da9bd25953712aa1fdae988dfaed0d4ffea"
+      },
+      {
+        "chunk_id": "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0",
+        "chunk_role": "BUSINESS_CONTENT",
+        "retrieval_gold_role": "SUPPORTING",
+        "counts_as_decision_bearing_gold": true,
+        "source_hash": "623f699df461219e4f6ce813596a352300ed47692c630db6482a97cfc41d37d5"
+      }
+    ],
     "alternate_business_bearing_chunks": [],
     "repaired_binding": {
-      "status": "GOLD_BINDING_VALID",
+      "status": "RETRIEVAL_GOLD_DERIVED",
       "material_id": "3f9dacfb-2e48-4796-a477-98c60b506831",
       "document_id": "3f9dacfb-2e48-4796-a477-98c60b506831",
       "chunk_id": "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0",
@@ -144,7 +201,7 @@
       "source_hash": "623f699df461219e4f6ce813596a352300ed47692c630db6482a97cfc41d37d5",
       "source_match_type": "EXACT_SUBSTRING_OF_PERSISTED_MULTI_CHUNK_SPAN",
       "source_resolution_method": "OFFLINE_GOLD_LINEAGE_REPAIR",
-      "note": "Evaluation-only deterministic slice; not persisted as Evidence Source Span and not HUMAN_GOLD."
+      "note": "Evaluation-only deterministic business-bearing chunk derived from a valid multi-chunk Evidence Span; not persisted as Evidence Source Span and not HUMAN_GOLD."
     },
     "root_cause": null,
     "repair_action": "REBIND_TO_REPAIRED_EXACT_CHUNK_SLICE_AFTER_INDEPENDENT_LINEAGE_CHECK"
@@ -152,7 +209,8 @@
   {
     "case_id": "V2R-004-COMP-PARTIAL",
     "gold_role": "ADVERSE",
-    "classification": "GOLD_LINEAGE_INVALID",
+    "classification": "RETRIEVAL_GOLD_BINDING_REQUIRES_DERIVATION",
+    "persisted_span_validity": "VALID_MULTI_CHUNK_EVIDENCE_SPAN",
     "checks": {
       "expected_material_exists": true,
       "expected_chunk_exists": true,
@@ -162,7 +220,9 @@
       "span_material_identity": true,
       "span_document_identity": true,
       "span_hash_exact": true,
-      "span_offsets_present": true
+      "span_offsets_present": true,
+      "span_source_chunks_exist": true,
+      "span_source_chunks_same_material": true
     },
     "expected": {
       "material_id": "3f9dacfb-2e48-4796-a477-98c60b506831",
@@ -180,9 +240,25 @@
         "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0"
       ]
     },
+    "derived_gold_evidence_set": [
+      {
+        "chunk_id": "MCH-57FE3B83C106C09B70C731182F48FFA4",
+        "chunk_role": "HEADING",
+        "retrieval_gold_role": "CONTEXT_HEADING_CHUNK",
+        "counts_as_decision_bearing_gold": false,
+        "source_hash": "1c32ff7e9aa4f1d01011898c0c195da9bd25953712aa1fdae988dfaed0d4ffea"
+      },
+      {
+        "chunk_id": "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0",
+        "chunk_role": "BUSINESS_CONTENT",
+        "retrieval_gold_role": "ADVERSE",
+        "counts_as_decision_bearing_gold": true,
+        "source_hash": "623f699df461219e4f6ce813596a352300ed47692c630db6482a97cfc41d37d5"
+      }
+    ],
     "alternate_business_bearing_chunks": [],
     "repaired_binding": {
-      "status": "GOLD_BINDING_VALID",
+      "status": "RETRIEVAL_GOLD_DERIVED",
       "material_id": "3f9dacfb-2e48-4796-a477-98c60b506831",
       "document_id": "3f9dacfb-2e48-4796-a477-98c60b506831",
       "chunk_id": "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0",
@@ -191,7 +267,7 @@
       "source_hash": "623f699df461219e4f6ce813596a352300ed47692c630db6482a97cfc41d37d5",
       "source_match_type": "EXACT_SUBSTRING_OF_PERSISTED_MULTI_CHUNK_SPAN",
       "source_resolution_method": "OFFLINE_GOLD_LINEAGE_REPAIR",
-      "note": "Evaluation-only deterministic slice; not persisted as Evidence Source Span and not HUMAN_GOLD."
+      "note": "Evaluation-only deterministic business-bearing chunk derived from a valid multi-chunk Evidence Span; not persisted as Evidence Source Span and not HUMAN_GOLD."
     },
     "root_cause": null,
     "repair_action": "REBIND_TO_REPAIRED_EXACT_CHUNK_SLICE_AFTER_INDEPENDENT_LINEAGE_CHECK"
@@ -199,7 +275,8 @@
   {
     "case_id": "V2R-005-ISO-DIRECT",
     "gold_role": "SUPPORTING",
-    "classification": "GOLD_LINEAGE_INVALID",
+    "classification": "RETRIEVAL_GOLD_BINDING_REQUIRES_DERIVATION",
+    "persisted_span_validity": "VALID_MULTI_CHUNK_EVIDENCE_SPAN",
     "checks": {
       "expected_material_exists": true,
       "expected_chunk_exists": true,
@@ -209,7 +286,9 @@
       "span_material_identity": true,
       "span_document_identity": true,
       "span_hash_exact": true,
-      "span_offsets_present": true
+      "span_offsets_present": true,
+      "span_source_chunks_exist": true,
+      "span_source_chunks_same_material": true
     },
     "expected": {
       "material_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
@@ -227,9 +306,25 @@
         "MCH-A4C2632EF9126FADD349C3004E1C2D84"
       ]
     },
+    "derived_gold_evidence_set": [
+      {
+        "chunk_id": "MCH-0820CC5A439CB986C62E46213029CC71",
+        "chunk_role": "HEADING",
+        "retrieval_gold_role": "CONTEXT_HEADING_CHUNK",
+        "counts_as_decision_bearing_gold": false,
+        "source_hash": "e4bbd720010befabbdd08b947acc803b7f0c52b5ccdbf8da7f5b169e76f19215"
+      },
+      {
+        "chunk_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
+        "chunk_role": "BUSINESS_CONTENT",
+        "retrieval_gold_role": "SUPPORTING",
+        "counts_as_decision_bearing_gold": true,
+        "source_hash": "4aad371afadcb5d360f7461d405d06e706132aa072271064a297010ab458572f"
+      }
+    ],
     "alternate_business_bearing_chunks": [],
     "repaired_binding": {
-      "status": "GOLD_BINDING_VALID",
+      "status": "RETRIEVAL_GOLD_DERIVED",
       "material_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
       "document_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
       "chunk_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
@@ -238,7 +333,7 @@
       "source_hash": "4aad371afadcb5d360f7461d405d06e706132aa072271064a297010ab458572f",
       "source_match_type": "EXACT_SUBSTRING_OF_PERSISTED_MULTI_CHUNK_SPAN",
       "source_resolution_method": "OFFLINE_GOLD_LINEAGE_REPAIR",
-      "note": "Evaluation-only deterministic slice; not persisted as Evidence Source Span and not HUMAN_GOLD."
+      "note": "Evaluation-only deterministic business-bearing chunk derived from a valid multi-chunk Evidence Span; not persisted as Evidence Source Span and not HUMAN_GOLD."
     },
     "root_cause": "Gold span was stored over a multi-chunk source, but the expected chunk points to a title-only anchor; the business-bearing chunk is separate.",
     "repair_action": "REBIND_TO_REPAIRED_EXACT_CHUNK_SLICE_AFTER_INDEPENDENT_LINEAGE_CHECK"
@@ -246,7 +341,8 @@
   {
     "case_id": "V2R-006-ISO-SCOPE",
     "gold_role": "BOUNDARY",
-    "classification": "GOLD_LINEAGE_INVALID",
+    "classification": "RETRIEVAL_GOLD_BINDING_REQUIRES_DERIVATION",
+    "persisted_span_validity": "VALID_MULTI_CHUNK_EVIDENCE_SPAN",
     "checks": {
       "expected_material_exists": true,
       "expected_chunk_exists": true,
@@ -256,7 +352,9 @@
       "span_material_identity": true,
       "span_document_identity": true,
       "span_hash_exact": true,
-      "span_offsets_present": true
+      "span_offsets_present": true,
+      "span_source_chunks_exist": true,
+      "span_source_chunks_same_material": true
     },
     "expected": {
       "material_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
@@ -274,9 +372,25 @@
         "MCH-A4C2632EF9126FADD349C3004E1C2D84"
       ]
     },
+    "derived_gold_evidence_set": [
+      {
+        "chunk_id": "MCH-0820CC5A439CB986C62E46213029CC71",
+        "chunk_role": "HEADING",
+        "retrieval_gold_role": "CONTEXT_HEADING_CHUNK",
+        "counts_as_decision_bearing_gold": false,
+        "source_hash": "e4bbd720010befabbdd08b947acc803b7f0c52b5ccdbf8da7f5b169e76f19215"
+      },
+      {
+        "chunk_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
+        "chunk_role": "BUSINESS_CONTENT",
+        "retrieval_gold_role": "BOUNDARY",
+        "counts_as_decision_bearing_gold": true,
+        "source_hash": "4aad371afadcb5d360f7461d405d06e706132aa072271064a297010ab458572f"
+      }
+    ],
     "alternate_business_bearing_chunks": [],
     "repaired_binding": {
-      "status": "GOLD_BINDING_VALID",
+      "status": "RETRIEVAL_GOLD_DERIVED",
       "material_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
       "document_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
       "chunk_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
@@ -285,7 +399,7 @@
       "source_hash": "4aad371afadcb5d360f7461d405d06e706132aa072271064a297010ab458572f",
       "source_match_type": "EXACT_SUBSTRING_OF_PERSISTED_MULTI_CHUNK_SPAN",
       "source_resolution_method": "OFFLINE_GOLD_LINEAGE_REPAIR",
-      "note": "Evaluation-only deterministic slice; not persisted as Evidence Source Span and not HUMAN_GOLD."
+      "note": "Evaluation-only deterministic business-bearing chunk derived from a valid multi-chunk Evidence Span; not persisted as Evidence Source Span and not HUMAN_GOLD."
     },
     "root_cause": "Gold span was stored over a multi-chunk source, but the expected chunk points to a title-only anchor; the business-bearing chunk is separate.",
     "repair_action": "REBIND_TO_REPAIRED_EXACT_CHUNK_SLICE_AFTER_INDEPENDENT_LINEAGE_CHECK"
@@ -293,7 +407,8 @@
   {
     "case_id": "V2R-007-PROJECT-STATUS",
     "gold_role": "BOUNDARY",
-    "classification": "GOLD_LINEAGE_INVALID",
+    "classification": "RETRIEVAL_GOLD_BINDING_REQUIRES_DERIVATION",
+    "persisted_span_validity": "VALID_MULTI_CHUNK_EVIDENCE_SPAN",
     "checks": {
       "expected_material_exists": true,
       "expected_chunk_exists": true,
@@ -303,7 +418,9 @@
       "span_material_identity": true,
       "span_document_identity": true,
       "span_hash_exact": true,
-      "span_offsets_present": true
+      "span_offsets_present": true,
+      "span_source_chunks_exist": true,
+      "span_source_chunks_same_material": true
     },
     "expected": {
       "material_id": "75924286-5882-4658-bff9-ed587f70b927",
@@ -321,9 +438,25 @@
         "MCH-C5D5EB33CB97F715074CC6F4E98EEF17"
       ]
     },
+    "derived_gold_evidence_set": [
+      {
+        "chunk_id": "MCH-3D0A254CE926B207AFC696BF46520897",
+        "chunk_role": "HEADING",
+        "retrieval_gold_role": "CONTEXT_HEADING_CHUNK",
+        "counts_as_decision_bearing_gold": false,
+        "source_hash": "b89f45caf54952409ae8cc93ff746c800a3668024b0eca0665323f9a3fcf3ecf"
+      },
+      {
+        "chunk_id": "MCH-C5D5EB33CB97F715074CC6F4E98EEF17",
+        "chunk_role": "BUSINESS_CONTENT",
+        "retrieval_gold_role": "BOUNDARY",
+        "counts_as_decision_bearing_gold": true,
+        "source_hash": "62b80cab1a81fc5d2a600db98bf9070114394f1f2726eab5d665a5c2583218c9"
+      }
+    ],
     "alternate_business_bearing_chunks": [],
     "repaired_binding": {
-      "status": "GOLD_BINDING_VALID",
+      "status": "RETRIEVAL_GOLD_DERIVED",
       "material_id": "75924286-5882-4658-bff9-ed587f70b927",
       "document_id": "75924286-5882-4658-bff9-ed587f70b927",
       "chunk_id": "MCH-C5D5EB33CB97F715074CC6F4E98EEF17",
@@ -332,7 +465,7 @@
       "source_hash": "62b80cab1a81fc5d2a600db98bf9070114394f1f2726eab5d665a5c2583218c9",
       "source_match_type": "EXACT_SUBSTRING_OF_PERSISTED_MULTI_CHUNK_SPAN",
       "source_resolution_method": "OFFLINE_GOLD_LINEAGE_REPAIR",
-      "note": "Evaluation-only deterministic slice; not persisted as Evidence Source Span and not HUMAN_GOLD."
+      "note": "Evaluation-only deterministic business-bearing chunk derived from a valid multi-chunk Evidence Span; not persisted as Evidence Source Span and not HUMAN_GOLD."
     },
     "root_cause": null,
     "repair_action": "REBIND_TO_REPAIRED_EXACT_CHUNK_SLICE_AFTER_INDEPENDENT_LINEAGE_CHECK"
@@ -1087,17 +1220,17 @@
       "quantitative_match"
     ],
     "runtime_previous_classification": "EVIDENCE_BEARING",
-    "corrected_runtime_classification": "TOPIC_RELEVANT_ONLY",
+    "corrected_runtime_classification": "EVIDENCE_BEARING",
     "corrected_supported_dimensions": [
       "entity_match",
       "validity_match",
       "status_match"
     ],
     "corrected_reason_codes": [
-      "REQUIRED_DIMENSION_NOT_SUPPORTED"
+      "REQUIRED_DIMENSION_SUPPORTED"
     ],
-    "GPT_REVIEW_EXPECTED_CLASSIFICATION": "TOPIC_RELEVANT_ONLY",
-    "GPT_REVIEW_EXPECTED_REASON": "enterprise certificate lacks specified project-subject scope",
+    "GPT_REVIEW_EXPECTED_CLASSIFICATION": "EVIDENCE_BEARING",
+    "GPT_REVIEW_EXPECTED_REASON": "enterprise certificate facts are boundary evidence; project-subject scope is unresolved",
     "review_status": "GPT_REVIEWED_REGRESSION_EXPECTATION",
     "human_gold": false,
     "equivalent_supporting_evidence_candidate": false,
@@ -1149,17 +1282,17 @@
       "quantitative_match"
     ],
     "runtime_previous_classification": "EVIDENCE_BEARING",
-    "corrected_runtime_classification": "TOPIC_RELEVANT_ONLY",
+    "corrected_runtime_classification": "EVIDENCE_BEARING",
     "corrected_supported_dimensions": [
       "entity_match",
       "validity_match",
       "status_match"
     ],
     "corrected_reason_codes": [
-      "REQUIRED_DIMENSION_NOT_SUPPORTED"
+      "REQUIRED_DIMENSION_SUPPORTED"
     ],
-    "GPT_REVIEW_EXPECTED_CLASSIFICATION": "TOPIC_RELEVANT_ONLY",
-    "GPT_REVIEW_EXPECTED_REASON": "ISO 27001 facts still lack project-subject scope",
+    "GPT_REVIEW_EXPECTED_CLASSIFICATION": "EVIDENCE_BEARING",
+    "GPT_REVIEW_EXPECTED_REASON": "ISO 27001 facts are boundary evidence; project-subject scope is unresolved",
     "review_status": "GPT_REVIEWED_REGRESSION_EXPECTATION",
     "human_gold": false,
     "equivalent_supporting_evidence_candidate": false,
@@ -1217,7 +1350,7 @@
       "REQUIRED_DIMENSION_NOT_SUPPORTED"
     ],
     "GPT_REVIEW_EXPECTED_CLASSIFICATION": "TOPIC_RELEVANT_ONLY",
-    "GPT_REVIEW_EXPECTED_REASON": "ISO 9001 is the wrong certificate and scope",
+    "GPT_REVIEW_EXPECTED_REASON": "ISO 9001 is the wrong certificate type",
     "review_status": "GPT_REVIEWED_REGRESSION_EXPECTATION",
     "human_gold": false,
     "equivalent_supporting_evidence_candidate": false,
@@ -1390,13 +1523,13 @@
 
 ```json
 {
-  "denominator": 5,
-  "decision_bearing_hit_at_1": 0.6,
-  "decision_bearing_hit_at_3": 0.8,
+  "denominator": 6,
+  "decision_bearing_hit_at_1": 0.5,
+  "decision_bearing_hit_at_3": 0.8333333333333334,
   "decision_bearing_hit_at_5": 1,
-  "gold_expected_rank_mrr": 0.75,
+  "gold_expected_rank_mrr": 0.6805555555555555,
   "useful_evidence_first_rank_distribution": {
-    "1": 4,
+    "1": 5,
     "4": 1
   },
   "cases_hit_at_5_but_useful_evidence_rank_ge_4": [
@@ -1452,10 +1585,19 @@
       "hit_at_3": true,
       "hit_at_5": true,
       "mrr": 0.5
+    },
+    {
+      "case_id": "V2R-006-ISO-SCOPE",
+      "expected_chunk_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
+      "expected_rank": 3,
+      "useful_evidence_first_rank": 1,
+      "hit_at_1": false,
+      "hit_at_3": true,
+      "hit_at_5": true,
+      "mrr": 0.3333333333333333
     }
   ],
   "excluded_from_decision_metrics": [
-    "V2R-006-ISO-SCOPE (BOUNDARY / subject-scope insufficient)",
     "V2R-007-PROJECT-STATUS (GOLD_DESIGN_AMBIGUOUS; equivalent candidate needs review)"
   ]
 }

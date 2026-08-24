@@ -28,7 +28,7 @@ Authoritative detail: `ARCHITECTURE.md`, `docs/CURRENT_STAGE.md`, `docs/ROADMAP.
 ## Current stage
 
 Stage 20 — P0 Real Evidence Retrieval Revalidation: **PARTIAL / BLOCKED — PENDING
-EVAL INTEGRITY REVIEW**.
+P0 CANDIDATE HYGIENE LIVE COMPARISON AND GPT REVIEW**.
 Stage 21-A Runtime Connectivity Foundation remains **PASS / FROZEN**. One managed
 SSH session provides the gateway forward and SOCKS egress; Gateway, SOCKS HTTPS,
 Embedding smoke, readiness, and monitor recovery passed. Stage20-S shared Evidence Support
@@ -65,13 +65,18 @@ cutover decision.
 - Calibration V2 re-audit: 36 active cases; 3 ready, 32 insufficient, 1 no-relevant, 0 conflict; Human Gold 0.
 - Evidence-bearing audit: 7 legacy metadata false labels and 4 legacy topic false labels corrected offline; targeted Gold qualification is 7 ready, 5 repairable, 0 rejected.
 - 7-case live Retrieval: 7/7 technical success, Hit@1 42.86%, Hit@3 71.43%, Hit@5 85.71%, Material/Document Hit@5 85.71%, MRR 0.5833; one metadata-pollution miss; GPT review pending.
-- Retrieval eval integrity audit: persisted Gold bindings 0/7 valid and 7/7
-  invalid under the exact span-in-expected-chunk invariant; 7/7 deterministic
-  evaluation-only repaired slices are valid and are not HUMAN_GOLD. All 35
-  recorded Top5 candidates were re-audited: previous Evidence-Bearing 13,
-  corrected 7, explicit false positives 6, false negatives 0. Decision-bearing
-  offline metrics (denominator 5) are Hit@1 60%, Hit@3 80%, Hit@5 100%, MRR
-  0.75; V2R-007 remains GOLD_DESIGN_AMBIGUOUS.
+- Retrieval eval integrity audit: persisted multi-chunk Evidence Spans are valid
+  7/7; 7/7 direct single-chunk Retrieval Gold bindings require deterministic
+  business-bearing-chunk derivation. No formal spans or HUMAN_GOLD were mutated.
+  All 35 recorded Top5 candidates were re-audited: previous Evidence-Bearing 13,
+  corrected 9, explicit false positives 4, false negatives 0. V2R-006 is
+  Evidence-Bearing with a boundary/partial scope; V2R-007 remains
+  GOLD_DESIGN_AMBIGUOUS.
+- Candidate-hygiene pre-fix baseline for V2R-001..006 is Hit@1 4/6, Hit@3 5/6,
+  Hit@5 6/6, MRR 0.68056, with 10 metadata candidates in recorded Top5.
+  The deterministic role/eligibility filter and six-case post-fix runner are
+  implemented; the authorized live post-fix Embedding comparison is pending
+  external execution approval. No post-fix metric is claimed.
 - Full case-level packet: all 12 cases persisted in `backend/eval/evidence-support/calibration-v2/GPT_REVIEW_PACKET.md` and `.json`; `GPT_REVIEW_STATUS=PENDING_REVIEW`, `EVAL_COMPLETE=NO`.
 - Gold qualification packet: `GPT_REVIEW_PACKET_GOLD_QUALIFICATION.md` and `.json` contain all 12 independent A–I checks; 7 `GOLD_READY_FOR_RETRIEVAL`, 5 `GOLD_PARTIAL`, current index verified 9/12.
 - Context recovery audit: 158 dimensions total (93 required, 65 not applicable),
@@ -79,15 +84,15 @@ cutover decision.
 
 ## Active blocker and next step
 
-The P0 context/retrieval audit is complete without changing Retrieval ranking or
-contracts. The former length-only Evidence-Bearing label was replaced by the
-Requirement-relative `evidence-bearing-classifier-v1`; the integrity audit now
-rejects the previous 85.71% as formal quality evidence until Gold review closes
-the persisted lineage defects. V2R-005/V2R-006 are title-only-anchor versus
-multi-chunk span mismatches; V2R-007 is a Gold-design ambiguity with an
-equivalent rank-4 supporting candidate. The next step is GPT review of
-`GPT_REVIEW_PACKET_RETRIEVAL_EVAL_INTEGRITY.md/.json`. Do not infer Gold from
-nearest Requirements or change ranking, chunking, topK, MMR, Provider, or retry architecture.
+The P0 context/retrieval audit and candidate-hygiene implementation preserve
+Retrieval ranking semantics and formal contracts. The former length-only
+Evidence-Bearing label was replaced by the Requirement-relative
+`evidence-bearing-classifier-v1`; Gold derivation now separates valid persisted
+multi-chunk spans from evaluation-only business-bearing chunks. The next step
+is the one authorized six-query live hygiene comparison, followed by GPT review
+of `GPT_REVIEW_PACKET_RETRIEVAL_HYGIENE_PRE_POST.md/.json`. Do not infer Gold
+from nearest Requirements or change ranking, chunking, topK, MMR, Provider, or
+retry architecture.
 
 ## Frozen boundaries
 

@@ -74,10 +74,11 @@ test('qualification evidence requires the requested certificate identifier', () 
   assert.equal(result.classification, 'TOPIC_RELEVANT_ONLY');
 });
 
-test('project主体 makes scope a required evidence dimension', () => {
+test('project主体 keeps certificate facts as boundary evidence when scope is missing', () => {
   const requirement = { text: '企业应提供指定项目主体的 ISO/IEC 27001 证书。' };
   const source = '企业持有在有效期内的 ISO/IEC 27001 受控记录。';
   const result = classifyEvidenceBearing({ requirement, sourceText: source });
   assert.ok(result.required_dimensions.includes('scope_match'));
-  assert.equal(result.classification, 'TOPIC_RELEVANT_ONLY');
+  assert.equal(result.classification, 'EVIDENCE_BEARING');
+  assert.equal(result.evidence_role, 'BOUNDARY_EVIDENCE');
 });

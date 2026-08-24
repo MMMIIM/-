@@ -1,7 +1,7 @@
 {
   "schema_version": "4.3-targeted-retrieval-gold-qualification-v1",
   "title": "P0 TARGETED GOLD QUALIFICATION CHECKPOINT",
-  "generated_at": "2026-08-24T06:37:06.889Z",
+  "generated_at": "2026-08-24T07:04:27.640Z",
   "evaluation": "targeted-evidence-bearing-retrieval",
   "case_count": 12,
   "case_level_results_complete": true,
@@ -18,14 +18,15 @@
     "GOLD_READY_FOR_RETRIEVAL": 0,
     "GOLD_PARTIAL": 5,
     "GOLD_STALE": 0,
-    "GOLD_LINEAGE_INVALID": 7,
+    "GOLD_LINEAGE_INVALID": 0,
+    "RETRIEVAL_GOLD_BINDING_REQUIRES_DERIVATION": 7,
     "GOLD_REQUIREMENT_INVALID": 0,
     "GOLD_CORPUS_MISMATCH": 0,
     "GOLD_LEAKAGE_RISK": 0,
-    "rejected": 7,
+    "rejected": 0,
     "group_ready": 0,
     "group_repairable": 5,
-    "group_reject_rebuild": 7,
+    "group_reject_rebuild": 0,
     "material_verified": 12,
     "document_verified": 12,
     "chunk_verified": 12,
@@ -98,11 +99,11 @@
         "runtime_expected_ids_seen": false
       },
       "readiness": {
-        "status": "GOLD_LINEAGE_INVALID",
-        "group": "REJECT_REBUILD",
+        "status": "RETRIEVAL_GOLD_BINDING_REQUIRES_DERIVATION",
+        "group": "DERIVE_BUSINESS_BEARING_CHUNKS",
         "reasons": [
-          "expected_span_must_be_exact_substring_of_expected_chunk",
-          "expected_chunk_must_equal_span_chunk_identity"
+          "multi_chunk_span_cannot_directly_serve_single_chunk_gold",
+          "derive_business_bearing_chunk_from_persisted_span"
         ],
         "semantic_notes": []
       },
@@ -172,11 +173,11 @@
         "runtime_expected_ids_seen": false
       },
       "readiness": {
-        "status": "GOLD_LINEAGE_INVALID",
-        "group": "REJECT_REBUILD",
+        "status": "RETRIEVAL_GOLD_BINDING_REQUIRES_DERIVATION",
+        "group": "DERIVE_BUSINESS_BEARING_CHUNKS",
         "reasons": [
-          "expected_span_must_be_exact_substring_of_expected_chunk",
-          "expected_chunk_must_equal_span_chunk_identity"
+          "multi_chunk_span_cannot_directly_serve_single_chunk_gold",
+          "derive_business_bearing_chunk_from_persisted_span"
         ],
         "semantic_notes": []
       },
@@ -246,11 +247,11 @@
         "runtime_expected_ids_seen": false
       },
       "readiness": {
-        "status": "GOLD_LINEAGE_INVALID",
-        "group": "REJECT_REBUILD",
+        "status": "RETRIEVAL_GOLD_BINDING_REQUIRES_DERIVATION",
+        "group": "DERIVE_BUSINESS_BEARING_CHUNKS",
         "reasons": [
-          "expected_span_must_be_exact_substring_of_expected_chunk",
-          "expected_chunk_must_equal_span_chunk_identity"
+          "multi_chunk_span_cannot_directly_serve_single_chunk_gold",
+          "derive_business_bearing_chunk_from_persisted_span"
         ],
         "semantic_notes": []
       },
@@ -320,11 +321,11 @@
         "runtime_expected_ids_seen": false
       },
       "readiness": {
-        "status": "GOLD_LINEAGE_INVALID",
-        "group": "REJECT_REBUILD",
+        "status": "RETRIEVAL_GOLD_BINDING_REQUIRES_DERIVATION",
+        "group": "DERIVE_BUSINESS_BEARING_CHUNKS",
         "reasons": [
-          "expected_span_must_be_exact_substring_of_expected_chunk",
-          "expected_chunk_must_equal_span_chunk_identity"
+          "multi_chunk_span_cannot_directly_serve_single_chunk_gold",
+          "derive_business_bearing_chunk_from_persisted_span"
         ],
         "semantic_notes": []
       },
@@ -394,11 +395,11 @@
         "runtime_expected_ids_seen": false
       },
       "readiness": {
-        "status": "GOLD_LINEAGE_INVALID",
-        "group": "REJECT_REBUILD",
+        "status": "RETRIEVAL_GOLD_BINDING_REQUIRES_DERIVATION",
+        "group": "DERIVE_BUSINESS_BEARING_CHUNKS",
         "reasons": [
-          "expected_span_must_be_exact_substring_of_expected_chunk",
-          "expected_chunk_must_equal_span_chunk_identity"
+          "multi_chunk_span_cannot_directly_serve_single_chunk_gold",
+          "derive_business_bearing_chunk_from_persisted_span"
         ],
         "semantic_notes": []
       },
@@ -468,11 +469,11 @@
         "runtime_expected_ids_seen": false
       },
       "readiness": {
-        "status": "GOLD_LINEAGE_INVALID",
-        "group": "REJECT_REBUILD",
+        "status": "RETRIEVAL_GOLD_BINDING_REQUIRES_DERIVATION",
+        "group": "DERIVE_BUSINESS_BEARING_CHUNKS",
         "reasons": [
-          "expected_span_must_be_exact_substring_of_expected_chunk",
-          "expected_chunk_must_equal_span_chunk_identity"
+          "multi_chunk_span_cannot_directly_serve_single_chunk_gold",
+          "derive_business_bearing_chunk_from_persisted_span"
         ],
         "semantic_notes": []
       },
@@ -542,11 +543,11 @@
         "runtime_expected_ids_seen": false
       },
       "readiness": {
-        "status": "GOLD_LINEAGE_INVALID",
-        "group": "REJECT_REBUILD",
+        "status": "RETRIEVAL_GOLD_BINDING_REQUIRES_DERIVATION",
+        "group": "DERIVE_BUSINESS_BEARING_CHUNKS",
         "reasons": [
-          "expected_span_must_be_exact_substring_of_expected_chunk",
-          "expected_chunk_must_equal_span_chunk_identity"
+          "multi_chunk_span_cannot_directly_serve_single_chunk_gold",
+          "derive_business_bearing_chunk_from_persisted_span"
         ],
         "semantic_notes": []
       },

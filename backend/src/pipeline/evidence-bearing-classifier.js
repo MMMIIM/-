@@ -18,6 +18,14 @@ const QUALIFICATION = /(?:ISO(?:\/IEC)?\s*27001|认证|证书|资质|有效至|�
 const PROJECT = /(?:项目|实施|客户|验收|完工|交付|状态)/i;
 const THIRD_PARTY = /(?:第三方|授权|许可|依赖|开源组件|技术支持)/i;
 
+function evidenceRole({ required, supported, source }) {
+  if (!supported.length) return null;
+  if (/(?:not_verified|unknown|未完成|不满足|不支持|超出|过期|失效|无法)/i.test(source)) return 'ADVERSE_EVIDENCE';
+  if (required.includes('scope_match') && !supported.includes('scope_match')) return 'BOUNDARY_EVIDENCE';
+  if (supported.length < required.length) return 'PARTIAL_EVIDENCE';
+  return 'SUPPORTING_EVIDENCE';
+}
+
 const asText = value => String(value ?? '').trim();
 const normalize = value => asText(value).normalize('NFKC').toLowerCase();
 const isMetadataLine = line => /^(?:REPRESENTATIVE_SYNTHETIC|NOT_REAL_CUSTOMER_DATA)\s*$/i.test(line) || METADATA_KEYS.test(line);
@@ -144,17 +152,17 @@ export function classifyEvidenceBearing({ requirement, sourceText, candidate = {
   if (isMetadataOrHeader(source)) return { classifier_version: EVIDENCE_BEARING_CLASSIFIER_VERSION, classification: 'METADATA_OR_HEADER', required_dimensions: required, supported_dimensions: [], reason_codes: ['METADATA_OR_HEADER'], route };
   const supported = supportedDimensions(requirement, source);
   const requiredSupported = supported.filter(dimension => required.includes(dimension));
-  const projectScopeRequired = /(?:指定项目主体|项目主体|同一项目)/i.test(req);
   const topicMatch = overlap(req, source).length > 0
     || (COMPATIBILITY.test(req) && COMPATIBILITY.test(source))
     || (NUMERIC.test(req) && NUMERIC.test(source));
-  const classification = requiredSupported.length > 0 && !(projectScopeRequired && required.includes('scope_match') && !requiredSupported.includes('scope_match'))
+  const classification = requiredSupported.length > 0
     ? 'EVIDENCE_BEARING'
     : topicMatch ? 'TOPIC_RELEVANT_ONLY' : 'IRRELEVANT';
   return {
     classifier_version: EVIDENCE_BEARING_CLASSIFIER_VERSION,
     classification,
     requirement_relative: true,
+    evidence_role: classification === 'EVIDENCE_BEARING' ? evidenceRole({ required, supported: requiredSupported, source }) : null,
     required_dimensions: required,
     supported_dimensions: requiredSupported,
     unsupported_required_dimensions: required.filter(dimension => !requiredSupported.includes(dimension)),
