@@ -18,6 +18,8 @@
     "eval:agent-v2": "node eval/agent-eval-v2/benchmark.js",
     "eval:stage20": "node eval/stage20/acceptance.js",
     "eval:sufficiency": "node eval/sufficiency/experiment.js",
+    "audit:evidence-support-v2": "node eval/evidence-support/calibration-v2/audit.js",
+    "build:evidence-support-v2-review": "node eval/evidence-support/calibration-v2/build-review-packet.js",
     "eval:sufficiency-live": "node eval/sufficiency/live-validation.js",
     "eval:corpus-l3": "node eval/corpus/l3-eval.js",
     "ingest:corpus-l3": "node scripts/ingest-corpus-l3.js",
