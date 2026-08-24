@@ -1,0 +1,200 @@
+{
+  "schema_version": "stage17-metric-rebase-v1",
+  "title": "STAGE17 METRIC REBASE AND FREEZE PREPARATION",
+  "dataset": {
+    "case_ids": [
+      "V2R-001-PERF-DIRECT",
+      "V2R-002-PERF-PARTIAL",
+      "V2R-003-COMP-DIRECT",
+      "V2R-004-COMP-PARTIAL",
+      "V2R-005-ISO-DIRECT",
+      "V2R-006-ISO-SCOPE"
+    ],
+    "classification": "TARGETED_CALIBRATION_REGRESSION_SET",
+    "not_a_claim_of": [
+      "overall production Retrieval accuracy",
+      "overall customer-corpus accuracy",
+      "universal RAG evidence recall"
+    ],
+    "source_packet": "GPT_REVIEW_PACKET_STAGE17_FINAL_LIVE_6.json",
+    "immutable_live_evidence_commit": "6e074cd",
+    "audit_base_commit": "d65f6e6"
+  },
+  "canonical_metric_definitions": {
+    "rank_spaces": {
+      "RAW_VECTOR_RANK": "provider/vector similarity order before eligibility and final-lane projection",
+      "FINAL_EVIDENCE_CANDIDATE_RANK": "eligible evidence-lane order after deterministic hygiene/rerank"
+    },
+    "retrieval_accuracy": {
+      "decision_bearing_hit_at_1": 0.8333333333333334,
+      "decision_bearing_hit_at_3": 1,
+      "decision_bearing_hit_at_5": 1,
+      "decision_bearing_mrr": 0.9166666666666666,
+      "exact_gold_hit_at_1": 0.5,
+      "exact_gold_hit_at_3": 1,
+      "exact_gold_hit_at_5": 1,
+      "exact_gold_mrr": 0.75
+    },
+    "retrieval_hygiene": {
+      "metadata_at_5": 0,
+      "non_substantive_at_5": 0,
+      "non_evidence_source_at_5": 0,
+      "derived_artifact_leakage_at_5": 0,
+      "internal_process_artifact_leakage_at_5": 0,
+      "low_specificity_claim_at_5": 0,
+      "scope_violation": 0
+    },
+    "gold_integrity": {
+      "broken_decision_bearing_gold": 0,
+      "gold_crowded_outside_raw_pool": 0,
+      "context_counted_as_exact_hit": 0,
+      "context_counted_as_decision_hit": 0,
+      "v2r001_final_decision_rank": 2,
+      "v2r006_boundary": "PRESERVED"
+    }
+  },
+  "formulas": {
+    "decision_bearing_hit_at_k": "count(case.first_decision_bearing_final_rank <= k) / 6",
+    "exact_gold_hit_at_k": "count(case.exact_gold_final_rank <= k) / 6",
+    "mrr": "mean(1 / first final-lane rank) over the six cases"
+  },
+  "case_level_results": [
+    {
+      "case_id": "V2R-001-PERF-DIRECT",
+      "gold_evidence_chunk_ids": ["MCH-0FBD3599DAF932016F62EB9634B997AF"],
+      "gold_context_chunk_ids": ["MCH-B4FF02295DBB6DCDF6E2763F057076F6"],
+      "gold_raw_rank": 4,
+      "first_decision_bearing_raw_rank": 4,
+      "exact_gold_final_rank": 2,
+      "first_decision_bearing_final_rank": 2,
+      "final_candidate_count": 4,
+      "gold_crowded_outside_raw_pool": false,
+      "scope_violation": 0,
+      "acceptance": "PASS"
+    },
+    {
+      "case_id": "V2R-002-PERF-PARTIAL",
+      "gold_evidence_chunk_ids": ["MCH-0FBD3599DAF932016F62EB9634B997AF"],
+      "gold_context_chunk_ids": ["MCH-B4FF02295DBB6DCDF6E2763F057076F6"],
+      "gold_raw_rank": 1,
+      "first_decision_bearing_raw_rank": 1,
+      "exact_gold_final_rank": 1,
+      "first_decision_bearing_final_rank": 1,
+      "final_candidate_count": 3,
+      "gold_crowded_outside_raw_pool": false,
+      "scope_violation": 0,
+      "acceptance": "PASS"
+    },
+    {
+      "case_id": "V2R-003-COMP-DIRECT",
+      "gold_evidence_chunk_ids": ["MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0"],
+      "gold_context_chunk_ids": ["MCH-57FE3B83C106C09B70C731182F48FFA4"],
+      "gold_raw_rank": 1,
+      "first_decision_bearing_raw_rank": 1,
+      "exact_gold_final_rank": 1,
+      "first_decision_bearing_final_rank": 1,
+      "final_candidate_count": 2,
+      "gold_crowded_outside_raw_pool": false,
+      "scope_violation": 0,
+      "acceptance": "PASS"
+    },
+    {
+      "case_id": "V2R-004-COMP-PARTIAL",
+      "gold_evidence_chunk_ids": ["MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0"],
+      "gold_context_chunk_ids": ["MCH-57FE3B83C106C09B70C731182F48FFA4"],
+      "gold_raw_rank": 1,
+      "first_decision_bearing_raw_rank": 1,
+      "exact_gold_final_rank": 1,
+      "first_decision_bearing_final_rank": 1,
+      "final_candidate_count": 4,
+      "gold_crowded_outside_raw_pool": false,
+      "scope_violation": 0,
+      "acceptance": "PASS"
+    },
+    {
+      "case_id": "V2R-005-ISO-DIRECT",
+      "gold_evidence_chunk_ids": ["MCH-A4C2632EF9126FADD349C3004E1C2D84"],
+      "gold_context_chunk_ids": ["MCH-0820CC5A439CB986C62E46213029CC71"],
+      "gold_raw_rank": 2,
+      "first_decision_bearing_raw_rank": 1,
+      "exact_gold_final_rank": 2,
+      "first_decision_bearing_final_rank": 1,
+      "final_candidate_count": 3,
+      "gold_crowded_outside_raw_pool": false,
+      "scope_violation": 0,
+      "acceptance": "PASS"
+    },
+    {
+      "case_id": "V2R-006-ISO-SCOPE",
+      "gold_evidence_chunk_ids": ["MCH-A4C2632EF9126FADD349C3004E1C2D84"],
+      "gold_context_chunk_ids": ["MCH-0820CC5A439CB986C62E46213029CC71"],
+      "gold_raw_rank": 2,
+      "first_decision_bearing_raw_rank": 1,
+      "exact_gold_final_rank": 2,
+      "first_decision_bearing_final_rank": 1,
+      "final_candidate_count": 3,
+      "gold_crowded_outside_raw_pool": false,
+      "scope_violation": 0,
+      "acceptance": "PASS"
+    }
+  ],
+  "v2r001_corrected_proof": {
+    "business_gold_chunk_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
+    "business_gold_raw_rank": 4,
+    "business_gold_final_rank": 2,
+    "heading_chunk_id": "MCH-B4FF02295DBB6DCDF6E2763F057076F6",
+    "heading_raw_rank": 1,
+    "heading_in_gold_evidence": false,
+    "heading_in_gold_context": true,
+    "first_decision_bearing_raw_rank": 4,
+    "first_decision_bearing_final_rank": 2
+  },
+  "integrity_invariants": {
+    "raw_vector_rank_distinct_from_final_rank": true,
+    "gold_context_distinct_from_gold_evidence": true,
+    "context_counted_as_hit": false,
+    "gold_leaked_to_runtime": false,
+    "auto_draft_distinct_from_gpt_reviewed": true,
+    "gpt_reviewed_distinct_from_human_gold": true,
+    "system_derived_decision_distinct_from_source_evidence": true
+  },
+  "root_cause": [
+    "REPORT_SERIALIZATION_GOLD_CONTEXT_CONTAMINATION",
+    "GOLD_RAW_DIAGNOSTIC_BINDING_ERROR"
+  ],
+  "historical_metrics": {
+    "status": "HISTORICAL_RETRIEVAL_RELEVANCE_METRICS",
+    "recall_at_5_experimental": 0.9669,
+    "mmr_experiments": "historical only; not the current Stage17 canonical result"
+  },
+  "p1_findings": {
+    "P1-INDEX-HYGIENE-001": "OPEN",
+    "P1-REFERENCE-METADATA-HYGIENE": "OPEN",
+    "blocks_stage17_freeze": false
+  },
+  "eval_contract_debt": {
+    "follow_up": "UNIFIED_EVAL_CORE",
+    "status": "FOLLOW_UP_NOT_BLOCKING_STAGE17",
+    "future_components": ["EvalCase", "EvalOracle", "RuntimeObservation", "EvaluationResult", "StageGate"]
+  },
+  "regression": {
+    "gold_rank_invariant_tests": {"status": "PASS", "passed": 4, "failed": 0},
+    "targeted_retrieval_eval": {"status": "PASS", "command": "npm run eval:retrieval -w backend", "query_count": 8, "schema_pass_rate": 1, "recall_at_5": 0.9, "mrr": 1, "no_answer_accuracy": 1, "note": "explicit Gold/context tests are 4/4"},
+    "backend": {"status": "PASS", "passed": 659, "failed": 0},
+    "frontend": {"status": "PASS", "passed": 50, "failed": 0},
+    "postgresql": {"status": "PASS", "passed": 41, "failed": 0},
+    "build": {"status": "BLOCKED_ENVIRONMENT", "reason": "Vite/Node native memory allocation failure on the current host"},
+    "lint": {"status": "PASS"},
+    "git_diff_check": {"status": "PASS"},
+    "freeze_ready": false
+  },
+  "external_calls": {"embedding": 0, "llm": 0, "dify": 0},
+  "git": {
+    "branch": "feat/v4.3-semantic-boundary-routing",
+    "base_head": "d65f6e6",
+    "push": false,
+    "merge": false,
+    "deploy": false
+  },
+  "stage17": "P0_FIX_PASS + METRIC_REBASE_COMPLETE + FREEZE_PENDING_BUILD_ENVIRONMENT"
+}
