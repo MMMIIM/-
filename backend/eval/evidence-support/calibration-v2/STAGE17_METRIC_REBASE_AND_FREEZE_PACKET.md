@@ -95,11 +95,12 @@ Stage17 evidence metrics.
 - PostgreSQL integration: **PASS, 41/41**.
 - Lint: **PASS**.
 - `git diff --check`: **PASS**.
-- Build: **BLOCKED_ENVIRONMENT**. Vite/Node failed with native memory
-  allocation/OOM on this host even with `NODE_OPTIONS=--max-old-space-size=4096`.
+- Build: **PASS**. `npm run build` completed with
+  `NODE_OPTIONS=--max-old-space-size=6144`; Vite transformed 1586 modules and
+  emitted the production bundle.
 
-This is not a production assertion failure, but the required full regression is
-not all green, so Stage17 is not marked frozen.
+The previous native-memory blocker was environmental and is resolved without
+source or production-logic changes. The required Stage17 gate is now green.
 
 ## Remaining findings and follow-up
 
@@ -117,6 +118,6 @@ deploy was performed.
 
 ## Status
 
-`P0_FIX_PASS + METRIC_REBASE_COMPLETE + FREEZE_PENDING_BUILD_ENVIRONMENT`.
+`PASS / FROZEN`.
 
 Machine-readable packet: `STAGE17_METRIC_REBASE_AND_FREEZE_PACKET.json`.

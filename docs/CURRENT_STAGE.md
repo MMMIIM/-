@@ -120,11 +120,11 @@ deterministic manifest/span repair before inclusion.
 Four independent canonical synthetic Retrieval samples (`E2E-REQ-001..004`)
 remain diagnostic samples rather than the 12-case Gold metric.
 
-Stage17 remains **REOPENED_FOR_P0_FIX + METRIC_REBASE_REQUIRED + PENDING_GPT_REVIEW**;
-Stage20 remains **PARTIAL / BLOCKED**. Human Gold review stays paused. The next
-required action is GPT review of the current substantive-hygiene packet. Do not
-infer Gold from nearest Requirements, modify ranking, chunking, topK, MMR, or
-call another external model.
+Stage17 is now **PASS / FROZEN**. P0 remediation, metric rebase, offline GPT
+review, controlled live retrieval, Gold/Context integrity, rank semantics, and
+full regression/build acceptance are complete. Stage20 remains **PARTIAL /
+BLOCKED**. Do not infer Gold from nearest Requirements, modify ranking,
+chunking, topK, MMR, or call another external model.
 
 ### P0 7-case live Retrieval checkpoint (2026-08-24)
 
@@ -180,15 +180,15 @@ excluded pending Gold design review. The complete offline packet is
 `backend/eval/evidence-support/calibration-v2/GPT_REVIEW_PACKET_RETRIEVAL_EVAL_INTEGRITY.md`
 and `.json`.
 
-Stage17 is **REOPENED_FOR_P0_FIX + METRIC_REBASE_REQUIRED + PENDING_GPT_REVIEW**;
-Stage20 remains **PARTIAL / BLOCKED** for formal evidence-retrieval acceptance.
-The persisted multi-chunk Evidence Spans are valid records (7/7); the 7/7
-direct single-chunk Retrieval Gold bindings require deterministic derivation of
-business-bearing chunks and must not mutate the formal spans. V2R-006 is
-Evidence-Bearing with a boundary/partial scope, not topic-only. No Embedding,
-LLM, Dify or automatic retry calls were made by this offline correction. Do
-not change ranking, chunking, topK, MMR, Provider, or retry architecture from
-this audit.
+Stage17 is now **PASS / FROZEN** after the deterministic Gold repair, offline
+review, controlled live retrieval, and full metric/build gate. Stage20 remains
+**PARTIAL / BLOCKED** for separate formal evidence-sufficiency acceptance. The
+persisted multi-chunk Evidence Spans remain valid records (7/7), and direct
+Retrieval Gold bindings use evaluation-only business-bearing derivation without
+mutating formal spans. V2R-006 remains Evidence-Bearing with a boundary/partial
+scope, not topic-only. No additional Embedding, LLM, Dify, or retry calls were
+made by this correction. Do not change ranking, chunking, topK, MMR, Provider,
+or retry architecture from this audit.
 
 ### P0 Retrieval candidate hygiene (2026-08-24)
 
@@ -243,10 +243,17 @@ source-eligible but remains topic-only; V2R-006 remains source-eligible at the
 scope boundary. `GPT_REVIEW_STATUS=PENDING_REVIEW`, `EVAL_COMPLETE=NO`; no
 Embedding, LLM, Dify, retry, or production lifecycle call was made.
 
-Stage17 remains **REOPENED_FOR_P0_FIX + METRIC_REBASE_REQUIRED + PENDING_GPT_REVIEW**;
-Stage20 remains **PARTIAL / BLOCKED** pending review of the source-eligibility
-packet and later formal evidence validation. Do not change ranking, chunking,
-topK, MMR, Provider, or retry architecture.
+Stage17 P0 remediation, metric rebase, offline GPT review, controlled live
+retrieval, Gold/Context integrity, rank semantics, and full regression/build
+acceptance are **PASS / FROZEN**. The canonical six-case metrics are
+Decision-Bearing Hit@1/3/5 **83.33% / 100% / 100%**, Decision-Bearing MRR
+**0.9167**, Exact Gold Hit@1/3/5 **50% / 100% / 100%**, and Exact Gold MRR
+**0.75**. The eight-case offline suite remains separately labeled Regression
+Retrieval Suite metrics (Recall@5 **90%**, MRR **1.000**). The final metric
+packet is `backend/eval/evidence-support/calibration-v2/STAGE17_METRIC_REBASE_AND_FREEZE_PACKET.md`
+and `.json`. Stage20 remains **PARTIAL / BLOCKED** pending its separate formal
+evidence-sufficiency validation. Do not change ranking, chunking, topK, MMR,
+Provider, or retry architecture.
 
 ### Standalone Semantic Gateway foundation (2026-08-24)
 
@@ -365,6 +372,12 @@ Bid Document Model → Format Policy → DOCX Renderer
 
 ## Stage 17 acceptance result
 
+- Stage17 is **PASS / FROZEN**. P0 remediation, controlled live retrieval,
+  Gold/Context integrity, rank semantics, canonical metric rebase, and the full
+  regression/build gate are complete.
+- Canonical six-case metrics remain separate from the eight-case offline
+  Regression Retrieval Suite metrics; historical Recall/MMR experiments remain
+  labeled historical and are not overwritten.
 - enterprise materials can be processed and indexed;
 - retrieval preserves material/document/chunk/source lineage;
 - project and selected-material scope filtering is enforced;
@@ -373,7 +386,8 @@ Bid Document Model → Format Policy → DOCX Renderer
   source traceability **100%**, scope violation **0%**, duplicate retrieval
   **0%**, and no-answer accuracy **100%**;
 - retrieval cannot bypass Evidence, Fact, Mapping, Claim Gate or Writer auth;
-- backend, frontend, PostgreSQL, build, lint and diff checks all pass.
+- backend 659/659, frontend 50/50, PostgreSQL 41/41, build, lint and diff
+  checks all pass.
 
 ## Stage 19 goal
 

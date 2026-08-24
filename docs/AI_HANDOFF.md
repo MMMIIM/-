@@ -27,13 +27,15 @@ Authoritative detail: `ARCHITECTURE.md`, `docs/CURRENT_STAGE.md`, `docs/ROADMAP.
 ## Frozen stages
 
 - Stages 13–16, 18–19: PASS / FROZEN, including Word foundation and deterministic Agent safety.
-- Stage 17: REOPENED_FOR_P0_FIX + METRIC_REBASE_REQUIRED; retrieval architecture
-  semantics remain frozen while candidate/source hygiene is reviewed.
+- Stage 17: PASS / FROZEN. P0 remediation, Gold/Context integrity, rank
+  semantics, canonical metric rebase, controlled live retrieval, and full
+  regression/build acceptance are complete. Retrieval architecture semantics
+  remain frozen.
 
 ## Current stage
 
-Stage 20 — P0 Real Evidence Retrieval Revalidation: **PARTIAL / BLOCKED — PENDING
-SOURCE ELIGIBILITY GPT REVIEW**.
+Stage 20 — P0 Real Evidence Retrieval Revalidation: **PARTIAL / BLOCKED — SEPARATE
+EVIDENCE-SUFFICIENCY VALIDATION PENDING**.
 Stage 21-A Runtime Connectivity Foundation remains **PASS / FROZEN**. One managed
 SSH session provides the gateway forward and SOCKS egress; Gateway, SOCKS HTTPS,
 Embedding smoke, readiness, and monitor recovery passed. Stage20-S shared Evidence Support
@@ -69,7 +71,9 @@ cutover decision.
 - Confirmed baseline: 140 requirements; synthetic enterprise materials indexed: 17.
 - Calibration V2 re-audit: 36 active cases; 3 ready, 32 insufficient, 1 no-relevant, 0 conflict; Human Gold 0.
 - Evidence-bearing audit: 7 legacy metadata false labels and 4 legacy topic false labels corrected offline; targeted Gold qualification is 7 ready, 5 repairable, 0 rejected.
-- 7-case live Retrieval: 7/7 technical success, Hit@1 42.86%, Hit@3 71.43%, Hit@5 85.71%, Material/Document Hit@5 85.71%, MRR 0.5833; one metadata-pollution miss; GPT review pending.
+- 7-case live Retrieval: 7/7 technical success; its historical aggregate remains
+  audit-only and was superseded for Stage17 canonical reporting by the corrected
+  six-case metric rebase.
 - Retrieval eval integrity audit: persisted multi-chunk Evidence Spans are valid
   7/7; 7/7 direct single-chunk Retrieval Gold bindings require deterministic
   business-bearing-chunk derivation. No formal spans or HUMAN_GOLD were mutated.
@@ -78,23 +82,22 @@ cutover decision.
   Evidence-Bearing with a boundary/partial scope; V2R-007 remains
   GOLD_DESIGN_AMBIGUOUS.
 - Phase-1 candidate hygiene live comparison used exactly six Embedding queries:
-  metadata@5 0 and no Gold loss. Phase-2 offline replay uses the captured raw
-  pools only: POST_V2 exact Gold Hit@1/3/5 0.50/1.00/1.00, MRR 0.75,
-  Decision-Bearing Hit@1/3/5 0.8333/1.00/1.00, Decision-Bearing MRR 0.9167,
-  Metadata@5 0, NonSubstantive@5 0, substantive rate@5 100%.
+  metadata@5 0 and no Gold loss. Stage17 canonical six-case reporting uses the
+  captured raw pools only: Exact Gold Hit@1/3/5 0.50/1.00/1.00, MRR 0.75;
+  Decision-Bearing Hit@1/3/5 0.8333/1.00/1.00, Decision-Bearing MRR 0.9167;
+  Metadata@5, NonSubstantive@5, NonEvidenceSource@5, derived/internal-process/
+  low-specificity leakage and ScopeViolation all 0.
   V2R-001 decision-bearing rank is 4→2→2; V2R-006 boundary evidence remains
   eligible; ISO9001 remains topic-only. Packet:
-  `GPT_REVIEW_PACKET_SUBSTANTIVE_HYGIENE_OFFLINE.md/.json`; GPT review remains
-  pending and `EVAL_COMPLETE=NO`.
-- Phase-2B source eligibility replay uses all 120 captured raw occurrences:
-  56 eligible, 64 ineligible, 21 derived artifacts, 22 internal-process
-  artifacts, 21 low-specificity claims, 0 unknown. POST_V3 Top5 leakage for
-  metadata, non-substantive, non-evidence-source, derived, internal-process,
-  and low-specificity candidates is 0; decision-bearing Hit@5 is 100% and all
-  six confirmed false positives are excluded. ISO9001 is source-eligible but
-  topic-only; V2R-006 remains source-eligible. Packet:
-  `GPT_REVIEW_PACKET_EVIDENCE_SOURCE_ELIGIBILITY_OFFLINE.md/.json`;
-  `GPT_REVIEW_STATUS=PENDING_REVIEW`, `EVAL_COMPLETE=NO`.
+  `STAGE17_METRIC_REBASE_AND_FREEZE_PACKET.md/.json`; Stage17 review and
+  acceptance are complete.
+- Phase-2B source eligibility replay remains an immutable audit of all 120
+  captured raw occurrences: 56 eligible, 64 ineligible, 21 derived artifacts,
+  22 internal-process artifacts, 21 low-specificity claims, 0 unknown. POST_V3
+  Top5 leakage for metadata, non-substantive, non-evidence-source, derived,
+  internal-process, and low-specificity candidates is 0; decision-bearing
+  Hit@5 is 100%. The audit packet remains historical evidence; Stage17's final
+  freeze packet is `STAGE17_METRIC_REBASE_AND_FREEZE_PACKET.md/.json`.
 - Full case-level packet: all 12 cases persisted in `backend/eval/evidence-support/calibration-v2/GPT_REVIEW_PACKET.md` and `.json`; `GPT_REVIEW_STATUS=PENDING_REVIEW`, `EVAL_COMPLETE=NO`.
 - Gold qualification packet: `GPT_REVIEW_PACKET_GOLD_QUALIFICATION.md` and `.json` contain all 12 independent A–I checks; 7 `GOLD_READY_FOR_RETRIEVAL`, 5 `GOLD_PARTIAL`, current index verified 9/12.
 - Context recovery audit: 158 dimensions total (93 required, 65 not applicable),
@@ -104,13 +107,10 @@ cutover decision.
 
 The P0 context/retrieval audit and two-phase candidate/source-hygiene
 implementation preserve Retrieval ranking semantics and formal contracts.
-Phase-1 removes explicit heading/metadata pollution; Phase-2A rejects
-non-substantive fragments; Phase-2B rejects ineligible or non-auditable source
-provenance while retaining raw audit/context candidates. The next step is GPT
-review of
-`GPT_REVIEW_PACKET_EVIDENCE_SOURCE_ELIGIBILITY_OFFLINE.md/.json`. Do not infer Gold
-from runtime heuristics or nearest Requirements, and do not change ranking,
-chunking, topK, MMR, Provider, or retry architecture.
+Stage17 is now frozen; the remaining active blocker is Stage20's separate formal
+evidence-sufficiency validation and Corpus L3 completion. Do not infer Gold from
+runtime heuristics or nearest Requirements, and do not change ranking, chunking,
+topK, MMR, Provider, or retry architecture.
 
 ## Frozen boundaries
 

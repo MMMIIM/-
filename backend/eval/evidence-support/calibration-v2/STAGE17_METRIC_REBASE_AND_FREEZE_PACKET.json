@@ -183,10 +183,10 @@
     "backend": {"status": "PASS", "passed": 659, "failed": 0},
     "frontend": {"status": "PASS", "passed": 50, "failed": 0},
     "postgresql": {"status": "PASS", "passed": 41, "failed": 0},
-    "build": {"status": "BLOCKED_ENVIRONMENT", "reason": "Vite/Node native memory allocation failure on the current host"},
+    "build": {"status": "PASS", "command": "npm run build", "node_options": "--max-old-space-size=6144", "modules_transformed": 1586},
     "lint": {"status": "PASS"},
     "git_diff_check": {"status": "PASS"},
-    "freeze_ready": false
+    "freeze_ready": true
   },
   "external_calls": {"embedding": 0, "llm": 0, "dify": 0},
   "git": {
@@ -196,5 +196,5 @@
     "merge": false,
     "deploy": false
   },
-  "stage17": "P0_FIX_PASS + METRIC_REBASE_COMPLETE + FREEZE_PENDING_BUILD_ENVIRONMENT"
+  "stage17": "PASS / FROZEN"
 }

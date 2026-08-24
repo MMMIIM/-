@@ -52,10 +52,14 @@ See [`RAG_CORPUS_L3_PLAN.md`](RAG_CORPUS_L3_PLAN.md) and the offline
 Compatible projects such as RAGFlow, AnythingLLM, LangChain.js, MinerU, or
 Docling remain reference/reuse options, not automatic additions.
 
-Stage 17 Retrieval Engine is **PASS / FROZEN**. Stage 20 is the active Production Beta
-acceptance track for Corpus Readiness L3; the knowledge base is not considered bid-usable
-until L3 passes. Initial industry focus remains 政企平台 and 医疗行业; do not broaden
-industry scope before the current corpus gaps are resolved.
+Stage 17 Retrieval Engine is **PASS / FROZEN**. Its canonical six-case metrics are
+Decision-Bearing Hit@1/3/5 83.33%/100%/100%, Decision-Bearing MRR 0.9167, Exact
+Gold Hit@1/3/5 50%/100%/100%, and Exact Gold MRR 0.75; the separate eight-case
+Regression Retrieval Suite reports Recall@5 90% and MRR 1.000. Stage 20 is the
+active Production Beta acceptance track for Corpus Readiness L3; the knowledge
+base is not considered bid-usable until L3 passes. Initial industry focus remains
+政企平台 and 医疗行业; do not broaden industry scope before the current corpus
+gaps are resolved.
 
 Stage 21-A Runtime Connectivity Foundation is **PASS / FROZEN** and provides the
 managed development transport needed for the Stage20 re-entry; manual SSH tunneling
