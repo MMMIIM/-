@@ -1,0 +1,227 @@
+{
+  "schema_version": "4.3-stage17-live-rank-semantics-audit-v1",
+  "title": "P0 LIVE RANK SEMANTICS / METRIC INTEGRITY AUDIT",
+  "source_packet": "GPT_REVIEW_PACKET_STAGE17_FINAL_LIVE_6.json",
+  "immutable_live_evidence_commit": "6e074cd",
+  "dataset_classification": "SAFE_SYNTHETIC_EVAL",
+  "generated_at": "2026-08-24T00:00:00.000Z",
+  "gpt_review_status": "PENDING_REVIEW",
+  "eval_complete": false,
+  "production_retrieval_changed": false,
+  "external_calls": {
+    "this_audit": { "embedding": 0, "llm": 0, "dify": 0 },
+    "source_live_capture": { "embedding": 6, "automatic_retry": 0, "llm": 0, "dify": 0 }
+  },
+  "rank_taxonomy": {
+    "RAW_VECTOR_RANK": "Captured raw_candidate_pool[].raw_rank; diagnostic vector order only.",
+    "POST_STRUCTURAL_RANK": "Audit-only ordinal after excluding explicit HEADING, METADATA and FRONT_MATTER context roles.",
+    "POST_SUBSTANTIVE_RANK": "Audit-only ordinal among captured candidates with substantive_candidate=true.",
+    "POST_SOURCE_ELIGIBILITY_RANK": "Audit-only ordinal among substantive candidates with source_eligibility=ELIGIBLE.",
+    "REQUIREMENT_RELATIVE_LANE": "Requirement-relative classification is an annotation lane; it does not redefine raw order.",
+    "FINAL_EVIDENCE_CANDIDATE_RANK": "Formal final_candidates[].final_phase_rank after deterministic hygiene and ranking.",
+    "note": "The live packet persisted raw_rank and final_phase_rank, but did not persist independent post-stage rank fields. The three post-stage ranks below are deterministic audit reconstructions from the captured fields and are not production rank fields."
+  },
+  "scorer_input_fields": [
+    "case_id",
+    "requirement_exact_text",
+    "gold.gold_evidence_chunk_ids",
+    "raw_candidate_pool[].raw_rank",
+    "raw_candidate_pool[].chunk_id",
+    "raw_candidate_pool[].chunk_role",
+    "raw_candidate_pool[].candidate_eligibility",
+    "raw_candidate_pool[].substantive_candidate",
+    "raw_candidate_pool[].source_eligibility",
+    "raw_candidate_pool[].requirement_relative_classification",
+    "final_candidates[].chunk_id",
+    "final_candidates[].final_phase_rank"
+  ],
+  "scorer_output_fields": [
+    "gold_raw_rank",
+    "gold_final_rank",
+    "first_decision_bearing_raw_rank",
+    "first_decision_bearing_final_rank",
+    "exact_hit_at_k_final",
+    "decision_bearing_hit_at_k_final",
+    "mrr_final"
+  ],
+  "v2r001_forensic": {
+    "case_id": "V2R-001-PERF-DIRECT",
+    "requirement": "企业应提供可核验的数据交换平台性能测试记录。",
+    "frozen_gold_evidence_set": [
+      {
+        "chunk_id": "MCH-B4FF02295DBB6DCDF6E2763F057076F6",
+        "chunk_role": "HEADING",
+        "source_hash": "b39d0175f9ba8fd41b225f5b6d7b28dc51d850f4b5e80fe6159ae1af3e4ea189"
+      },
+      {
+        "chunk_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
+        "chunk_role": "BUSINESS_CONTENT",
+        "source_hash": "5a54f61d10c64f26414f8dcfb93f3c1eb25076f1063d97f8200f42cad981843c"
+      }
+    ],
+    "gold_chunk": {
+      "chunk_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
+      "raw_source_text": "产品：澄明数据交换平台 V3.2\n环境：8 vCPU、32 GB 内存、PostgreSQL 14、千兆局域网\n条件：50 并发、100 万条基准数据、缓存预热后执行 30 分钟\n指标：数据目录查询平均响应时间\n结果：平均 1.4 秒，P95 1.9 秒。\n日期：2025-05-16。",
+      "source_hash": "5a54f61d10c64f26414f8dcfb93f3c1eb25076f1063d97f8200f42cad981843c",
+      "raw_vector_rank": 4,
+      "chunk_role": "BUSINESS_CONTENT",
+      "candidate_eligibility": "EVIDENCE_ELIGIBLE",
+      "substantive_result": {
+        "substantive_candidate": true,
+        "substantive_class": "SUBSTANTIVE_CANDIDATE",
+        "substantive_reason": "COMPLETE_PROPOSITION_OR_STRUCTURED_VALUE"
+      },
+      "source_eligibility": {
+        "result": "ELIGIBLE",
+        "class": "ORIGINAL_TECHNICAL_FACT",
+        "reason": "ORIGINAL_MATERIAL_PROVENANCE"
+      },
+      "requirement_relative_classification": "EVIDENCE_BEARING",
+      "requirement_relative_reason_codes": ["REQUIRED_DIMENSION_SUPPORTED"],
+      "decision_bearing": true,
+      "post_structural_rank": 2,
+      "post_substantive_rank": 4,
+      "post_source_eligibility_rank": 4,
+      "final_evidence_candidate_rank": 2
+    },
+    "first_decision_bearing_raw_rank": 4,
+    "first_decision_bearing_final_rank": 2,
+    "identity_integrity": "PASS",
+    "decision_bearing_expectation": "PASS"
+  },
+  "cases": [
+    {
+      "case_id": "V2R-001-PERF-DIRECT",
+      "old_reported_gold_raw_rank": 1,
+      "old_reported_first_decision_rank": 4,
+      "gold_chunk_ids": ["MCH-B4FF02295DBB6DCDF6E2763F057076F6", "MCH-0FBD3599DAF932016F62EB9634B997AF"],
+      "gold_raw_rank": 1,
+      "gold_final_rank": 2,
+      "first_decision_bearing_raw_rank": 4,
+      "first_decision_bearing_final_rank": 2,
+      "final_candidate_count": 4,
+      "raw_gold_present": true,
+      "gold_outside_raw_pool": false,
+      "ineligible_before_gold": 0
+    },
+    {
+      "case_id": "V2R-002-PERF-PARTIAL",
+      "old_reported_gold_raw_rank": 1,
+      "old_reported_first_decision_rank": null,
+      "gold_chunk_ids": ["MCH-B4FF02295DBB6DCDF6E2763F057076F6", "MCH-0FBD3599DAF932016F62EB9634B997AF"],
+      "gold_raw_rank": 1,
+      "gold_final_rank": 1,
+      "first_decision_bearing_raw_rank": 1,
+      "first_decision_bearing_final_rank": 1,
+      "final_candidate_count": 3,
+      "raw_gold_present": true,
+      "gold_outside_raw_pool": false,
+      "ineligible_before_gold": 0
+    },
+    {
+      "case_id": "V2R-003-COMP-DIRECT",
+      "old_reported_gold_raw_rank": 1,
+      "old_reported_first_decision_rank": null,
+      "gold_chunk_ids": ["MCH-57FE3B83C106C09B70C731182F48FFA4", "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0"],
+      "gold_raw_rank": 1,
+      "gold_final_rank": 1,
+      "first_decision_bearing_raw_rank": 1,
+      "first_decision_bearing_final_rank": 1,
+      "final_candidate_count": 2,
+      "raw_gold_present": true,
+      "gold_outside_raw_pool": false,
+      "ineligible_before_gold": 0
+    },
+    {
+      "case_id": "V2R-004-COMP-PARTIAL",
+      "old_reported_gold_raw_rank": 1,
+      "old_reported_first_decision_rank": null,
+      "gold_chunk_ids": ["MCH-57FE3B83C106C09B70C731182F48FFA4", "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0"],
+      "gold_raw_rank": 1,
+      "gold_final_rank": 1,
+      "first_decision_bearing_raw_rank": 1,
+      "first_decision_bearing_final_rank": 1,
+      "final_candidate_count": 4,
+      "raw_gold_present": true,
+      "gold_outside_raw_pool": false,
+      "ineligible_before_gold": 0
+    },
+    {
+      "case_id": "V2R-005-ISO-DIRECT",
+      "old_reported_gold_raw_rank": 2,
+      "old_reported_first_decision_rank": null,
+      "gold_chunk_ids": ["MCH-0820CC5A439CB986C62E46213029CC71", "MCH-A4C2632EF9126FADD349C3004E1C2D84"],
+      "gold_raw_rank": 2,
+      "gold_final_rank": 2,
+      "first_decision_bearing_raw_rank": 1,
+      "first_decision_bearing_final_rank": 1,
+      "final_candidate_count": 3,
+      "raw_gold_present": true,
+      "gold_outside_raw_pool": false,
+      "ineligible_before_gold": 0
+    },
+    {
+      "case_id": "V2R-006-ISO-SCOPE",
+      "old_reported_gold_raw_rank": 2,
+      "old_reported_first_decision_rank": null,
+      "gold_chunk_ids": ["MCH-0820CC5A439CB986C62E46213029CC71", "MCH-A4C2632EF9126FADD349C3004E1C2D84"],
+      "gold_raw_rank": 2,
+      "gold_final_rank": 2,
+      "first_decision_bearing_raw_rank": 1,
+      "first_decision_bearing_final_rank": 1,
+      "final_candidate_count": 3,
+      "raw_gold_present": true,
+      "gold_outside_raw_pool": false,
+      "ineligible_before_gold": 0
+    }
+  ],
+  "metric_formulas": {
+    "exact_hit_at_k_final": "count(case.gold_final_rank <= k) / 6",
+    "decision_bearing_hit_at_k_final": "count(case.first_decision_bearing_final_rank <= k) / 6",
+    "mrr_final": "mean(1 / first_rank) over the same final rank space"
+  },
+  "canonical_metrics": {
+    "decision_bearing_hit_at_1": 0.8333333333333334,
+    "decision_bearing_hit_at_3": 1,
+    "decision_bearing_hit_at_5": 1,
+    "decision_bearing_mrr": 0.9166666666666666,
+    "exact_gold_hit_at_1": 0.5,
+    "exact_gold_hit_at_3": 1,
+    "exact_gold_hit_at_5": 1,
+    "exact_gold_mrr": 0.75
+  },
+  "metric_invariant_checks": {
+    "gold_decision_bearing_first_rank_le_gold_rank_same_space": "PASS",
+    "decision_final_rank_gt_k_implies_hit_at_k_zero": "PASS",
+    "v2r001_final_decision_rank": 2,
+    "v2r001_acceptance_first_decision_final_rank_le_2": "PASS"
+  },
+  "contradiction": {
+    "original_reported_values": {
+      "v2r001_gold_raw_rank": 1,
+      "v2r001_first_decision_rank": 4,
+      "decision_hit_at_3": 1,
+      "exact_gold_hit_at_3": 1
+    },
+    "root_cause": "MIXED_RANK_SPACES",
+    "explanation": "The value reported as first_decision_rank=4 is the raw-vector diagnostic rank of the decision-bearing performance chunk. The Hit@K and MRR values were computed from final_candidates/final_phase_rank. The original report omitted the rank-space qualifier, making consistent values appear contradictory.",
+    "scorer_bug": false,
+    "aggregation_bug": false,
+    "report_label_bug": true,
+    "metric_serialization_bug": true,
+    "production_retrieval_defect_proven": false
+  },
+  "p1": {
+    "P1-INDEX-HYGIENE-001": "OPEN",
+    "P1-REFERENCE-METADATA-HYGIENE": "OPEN",
+    "index_hygiene_escalation": "NO"
+  },
+  "safety": {
+    "retrieval_code_changed": false,
+    "embedding_calls_this_audit": 0,
+    "llm_calls_this_audit": 0,
+    "dify_calls_this_audit": 0,
+    "live_packet_overwritten": false,
+    "gold_redefined": false
+  }
+}
