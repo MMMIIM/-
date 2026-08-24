@@ -32,14 +32,23 @@ test('offline semantic statuses preserve direct, adverse, partial and scope boun
   const byId = new Map(packet.cases.map(item => [item.case_id, item]));
   assert.equal(byId.get('V2R-001-PERF-DIRECT').runtime_aggregate.status, 'EVIDENCE_REVIEW_READY');
   assert.equal(byId.get('V2R-002-PERF-PARTIAL').runtime_aggregate.status, 'INSUFFICIENT_EVIDENCE');
+  assert.equal(byId.get('V2R-002-PERF-PARTIAL').runtime_assessment.support_level, 'insufficient');
   assert.equal(byId.get('V2R-002-PERF-PARTIAL').runtime_assessment.review_dimensions.quantitative_match, 'mismatch');
+  assert.notEqual(byId.get('V2R-002-PERF-PARTIAL').runtime_assessment.review_dimensions.support_sufficiency, 'match');
   assert.equal(byId.get('V2R-003-COMP-DIRECT').runtime_aggregate.status, 'EVIDENCE_REVIEW_READY');
   assert.equal(byId.get('V2R-004-COMP-PARTIAL').runtime_aggregate.status, 'INSUFFICIENT_EVIDENCE');
+  assert.equal(byId.get('V2R-004-COMP-PARTIAL').expected.required_dimensions.entity_match.classification, 'SUPPORTING_DIMENSION');
+  assert.equal(byId.get('V2R-004-COMP-PARTIAL').expected.required_dimensions.entity_match.expected, 'unknown');
   assert.deepEqual(byId.get('V2R-004-COMP-PARTIAL').expected.unresolved_required_dimensions, ['scope_match', 'status_match', 'quantitative_match']);
   assert.equal(byId.get('V2R-005-ISO-DIRECT').runtime_aggregate.status, 'EVIDENCE_REVIEW_READY');
   assert.equal(byId.get('V2R-006-ISO-SCOPE').runtime_aggregate.status, 'INSUFFICIENT_EVIDENCE');
-  assert.equal(byId.get('V2R-006-ISO-SCOPE').runtime_assessment.review_dimensions.scope_match, 'mismatch');
+  assert.equal(byId.get('V2R-006-ISO-SCOPE').runtime_assessment.review_dimensions.subject_match, 'unknown');
+  assert.equal(byId.get('V2R-006-ISO-SCOPE').runtime_assessment.review_dimensions.entity_match, 'unknown');
+  assert.equal(byId.get('V2R-006-ISO-SCOPE').runtime_assessment.review_dimensions.scope_match, 'unknown');
+  assert.deepEqual(byId.get('V2R-006-ISO-SCOPE').expected.unresolved_required_dimensions, ['subject_match', 'entity_match', 'scope_match']);
   assert.equal(packet.metrics.unsafe_false_supported, 0);
+  assert.equal(packet.metrics.required_dimension_accuracy.total, 25);
+  assert.equal(packet.metrics.unresolved_required_dimension_accuracy.total, 6);
 });
 
 test('offline negative controls distinguish adverse, conflict and technical unavailable', async () => {
@@ -47,20 +56,35 @@ test('offline negative controls distinguish adverse, conflict and technical unav
   const controls = new Map(packet.negative_controls.map(item => [item.control_id, item]));
   assert.equal(controls.get('ADVERSE_QUANTITATIVE_EVIDENCE').passed, true);
   assert.equal(controls.get('WRONG_SCOPE_BOUNDARY').passed, true);
+  assert.equal(controls.get('EXPLICIT_SUBJECT_MISMATCH').passed, true);
+  assert.equal(controls.get('EXPLICIT_SUBJECT_MISMATCH').runtime_assessment.review_dimensions.subject_match, 'mismatch');
+  assert.equal(controls.get('EXPLICIT_SUBJECT_MISMATCH').aggregate_result.status, 'INSUFFICIENT_EVIDENCE');
   assert.equal(controls.get('CONFLICTING_EVIDENCE').result_status, 'CONFLICTING_EVIDENCE');
   assert.equal(controls.get('CONFLICTING_EVIDENCE').passed, true);
+  assert.equal(controls.get('CONFLICTING_EVIDENCE').control_fixture_id, 'NEG-CONFLICT-001');
+  assert.equal(controls.get('CONFLICTING_EVIDENCE').runtime_assessments.length, 2);
+  assert.equal(controls.get('CONFLICTING_EVIDENCE').fact_key, 'average_response_time');
   assert.equal(controls.get('TECHNICAL_FAILURE_SEPARATION').technical_status, 'unavailable');
   assert.equal(controls.get('TECHNICAL_FAILURE_SEPARATION').result_status, 'ASSESSMENT_UNAVAILABLE');
+  assert.equal(controls.get('TECHNICAL_FAILURE_SEPARATION').control_fixture_id, 'NEG-TECHNICAL-001');
+  assert.equal(controls.get('TECHNICAL_FAILURE_SEPARATION').technical_error_type, 'PROVIDER_TIMEOUT');
   assert.equal(controls.get('TECHNICAL_FAILURE_SEPARATION').must_not_be_business_insufficient, true);
+  assert.equal(packet.metrics.core_case_count, 6);
+  assert.equal(packet.metrics.negative_control_cases_excluded, true);
 });
 
 test('offline baseline keeps oracle provenance explicit and never promotes AUTO_DRAFT', async () => {
   const packet = await runOfflineEvidenceSufficiency();
-  assert.equal(packet.oracle_provenance.runtime_assessment, 'AUTO_DRAFT');
-  assert.equal(packet.oracle_provenance.expected_assessment, 'GPT_REVIEWED');
+  assert.equal(packet.oracle_provenance.field_level, true);
+  assert.ok(packet.oracle_provenance.case_status_expectation_provenance.GPT_REVIEWED_EXPECTATION >= 6);
   assert.equal(packet.oracle_provenance.human_gold_cases, 0);
   assert.equal(packet.oracle_provenance.auto_promotion, false);
   for (const item of packet.cases) {
     assert.equal(item.oracle_provenance.promotion, 'NOT_PERMITTED');
+    assert.equal(item.oracle_provenance.case_status_expectation_provenance, 'GPT_REVIEWED_EXPECTATION');
+    assert.equal(item.oracle_provenance.expected_assessment, undefined);
   }
+  assert.equal(packet.cases[0].oracle_provenance.dimension_expectation_provenance.subject_match, 'PENDING_GPT_REVIEW');
+  assert.equal(packet.cases[1].oracle_provenance.dimension_expectation_provenance.quantitative_match, 'GPT_REVIEWED_EXPECTATION');
+  assert.equal(packet.cases[1].oracle_provenance.adverse_evidence_expectation_provenance, 'GPT_REVIEWED_EXPECTATION');
 });

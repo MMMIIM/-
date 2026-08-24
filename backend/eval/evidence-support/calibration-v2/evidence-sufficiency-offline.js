@@ -12,11 +12,17 @@ import {
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const BACKEND_ROOT = path.resolve(__dirname, '../../../..');
 const CAPTURE_PATH = path.join(__dirname, 'GPT_REVIEW_PACKET_STAGE17_FINAL_LIVE_6.json');
-const JSON_OUTPUT_PATH = path.join(__dirname, 'GPT_REVIEW_PACKET_EVIDENCE_SUFFICIENCY_OFFLINE.json');
-const MARKDOWN_OUTPUT_PATH = path.join(__dirname, 'GPT_REVIEW_PACKET_EVIDENCE_SUFFICIENCY_OFFLINE.md');
+const JSON_OUTPUT_PATH = path.join(__dirname, 'GPT_REVIEW_PACKET_EVIDENCE_SUFFICIENCY_OFFLINE_V2.json');
+const MARKDOWN_OUTPUT_PATH = path.join(__dirname, 'GPT_REVIEW_PACKET_EVIDENCE_SUFFICIENCY_OFFLINE_V2.md');
 
-export const OFFLINE_PACKET_SCHEMA_VERSION = 'stage20-evidence-sufficiency-offline-v1';
+export const OFFLINE_PACKET_SCHEMA_VERSION = 'stage20-evidence-sufficiency-offline-v2';
 export const OFFLINE_EVALUATOR_VERSION = 'offline-fixture-evaluator-v1';
+export const ORACLE_PROVENANCE = Object.freeze({
+  AUTO_DRAFT_EXPECTATION: 'AUTO_DRAFT_EXPECTATION',
+  GPT_REVIEWED_EXPECTATION: 'GPT_REVIEWED_EXPECTATION',
+  PENDING_GPT_REVIEW: 'PENDING_GPT_REVIEW',
+  HUMAN_GOLD: 'HUMAN_GOLD'
+});
 export const OFFLINE_CASE_IDS = Object.freeze([
   'V2R-001-PERF-DIRECT',
   'V2R-002-PERF-PARTIAL',
@@ -67,6 +73,7 @@ const CASE_RULES = Object.freeze({
     excerpt: '结果：平均 1.4 秒，P95 1.9 秒。',
     expected_status: 'INSUFFICIENT_EVIDENCE',
     reason_codes: ['QUANTITATIVE_MISMATCH', 'SUPPORT_INSUFFICIENT'],
+    assessment_rationale: 'adverse quantitative evidence; must not be supported',
     adverse_evidence: true,
     expected_dimensions: {
       subject_match: [REQUIRED, 'match'],
@@ -74,7 +81,8 @@ const CASE_RULES = Object.freeze({
       scope_match: [REQUIRED, 'match'],
       status_match: [SUPPORTING, 'match'],
       validity_match: [SUPPORTING, 'match'],
-      quantitative_match: [REQUIRED, 'mismatch']
+      quantitative_match: [REQUIRED, 'mismatch'],
+      support_sufficiency: [SUPPORTING, 'mismatch']
     },
     unresolved_required_dimensions: []
   },
@@ -100,10 +108,11 @@ const CASE_RULES = Object.freeze({
     excerpt: '国产数据库组合：unknown',
     expected_status: 'INSUFFICIENT_EVIDENCE',
     reason_codes: ['SUPPORT_INSUFFICIENT', 'STATUS_UNKNOWN'],
+    assessment_rationale: 'all domestic combinations pressure-tested is not supported',
     adverse_evidence: false,
     expected_dimensions: {
       subject_match: [REQUIRED, 'match'],
-      entity_match: [REQUIRED, 'unknown'],
+      entity_match: [SUPPORTING, 'unknown'],
       scope_match: [UNRESOLVED, 'unknown'],
       status_match: [UNRESOLVED, 'unknown'],
       quantitative_match: [UNRESOLVED, 'unknown'],
@@ -132,17 +141,18 @@ const CASE_RULES = Object.freeze({
     selected_chunk_id: 'MCH-A4C2632EF9126FADD349C3004E1C2D84',
     excerpt: '名称：ISO/IEC 27001\n编号：CM-Q-27001-2024\n状态：active\n有效至：2027-11-30',
     expected_status: 'INSUFFICIENT_EVIDENCE',
-    reason_codes: ['SCOPE_MISMATCH', 'ENTITY_MISMATCH', 'SUPPORT_INSUFFICIENT'],
+    reason_codes: ['SUPPORT_INSUFFICIENT'],
+    assessment_rationale: 'project-subject binding is unresolved; enterprise-level certificate is not enough',
     adverse_evidence: false,
     expected_dimensions: {
-      subject_match: [REQUIRED, 'mismatch'],
-      entity_match: [REQUIRED, 'mismatch'],
-      scope_match: [REQUIRED, 'mismatch'],
+      subject_match: [UNRESOLVED, 'unknown'],
+      entity_match: [UNRESOLVED, 'unknown'],
+      scope_match: [UNRESOLVED, 'unknown'],
       status_match: [SUPPORTING, 'unknown'],
       validity_match: [SUPPORTING, 'unknown'],
       quantitative_match: [NOT_APPLICABLE, 'unknown']
     },
-    unresolved_required_dimensions: []
+    unresolved_required_dimensions: ['subject_match', 'entity_match', 'scope_match']
   }
 });
 
@@ -250,7 +260,7 @@ function observationFor(caseId, sourceText, excerpt) {
         ...common,
         support_level: 'insufficient',
         semantic_relationship: 'partial',
-        review_dimensions: allMatch({ quantitative_match: 'mismatch' }),
+        review_dimensions: allMatch({ quantitative_match: 'mismatch', support_sufficiency: 'mismatch' }),
         reason_codes: ['QUANTITATIVE_MISMATCH', 'SUPPORT_INSUFFICIENT'],
         support_observations: [{ support_excerpt: excerpt, observation_type: 'partial_support', reason_codes: ['QUANTITATIVE_MISMATCH'] }]
       };
@@ -290,16 +300,16 @@ function observationFor(caseId, sourceText, excerpt) {
         support_level: 'insufficient',
         semantic_relationship: 'partial',
         review_dimensions: allMatch({
-          subject_match: 'mismatch',
-          entity_match: 'mismatch',
-          scope_match: 'mismatch',
+          subject_match: 'unknown',
+          entity_match: 'unknown',
+          scope_match: 'unknown',
           status_match: 'unknown',
           validity_match: 'unknown',
           quantitative_match: 'unknown',
           support_sufficiency: 'mismatch'
         }),
-        reason_codes: ['SCOPE_MISMATCH', 'ENTITY_MISMATCH', 'SUPPORT_INSUFFICIENT'],
-        support_observations: [{ support_excerpt: excerpt, observation_type: 'partial_support', reason_codes: ['SCOPE_MISMATCH', 'ENTITY_MISMATCH'] }]
+        reason_codes: ['SUPPORT_INSUFFICIENT'],
+        support_observations: [{ support_excerpt: excerpt, observation_type: 'partial_support', reason_codes: ['SUPPORT_INSUFFICIENT'] }]
       };
     default:
       throw new Error(`未定义离线案例：${caseId}`);
@@ -314,6 +324,60 @@ function contextWindow(inputs, selectedId) {
     source_text: item.source_text,
     role: item.chunk_id === selectedId ? 'selected_source' : 'context_only'
   }));
+}
+
+const reviewedDimensions = Object.freeze({
+  'V2R-001-PERF-DIRECT': [],
+  'V2R-002-PERF-PARTIAL': ['quantitative_match', 'support_sufficiency'],
+  'V2R-003-COMP-DIRECT': ['subject_match', 'entity_match', 'scope_match', 'status_match'],
+  'V2R-004-COMP-PARTIAL': ['scope_match', 'status_match', 'quantitative_match', 'support_sufficiency'],
+  'V2R-005-ISO-DIRECT': ['status_match', 'validity_match'],
+  'V2R-006-ISO-SCOPE': ['subject_match', 'entity_match', 'scope_match']
+});
+
+const reviewedReasonCodes = Object.freeze({
+  'V2R-001-PERF-DIRECT': [],
+  'V2R-002-PERF-PARTIAL': ['QUANTITATIVE_MISMATCH', 'SUPPORT_INSUFFICIENT'],
+  'V2R-003-COMP-DIRECT': [],
+  'V2R-004-COMP-PARTIAL': ['SUPPORT_INSUFFICIENT', 'STATUS_UNKNOWN'],
+  'V2R-005-ISO-DIRECT': [],
+  'V2R-006-ISO-SCOPE': ['SUPPORT_INSUFFICIENT']
+});
+
+function fieldProvenance(caseId, rule) {
+  const dimensionExpectationProvenance = Object.fromEntries(
+    Object.keys(rule.expected_dimensions).map(dimension => [
+      dimension,
+      reviewedDimensions[caseId].includes(dimension)
+        ? ORACLE_PROVENANCE.GPT_REVIEWED_EXPECTATION
+        : ORACLE_PROVENANCE.PENDING_GPT_REVIEW
+    ])
+  );
+  const reasonCodeExpectationProvenance = Object.fromEntries(
+    rule.reason_codes.map(reasonCode => [
+      reasonCode,
+      reviewedReasonCodes[caseId].includes(reasonCode)
+        ? ORACLE_PROVENANCE.GPT_REVIEWED_EXPECTATION
+        : ORACLE_PROVENANCE.PENDING_GPT_REVIEW
+    ])
+  );
+  const unresolvedDimensionExpectationProvenance = Object.fromEntries(
+    rule.unresolved_required_dimensions.map(dimension => [
+      dimension,
+      reviewedDimensions[caseId].includes(dimension)
+        ? ORACLE_PROVENANCE.GPT_REVIEWED_EXPECTATION
+        : ORACLE_PROVENANCE.PENDING_GPT_REVIEW
+    ])
+  );
+  return {
+    case_status_expectation_provenance: ORACLE_PROVENANCE.GPT_REVIEWED_EXPECTATION,
+    dimension_expectation_provenance: dimensionExpectationProvenance,
+    reason_code_expectation_provenance: reasonCodeExpectationProvenance,
+    unresolved_dimension_expectation_provenance: unresolvedDimensionExpectationProvenance,
+    adverse_evidence_expectation_provenance: caseId === 'V2R-002-PERF-PARTIAL'
+      ? ORACLE_PROVENANCE.GPT_REVIEWED_EXPECTATION
+      : ORACLE_PROVENANCE.PENDING_GPT_REVIEW
+  };
 }
 
 function expectedDimensionMetrics(caseResults) {
@@ -373,8 +437,24 @@ function buildConflictControl() {
       reason_codes: ['HUMAN_REVIEW_REQUIRED']
     }]
   }, { evaluatorVersion: OFFLINE_EVALUATOR_VERSION });
-  const aggregate = aggregateEvidenceSufficiency([make(firstInput, firstText, '1.4秒'), make(secondInput, secondText, '2.1秒')]);
-  return { control_id: 'CONFLICTING_EVIDENCE', result_status: aggregate.status, passed: aggregate.status === 'CONFLICTING_EVIDENCE', assessment_count: 2 };
+  const assessmentA = make(firstInput, firstText, '1.4秒');
+  const assessmentB = make(secondInput, secondText, '2.1秒');
+  const aggregate = aggregateEvidenceSufficiency([assessmentA, assessmentB]);
+  return {
+    control_id: 'CONFLICTING_EVIDENCE',
+    control_fixture_id: 'NEG-CONFLICT-001',
+    fact_key: 'average_response_time',
+    evidence_a: { source_id: 'CONFLICT-A', source_text: firstText, value: '1.4秒' },
+    evidence_b: { source_id: 'CONFLICT-B', source_text: secondText, value: '2.1秒' },
+    value_a: '1.4秒',
+    value_b: '2.1秒',
+    conflict_reason: '同一数量事实存在不同来源值，必须人工复核。',
+    runtime_assessments: [assessmentA, assessmentB],
+    aggregate_result: aggregate,
+    result_status: aggregate.status,
+    passed: aggregate.status === 'CONFLICTING_EVIDENCE',
+    assessment_count: 2
+  };
 }
 
 function buildTechnicalControl(caseItem, candidate) {
@@ -384,12 +464,49 @@ function buildTechnicalControl(caseItem, candidate) {
     const aggregate = aggregateEvidenceSufficiency([result]);
     return {
       control_id: 'TECHNICAL_FAILURE_SEPARATION',
+      control_fixture_id: 'NEG-TECHNICAL-001',
+      technical_error_type: 'PROVIDER_TIMEOUT',
+      runtime_input: {
+        requirement: cloneRequirement(input.requirement),
+        source: { ...input.source, source_text: input._source_text }
+      },
       technical_status: result.assessment_status,
+      assessment_status: result.assessment_status,
+      aggregate_result: aggregate,
       result_status: aggregate.status,
       passed: result.assessment_status === 'unavailable' && aggregate.status === 'ASSESSMENT_UNAVAILABLE',
       must_not_be_business_insufficient: aggregate.status !== 'INSUFFICIENT_EVIDENCE'
     };
   });
+}
+
+function cloneRequirement(requirement) {
+  return { requirement_id: requirement.requirement_id, text: requirement.text, text_hash: requirement.text_hash };
+}
+
+function buildExplicitSubjectMismatchControl(caseItem, candidate) {
+  const input = adaptSource(caseItem, candidate);
+  const assessment = createEvidenceSupportAssessment(input, {
+    semantic_relevance: 'relevant',
+    evidence_capability: 'capable',
+    support_level: 'insufficient',
+    semantic_relationship: 'partial',
+    review_dimensions: allMatch({ subject_match: 'mismatch' }),
+    reason_codes: ['SUBJECT_MISMATCH', 'SUPPORT_INSUFFICIENT'],
+    support_observations: [{ support_excerpt: candidate.raw_source_text, observation_type: 'partial_support', reason_codes: ['SUBJECT_MISMATCH'] }]
+  }, { evaluatorVersion: OFFLINE_EVALUATOR_VERSION });
+  const aggregate = aggregateEvidenceSufficiency([assessment]);
+  return {
+    control_id: 'EXPLICIT_SUBJECT_MISMATCH',
+    control_fixture_id: 'NEG-SUBJECT-001',
+    source_text: candidate.raw_source_text,
+    fact_key: 'subject_binding',
+    observed_value: '明确不同主体',
+    runtime_assessment: assessment,
+    aggregate_result: aggregate,
+    result_status: aggregate.status,
+    passed: assessment.review_dimensions.subject_match === 'mismatch' && aggregate.status === 'INSUFFICIENT_EVIDENCE'
+  };
 }
 
 function buildCaseResult(caseItem) {
@@ -403,6 +520,7 @@ function buildCaseResult(caseItem) {
   const excerptStart = selected.raw_source_text.indexOf(rule.excerpt);
   if (excerptStart < 0) throw new Error(`冻结案例支持片段不在来源原文中：${caseItem.case_id}`);
   const expectedDimensions = Object.fromEntries(Object.entries(rule.expected_dimensions).map(([key, [classification, value]]) => [key, { classification, expected: value }]));
+  const oracleFields = fieldProvenance(caseItem.case_id, rule);
   return {
     case_id: caseItem.case_id,
     requirement: {
@@ -412,9 +530,9 @@ function buildCaseResult(caseItem) {
     },
     oracle_provenance: {
       runtime_assessment: 'AUTO_DRAFT',
-      expected_assessment: 'GPT_REVIEWED',
       human_gold: 'NONE',
-      promotion: 'NOT_PERMITTED'
+      promotion: 'NOT_PERMITTED',
+      ...oracleFields
     },
     frozen_evidence_inputs: inputs,
     frozen_raw_candidate_pool: frozenRawPool(caseItem),
@@ -447,7 +565,8 @@ function buildCaseResult(caseItem) {
       unresolved_required_dimensions: rule.unresolved_required_dimensions,
       adverse_evidence: rule.adverse_evidence,
       conflict_observations: [],
-      technical_status: 'NOT_APPLICABLE'
+      technical_status: 'NOT_APPLICABLE',
+      oracle_provenance: oracleFields
     },
     technical_status: 'SUCCESS',
     side_effects: {
@@ -476,6 +595,7 @@ export async function runOfflineEvidenceSufficiency({ capturePath = CAPTURE_PATH
   const falseSupported = nonReadyCases.filter(item => item.runtime_aggregate.status === 'EVIDENCE_REVIEW_READY').length;
   const technicalControl = await buildTechnicalControl(casesById.get(OFFLINE_CASE_IDS[0]), selectCandidate(casesById.get(OFFLINE_CASE_IDS[0]), CASE_RULES[OFFLINE_CASE_IDS[0]]));
   const conflictControl = buildConflictControl();
+  const explicitSubjectControl = buildExplicitSubjectMismatchControl(casesById.get('V2R-006-ISO-SCOPE'), selectCandidate(casesById.get('V2R-006-ISO-SCOPE'), CASE_RULES['V2R-006-ISO-SCOPE']));
   const adverseControl = {
     control_id: 'ADVERSE_QUANTITATIVE_EVIDENCE',
     case_id: 'V2R-002-PERF-PARTIAL',
@@ -486,8 +606,13 @@ export async function runOfflineEvidenceSufficiency({ capturePath = CAPTURE_PATH
     control_id: 'WRONG_SCOPE_BOUNDARY',
     case_id: 'V2R-006-ISO-SCOPE',
     result_status: cases[5].runtime_aggregate.status,
-    passed: cases[5].runtime_aggregate.status !== 'EVIDENCE_REVIEW_READY' && cases[5].runtime_assessment.review_dimensions.scope_match === 'mismatch'
+    passed: cases[5].runtime_aggregate.status !== 'EVIDENCE_REVIEW_READY' && cases[5].runtime_assessment.review_dimensions.scope_match === 'unknown' && cases[5].expected.unresolved_required_dimensions.includes('scope_match')
   };
+  const countProvenance = values => values.reduce((counts, value) => ({ ...counts, [value]: (counts[value] || 0) + 1 }), {});
+  const dimensionProvenance = cases.flatMap(item => Object.values(item.oracle_provenance.dimension_expectation_provenance));
+  const reasonProvenance = cases.flatMap(item => Object.values(item.oracle_provenance.reason_code_expectation_provenance));
+  const unresolvedProvenance = cases.flatMap(item => Object.values(item.oracle_provenance.unresolved_dimension_expectation_provenance));
+  const adverseProvenance = cases.map(item => item.oracle_provenance.adverse_evidence_expectation_provenance);
   const packet = {
     schema_version: OFFLINE_PACKET_SCHEMA_VERSION,
     title: 'Stage20 Evidence Sufficiency Offline Validation Baseline',
@@ -502,8 +627,10 @@ export async function runOfflineEvidenceSufficiency({ capturePath = CAPTURE_PATH
       no_model_calls: true
     },
     cases,
-    negative_controls: [adverseControl, wrongScopeControl, conflictControl, technicalControl],
+    negative_controls: [adverseControl, wrongScopeControl, explicitSubjectControl, conflictControl, technicalControl],
     metrics: {
+      core_case_count: cases.length,
+      negative_control_cases_excluded: true,
       business_status_accuracy: { correct: businessStatusCorrect, total: cases.length, rate: businessStatusCorrect / cases.length },
       ...dimensionMetrics,
       adverse_evidence_recognition: { correct: adverseControl.passed ? 1 : 0, total: 1, rate: adverseControl.passed ? 1 : 0 },
@@ -525,8 +652,12 @@ export async function runOfflineEvidenceSufficiency({ capturePath = CAPTURE_PATH
     },
     external_calls: { embedding: 0, llm: 0, dify: 0 },
     oracle_provenance: {
-      runtime_assessment: 'AUTO_DRAFT',
-      expected_assessment: 'GPT_REVIEWED',
+      field_level: true,
+      case_status_expectation_provenance: countProvenance(cases.map(item => item.oracle_provenance.case_status_expectation_provenance)),
+      dimension_expectation_provenance: countProvenance(dimensionProvenance),
+      reason_code_expectation_provenance: countProvenance(reasonProvenance),
+      unresolved_dimension_expectation_provenance: countProvenance(unresolvedProvenance),
+      adverse_evidence_expectation_provenance: countProvenance(adverseProvenance),
       human_gold_cases: 0,
       auto_promotion: false
     },
@@ -539,7 +670,7 @@ export async function runOfflineEvidenceSufficiency({ capturePath = CAPTURE_PATH
 
 function markdown(packet) {
   const lines = [
-    '# GPT Review Packet — Evidence Sufficiency Offline Baseline',
+    '# GPT Review Packet — Evidence Sufficiency Offline Baseline V2',
     '',
     `- Schema: \`${packet.schema_version}\``,
     `- Scope: ${packet.evaluation_scope}`,
@@ -563,7 +694,7 @@ function markdown(packet) {
     lines.push('');
     lines.push(`Requirement: ${item.requirement.text}`);
     lines.push(`Runtime status: **${item.runtime_aggregate.status}**; expected: **${item.expected.status}**`);
-    lines.push(`Oracle: runtime=${item.oracle_provenance.runtime_assessment}, expected=${item.oracle_provenance.expected_assessment}, human_gold=${item.oracle_provenance.human_gold}`);
+    lines.push(`Oracle field provenance: ${JSON.stringify(item.oracle_provenance)}`);
     lines.push(`Selected source: ${item.selected_evidence_ids.join(', ')}`);
     lines.push(`Frozen evidence inputs (${item.frozen_evidence_inputs.length}):`);
     for (const input of item.frozen_evidence_inputs) {
