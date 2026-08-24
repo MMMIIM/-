@@ -1,0 +1,108 @@
+{
+  "schema_version": "4.3-evidence-support-calibration-v2-lineage-remediation-v1",
+  "db_mutation": false,
+  "external_calls": 0,
+  "legacy_anchor_count": 30,
+  "legacy_case_count": 10,
+  "legacy_case_classifications": [
+    {
+      "case_id": "V2-001",
+      "classification": "LINEAGE_INVALID",
+      "reason": "LEGACY_ANCHOR_MATERIAL_NOT_FOUND_IN_CURRENT_FORMAL_CORPUS"
+    },
+    {
+      "case_id": "V2-002",
+      "classification": "LINEAGE_INVALID",
+      "reason": "LEGACY_ANCHOR_MATERIAL_NOT_FOUND_IN_CURRENT_FORMAL_CORPUS"
+    },
+    {
+      "case_id": "V2-003",
+      "classification": "LINEAGE_INVALID",
+      "reason": "LEGACY_ANCHOR_MATERIAL_NOT_FOUND_IN_CURRENT_FORMAL_CORPUS"
+    },
+    {
+      "case_id": "V2-004",
+      "classification": "LINEAGE_INVALID",
+      "reason": "LEGACY_ANCHOR_MATERIAL_NOT_FOUND_IN_CURRENT_FORMAL_CORPUS"
+    },
+    {
+      "case_id": "V2-005",
+      "classification": "LINEAGE_INVALID",
+      "reason": "LEGACY_ANCHOR_MATERIAL_NOT_FOUND_IN_CURRENT_FORMAL_CORPUS"
+    },
+    {
+      "case_id": "V2-006",
+      "classification": "LINEAGE_INVALID",
+      "reason": "LEGACY_ANCHOR_MATERIAL_NOT_FOUND_IN_CURRENT_FORMAL_CORPUS"
+    },
+    {
+      "case_id": "V2-007",
+      "classification": "LINEAGE_INVALID",
+      "reason": "LEGACY_ANCHOR_MATERIAL_NOT_FOUND_IN_CURRENT_FORMAL_CORPUS"
+    },
+    {
+      "case_id": "V2-008",
+      "classification": "LINEAGE_INVALID",
+      "reason": "LEGACY_ANCHOR_MATERIAL_NOT_FOUND_IN_CURRENT_FORMAL_CORPUS"
+    },
+    {
+      "case_id": "V2-009",
+      "classification": "LINEAGE_INVALID",
+      "reason": "LEGACY_ANCHOR_MATERIAL_NOT_FOUND_IN_CURRENT_FORMAL_CORPUS"
+    },
+    {
+      "case_id": "V2-010",
+      "classification": "LINEAGE_INVALID",
+      "reason": "LEGACY_ANCHOR_MATERIAL_NOT_FOUND_IN_CURRENT_FORMAL_CORPUS"
+    }
+  ],
+  "legacy_lineage_verified": 0,
+  "legacy_lineage_partial": 0,
+  "legacy_lineage_invalid": 10,
+  "current_formal_corpus_inventory": {
+    "materials": 79,
+    "chunks": 501,
+    "scopes": {
+      "GENERAL": {
+        "materials": 10,
+        "documents": 10,
+        "chunks": 30,
+        "usable": 10,
+        "source_lineage": "EXACT_CHUNK_PLUS_TRANSIENT_SOURCE_SPAN"
+      },
+      "GOVERNMENT_ENTERPRISE": {
+        "materials": 15,
+        "documents": 15,
+        "chunks": 45,
+        "usable": 15,
+        "source_lineage": "EXACT_CHUNK_PLUS_TRANSIENT_SOURCE_SPAN"
+      },
+      "HEALTHCARE": {
+        "materials": 15,
+        "documents": 15,
+        "chunks": 45,
+        "usable": 15,
+        "source_lineage": "EXACT_CHUNK_PLUS_TRANSIENT_SOURCE_SPAN"
+      },
+      "ENTERPRISE_PRIVATE": {
+        "materials": 39,
+        "documents": 39,
+        "chunks": 381,
+        "usable": 39,
+        "source_lineage": "EXACT_CHUNK_PLUS_TRANSIENT_SOURCE_SPAN"
+      }
+    }
+  },
+  "parsed_document_model": "company_materials (no separate parsed_documents table)",
+  "holdout_excluded_material_count": 56,
+  "expanded_source_count": 474,
+  "expanded_source_verified_count": 474,
+  "expanded_document_id_count": 70,
+  "expanded_source_span_id_count": 474,
+  "persisted_source_span_count_available_read_only": 5,
+  "source_span_resolution": "DERIVED_TRANSIENT_FORMAL_CONTRACT",
+  "source_span_persisted_count": 0,
+  "source_span_formalization_required": false,
+  "expanded_candidate_count": 37,
+  "classification": "READY_FOR_HUMAN_REVIEW"
+}
