@@ -277,7 +277,8 @@ test('解析、状态查询和基线确认 API 使用解析服务且不暴露内
     }
   };
   const app = createApp({
-    repository: {}, storage: {}, generationService: {}, requirementParseService
+    repository: {}, storage: {}, generationService: {}, requirementParseService,
+    actorResolver: () => ({ actor_id: 'tender-parse-test', actor_type: 'test', source: 'test' })
   });
   const server = await new Promise((resolve) => {
     const listener = app.listen(0, '127.0.0.1', () => resolve(listener));

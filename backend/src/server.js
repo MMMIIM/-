@@ -32,6 +32,7 @@ import { AgentToolLayer } from './pipeline/agent-tools.js';
 import { BidCopilotOrchestrator } from './pipeline/bid-copilot-orchestrator.js';
 import { AgentActionService } from './pipeline/agent-action-service.js';
 import { AgentActionExecutor } from './pipeline/agent-action-executor.js';
+import { createServerActorResolver } from './request-actor.js';
 
 const directory = dirname(fileURLToPath(import.meta.url));
 const runtime = createBackendRuntime();
@@ -90,6 +91,7 @@ const agentTools = new AgentToolLayer({
 const agentActionService = new AgentActionService({ repository, tools: agentTools, evidenceReadinessService, reviewCenterService, productionBetaService, documentGenerationService });
 const agentActionExecutor = new AgentActionExecutor({ actionService: agentActionService, repository });
 const agentOrchestrator = new BidCopilotOrchestrator({ contextResolver: agentContextResolver, tools: agentTools, actionExecutor: agentActionExecutor, auditRepository: repository });
+const actorResolver = createServerActorResolver({ actorId: runtimeEnv.BACKEND_DEV_ACTOR_ID, actorType: 'development' });
 const app = createApp({
   repository,
   storage,
@@ -114,6 +116,8 @@ const app = createApp({
   agentOrchestrator,
   agentActionExecutor,
   connectivityPreflight,
+  actorResolver,
+  legacyGenerationCompat: runtimeEnv.V43_LEGACY_GENERATION_COMPAT === 'true',
   corsOrigin: runtimeEnv.CORS_ORIGIN
 });
 

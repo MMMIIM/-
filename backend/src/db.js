@@ -1141,14 +1141,14 @@ export class PgRepository {
     return rows[0] || null;
   }
 
-  async confirmVersion(version, confirmationText) {
+  async confirmVersion(version, confirmationText, actorId = null) {
     const client = await this.pool.connect();
     try {
       await client.query('BEGIN');
       const decision = await client.query(`
-        INSERT INTO review_decisions (project_id, document_version_id, decision, confirmation_text)
-        VALUES ($1, $2, 'confirmed', $3) RETURNING *
-      `, [version.project_id, version.id, confirmationText || null]);
+        INSERT INTO review_decisions (project_id, document_version_id, decision, confirmation_text, actor_id)
+        VALUES ($1, $2, 'confirmed', $3, $4) RETURNING *
+      `, [version.project_id, version.id, confirmationText || null, actorId || null]);
       const versionResult = await client.query(`
         UPDATE document_versions SET status = 'confirmed', confirmed_at = now() WHERE id = $1 RETURNING *
       `, [version.id]);

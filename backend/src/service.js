@@ -60,10 +60,13 @@ export class GenerationService {
     }
   }
 
-  async confirmVersion(versionId, confirmationText) {
+  async confirmVersion(versionId, confirmationText, actor) {
     const version = await this.repository.getVersion(versionId);
     if (!version) throw new AppError('VERSION_NOT_FOUND', ERROR_MESSAGES.VERSION_NOT_FOUND, 404);
+    if (!String(actor?.actor_id || '').trim()) {
+      throw new AppError('AUTHENTICATED_ACTOR_REQUIRED', ERROR_MESSAGES.AUTHENTICATED_ACTOR_REQUIRED, 401);
+    }
     assertVersionCanBeConfirmed(version, confirmationText);
-    return this.repository.confirmVersion(version, String(confirmationText || '').trim());
+    return this.repository.confirmVersion(version, String(confirmationText || '').trim(), actor.actor_id);
   }
 }

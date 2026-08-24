@@ -15,5 +15,6 @@ export const ERROR_MESSAGES = {
   PROJECT_NOT_FOUND: '项目不存在或已被移除。',
   VERSION_NOT_FOUND: '文档版本不存在。',
   CRITICAL_RISK: '当前版本存在严重风险，禁止确认。',
-  WARNING_CONFIRMATION_REQUIRED: '该版本包含警告风险，请填写风险确认说明后再确认。'
+  WARNING_CONFIRMATION_REQUIRED: '该版本包含警告风险，请填写风险确认说明后再确认。',
+  AUTHENTICATED_ACTOR_REQUIRED: '当前操作需要已配置的审核人身份。'
 };

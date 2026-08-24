@@ -31,6 +31,7 @@ test('External Writer PostgreSQL 审计状态按请求生命周期持久化',asy
 
 const directory = dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: resolve(directory, '../.env') });
+process.env.BACKEND_DEV_ACTOR_ID = process.env.BACKEND_DEV_ACTOR_ID || 'validity-reviewer';
 
 test('Evidence Source Span PostgreSQL lineage 验证连续范围、hash 与 Anchor',async()=>{
   assert.ok(process.env.DATABASE_URL,'DATABASE_URL is required for PostgreSQL integration tests');const pool=createPool();const repository=new PgRepository(pool);const project=await repository.createProject({name:`Evidence span ${Date.now()}`});
