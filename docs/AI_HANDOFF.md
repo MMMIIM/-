@@ -9,6 +9,10 @@
 - Backend is the formal Control Plane; models discover, backend finalizes.
 - Requirement → Evidence → Fact → Mapping → Claim → Writer is a strict lineage chain.
 - Unknown stays unknown; retrieval only produces candidates and never grants formal permission.
+- Formal invariants require service positive/negative tests, a real production-entry
+  negative control, and persistence assertions when state mutates. The invariant
+  matrix tracks SERVICE_TESTED, ENTRY_POINT_TESTED, PERSISTENCE_TESTED, and
+  NEGATIVE_CONTROL_PRESENT; service-only coverage cannot mark an invariant ENFORCED.
 - Semantic execution target is Backend Control Plane → standalone semantic gateway → Provider Adapter → model; the current Dify path remains a legacy compatibility shim.
 - No `result`/`text`/`answer` fallback and no JSON repair by bracket guessing.
 

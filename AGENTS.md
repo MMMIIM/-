@@ -46,6 +46,40 @@ bid-production workflow—not text generation alone.
   user authorization.
 - Preserve existing user changes and never use destructive reset/checkout.
 
+## Permanent formal-invariant entry-point coverage
+
+Owning-service unit tests alone do not establish that a formal business
+invariant is enforced. For every safety-critical or truth-critical invariant,
+the invariant matrix must track and the regression suite must cover:
+
+1. owning-service positive behavior;
+2. owning-service negative behavior;
+3. at least one real production entry point negative-control test; and
+4. a persistence-state assertion whenever formal business state is mutated.
+
+Formal entry points include HTTP/API handlers, Agent actions, retry and
+compatibility endpoints, background execution, provider adapters, and import /
+ingestion paths. The required proof is:
+
+```text
+entry point → owning service → canonical contract → persistence
+```
+
+The entry point must not reproduce the service's policy or bypass it. A route
+that mutates formal state through `route → repository` when an owning service
+exists is an architectural smell. Client-supplied reviewer/editor identity,
+compatibility weakening of a canonical contract, and test/eval paths mutating
+production truth are forbidden patterns.
+
+The matrix dimensions are `SERVICE_TESTED`, `ENTRY_POINT_TESTED`,
+`PERSISTENCE_TESTED`, and `NEGATIVE_CONTROL_PRESENT`. An invariant may be
+marked `ENFORCED` only when all required dimensions are covered; otherwise it
+is `PARTIAL` (or retains `CONTRADICTED` when a reachable violation exists).
+
+When a bypass is found: fix the owning boundary, add a regression at the real
+bypass entry point, update the invariant matrix, search repository-wide for
+sibling entry points, and do not close the finding from service tests alone.
+
 ## Semi-autonomous execution
 
 For ordinary implementation, test, DTO, frontend, integration, or migration

@@ -26,3 +26,62 @@ Status meanings: `ENFORCED` = contract and tests cover the boundary; `PARTIAL` =
 - No invariant-wide `MISSING` status was assigned from static inspection; `PARTIAL` marks missing independent proof or cross-layer centralization.
 - I06 remains enforced. I16 records the specific warning-confirmation violation found by the original audit; Batch 1 routes now use the owning service and its negative/positive HTTP tests.
 - Database constraints are deliberately not treated as a substitute for owning-service transitions.
+
+## Permanent entry-point coverage gate
+
+Service tests alone do not establish formal enforcement. The following four
+dimensions are mandatory for every invariant and must be refreshed when a
+route, adapter, Agent action, retry path, background worker, or ingestion path
+changes:
+
+SERVICE_TESTED = owning-service positive and negative behavior.
+ENTRY_POINT_TESTED = at least one real production entry point with a
+negative-control test.
+PERSISTENCE_TESTED = formal state assertion when the operation mutates
+business state (N/A for transient or eval-only invariants).
+NEGATIVE_CONTROL_PRESENT = the entry point cannot bypass the owner or weaken
+the canonical contract.
+
+| ID | SERVICE_TESTED | ENTRY_POINT_TESTED | PERSISTENCE_TESTED | NEGATIVE_CONTROL_PRESENT | Coverage gate |
+|---|---|---|---|---|---|
+| I01 | YES | YES | YES | YES | PASS |
+| I02 | YES | NO | N/A | YES | PARTIAL — shared assessment is transient and has no formal entry point |
+| I03 | YES | YES | YES | YES | PASS |
+| I04 | YES | YES | YES | YES | PASS |
+| I05 | YES | YES | YES | YES | PASS |
+| I06 | YES | YES | YES | YES | PASS |
+| I07 | YES | YES | YES | YES | PASS |
+| I08 | YES | YES | YES | YES | PASS |
+| I09 | YES | YES | YES | YES | PASS |
+| I10 | YES | YES | YES | YES | PASS |
+| I11 | YES | YES | N/A | YES | PASS — evaluation truth is file-scoped, not formal DB state |
+| I12 | YES | YES | YES | YES | PASS |
+| I13 | YES | YES | YES | YES | PASS |
+| I14 | YES | YES | YES | YES | PASS — independent Human Gold remains a separate acceptance gate |
+| I15 | YES | YES | YES | YES | PASS |
+| I16 | YES | YES | YES | YES | PASS — historical contradiction retained above for audit traceability |
+
+The coverage gate is normative: a future invariant must be marked PARTIAL
+until all required dimensions are evidenced, even if its owning service has
+complete unit coverage. High-risk entry-point controls are mandatory for
+Requirement freeze, Evidence Review, Evidence Fact approval,
+Requirement–Evidence Mapping, Claim Gate, Writer Authorization, Document
+Version confirmation, provider response contracts, Evidence Source Eligibility,
+external-data authorization, technical-failure semantics, and legacy
+compatibility boundaries.
+
+Forbidden architectural pattern:
+
+~~~text
+route / handler → repository → formal state mutation
+~~~
+
+when an owning service exists. The required proof remains:
+
+~~~text
+entry point → owning service → canonical contract → persistence
+~~~
+
+When a bypass is found, the owning boundary, the real bypass entry point,
+the sibling-entry-point search, and the persistence assertion must all be
+updated before the finding can close.
