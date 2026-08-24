@@ -204,10 +204,12 @@ context recovery.
 
 The six-case pre-fix baseline (V2R-001..006) is denominator 6: Hit@1 4/6,
 Hit@3 5/6, Hit@5 6/6, MRR 0.68056, and 10 metadata candidates in the recorded
-Top5. The post-fix comparison runner and packet are implemented but the single
-authorized six-query live Embedding run is pending external execution approval;
-no post-fix claim is made here. GPT review remains `PENDING_REVIEW` and
-`EVAL_COMPLETE=NO`.
+Top5. The one authorized post-fix run sent exactly six Embedding queries and
+produced Hit@1 3/6, Hit@3 6/6, Hit@5 6/6, MRR 0.75, metadata@5 0, and zero
+broken Gold cases. V2R-001's Gold rank is 2 post-fix versus the corrected
+offline pre-fix useful rank 4; no Gold was lost. The comparison packet is
+`GPT_REVIEW_PACKET_RETRIEVAL_HYGIENE_PRE_POST.md/.json`; GPT review remains
+`PENDING_REVIEW` and `EVAL_COMPLETE=NO`.
 
 ### Standalone Semantic Gateway foundation (2026-08-24)
 

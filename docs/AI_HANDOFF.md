@@ -73,10 +73,12 @@ cutover decision.
   Evidence-Bearing with a boundary/partial scope; V2R-007 remains
   GOLD_DESIGN_AMBIGUOUS.
 - Candidate-hygiene pre-fix baseline for V2R-001..006 is Hit@1 4/6, Hit@3 5/6,
-  Hit@5 6/6, MRR 0.68056, with 10 metadata candidates in recorded Top5.
-  The deterministic role/eligibility filter and six-case post-fix runner are
-  implemented; the authorized live post-fix Embedding comparison is pending
-  external execution approval. No post-fix metric is claimed.
+  Hit@5 6/6, MRR 0.68056, with 10 metadata candidates in recorded Top5. The
+  single authorized post-fix run used exactly six Embedding queries: Hit@1 3/6,
+  Hit@3 6/6, Hit@5 6/6, MRR 0.75, metadata@5 0, and zero broken Gold cases.
+  V2R-001's Gold rank improved from corrected offline useful rank 4 to rank 2.
+  Packet: `GPT_REVIEW_PACKET_RETRIEVAL_HYGIENE_PRE_POST.md/.json`; GPT review
+  remains pending and `EVAL_COMPLETE=NO`.
 - Full case-level packet: all 12 cases persisted in `backend/eval/evidence-support/calibration-v2/GPT_REVIEW_PACKET.md` and `.json`; `GPT_REVIEW_STATUS=PENDING_REVIEW`, `EVAL_COMPLETE=NO`.
 - Gold qualification packet: `GPT_REVIEW_PACKET_GOLD_QUALIFICATION.md` and `.json` contain all 12 independent A–I checks; 7 `GOLD_READY_FOR_RETRIEVAL`, 5 `GOLD_PARTIAL`, current index verified 9/12.
 - Context recovery audit: 158 dimensions total (93 required, 65 not applicable),
@@ -113,10 +115,11 @@ retry architecture.
 - Writer external calls in the public E2E: 0.
 - Shared assessment provider: provider-neutral unavailable/unknown by default;
   no external calls in this foundation.
-- Latest P0 targeted run: 7 authorized Embedding query calls through managed SOCKS;
-  no corpus upload/re-embedding, LLM/Dify calls, or production lifecycle writes;
-  expected Gold IDs were evaluator-only and never passed to runtime retrieval.
-  LLM calls 0, Dify calls 0, automatic retries 0.
+- Latest P0 targeted run: 7-case baseline plus one authorized six-case hygiene
+  comparison (13 Embedding query calls total) through managed SOCKS; no corpus
+  upload/re-embedding, LLM/Dify calls, or production lifecycle writes. Expected
+  Gold IDs were evaluator-only and never passed to runtime retrieval. LLM calls
+  0, Dify calls 0, automatic retries 0.
 
 ## Git restrictions
 
