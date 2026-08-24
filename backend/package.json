@@ -29,6 +29,8 @@
     "audit:evidence-support-v2-semantics": "node eval/evidence-support/calibration-v2/semantic-reaudit-v2.js",
     "audit:evidence-support-v2-context": "node eval/evidence-support/calibration-v2/audit-context-recovery-v2.js",
     "eval:evidence-support-real-retrieval": "node eval/evidence-support/calibration-v2/run-real-retrieval-regression.js",
+    "audit:evidence-bearing-classification": "node eval/evidence-support/calibration-v2/reclassify-real-retrieval-regression.js",
+    "eval:evidence-bearing-live": "node eval/evidence-support/calibration-v2/run-targeted-evidence-bearing-live.js",
     "eval:evidence-bearing-targeted": "node eval/evidence-support/calibration-v2/targeted-evidence-bearing-regression.js",
     "build:evidence-support-v2-human-batch-01-final": "node eval/evidence-support/calibration-v2/build-human-review-batch-01-final.js",
     "eval:sufficiency-live": "node eval/sufficiency/live-validation.js",

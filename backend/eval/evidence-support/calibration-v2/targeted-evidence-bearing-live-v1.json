@@ -1,0 +1,154 @@
+{
+  "schema_version": "4.3-targeted-evidence-bearing-live-v1",
+  "mapping_schema_version": "4.3-targeted-evidence-bearing-retrieval-v2",
+  "model_calls": 0,
+  "llm_calls": 0,
+  "dify_calls": 0,
+  "automatic_retry": false,
+  "embedding_calls": 0,
+  "cases": [
+    {
+      "case_id": "V2R-001-PERF-DIRECT",
+      "status": "GOLD_INVALID",
+      "mapping_status": "GOLD_INVALID_REQUIREMENT_NOT_IN_FORMAL_DB",
+      "invalid_reasons": [
+        "target_requirement_id_not_persisted",
+        "legacy_expected_chunk_was_metadata"
+      ],
+      "embedding_call": false
+    },
+    {
+      "case_id": "V2R-002-PERF-PARTIAL",
+      "status": "GOLD_INVALID",
+      "mapping_status": "GOLD_INVALID_REQUIREMENT_NOT_IN_FORMAL_DB",
+      "invalid_reasons": [
+        "target_requirement_id_not_persisted",
+        "legacy_expected_chunk_was_metadata",
+        "target_threshold_differs_from_formal_requirement"
+      ],
+      "embedding_call": false
+    },
+    {
+      "case_id": "V2R-003-COMP-DIRECT",
+      "status": "GOLD_INVALID",
+      "mapping_status": "GOLD_INVALID_REQUIREMENT_NOT_IN_FORMAL_DB",
+      "invalid_reasons": [
+        "target_requirement_id_not_persisted",
+        "legacy_expected_chunk_was_metadata"
+      ],
+      "embedding_call": false
+    },
+    {
+      "case_id": "V2R-004-COMP-PARTIAL",
+      "status": "GOLD_INVALID",
+      "mapping_status": "GOLD_INVALID_REQUIREMENT_NOT_IN_FORMAL_DB",
+      "invalid_reasons": [
+        "target_requirement_id_not_persisted",
+        "legacy_expected_chunk_was_metadata",
+        "target_scope_differs_from_formal_requirement"
+      ],
+      "embedding_call": false
+    },
+    {
+      "case_id": "V2R-005-ISO-DIRECT",
+      "status": "GOLD_INVALID",
+      "mapping_status": "GOLD_INVALID_REQUIREMENT_NOT_IN_FORMAL_DB",
+      "invalid_reasons": [
+        "target_requirement_id_not_persisted",
+        "legacy_expected_chunk_was_title_only"
+      ],
+      "embedding_call": false
+    },
+    {
+      "case_id": "V2R-006-ISO-SCOPE",
+      "status": "GOLD_INVALID",
+      "mapping_status": "GOLD_INVALID_REQUIREMENT_NOT_IN_FORMAL_DB",
+      "invalid_reasons": [
+        "target_requirement_id_not_persisted",
+        "legacy_expected_chunk_was_title_only",
+        "subject_scope_not_verified"
+      ],
+      "embedding_call": false
+    },
+    {
+      "case_id": "V2R-007-PROJECT-STATUS",
+      "status": "GOLD_INVALID",
+      "mapping_status": "GOLD_INVALID_REQUIREMENT_NOT_IN_FORMAL_DB",
+      "invalid_reasons": [
+        "target_requirement_id_not_persisted",
+        "legacy_expected_chunk_was_title_only",
+        "source_explicitly_says_status_incomplete"
+      ],
+      "embedding_call": false
+    },
+    {
+      "case_id": "V2R-010-CORPUS-01",
+      "status": "GOLD_INVALID",
+      "mapping_status": "GOLD_INVALID_REFERENCE_METADATA",
+      "invalid_reasons": [
+        "target_requirement_id_not_persisted",
+        "expected_chunk_is_title_only",
+        "industry_reference_does_not_prove_enterprise_capability"
+      ],
+      "embedding_call": false
+    },
+    {
+      "case_id": "V2R-015-CORPUS-06",
+      "status": "GOLD_INVALID",
+      "mapping_status": "GOLD_INVALID_REFERENCE_METADATA",
+      "invalid_reasons": [
+        "target_requirement_id_not_persisted",
+        "expected_chunk_is_metadata",
+        "negative_control_is_reference_only"
+      ],
+      "embedding_call": false
+    },
+    {
+      "case_id": "V2R-021-CORPUS-12",
+      "status": "GOLD_INVALID",
+      "mapping_status": "GOLD_INVALID_REQUIREMENT_NOT_IN_FORMAL_DB",
+      "invalid_reasons": [
+        "target_requirement_id_not_persisted",
+        "source_span_not_persisted_for_project",
+        "third_party_boundary_is_not_generic_project_proof"
+      ],
+      "embedding_call": false
+    },
+    {
+      "case_id": "V2R-024-CORPUS-15",
+      "status": "GOLD_INVALID",
+      "mapping_status": "GOLD_INVALID_REQUIREMENT_NOT_IN_FORMAL_DB",
+      "invalid_reasons": [
+        "target_requirement_id_not_persisted",
+        "source_span_not_persisted_for_project"
+      ],
+      "embedding_call": false
+    },
+    {
+      "case_id": "V2R-030-CORPUS-21",
+      "status": "GOLD_INVALID",
+      "mapping_status": "GOLD_INVALID_REQUIREMENT_NOT_IN_FORMAL_DB",
+      "invalid_reasons": [
+        "target_requirement_id_not_persisted",
+        "source_span_not_persisted_for_project"
+      ],
+      "embedding_call": false
+    }
+  ],
+  "status": "BLOCKED_GOLD_INVALID",
+  "metrics": {
+    "hit_at_1": "NOT_EXECUTED",
+    "hit_at_3": "NOT_EXECUTED",
+    "hit_at_5": "NOT_EXECUTED",
+    "material_hit_at_5": "NOT_EXECUTED",
+    "document_hit_at_5": "NOT_EXECUTED",
+    "expected_chunk_hit_at_5": "NOT_EXECUTED",
+    "qualified_span_rate": "NOT_EXECUTED",
+    "metadata_header_false_evidence_rate": "NOT_EXECUTED",
+    "topic_relevant_false_evidence_rate": "NOT_EXECUTED",
+    "proof_routing_precision": "NOT_EXECUTED",
+    "miss_forensics": {
+      "GOLD_INVALID": 12
+    }
+  }
+}
