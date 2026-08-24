@@ -17,7 +17,7 @@ Authoritative detail: `ARCHITECTURE.md`, `docs/CURRENT_STAGE.md`, `docs/ROADMAP.
 ## Repository state
 
 - Branch: `feat/v4.3-semantic-boundary-routing`
-- HEAD: `443ea89` (`docs: record retrieval revalidation checkpoint`).
+- HEAD: local implementation/evaluation commits through `9a7d59e`; see Git for the documentation checkpoint commit.
 - Git status: clean; no secrets or generated documents are tracked.
 
 ## Frozen stages
@@ -47,9 +47,9 @@ cutover decision.
 ## Acceptance tracks
 
 - Stage20 Corpus L3: IN_PROGRESS.
-- Stage20 public tender E2E: parse and baseline PASS; three controlled real Retrieval
-  cases reached successful Retrieval Runs over managed SOCKS with qualified spans;
-  no LLM/Dify call or retry was made.
+- Stage20 public tender E2E: parse and baseline PASS; four canonical synthetic
+  Retrieval samples reached successful Runs over managed SOCKS with qualified
+  Requirement-relative spans; no LLM/Dify call or retry was made in this task.
 - Deterministic/offline acceptance: PASS.
 - Stage20-S Evidence Support Assessment shared core and local
   `evidence_support_assessment` Gateway Contract: implemented offline;
@@ -64,18 +64,24 @@ cutover decision.
 - Public tender parse: 4/4 chunks, 144 candidates, 140 mandatory, 130 verified / 10 suggested / 4 unresolved.
 - Confirmed baseline: 140 requirements; synthetic enterprise materials indexed: 17.
 - Calibration V2 re-audit: 36 active cases; 3 ready, 32 insufficient, 1 no-relevant, 0 conflict; Human Gold 0.
+- Evidence-bearing audit: 7 legacy metadata false labels and 4 legacy topic false labels corrected offline; 12 targeted Gold mappings invalid, 0 executable.
 - Context recovery audit: 158 dimensions total (93 required, 65 not applicable),
   44 recovered, 49 required unresolved across 27 cases; required recovery rate 47.31%.
 
 ## Active blocker and next step
 
 The P0 context/retrieval audit is complete without changing Retrieval ranking or
-contracts. The prior Embedding network block was configuration-only: adding the
-existing managed SOCKS endpoint to the ignored local `backend/.env` restored the
-formal EmbeddingClient path. Next step is to execute the 12-case targeted
-evidence-bearing regression against a formally mapped project/span set, then
-continue only through existing human review boundaries; do not add a Provider,
-model, fallback or retry architecture.
+contracts. The former length-only Evidence-Bearing label was replaced by the
+Requirement-relative `evidence-bearing-classifier-v1`; offline audit shows 7/7
+legacy metadata and 4/4 legacy topic false labels, while the corrected labels
+produce 0 current false-evidence labels. Four canonical synthetic Retrieval
+samples reached qualified spans. The 12-case targeted Gold mapping is currently
+0/12 executable and the live runner safely stopped with `GOLD_INVALID` for all
+12, so no live calls were made for that set. Next step is to persist formal
+Requirement IDs and independently verified spans (or approve a separate
+synthetic evaluation project) before the single targeted live run; do not infer
+Gold from nearest Requirements or change ranking, chunking, topK, MMR, Provider,
+or retry architecture.
 
 ## Frozen boundaries
 
@@ -96,6 +102,9 @@ model, fallback or retry architecture.
 - Writer external calls in the public E2E: 0.
 - Shared assessment provider: provider-neutral unavailable/unknown by default;
   no external calls in this foundation.
+- Latest P0 targeted run: 4 diagnostic Embedding calls for canonical samples;
+  targeted 12-case runner made 0 calls because all mappings were `GOLD_INVALID`.
+  LLM calls 0, Dify calls 0, automatic retries 0.
 
 ## Git restrictions
 

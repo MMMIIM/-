@@ -90,6 +90,35 @@ available without independent verified-span Gold, and the 12-case targeted live
 regression still needs a formally mapped project/span set. Do not change Retrieval
 ranking, chunking, topK, model, Provider or retry architecture.
 
+### P0 Evidence-bearing classification and targeted Gold revalidation (2026-08-24)
+
+The former length-only candidate labeling was rejected. The deterministic
+`evidence-bearing-classifier-v1` is Requirement-relative: metadata/frontmatter and
+title-only chunks are `METADATA_OR_HEADER`, topic matches are not proof, and a
+qualified source span is allowed only after `EVIDENCE_BEARING` classification.
+Offline reclassification of the prior three cases records the historical false
+labels (7/7 metadata and 4/4 topic candidates), while the corrected classifier
+records 0 current false-evidence labels; REQ-009 and REQ-012 remain unqualified
+because the indexed corpus does not contain the requested verified dimensions.
+
+The 12-case targeted Gold mapping is executable only when each case has a formal
+Requirement ID and independently verified source span. Current repository/DB
+inspection found 0/12 executable mappings and 12/12 `GOLD_INVALID` mappings
+(missing formal Requirement IDs, metadata/title expectations, reference-only
+content, or absent source spans). The live runner therefore completed safely as
+`BLOCKED_GOLD_INVALID` with 0 Embedding calls; no Requirement rows were created
+to force the evaluation. Four independent canonical synthetic Retrieval samples
+(`E2E-REQ-001..004`) were executed once through the formal service and reached
+Requirement-relative qualified spans, but they are diagnostic samples rather than
+the 12-case Gold metric.
+
+Stage17 remains **PASS / FROZEN UNDER P0 REGRESSION REVIEW**, not finally approved;
+Stage20 remains **PARTIAL**. Human Gold review stays paused. The next required
+action is to provision/persist the 12 target Requirement IDs and verified spans
+(or approve a separate synthetic evaluation project) before any targeted live
+Retrieval call. Do not infer Gold from nearest Requirements, modify ranking,
+chunking, topK, MMR, or call an external model.
+
 ### Standalone Semantic Gateway foundation (2026-08-24)
 
 本地已实现独立无状态 Node Gateway：`services/semantic-gateway`。共享语义
