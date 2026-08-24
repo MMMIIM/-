@@ -35,7 +35,8 @@ Assessment foundation and the local shared Gateway Contract are implemented
 offline. The task is not remotely published and no live model call is
 authorized. Do not start full Stage21. Stage20 is now **PARTIAL** after the
 managed Embedding re-entry: the three controlled Retrieval cases reached Top5
-and qualified source spans, while full evidence-bearing and downstream E2E
+and qualified source spans; the latest four canonical synthetic samples also
+reached Requirement-relative qualified spans, while full evidence-bearing and downstream E2E
 acceptance remain open.
 
 The standalone semantic gateway foundation is implemented locally under
@@ -98,7 +99,7 @@ or retry architecture.
 - Embedding runtime: existing `V43_EMBEDDING_*` configuration; SiliconFlow
   Qwen/Qwen3-Embedding-0.6B, dimension 1024. Managed SOCKS `127.0.0.1:18081`
   is enabled only in the ignored local `backend/.env`; one smoke (315 ms) and
-  three formal Retrieval calls passed. No credential is stored in the repository.
+  four formal Retrieval calls passed. No credential is stored in the repository.
 - Writer external calls in the public E2E: 0.
 - Shared assessment provider: provider-neutral unavailable/unknown by default;
   no external calls in this foundation.
