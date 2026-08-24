@@ -1,0 +1,85 @@
+{
+  "schema_version": "4.3-stage17-gold-context-integrity-v1",
+  "title": "FINAL V2R001 GOLD EVIDENCE / CONTEXT INTEGRITY AUDIT",
+  "source_packet": "GPT_REVIEW_PACKET_STAGE17_FINAL_LIVE_6.json",
+  "immutable_live_evidence_commit": "6e074cd",
+  "audit_base_commit": "df33809",
+  "dataset_classification": "SAFE_SYNTHETIC_EVAL",
+  "gpt_review_status": "PENDING_REVIEW",
+  "eval_complete": false,
+  "external_calls": { "embedding": 0, "llm": 0, "dify": 0 },
+  "production_retrieval_changed": false,
+  "v2r001": {
+    "business_gold_chunk": {
+      "chunk_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
+      "raw_source_text": "产品：澄明数据交换平台 V3.2\n环境：8 vCPU、32 GB 内存、PostgreSQL 14、千兆局域网\n条件：50 并发、100 万条基准数据、缓存预热后执行 30 分钟\n指标：数据目录查询平均响应时间\n结果：平均 1.4 秒，P95 1.9 秒。\n日期：2025-05-16。",
+      "chunk_role": "BUSINESS_CONTENT",
+      "gold_set_type": "GOLD_EVIDENCE_SET",
+      "gold_role": "DECISION_BEARING_BUSINESS_EVIDENCE",
+      "raw_vector_rank": 4,
+      "final_evidence_candidate_rank": 2,
+      "requirement_relative_classification": "EVIDENCE_BEARING",
+      "decision_bearing": true,
+      "candidate_eligibility": "EVIDENCE_ELIGIBLE",
+      "source_eligibility": "ELIGIBLE",
+      "source_hash": "5a54f61d10c64f26414f8dcfb93f3c1eb25076f1063d97f8200f42cad981843c"
+    },
+    "performance_heading_chunk": {
+      "chunk_id": "MCH-B4FF02295DBB6DCDF6E2763F057076F6",
+      "raw_source_text": "# 数据交换平台性能测试记录",
+      "chunk_role": "HEADING",
+      "gold_set_type": "GOLD_CONTEXT_SET",
+      "gold_role": "CONTEXT_ONLY_HEADING",
+      "raw_vector_rank": 1,
+      "final_evidence_candidate_rank": null,
+      "requirement_relative_classification": "METADATA_OR_HEADER",
+      "decision_bearing": false,
+      "candidate_eligibility": "CONTEXT_ONLY",
+      "source_eligibility": "ELIGIBLE",
+      "source_hash": "b39d0175f9ba8fd41b225f5b6d7b28dc51d850f4b5e80fe6159ae1af3e4ea189"
+    },
+    "exact_gold_raw_rank": 4,
+    "first_decision_bearing_raw_rank": 4,
+    "exact_gold_final_rank": 2,
+    "first_decision_bearing_final_rank": 2,
+    "heading_counts_as_exact_hit": false,
+    "heading_counts_as_decision_hit": false
+  },
+  "gold_separation": {
+    "rule": "GOLD_EVIDENCE_SET contains only decision-bearing formal evidence; headings, metadata and context-only chunks belong to GOLD_CONTEXT_SET.",
+    "v2r001_evidence_ids": ["MCH-0FBD3599DAF932016F62EB9634B997AF"],
+    "v2r001_context_ids": ["MCH-B4FF02295DBB6DCDF6E2763F057076F6"]
+  },
+  "final_metrics": {
+    "decision_hit_at_1": 0.8333333333333334,
+    "decision_hit_at_3": 1,
+    "decision_hit_at_5": 1,
+    "decision_mrr": 0.9166666666666666,
+    "exact_hit_at_1": 0.5,
+    "exact_hit_at_3": 1,
+    "exact_hit_at_5": 1,
+    "exact_mrr": 0.75,
+    "v2r001_final_decision_rank": 2
+  },
+  "invariants": {
+    "context_contributes_to_exact_hit": false,
+    "context_contributes_to_decision_hit": false,
+    "exact_gold_raw_rank_uses_business_gold_only": true,
+    "first_decision_raw_rank_le_exact_gold_raw_rank": true,
+    "final_gold_rank_2_hits_at_3": true,
+    "final_decision_rank_2_hits_at_3": true
+  },
+  "root_cause": ["GOLD_CONTEXT_CONTAMINATION", "GOLD_EVIDENCE_BINDING_ERROR"],
+  "root_cause_explanation": "The immutable live packet's V2R001 Gold list contained both a performance heading and its business evidence. The heading is context-only and was incorrectly serialized as Gold Evidence. The business Gold chunk is raw rank 4 and final rank 2; once the heading is moved to Gold Context, the raw diagnostics are internally consistent.",
+  "scorer_error": false,
+  "serialization_error": true,
+  "gold_redefined": false,
+  "safety": {
+    "live_packet_overwritten": false,
+    "retrieval_code_changed": false,
+    "embedding_calls": 0,
+    "llm_calls": 0,
+    "dify_calls": 0
+  },
+  "stage17": "REOPENED_FOR_P0_FIX + METRIC_REBASE_REQUIRED + PENDING_GPT_REVIEW"
+}
