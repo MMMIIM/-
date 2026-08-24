@@ -1,7 +1,7 @@
 {
   "schema_version": "4.3-targeted-retrieval-gold-qualification-v1",
   "title": "P0 TARGETED GOLD QUALIFICATION CHECKPOINT",
-  "generated_at": "2026-08-24T05:59:37.025Z",
+  "generated_at": "2026-08-24T06:37:06.889Z",
   "evaluation": "targeted-evidence-bearing-retrieval",
   "case_count": 12,
   "case_level_results_complete": true,
@@ -15,21 +15,21 @@
   "database_writes": 0,
   "aggregate": {
     "total_cases": 12,
-    "GOLD_READY_FOR_RETRIEVAL": 7,
+    "GOLD_READY_FOR_RETRIEVAL": 0,
     "GOLD_PARTIAL": 5,
     "GOLD_STALE": 0,
-    "GOLD_LINEAGE_INVALID": 0,
+    "GOLD_LINEAGE_INVALID": 7,
     "GOLD_REQUIREMENT_INVALID": 0,
     "GOLD_CORPUS_MISMATCH": 0,
     "GOLD_LEAKAGE_RISK": 0,
-    "rejected": 0,
-    "group_ready": 7,
+    "rejected": 7,
+    "group_ready": 0,
     "group_repairable": 5,
-    "group_reject_rebuild": 0,
+    "group_reject_rebuild": 7,
     "material_verified": 12,
     "document_verified": 12,
     "chunk_verified": 12,
-    "span_verified": 7,
+    "span_verified": 0,
     "current_index_verified": 9,
     "formal_tender_requirement": 0,
     "frozen_eval_query": 12,
@@ -85,25 +85,26 @@
         "material_lineage": "VERIFIED",
         "document_lineage": "VERIFIED",
         "chunk_lineage": "VERIFIED",
-        "span_verification": "VERIFIED",
+        "span_verification": "INVALID",
         "index_presence": "CURRENT",
         "gold_independence": "PASS",
         "allowed_scope": "ENTERPRISE_PROJECT_SCOPE",
         "scope_allowed": true,
-        "source_resolution": "PERSISTED_EXACT_SPAN",
+        "source_resolution": "UNRESOLVED",
         "source_hash_exact": true,
         "source_text_exact": true,
+        "span_source_exact_in_expected_chunk": false,
+        "span_chunk_identity": true,
         "runtime_expected_ids_seen": false
       },
       "readiness": {
-        "status": "GOLD_READY_FOR_RETRIEVAL",
-        "group": "READY",
+        "status": "GOLD_LINEAGE_INVALID",
+        "group": "REJECT_REBUILD",
         "reasons": [
-          "persisted_span_exact_hash_and_current_index_verified"
+          "expected_span_must_be_exact_substring_of_expected_chunk",
+          "expected_chunk_must_equal_span_chunk_identity"
         ],
-        "semantic_notes": [
-          "legacy_expected_chunk_was_metadata"
-        ]
+        "semantic_notes": []
       },
       "execution": {
         "status": "NOT_EXECUTED",
@@ -158,26 +159,26 @@
         "material_lineage": "VERIFIED",
         "document_lineage": "VERIFIED",
         "chunk_lineage": "VERIFIED",
-        "span_verification": "VERIFIED",
+        "span_verification": "INVALID",
         "index_presence": "CURRENT",
         "gold_independence": "PASS",
         "allowed_scope": "ENTERPRISE_PROJECT_SCOPE",
         "scope_allowed": true,
-        "source_resolution": "PERSISTED_EXACT_SPAN",
+        "source_resolution": "UNRESOLVED",
         "source_hash_exact": true,
         "source_text_exact": true,
+        "span_source_exact_in_expected_chunk": false,
+        "span_chunk_identity": true,
         "runtime_expected_ids_seen": false
       },
       "readiness": {
-        "status": "GOLD_READY_FOR_RETRIEVAL",
-        "group": "READY",
+        "status": "GOLD_LINEAGE_INVALID",
+        "group": "REJECT_REBUILD",
         "reasons": [
-          "persisted_span_exact_hash_and_current_index_verified"
+          "expected_span_must_be_exact_substring_of_expected_chunk",
+          "expected_chunk_must_equal_span_chunk_identity"
         ],
-        "semantic_notes": [
-          "legacy_expected_chunk_was_metadata",
-          "target_threshold_differs_from_formal_requirement"
-        ]
+        "semantic_notes": []
       },
       "execution": {
         "status": "NOT_EXECUTED",
@@ -232,25 +233,26 @@
         "material_lineage": "VERIFIED",
         "document_lineage": "VERIFIED",
         "chunk_lineage": "VERIFIED",
-        "span_verification": "VERIFIED",
+        "span_verification": "INVALID",
         "index_presence": "CURRENT",
         "gold_independence": "PASS",
         "allowed_scope": "ENTERPRISE_PROJECT_SCOPE",
         "scope_allowed": true,
-        "source_resolution": "PERSISTED_EXACT_SPAN",
+        "source_resolution": "UNRESOLVED",
         "source_hash_exact": true,
         "source_text_exact": true,
+        "span_source_exact_in_expected_chunk": false,
+        "span_chunk_identity": true,
         "runtime_expected_ids_seen": false
       },
       "readiness": {
-        "status": "GOLD_READY_FOR_RETRIEVAL",
-        "group": "READY",
+        "status": "GOLD_LINEAGE_INVALID",
+        "group": "REJECT_REBUILD",
         "reasons": [
-          "persisted_span_exact_hash_and_current_index_verified"
+          "expected_span_must_be_exact_substring_of_expected_chunk",
+          "expected_chunk_must_equal_span_chunk_identity"
         ],
-        "semantic_notes": [
-          "legacy_expected_chunk_was_metadata"
-        ]
+        "semantic_notes": []
       },
       "execution": {
         "status": "NOT_EXECUTED",
@@ -305,26 +307,26 @@
         "material_lineage": "VERIFIED",
         "document_lineage": "VERIFIED",
         "chunk_lineage": "VERIFIED",
-        "span_verification": "VERIFIED",
+        "span_verification": "INVALID",
         "index_presence": "CURRENT",
         "gold_independence": "PASS",
         "allowed_scope": "ENTERPRISE_PROJECT_SCOPE",
         "scope_allowed": true,
-        "source_resolution": "PERSISTED_EXACT_SPAN",
+        "source_resolution": "UNRESOLVED",
         "source_hash_exact": true,
         "source_text_exact": true,
+        "span_source_exact_in_expected_chunk": false,
+        "span_chunk_identity": true,
         "runtime_expected_ids_seen": false
       },
       "readiness": {
-        "status": "GOLD_READY_FOR_RETRIEVAL",
-        "group": "READY",
+        "status": "GOLD_LINEAGE_INVALID",
+        "group": "REJECT_REBUILD",
         "reasons": [
-          "persisted_span_exact_hash_and_current_index_verified"
+          "expected_span_must_be_exact_substring_of_expected_chunk",
+          "expected_chunk_must_equal_span_chunk_identity"
         ],
-        "semantic_notes": [
-          "legacy_expected_chunk_was_metadata",
-          "target_scope_differs_from_formal_requirement"
-        ]
+        "semantic_notes": []
       },
       "execution": {
         "status": "NOT_EXECUTED",
@@ -379,25 +381,26 @@
         "material_lineage": "VERIFIED",
         "document_lineage": "VERIFIED",
         "chunk_lineage": "VERIFIED",
-        "span_verification": "VERIFIED",
+        "span_verification": "INVALID",
         "index_presence": "CURRENT",
         "gold_independence": "PASS",
         "allowed_scope": "ENTERPRISE_PROJECT_SCOPE",
         "scope_allowed": true,
-        "source_resolution": "PERSISTED_EXACT_SPAN",
+        "source_resolution": "UNRESOLVED",
         "source_hash_exact": true,
         "source_text_exact": true,
+        "span_source_exact_in_expected_chunk": false,
+        "span_chunk_identity": true,
         "runtime_expected_ids_seen": false
       },
       "readiness": {
-        "status": "GOLD_READY_FOR_RETRIEVAL",
-        "group": "READY",
+        "status": "GOLD_LINEAGE_INVALID",
+        "group": "REJECT_REBUILD",
         "reasons": [
-          "persisted_span_exact_hash_and_current_index_verified"
+          "expected_span_must_be_exact_substring_of_expected_chunk",
+          "expected_chunk_must_equal_span_chunk_identity"
         ],
-        "semantic_notes": [
-          "legacy_expected_chunk_was_title_only"
-        ]
+        "semantic_notes": []
       },
       "execution": {
         "status": "NOT_EXECUTED",
@@ -452,26 +455,26 @@
         "material_lineage": "VERIFIED",
         "document_lineage": "VERIFIED",
         "chunk_lineage": "VERIFIED",
-        "span_verification": "VERIFIED",
+        "span_verification": "INVALID",
         "index_presence": "CURRENT",
         "gold_independence": "PASS",
         "allowed_scope": "ENTERPRISE_PROJECT_SCOPE",
         "scope_allowed": true,
-        "source_resolution": "PERSISTED_EXACT_SPAN",
+        "source_resolution": "UNRESOLVED",
         "source_hash_exact": true,
         "source_text_exact": true,
+        "span_source_exact_in_expected_chunk": false,
+        "span_chunk_identity": true,
         "runtime_expected_ids_seen": false
       },
       "readiness": {
-        "status": "GOLD_READY_FOR_RETRIEVAL",
-        "group": "READY",
+        "status": "GOLD_LINEAGE_INVALID",
+        "group": "REJECT_REBUILD",
         "reasons": [
-          "persisted_span_exact_hash_and_current_index_verified"
+          "expected_span_must_be_exact_substring_of_expected_chunk",
+          "expected_chunk_must_equal_span_chunk_identity"
         ],
-        "semantic_notes": [
-          "legacy_expected_chunk_was_title_only",
-          "subject_scope_not_verified"
-        ]
+        "semantic_notes": []
       },
       "execution": {
         "status": "NOT_EXECUTED",
@@ -526,26 +529,26 @@
         "material_lineage": "VERIFIED",
         "document_lineage": "VERIFIED",
         "chunk_lineage": "VERIFIED",
-        "span_verification": "VERIFIED",
+        "span_verification": "INVALID",
         "index_presence": "CURRENT",
         "gold_independence": "PASS",
         "allowed_scope": "ENTERPRISE_PROJECT_SCOPE",
         "scope_allowed": true,
-        "source_resolution": "PERSISTED_EXACT_SPAN",
+        "source_resolution": "UNRESOLVED",
         "source_hash_exact": true,
         "source_text_exact": true,
+        "span_source_exact_in_expected_chunk": false,
+        "span_chunk_identity": true,
         "runtime_expected_ids_seen": false
       },
       "readiness": {
-        "status": "GOLD_READY_FOR_RETRIEVAL",
-        "group": "READY",
+        "status": "GOLD_LINEAGE_INVALID",
+        "group": "REJECT_REBUILD",
         "reasons": [
-          "persisted_span_exact_hash_and_current_index_verified"
+          "expected_span_must_be_exact_substring_of_expected_chunk",
+          "expected_chunk_must_equal_span_chunk_identity"
         ],
-        "semantic_notes": [
-          "legacy_expected_chunk_was_title_only",
-          "source_explicitly_says_status_incomplete"
-        ]
+        "semantic_notes": []
       },
       "execution": {
         "status": "NOT_EXECUTED",
@@ -605,6 +608,8 @@
         "source_resolution": "DETERMINISTIC_CHUNK_REFERENCE_ONLY",
         "source_hash_exact": true,
         "source_text_exact": true,
+        "span_source_exact_in_expected_chunk": false,
+        "span_chunk_identity": false,
         "runtime_expected_ids_seen": false
       },
       "readiness": {
@@ -677,6 +682,8 @@
         "source_resolution": "DETERMINISTIC_CHUNK_REFERENCE_ONLY",
         "source_hash_exact": true,
         "source_text_exact": true,
+        "span_source_exact_in_expected_chunk": false,
+        "span_chunk_identity": false,
         "runtime_expected_ids_seen": false
       },
       "readiness": {
@@ -749,6 +756,8 @@
         "source_resolution": "DETERMINISTIC_CHUNK_REFERENCE_ONLY",
         "source_hash_exact": true,
         "source_text_exact": true,
+        "span_source_exact_in_expected_chunk": false,
+        "span_chunk_identity": false,
         "runtime_expected_ids_seen": false
       },
       "readiness": {
@@ -822,6 +831,8 @@
         "source_resolution": "DETERMINISTIC_CHUNK_REFERENCE_ONLY",
         "source_hash_exact": true,
         "source_text_exact": true,
+        "span_source_exact_in_expected_chunk": false,
+        "span_chunk_identity": false,
         "runtime_expected_ids_seen": false
       },
       "readiness": {
@@ -894,6 +905,8 @@
         "source_resolution": "DETERMINISTIC_CHUNK_REFERENCE_ONLY",
         "source_hash_exact": true,
         "source_text_exact": true,
+        "span_source_exact_in_expected_chunk": false,
+        "span_chunk_identity": false,
         "runtime_expected_ids_seen": false
       },
       "readiness": {

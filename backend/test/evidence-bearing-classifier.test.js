@@ -51,3 +51,33 @@ test('generic company profile is not proof of a specific city-governance require
   const source = '企业主营政务平台、智慧城市、数据治理、系统集成和运维服务。';
   assert.equal(classifyEvidenceBearing({ requirement, sourceText: source }).classification, 'TOPIC_RELEVANT_ONLY');
 });
+
+test('performance capability text is not a performance test record', () => {
+  const requirement = { text: '企业应提供可核验的数据交换平台性能测试记录。' };
+  const source = '产品：澄明数据交换平台 V3.2\n能力：REST API 接入、数据目录、交换任务调度、运行日志。\n未声明吞吐量或 SLA。';
+  const result = classifyEvidenceBearing({ requirement, sourceText: source });
+  assert.equal(result.classification, 'TOPIC_RELEVANT_ONLY');
+  assert.deepEqual(result.supported_dimensions, []);
+});
+
+test('compatibility evidence requires a requested environment anchor', () => {
+  const requirement = { text: '企业应说明产品在 x86_64、Ubuntu 和 PostgreSQL 环境的兼容性。' };
+  const source = '优先成熟 MIT / Apache-2.0 等兼容开源组件。';
+  const result = classifyEvidenceBearing({ requirement, sourceText: source });
+  assert.equal(result.classification, 'TOPIC_RELEVANT_ONLY');
+});
+
+test('qualification evidence requires the requested certificate identifier', () => {
+  const requirement = { text: '企业应提供当前有效的 ISO/IEC 27001 认证信息。' };
+  const source = '名称：ISO 9001\n编号：CM-Q-9001-2025\n状态：active\n有效至：2028-03-31';
+  const result = classifyEvidenceBearing({ requirement, sourceText: source });
+  assert.equal(result.classification, 'TOPIC_RELEVANT_ONLY');
+});
+
+test('project主体 makes scope a required evidence dimension', () => {
+  const requirement = { text: '企业应提供指定项目主体的 ISO/IEC 27001 证书。' };
+  const source = '企业持有在有效期内的 ISO/IEC 27001 受控记录。';
+  const result = classifyEvidenceBearing({ requirement, sourceText: source });
+  assert.ok(result.required_dimensions.includes('scope_match'));
+  assert.equal(result.classification, 'TOPIC_RELEVANT_ONLY');
+});

@@ -68,10 +68,13 @@ function makeDimensionStatus({ mapping, snapshot, material, chunk, span, embeddi
   const materialLineage = Boolean(material && material.id === mapping.expected_material_id);
   const documentLineage = Boolean(material && material.id === mapping.expected_document_id);
   const chunkLineage = Boolean(chunk && chunk.material_id === mapping.expected_material_id);
+  const spanSourceExactInExpectedChunk = Boolean(span && chunk && chunk.source_text.includes(span.source_text));
+  const spanChunkIdentity = Boolean(span && span.anchor_chunk_id === mapping.expected_chunk_id);
   const spanVerified = Boolean(
     mapping.verified_span_id && span &&
     span.span_id === mapping.verified_span_id &&
     sourceHashExact && sourceTextExact &&
+    spanSourceExactInExpectedChunk && spanChunkIdentity &&
     chunkLineage && chunk.char_start >= span.start_offset && chunk.char_end <= span.end_offset
   );
   const transientSourceResolved = Boolean(
@@ -96,6 +99,8 @@ function makeDimensionStatus({ mapping, snapshot, material, chunk, span, embeddi
     source_resolution: spanVerified ? 'PERSISTED_EXACT_SPAN' : (transientSourceResolved ? 'DETERMINISTIC_CHUNK_REFERENCE_ONLY' : 'UNRESOLVED'),
     source_hash_exact: sourceHashExact,
     source_text_exact: sourceTextExact,
+    span_source_exact_in_expected_chunk: spanSourceExactInExpectedChunk,
+    span_chunk_identity: spanChunkIdentity,
     runtime_expected_ids_seen: false
   };
   return { details, spanVerified, transientSourceResolved, currentIndex };
@@ -110,6 +115,13 @@ function readinessFor(mapping, dimensions, { transientSourceResolved, spanVerifi
   }
   if (dimensions.corpus_binding !== 'VALID' || dimensions.material_lineage !== 'VERIFIED' || dimensions.document_lineage !== 'VERIFIED' || dimensions.chunk_lineage !== 'VERIFIED') {
     return { status: 'GOLD_LINEAGE_INVALID', group: 'REJECT_REBUILD', reasons: ['material_document_or_chunk_lineage_missing'] };
+  }
+  if (mapping.verified_span_id && (!dimensions.span_source_exact_in_expected_chunk || !dimensions.span_chunk_identity)) {
+    return {
+      status: 'GOLD_LINEAGE_INVALID',
+      group: 'REJECT_REBUILD',
+      reasons: ['expected_span_must_be_exact_substring_of_expected_chunk', 'expected_chunk_must_equal_span_chunk_identity']
+    };
   }
   if (mapping.verified_span_id && spanVerified && currentIndex) {
     return {

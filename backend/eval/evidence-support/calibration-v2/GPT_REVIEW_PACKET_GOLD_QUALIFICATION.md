@@ -8,21 +8,21 @@
 ```json
 {
   "total_cases": 12,
-  "GOLD_READY_FOR_RETRIEVAL": 7,
+  "GOLD_READY_FOR_RETRIEVAL": 0,
   "GOLD_PARTIAL": 5,
   "GOLD_STALE": 0,
-  "GOLD_LINEAGE_INVALID": 0,
+  "GOLD_LINEAGE_INVALID": 7,
   "GOLD_REQUIREMENT_INVALID": 0,
   "GOLD_CORPUS_MISMATCH": 0,
   "GOLD_LEAKAGE_RISK": 0,
-  "rejected": 0,
-  "group_ready": 7,
+  "rejected": 7,
+  "group_ready": 0,
   "group_repairable": 5,
-  "group_reject_rebuild": 0,
+  "group_reject_rebuild": 7,
   "material_verified": 12,
   "document_verified": 12,
   "chunk_verified": 12,
-  "span_verified": 7,
+  "span_verified": 0,
   "current_index_verified": 9,
   "formal_tender_requirement": 0,
   "frozen_eval_query": 12,
@@ -38,7 +38,7 @@
 - Material verified：12/12
 - Document verified：12/12
 - Chunk verified：12/12
-- Persisted span verified：7/12
+- Persisted span verified：0/12
 - Current index verified：9/12
 
 ## Requirement status
@@ -56,8 +56,8 @@
 
 ## Next executable set
 
-- READY：V2R-001-PERF-DIRECT, V2R-002-PERF-PARTIAL, V2R-003-COMP-DIRECT, V2R-004-COMP-PARTIAL, V2R-005-ISO-DIRECT, V2R-006-ISO-SCOPE, V2R-007-PROJECT-STATUS
-- EXCLUDED：V2R-010-CORPUS-01 (GOLD_PARTIAL: exact_source_chunk_resolved_deterministically; source_span_or_eval_manifest_binding_not_persisted), V2R-015-CORPUS-06 (GOLD_PARTIAL: exact_source_chunk_resolved_deterministically; source_span_or_eval_manifest_binding_not_persisted), V2R-021-CORPUS-12 (GOLD_PARTIAL: exact_source_chunk_resolved_deterministically; source_span_or_eval_manifest_binding_not_persisted; current_embedding_index_missing), V2R-024-CORPUS-15 (GOLD_PARTIAL: exact_source_chunk_resolved_deterministically; source_span_or_eval_manifest_binding_not_persisted; current_embedding_index_missing), V2R-030-CORPUS-21 (GOLD_PARTIAL: exact_source_chunk_resolved_deterministically; source_span_or_eval_manifest_binding_not_persisted; current_embedding_index_missing)
+- READY：NONE
+- EXCLUDED：V2R-001-PERF-DIRECT (GOLD_LINEAGE_INVALID: expected_span_must_be_exact_substring_of_expected_chunk; expected_chunk_must_equal_span_chunk_identity), V2R-002-PERF-PARTIAL (GOLD_LINEAGE_INVALID: expected_span_must_be_exact_substring_of_expected_chunk; expected_chunk_must_equal_span_chunk_identity), V2R-003-COMP-DIRECT (GOLD_LINEAGE_INVALID: expected_span_must_be_exact_substring_of_expected_chunk; expected_chunk_must_equal_span_chunk_identity), V2R-004-COMP-PARTIAL (GOLD_LINEAGE_INVALID: expected_span_must_be_exact_substring_of_expected_chunk; expected_chunk_must_equal_span_chunk_identity), V2R-005-ISO-DIRECT (GOLD_LINEAGE_INVALID: expected_span_must_be_exact_substring_of_expected_chunk; expected_chunk_must_equal_span_chunk_identity), V2R-006-ISO-SCOPE (GOLD_LINEAGE_INVALID: expected_span_must_be_exact_substring_of_expected_chunk; expected_chunk_must_equal_span_chunk_identity), V2R-007-PROJECT-STATUS (GOLD_LINEAGE_INVALID: expected_span_must_be_exact_substring_of_expected_chunk; expected_chunk_must_equal_span_chunk_identity), V2R-010-CORPUS-01 (GOLD_PARTIAL: exact_source_chunk_resolved_deterministically; source_span_or_eval_manifest_binding_not_persisted), V2R-015-CORPUS-06 (GOLD_PARTIAL: exact_source_chunk_resolved_deterministically; source_span_or_eval_manifest_binding_not_persisted), V2R-021-CORPUS-12 (GOLD_PARTIAL: exact_source_chunk_resolved_deterministically; source_span_or_eval_manifest_binding_not_persisted; current_embedding_index_missing), V2R-024-CORPUS-15 (GOLD_PARTIAL: exact_source_chunk_resolved_deterministically; source_span_or_eval_manifest_binding_not_persisted; current_embedding_index_missing), V2R-030-CORPUS-21 (GOLD_PARTIAL: exact_source_chunk_resolved_deterministically; source_span_or_eval_manifest_binding_not_persisted; current_embedding_index_missing)
 - Mapping evaluation：NOT_EXECUTED
 
 ## All 12 case-level qualification results
@@ -80,7 +80,7 @@
 - Material：VERIFIED
 - Document：VERIFIED
 - Chunk：VERIFIED
-- Span：VERIFIED
+- Span：INVALID
 - Index：CURRENT (Qwen/Qwen3-Embedding-0.6B, 1024d)
 - Exact source/hash check：text=PASS / hash=PASS
 - Gold independence：PASS；runtime sees expected IDs：NO
@@ -98,11 +98,11 @@
 日期：2025-05-16。
 ```
 
-### Gold readiness：GOLD_READY_FOR_RETRIEVAL
+### Gold readiness：GOLD_LINEAGE_INVALID
 
-- Group：READY
-- Reasons：persisted_span_exact_hash_and_current_index_verified
-- Semantic notes：legacy_expected_chunk_was_metadata
+- Group：REJECT_REBUILD
+- Reasons：expected_span_must_be_exact_substring_of_expected_chunk; expected_chunk_must_equal_span_chunk_identity
+- Semantic notes：none
 
 ### Execution / safety
 
@@ -132,7 +132,7 @@
 - Material：VERIFIED
 - Document：VERIFIED
 - Chunk：VERIFIED
-- Span：VERIFIED
+- Span：INVALID
 - Index：CURRENT (Qwen/Qwen3-Embedding-0.6B, 1024d)
 - Exact source/hash check：text=PASS / hash=PASS
 - Gold independence：PASS；runtime sees expected IDs：NO
@@ -150,11 +150,11 @@
 日期：2025-05-16。
 ```
 
-### Gold readiness：GOLD_READY_FOR_RETRIEVAL
+### Gold readiness：GOLD_LINEAGE_INVALID
 
-- Group：READY
-- Reasons：persisted_span_exact_hash_and_current_index_verified
-- Semantic notes：legacy_expected_chunk_was_metadata; target_threshold_differs_from_formal_requirement
+- Group：REJECT_REBUILD
+- Reasons：expected_span_must_be_exact_substring_of_expected_chunk; expected_chunk_must_equal_span_chunk_identity
+- Semantic notes：none
 
 ### Execution / safety
 
@@ -184,7 +184,7 @@
 - Material：VERIFIED
 - Document：VERIFIED
 - Chunk：VERIFIED
-- Span：VERIFIED
+- Span：INVALID
 - Index：CURRENT (Qwen/Qwen3-Embedding-0.6B, 1024d)
 - Exact source/hash check：text=PASS / hash=PASS
 - Gold independence：PASS；runtime sees expected IDs：NO
@@ -200,11 +200,11 @@ x86_64 + Ubuntu 22.04 + PostgreSQL 14：tested
 国产数据库组合：unknown
 ```
 
-### Gold readiness：GOLD_READY_FOR_RETRIEVAL
+### Gold readiness：GOLD_LINEAGE_INVALID
 
-- Group：READY
-- Reasons：persisted_span_exact_hash_and_current_index_verified
-- Semantic notes：legacy_expected_chunk_was_metadata
+- Group：REJECT_REBUILD
+- Reasons：expected_span_must_be_exact_substring_of_expected_chunk; expected_chunk_must_equal_span_chunk_identity
+- Semantic notes：none
 
 ### Execution / safety
 
@@ -234,7 +234,7 @@ x86_64 + Ubuntu 22.04 + PostgreSQL 14：tested
 - Material：VERIFIED
 - Document：VERIFIED
 - Chunk：VERIFIED
-- Span：VERIFIED
+- Span：INVALID
 - Index：CURRENT (Qwen/Qwen3-Embedding-0.6B, 1024d)
 - Exact source/hash check：text=PASS / hash=PASS
 - Gold independence：PASS；runtime sees expected IDs：NO
@@ -250,11 +250,11 @@ x86_64 + Ubuntu 22.04 + PostgreSQL 14：tested
 国产数据库组合：unknown
 ```
 
-### Gold readiness：GOLD_READY_FOR_RETRIEVAL
+### Gold readiness：GOLD_LINEAGE_INVALID
 
-- Group：READY
-- Reasons：persisted_span_exact_hash_and_current_index_verified
-- Semantic notes：legacy_expected_chunk_was_metadata; target_scope_differs_from_formal_requirement
+- Group：REJECT_REBUILD
+- Reasons：expected_span_must_be_exact_substring_of_expected_chunk; expected_chunk_must_equal_span_chunk_identity
+- Semantic notes：none
 
 ### Execution / safety
 
@@ -284,7 +284,7 @@ x86_64 + Ubuntu 22.04 + PostgreSQL 14：tested
 - Material：VERIFIED
 - Document：VERIFIED
 - Chunk：VERIFIED
-- Span：VERIFIED
+- Span：INVALID
 - Index：CURRENT (Qwen/Qwen3-Embedding-0.6B, 1024d)
 - Exact source/hash check：text=PASS / hash=PASS
 - Gold independence：PASS；runtime sees expected IDs：NO
@@ -300,11 +300,11 @@ x86_64 + Ubuntu 22.04 + PostgreSQL 14：tested
 有效至：2027-11-30
 ```
 
-### Gold readiness：GOLD_READY_FOR_RETRIEVAL
+### Gold readiness：GOLD_LINEAGE_INVALID
 
-- Group：READY
-- Reasons：persisted_span_exact_hash_and_current_index_verified
-- Semantic notes：legacy_expected_chunk_was_title_only
+- Group：REJECT_REBUILD
+- Reasons：expected_span_must_be_exact_substring_of_expected_chunk; expected_chunk_must_equal_span_chunk_identity
+- Semantic notes：none
 
 ### Execution / safety
 
@@ -334,7 +334,7 @@ x86_64 + Ubuntu 22.04 + PostgreSQL 14：tested
 - Material：VERIFIED
 - Document：VERIFIED
 - Chunk：VERIFIED
-- Span：VERIFIED
+- Span：INVALID
 - Index：CURRENT (Qwen/Qwen3-Embedding-0.6B, 1024d)
 - Exact source/hash check：text=PASS / hash=PASS
 - Gold independence：PASS；runtime sees expected IDs：NO
@@ -350,11 +350,11 @@ x86_64 + Ubuntu 22.04 + PostgreSQL 14：tested
 有效至：2027-11-30
 ```
 
-### Gold readiness：GOLD_READY_FOR_RETRIEVAL
+### Gold readiness：GOLD_LINEAGE_INVALID
 
-- Group：READY
-- Reasons：persisted_span_exact_hash_and_current_index_verified
-- Semantic notes：legacy_expected_chunk_was_title_only; subject_scope_not_verified
+- Group：REJECT_REBUILD
+- Reasons：expected_span_must_be_exact_substring_of_expected_chunk; expected_chunk_must_equal_span_chunk_identity
+- Semantic notes：none
 
 ### Execution / safety
 
@@ -384,7 +384,7 @@ x86_64 + Ubuntu 22.04 + PostgreSQL 14：tested
 - Material：VERIFIED
 - Document：VERIFIED
 - Chunk：VERIFIED
-- Span：VERIFIED
+- Span：INVALID
 - Index：CURRENT (Qwen/Qwen3-Embedding-0.6B, 1024d)
 - Exact source/hash check：text=PASS / hash=PASS
 - Gold independence：PASS；runtime sees expected IDs：NO
@@ -400,11 +400,11 @@ x86_64 + Ubuntu 22.04 + PostgreSQL 14：tested
 状态不完整，不得推断完工或验收。
 ```
 
-### Gold readiness：GOLD_READY_FOR_RETRIEVAL
+### Gold readiness：GOLD_LINEAGE_INVALID
 
-- Group：READY
-- Reasons：persisted_span_exact_hash_and_current_index_verified
-- Semantic notes：legacy_expected_chunk_was_title_only; source_explicitly_says_status_incomplete
+- Group：REJECT_REBUILD
+- Reasons：expected_span_must_be_exact_substring_of_expected_chunk; expected_chunk_must_equal_span_chunk_identity
+- Semantic notes：none
 
 ### Execution / safety
 

@@ -15,12 +15,12 @@ test('targeted Retrieval Gold is qualified per case instead of blanket GOLD_INVA
   assert.deepEqual(packet.external_calls, { embedding: 0, llm: 0, dify: 0, automatic_retry: 0 });
   assert.equal(packet.database_writes, 0);
   assert.equal(packet.mapping_eval, 'NOT_EXECUTED');
-  assert.equal(packet.aggregate.GOLD_READY_FOR_RETRIEVAL, 7);
+  assert.equal(packet.aggregate.GOLD_READY_FOR_RETRIEVAL, 0);
   assert.equal(packet.aggregate.GOLD_PARTIAL, 5);
   assert.equal(packet.aggregate.GOLD_REQUIREMENT_INVALID, 0);
-  assert.equal(packet.aggregate.GOLD_LINEAGE_INVALID, 0);
+  assert.equal(packet.aggregate.GOLD_LINEAGE_INVALID, 7);
   assert.equal(packet.aggregate.GOLD_CORPUS_MISMATCH, 0);
-  assert.equal(packet.aggregate.span_verified, 7);
+  assert.equal(packet.aggregate.span_verified, 0);
   assert.equal(packet.aggregate.current_index_verified, 9);
   assert.equal(packet.aggregate.frozen_eval_query, 12);
   assert.equal(packet.aggregate.formal_tender_requirement, 0);
@@ -36,12 +36,10 @@ test('targeted Retrieval Gold is qualified per case instead of blanket GOLD_INVA
     assert.equal(item.safety.db_write_performed, false);
     assert.ok(item.expected_source.expected_source_text);
   }
-  assert.deepEqual(
-    packet.cases.filter((item) => item.readiness.status === 'GOLD_READY_FOR_RETRIEVAL').map((item) => item.case_id),
-    [
-      'V2R-001-PERF-DIRECT', 'V2R-002-PERF-PARTIAL', 'V2R-003-COMP-DIRECT',
-      'V2R-004-COMP-PARTIAL', 'V2R-005-ISO-DIRECT', 'V2R-006-ISO-SCOPE',
-      'V2R-007-PROJECT-STATUS'
-    ]
-  );
+  assert.deepEqual(packet.cases.filter((item) => item.readiness.status === 'GOLD_READY_FOR_RETRIEVAL'), []);
+  for (const item of packet.cases.filter((item) => item.case_id.startsWith('V2R-00'))) {
+    assert.equal(item.readiness.status, 'GOLD_LINEAGE_INVALID');
+    assert.equal(item.dimensions.span_source_exact_in_expected_chunk, false);
+    assert.equal(item.dimensions.span_chunk_identity, true);
+  }
 });

@@ -69,7 +69,7 @@ export function classifyRequiredEvidenceDimensions({ requirement = null, dimensi
   const compatibility = /兼容|适配|国产化|操作系统|数据库|架构|接口|协议|环境|平台/i.test(value);
   const status = /应|须|需|支持|具备|完成|通过|验收|可用|满足|提供|实现|保障/i.test(value);
   const identity = /企业|公司|项目|产品|数据库|操作系统|平台|环境|系统|模块|服务|证书|认证|资质/i.test(value);
-  const scope = /范围|适用|环境|组合|覆盖|全市|各专业|国产|x86/i.test(value);
+  const scope = /范围|适用|环境|组合|覆盖|全市|各专业|国产|x86|指定项目主体|项目主体|同一项目/i.test(value);
   const validity = /有效|有效期|截止|当前|在有效期|证书|认证|资质|授权/i.test(value);
   const roles = {};
   for (const dimension of requested) {

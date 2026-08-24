@@ -12,6 +12,7 @@ export const EVIDENCE_BEARING_CLASSES = Object.freeze([
 const METADATA_KEYS = /^(?:representative_synthetic|synthetic_test_material|not_real_customer_data|subject|source_type|source_org|license_or_usage_status|material_id|scope|corpus_scope|industry|material_type|review_status|project_name|owner|document_id|chunk_id)\s*[:=]/i;
 const HEADING_ONLY = /^#{1,6}\s+[^\n]+$/;
 const NUMERIC = /(?:\d+(?:\.\d+)?\s*(?:秒|毫秒|GB|TB|人|条|次|%|fps|\/秒)|P\d{1,2}|并发|容量|准确率|响应时间|指标)/i;
+const PERFORMANCE = /(?:性能|吞吐|响应|并发|测试记录|压力测试|性能测试|指标|P\d{1,2}|SLA)/i;
 const COMPATIBILITY = /(?:x86(?:_64)?|ubuntu|麒麟|统信|UOS|PostgreSQL|达梦|人大金仓|国产数据库|操作系统|数据库|兼容|适配|架构|协议)/i;
 const QUALIFICATION = /(?:ISO(?:\/IEC)?\s*27001|认证|证书|资质|有效至|有效期|valid_until)/i;
 const PROJECT = /(?:项目|实施|客户|验收|完工|交付|状态)/i;
@@ -43,6 +44,16 @@ export function isMetadataOrHeader(sourceText) {
 
 function numbers(value) {
   return [...normalize(value).matchAll(/\d+(?:\.\d+)?/g)].map(item => item[0]);
+}
+
+function certificationTargets(value) {
+  return [...normalize(value).matchAll(/iso(?:\/iec)?\s*\d{4,5}/gi)]
+    .map(item => item[0].replace(/\s+/g, '').replace('/iec', '/iec'));
+}
+
+function compatibilityTargets(value) {
+  return [...normalize(value).matchAll(/x86(?:_64)?|ubuntu(?:\s*\d+(?:\.\d+)*)?|postgresql(?:\s*\d+(?:\.\d+)*)?|麒麟(?:\s*v?\d+(?:\.\d+)*)?|统信(?:\s*uos)?|uos|达梦(?:\s*\d+)?|人大金仓|国产数据库|国产操作系统/gi)]
+    .map(item => item[0].replace(/\s+/g, ''));
 }
 
 function phraseTokens(value) {
@@ -82,25 +93,33 @@ function supportedDimensions(requirement, source) {
   if (NUMERIC.test(req) && reqNumbers.length && reqNumbers.some(number => sourceNumbers.includes(number)) && NUMERIC.test(value) && numericAnchor.test(req) && numericAnchor.test(value)) {
     dimensions.push('quantitative_match');
   }
+  if (PERFORMANCE.test(req) && /(?:测试|记录|指标|结果|响应时间|并发|P\d{1,2})/i.test(value) && /\d/.test(value)) {
+    dimensions.push('quantitative_match');
+  }
   if (COMPATIBILITY.test(req)) {
-    const reqTerms = phraseTokens(req).filter(token => /x86|ubuntu|麒麟|统信|uos|postgres|达梦|金仓|数据库|操作系统|兼容|适配|架构|协议/i.test(token));
+    const reqTerms = compatibilityTargets(req);
     const sourceValue = normalize(value);
     const direct = reqTerms.filter(term => sourceValue.includes(term));
-    const concretePlatform = /(?:x86|ubuntu|麒麟|统信|uos|postgres|达梦|金仓|操作系统|兼容|适配|架构|协议)/i.test(value);
-    if (direct.length >= 1 && concretePlatform && /(?:tested|verified|支持|兼容|适配|unknown|not_verified|partial)/i.test(value)) {
+    const concretePlatform = reqTerms.length > 0 && direct.length > 0;
+    if (concretePlatform && !/(?:第三方|依赖|授权|许可)/i.test(value) && /(?:tested|verified|支持|兼容|适配|unknown|not_verified|partial)/i.test(value)) {
       dimensions.push('entity_match', 'scope_match', 'status_match');
     }
   }
-  if (QUALIFICATION.test(req) && QUALIFICATION.test(value) && /(?:状态|active|有效|证书|认证)/i.test(value)) {
+  const requestedCertifications = certificationTargets(req);
+  const sourceCertifications = certificationTargets(value);
+  const certificationMatches = requestedCertifications.length === 0
+    ? sourceCertifications.length > 0
+    : requestedCertifications.some(certification => sourceCertifications.includes(certification));
+  if (QUALIFICATION.test(req) && QUALIFICATION.test(value) && certificationMatches && /(?:状态|active|有效|证书|认证)/i.test(value)) {
     dimensions.push('entity_match', 'validity_match', 'status_match');
   }
-  if (PROJECT.test(req) && PROJECT.test(value) && /(?:项目|实施|验收|状态|客户)/i.test(value)) {
+  if (PROJECT.test(req) && !QUALIFICATION.test(req) && PROJECT.test(value) && /(?:项目|实施|验收|状态|客户)/i.test(value)) {
     dimensions.push('entity_match', 'scope_match', 'status_match');
   }
   if (THIRD_PARTY.test(req) && THIRD_PARTY.test(value)) {
     dimensions.push('scope_match', 'status_match');
   }
-  if (!NUMERIC.test(req) && !COMPATIBILITY.test(req) && !QUALIFICATION.test(req) && !PROJECT.test(req) && !THIRD_PARTY.test(req)) {
+  if (!PERFORMANCE.test(req) && !NUMERIC.test(req) && !COMPATIBILITY.test(req) && !QUALIFICATION.test(req) && !PROJECT.test(req) && !THIRD_PARTY.test(req)) {
     const generic = new Set(['平台', '数据', '治理', '项目', '企业', '系统', '能力', '支持', '实现', '提供']);
     const directPhrases = phraseTokens(req).filter(token => token.length >= 3 && !generic.has(token) && /[\u3400-\u9fff]/.test(token) && normalize(value).includes(token));
     if (directPhrases.length >= 1 && /(?:支持|实现|提供|项目|范围|平台)/i.test(value)) dimensions.push('entity_match', 'scope_match', 'status_match');
@@ -125,10 +144,11 @@ export function classifyEvidenceBearing({ requirement, sourceText, candidate = {
   if (isMetadataOrHeader(source)) return { classifier_version: EVIDENCE_BEARING_CLASSIFIER_VERSION, classification: 'METADATA_OR_HEADER', required_dimensions: required, supported_dimensions: [], reason_codes: ['METADATA_OR_HEADER'], route };
   const supported = supportedDimensions(requirement, source);
   const requiredSupported = supported.filter(dimension => required.includes(dimension));
+  const projectScopeRequired = /(?:指定项目主体|项目主体|同一项目)/i.test(req);
   const topicMatch = overlap(req, source).length > 0
     || (COMPATIBILITY.test(req) && COMPATIBILITY.test(source))
     || (NUMERIC.test(req) && NUMERIC.test(source));
-  const classification = requiredSupported.length > 0
+  const classification = requiredSupported.length > 0 && !(projectScopeRequired && required.includes('scope_match') && !requiredSupported.includes('scope_match'))
     ? 'EVIDENCE_BEARING'
     : topicMatch ? 'TOPIC_RELEVANT_ONLY' : 'IRRELEVANT';
   return {
