@@ -17,7 +17,7 @@ Authoritative detail: `ARCHITECTURE.md`, `docs/CURRENT_STAGE.md`, `docs/ROADMAP.
 ## Repository state
 
 - Branch: `feat/v4.3-semantic-boundary-routing`
-- HEAD: local implementation/evaluation commits through `9a7d59e`; see Git for the documentation checkpoint commit.
+- HEAD: current local branch; see Git for the latest checkpoint commit.
 - Git status: clean; no secrets or generated documents are tracked.
 
 ## Frozen stages
