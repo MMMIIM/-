@@ -66,6 +66,7 @@ cutover decision.
 - Confirmed baseline: 140 requirements; synthetic enterprise materials indexed: 17.
 - Calibration V2 re-audit: 36 active cases; 3 ready, 32 insufficient, 1 no-relevant, 0 conflict; Human Gold 0.
 - Evidence-bearing audit: 7 legacy metadata false labels and 4 legacy topic false labels corrected offline; 12 targeted Gold mappings invalid, 0 executable.
+- Full case-level packet: all 12 cases persisted in `backend/eval/evidence-support/calibration-v2/GPT_REVIEW_PACKET.md` and `.json`; `GPT_REVIEW_STATUS=PENDING_REVIEW`, `EVAL_COMPLETE=NO`.
 - Context recovery audit: 158 dimensions total (93 required, 65 not applicable),
   44 recovered, 49 required unresolved across 27 cases; required recovery rate 47.31%.
 

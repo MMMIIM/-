@@ -119,6 +119,14 @@ action is to provision/persist the 12 target Requirement IDs and verified spans
 Retrieval call. Do not infer Gold from nearest Requirements, modify ranking,
 chunking, topK, MMR, or call an external model.
 
+The mandatory full case-level review packet is available at
+`backend/eval/evidence-support/calibration-v2/GPT_REVIEW_PACKET.md` and `.json`.
+It contains all 12 cases, expected lineage, raw verified source snapshots where
+available, explicit empty TopK for the blocked cases and primary failure layers.
+`CASE_LEVEL_RESULTS_COMPLETE=YES`, `RAW_SOURCE_INCLUDED=YES`,
+`GPT_REVIEW_STATUS=PENDING_REVIEW`, and `EVAL_COMPLETE=NO`; aggregate metrics
+cannot freeze this P0 evaluation before independent review.
+
 ### Standalone Semantic Gateway foundation (2026-08-24)
 
 本地已实现独立无状态 Node Gateway：`services/semantic-gateway`。共享语义

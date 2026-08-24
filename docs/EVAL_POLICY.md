@@ -57,6 +57,40 @@ Evidence Span, Context Window, system decision, expected/Gold result when
 available and PASS/FAIL. If `MANUAL_SAMPLE_REVIEW_READY = NO`, then
 `EVAL_COMPLETE = NO`.
 
+## Mandatory case-level GPT review packets
+
+This is a permanent governance rule for Retrieval, Evidence, Evidence Support,
+Requirement–Evidence Mapping, Claim Gate and Generation Grounding evaluations:
+aggregate metrics, test counts, Recall, Precision, MRR, coverage or automated
+PASS rates may not by themselves produce `PASS`, `EVAL_COMPLETE` or `FROZEN`.
+Every significant evaluation must persist a complete `GPT_REVIEW_PACKET.md` and
+preferably a matching JSON packet containing every case, the original
+Requirement, retrieval intent and allowed scope, expected lineage, every actual
+Top-K candidate with raw source excerpt and classification, exact span/context,
+final decision and one primary failure layer. If a case was not executable, the
+packet must retain it with `NOT_EXECUTED`/`BLOCKED` and the blocking reason; it
+must never be omitted or silently converted into a metric zero.
+
+Mapping-oriented packets additionally show Requirement, Evidence Fact, original
+span, lineage, relationship, expected/actual mapping, support semantics,
+mismatch dimensions, human approval and Claim Gate consequence. EvidenceSupport
+packets show all assessed sources, observations, conflicts and aggregate business
+status. Claim/Generation packets show approved Facts, allowed Claim, generated
+text, source evidence, Claim Gate and grounding decisions.
+
+The required order is:
+
+```text
+case-level truth → validation → aggregation → metric → stage decision
+```
+
+Before a high-risk P0 evaluation can be frozen:
+`GPT_REVIEW_PACKET_AVAILABLE = YES`, `CASE_LEVEL_RESULTS_COMPLETE = YES` and
+`RAW_SOURCE_INCLUDED = YES`; `GPT_REVIEW_STATUS` remains `PENDING_REVIEW` until
+the complete packet is independently reviewed. The packet is an audit artifact,
+not authorization to mutate Gold, approve Evidence, bypass Claim Gate or call a
+new Provider.
+
 ## Evidence and technical-failure rules
 
 Retrieval Candidate, Evidence-Bearing Chunk, Evidence Span, Evidence Fact and
