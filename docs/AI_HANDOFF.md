@@ -27,17 +27,14 @@ Authoritative detail: `ARCHITECTURE.md`, `docs/CURRENT_STAGE.md`, `docs/ROADMAP.
 
 ## Current stage
 
-Stage 20 — P0 Real Evidence Retrieval Revalidation: **PARTIAL**.
+Stage 20 — P0 Real Evidence Retrieval Revalidation: **PARTIAL / PENDING GPT REVIEW**.
 Stage 21-A Runtime Connectivity Foundation remains **PASS / FROZEN**. One managed
 SSH session provides the gateway forward and SOCKS egress; Gateway, SOCKS HTTPS,
 Embedding smoke, readiness, and monitor recovery passed. Stage20-S shared Evidence Support
 Assessment foundation and the local shared Gateway Contract are implemented
-offline. The task is not remotely published and no live model call is
-authorized. Do not start full Stage21. Stage20 is now **PARTIAL** after the
-managed Embedding re-entry: the three controlled Retrieval cases reached Top5
-and qualified source spans; the latest four canonical synthetic samples also
-reached Requirement-relative qualified spans, while full evidence-bearing and downstream E2E
-acceptance remain open.
+offline. The task is not remotely published. A single authorized 7-case
+SAFE_SYNTHETIC_EVAL Retrieval run completed through the formal service; full
+evidence-bearing and downstream E2E acceptance remain open. Do not start Stage21.
 
 The standalone semantic gateway foundation is implemented locally under
 `services/semantic-gateway`, with single-source contracts in
@@ -65,7 +62,8 @@ cutover decision.
 - Public tender parse: 4/4 chunks, 144 candidates, 140 mandatory, 130 verified / 10 suggested / 4 unresolved.
 - Confirmed baseline: 140 requirements; synthetic enterprise materials indexed: 17.
 - Calibration V2 re-audit: 36 active cases; 3 ready, 32 insufficient, 1 no-relevant, 0 conflict; Human Gold 0.
-- Evidence-bearing audit: 7 legacy metadata false labels and 4 legacy topic false labels corrected offline; targeted Gold qualification is 7 ready, 5 repairable, 0 rejected, with no live calls.
+- Evidence-bearing audit: 7 legacy metadata false labels and 4 legacy topic false labels corrected offline; targeted Gold qualification is 7 ready, 5 repairable, 0 rejected.
+- 7-case live Retrieval: 7/7 technical success, Hit@1 42.86%, Hit@3 71.43%, Hit@5 85.71%, Material/Document Hit@5 85.71%, MRR 0.5833; one metadata-pollution miss; GPT review pending.
 - Full case-level packet: all 12 cases persisted in `backend/eval/evidence-support/calibration-v2/GPT_REVIEW_PACKET.md` and `.json`; `GPT_REVIEW_STATUS=PENDING_REVIEW`, `EVAL_COMPLETE=NO`.
 - Gold qualification packet: `GPT_REVIEW_PACKET_GOLD_QUALIFICATION.md` and `.json` contain all 12 independent A–I checks; 7 `GOLD_READY_FOR_RETRIEVAL`, 5 `GOLD_PARTIAL`, current index verified 9/12.
 - Context recovery audit: 158 dimensions total (93 required, 65 not applicable),
@@ -77,13 +75,11 @@ The P0 context/retrieval audit is complete without changing Retrieval ranking or
 contracts. The former length-only Evidence-Bearing label was replaced by the
 Requirement-relative `evidence-bearing-classifier-v1`; offline audit shows 7/7
 legacy metadata and 4/4 legacy topic false labels, while the corrected labels
-produce 0 current false-evidence labels. Four canonical synthetic Retrieval
-samples reached qualified spans. The targeted Gold qualification found 7
-independently executable cases and 5 deterministic-but-repairable cases; no live
-call was made. Next step is a separate decision to repair the 5 partial
-manifest/span bindings or authorize one controlled live Retrieval run over the 7
-ready cases. Do not infer Gold from nearest Requirements or change ranking,
-chunking, topK, MMR, Provider, or retry architecture.
+produce 0 current false-evidence labels. The targeted Gold qualification found 7
+independently executable cases and 5 deterministic-but-repairable cases. The
+seven ready cases have now completed one authorized live Retrieval run; the next
+step is GPT review of the complete packet. Do not infer Gold from nearest
+Requirements or change ranking, chunking, topK, MMR, Provider, or retry architecture.
 
 ## Frozen boundaries
 
@@ -104,9 +100,9 @@ chunking, topK, MMR, Provider, or retry architecture.
 - Writer external calls in the public E2E: 0.
 - Shared assessment provider: provider-neutral unavailable/unknown by default;
   no external calls in this foundation.
-- Latest P0 targeted run: 4 diagnostic Embedding calls for canonical samples;
-  Gold qualification made 0 Embedding/LLM/Dify calls and 0 DB writes; expected
-  Gold IDs were evaluator-only and never passed to runtime retrieval.
+- Latest P0 targeted run: 7 authorized Embedding query calls through managed SOCKS;
+  no corpus upload/re-embedding, LLM/Dify calls, or production lifecycle writes;
+  expected Gold IDs were evaluator-only and never passed to runtime retrieval.
   LLM calls 0, Dify calls 0, automatic retries 0.
 
 ## Git restrictions

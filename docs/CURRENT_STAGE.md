@@ -31,7 +31,7 @@ Status: **PARTIAL — P0 REAL RETRIEVAL REVALIDATION**
 自治或部署基础设施；外部 Provider 在本阶段默认不调用，若已有授权路径不可用则
 记录为运营阻断而不改变架构。本轮完成了既有 EmbeddingClient 的受控真实 Retrieval
 重验证，没有调用 LLM 或 Dify。三个控制案例已到达 Top5 并完成合格来源片段复核，
-但全量 evidence-bearing 指标、12-case targeted live regression 和下游 E2E 仍未完成，
+但全量 evidence-bearing 指标、下游 E2E 和人工审阅仍未完成，
 因此 Stage20 仍为 PARTIAL。
 
 最新范围校正：正式 Stage20 路径使用 `semantic_gateway` Provider Adapter，
@@ -114,17 +114,32 @@ current embedding row. No case was collapsed into a generic invalid state.
 No live Retrieval was run in this qualification: Embedding/LLM/Dify calls and DB
 writes were all zero. Expected Material/Document/Chunk/Span IDs remain evaluator
 only and are not passed to query construction, filters, ranking, MMR, classifiers
-or context expansion. The 7 ready cases are the only future executable set; the
-5 partial cases require deterministic manifest/span repair before inclusion.
+or context expansion. The 7 ready cases were subsequently executed once under
+the safe external-eval policy; the 5 partial cases remain excluded and require
+deterministic manifest/span repair before inclusion.
 Four independent canonical synthetic Retrieval samples (`E2E-REQ-001..004`)
 remain diagnostic samples rather than the 12-case Gold metric.
 
 Stage17 remains **PASS / FROZEN UNDER P0 REGRESSION REVIEW**, not finally approved;
 Stage20 remains **PARTIAL**. Human Gold review stays paused. The next required
-action is to provision/persist the 12 target Requirement IDs and verified spans
-(or approve a separate synthetic evaluation project) before any targeted live
-Retrieval call. Do not infer Gold from nearest Requirements, modify ranking,
-chunking, topK, MMR, or call an external model.
+action is GPT review of the seven-case packet below. Do not infer Gold from
+nearest Requirements, modify ranking, chunking, topK, MMR, or call another
+external model.
+
+### P0 7-case live Retrieval checkpoint (2026-08-24)
+
+The seven `GOLD_READY_FOR_RETRIEVAL` cases were executed once through the formal
+`EnterpriseRetrievalService → EmbeddingClient → managed SOCKS → pgvector → Top5`
+path. Only seven query embeddings were sent to the allowlisted SiliconFlow
+endpoint; no corpus was uploaded or re-embedded, and no LLM/Dify/Mapping/Evidence
+Fact/Claim Gate/Writer path ran. All seven Retrieval runs succeeded technically.
+
+Formal evaluator metrics: Hit@1 **42.86%**, Hit@3 **71.43%**, Hit@5 **85.71%**,
+Material Hit@5 **85.71%**, Document Hit@5 **85.71%**, MRR **0.5833**. There was
+one Hit@5 miss, classified as metadata pollution; metadata candidates were not
+classified as Evidence-Bearing. The complete case-level packet is
+`backend/eval/evidence-support/calibration-v2/GPT_REVIEW_PACKET_LIVE_RETRIEVAL_7.md`
+and `.json`; `GPT_REVIEW_STATUS=PENDING_REVIEW`, `EVAL_COMPLETE=NO`.
 
 The mandatory full case-level review packet is available at
 `backend/eval/evidence-support/calibration-v2/GPT_REVIEW_PACKET.md` and `.json`.
