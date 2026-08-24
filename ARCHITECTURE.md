@@ -3,27 +3,78 @@
 This is the repository architecture source of truth. The V4.3-specific
 semantic routing supplement is maintained in
 [`docs/v4.3-semantic-architecture.md`](docs/v4.3-semantic-architecture.md).
+Evaluation governance is maintained separately in
+[`docs/EVAL_POLICY.md`](docs/EVAL_POLICY.md).
 
 ## Formal production chain
 
 ```text
 Canonical Requirement
-→ Production Retrieval
-→ Evidence Source Span
-→ Evidence Review
-→ Evidence Fact
-→ Requirement-Evidence Mapping
-→ Claim Assertion
+→ Retrieval Intent / Evidence Scope
+→ Retrieval Candidate
+→ Evidence-Bearing Chunk
+→ Exact Candidate Evidence Span
+→ Bounded Evidence Context Recovery
+→ Evidence Span Qualification
+→ EvidenceSupportAssessment
+→ Human Evidence Review
+→ Approved Evidence Fact
+→ Formal Requirement ↔ Evidence Fact Mapping
 → Claim Gate
-→ Project Fact
-→ Propagation
 → Writer Authorization
-→ Writer Safe Context
-→ Writer
-→ Mention Ledger
-→ Critical Guard
-→ Coverage Verification
+→ Generated Response
+→ Grounding / Bid Check
 ```
+
+The downstream document path remains responsible for the approved response,
+Mention Ledger, Critical Guard and Coverage Verification. Retrieval and
+assessment never grant those permissions implicitly.
+
+## Evidence semantics and bounded recovery
+
+Retrieval relevance is not evidence. A Retrieval Candidate is not an Evidence
+Fact, an Evidence Fact is not a Formal Mapping, a Formal Mapping is not a Safe
+Claim, and a Safe Claim is not a correct final document. An Evidence-Bearing
+Chunk is a retrievable unit that contains a usable source; it is still subject
+to span qualification and human review.
+
+An **Evidence Span** is the smallest complete semantic unit that can support a
+verifiable fact judgment. Keywords, titles, front matter, metadata, IDs,
+subject headers, isolated numbers, certification names or project names do not
+qualify by themselves. There is no minimum-length shortcut: a semantically
+complete table row such as `PostgreSQL | 支持` may qualify.
+
+`EXACT_EVIDENCE_SPAN` is the auditable citation used for hashes, traceability
+and support observations. `EVIDENCE_CONTEXT_WINDOW` supplies subject, entity,
+scope, status, validity, unit, table-header and section meaning. Context never
+silently replaces or enlarges the exact citation, and every recovered
+dimension retains provenance.
+
+When a span is incomplete, the control plane performs bounded recovery before
+classifying a gap: same sentence/table row, same paragraph/table, section
+heading, same chunk, adjacent chunk in the same document, authoritative
+material metadata, and only then a same-scope retrieval expansion. It never
+crosses material or document boundaries without explicit lineage. Internal
+recovery states are `RESOLVED_BY_CONTEXT`,
+`RESOLVED_BY_RETRIEVAL_EXPANSION`, `UNRESOLVED_AFTER_CONTEXT` and
+`UNRESOLVED_AFTER_RETRIEVAL`; these are not replacements for user-facing
+business statuses.
+
+Evidence relevance and evidence capability are separate dimensions. Industry
+reference, government standards and third-party capability may be relevant
+context, but enterprise capability, qualification, project-experience and
+product-capability proof must come from an allowed enterprise-owned scope.
+
+Missing evidence is not adverse evidence. A missing value remains an evidence
+gap; an observed quantitative, status or categorical mismatch is an adverse
+fact. Universal requirements (`all`, `全部`, `均`, `所有`) cannot be supported
+when evidence contains failed, incomplete, unverified, unknown or mismatching
+values. `CONFLICTING_EVIDENCE` requires the same fact dimension to have two
+observed, unequal values; a missing second value is not a conflict.
+
+Technical failures such as provider timeout, network failure, invalid output
+schema or invalid support span are never converted into business truth. They
+remain `ASSESSMENT_UNAVAILABLE` with the technical error code preserved.
 
 ## Knowledge & material architecture
 
@@ -103,3 +154,18 @@ The verified architectural invariants are: facts remain traceable to sources;
 model output is never itself formal approval; changing a fact invalidates
 affected downstream results; propagation is deterministic; and Writer cannot
 bypass Claim Gate or authorization.
+
+## Semantic execution boundary
+
+The semantic execution topology is:
+
+```text
+Backend Control Plane → Standalone Semantic Gateway → Provider Adapter → Model
+```
+
+The Backend owns task selection, validation, lineage and lifecycle state.
+Provider and model choices remain adapter concerns. Dify is a
+`LEGACY_DIFY_PROVIDER_SHIM` only; the compatibility `/workflows/run` transport
+does not make Dify a core runtime dependency. No semantic task may bypass the
+Backend Control Plane or create Evidence, Fact, Mapping, Claim, Readiness or
+Writer state directly.

@@ -17,8 +17,7 @@ Authoritative detail: `ARCHITECTURE.md`, `docs/CURRENT_STAGE.md`, `docs/ROADMAP.
 ## Repository state
 
 - Branch: `feat/v4.3-semantic-boundary-routing`
-- HEAD: latest local Stage20-S Gateway Contract checkpoint (see `git log -1`;
-  feature, test and documentation commits are local only).
+- HEAD: `1aa80c0` (`fix: recover evidence context before retrieval regression`).
 - Git status: clean; no secrets or generated documents are tracked.
 
 ## Frozen stages
@@ -34,7 +33,8 @@ SOCKS HTTPS, repeated real Embedding smoke, readiness, and monitor recovery pass
 Stage20 is the active re-entry stage; Stage20-S shared Evidence Support
 Assessment foundation and the local shared Gateway Contract are implemented
 offline. The task is not remotely published and no live model call is
-authorized. Do not start full Stage21.
+authorized. Do not start full Stage21. Stage20 is currently **BLOCKED** by the
+P0 real Retrieval regression at the existing EmbeddingClient.
 
 The standalone semantic gateway foundation is implemented locally under
 `services/semantic-gateway`, with single-source contracts in
@@ -45,7 +45,8 @@ cutover decision.
 ## Acceptance tracks
 
 - Stage20 Corpus L3: IN_PROGRESS.
-- Stage20 public tender E2E: parse and baseline PASS; retrieval blocked by existing Embedding network.
+- Stage20 public tender E2E: parse and baseline PASS; three controlled real Retrieval
+  cases were attempted once and all stopped with `EMBEDDING_NETWORK_ERROR`.
 - Deterministic/offline acceptance: PASS.
 - Stage20-S Evidence Support Assessment shared core and local
   `evidence_support_assessment` Gateway Contract: implemented offline;
@@ -59,13 +60,16 @@ cutover decision.
 - Frozen Recall@5: 90% (target 95%, not changed).
 - Public tender parse: 4/4 chunks, 144 candidates, 140 mandatory, 130 verified / 10 suggested / 4 unresolved.
 - Confirmed baseline: 140 requirements; synthetic enterprise materials indexed: 17.
+- Calibration V2 re-audit: 36 active cases; 3 ready, 32 insufficient, 1 no-relevant, 0 conflict; Human Gold 0.
+- Context recovery audit: 45 dimensions recovered, 113 unresolved dimensions; all 36 cases retain at least one unresolved dimension.
 
 ## Active blocker and next step
 
-The prior retrieval transport blocker was resolved without changing Retrieval. Stage20
-now remains blocked at live semantic evidence-support validation; the standalone Gateway
-foundation is local-only. Next step is a separate Backend base-URL cutover decision and
-local contract smoke, not remote deployment or a real model call.
+The P0 context/retrieval audit is complete without changing Retrieval ranking or
+contracts. Stage20 remains blocked because the existing Embedding endpoint returned
+`EMBEDDING_NETWORK_ERROR` for all three controlled real cases. Next step is to restore
+the existing Embedding network/managed transport and rerun those cases once; do not
+add a Provider, model, fallback or retry architecture.
 
 ## Frozen boundaries
 
@@ -79,9 +83,9 @@ local contract smoke, not remote deployment or a real model call.
 - Current runtime: Backend Control Plane → `SemanticGatewayClient` → legacy Dify-compatible endpoint.
 - Target runtime: Backend Control Plane → standalone semantic gateway → OpenAI-compatible Provider Adapter.
 - Gateway health check: PASS; requirement extraction used 4 successful calls.
-- Embedding runtime: existing `V43_EMBEDDING_*` configuration with temporary dev-only
-  `EMBEDDING_PROXY_URL`; SiliconFlow Qwen/Qwen3-Embedding-0.6B, dimension 1024; real
-  smoke passed through managed SOCKS. Production remains direct-network oriented.
+- Embedding runtime: existing `V43_EMBEDDING_*` configuration; SiliconFlow
+  Qwen/Qwen3-Embedding-0.6B, dimension 1024. Historical managed-SOCKS smoke passed,
+  but the latest formal regression was blocked at the Embedding network layer.
 - Writer external calls in the public E2E: 0.
 - Shared assessment provider: provider-neutral unavailable/unknown by default;
   no external calls in this foundation.

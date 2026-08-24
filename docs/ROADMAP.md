@@ -57,9 +57,10 @@ acceptance track for Corpus Readiness L3; the knowledge base is not considered b
 until L3 passes. Initial industry focus remains 政企平台 and 医疗行业; do not broaden
 industry scope before the current corpus gaps are resolved.
 
-Stage 21 must resolve development/runtime Gateway connectivity so manual SSH tunneling is
-not a normal product operating requirement. Stage 21 is not authorized by the current
-stage and is not being implemented now.
+Stage 21-A Runtime Connectivity Foundation is **PASS / FROZEN** and provides the
+managed development transport needed for the Stage20 re-entry; manual SSH tunneling
+remains a development access method, not a product operating requirement. Full Stage
+21 is not authorized by the current stage and is not being implemented now.
 
 ## P2 — PLANNED: Users, organizations, and permissions
 

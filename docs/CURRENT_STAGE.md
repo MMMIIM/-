@@ -23,13 +23,14 @@ business contract。Stage20 重新进入现有正式 Retrieval 边界，具体�
 ## Stage 20 — Production Beta Hardening / Real E2E
 
 Priority: **P0/P1**
-Status: **RE-ENTRY AUTHORIZED — CORPUS_L3_IN_PROGRESS**
+Status: **BLOCKED — P0 EVIDENCE / REAL RETRIEVAL REGRESSION**
 
 本阶段只验证现有产品能力能否作为一条可恢复、可追溯的完整业务流运行：
 项目准备 → 招标解析 → 需求基线 → 材料检索与复核 → 生成准备 → 标书生成 →
 章节复核/安全修订 → 投标检查 → Word 导出。禁止新增 AI 能力、Provider、Agent
 自治或部署基础设施；外部 Provider 在本阶段默认不调用，若已有授权路径不可用则
-记录为运营阻断而不改变架构。当前真实 Provider E2E 仍未获得本阶段的精确外部调用授权。
+记录为运营阻断而不改变架构。本轮只执行了既有 EmbeddingClient 的受控 Retrieval
+回归，没有调用 LLM 或 Dify。
 
 最新范围校正：正式 Stage20 路径使用 `semantic_gateway` Provider Adapter，
 不依赖 Dify Workflow/App/End 状态；保留的 v4.2 Dify 路由仅作兼容，不属于当前
@@ -40,7 +41,7 @@ Status: **RE-ENTRY AUTHORIZED — CORPUS_L3_IN_PROGRESS**
 ## Stage20-S — Evidence Support Assessment Shared Core
 
 Priority: **P0/P1**
-Status: **IMPLEMENTATION COMPLETE — OFFLINE / NO LIVE MODEL**
+Status: **IMPLEMENTATION COMPLETE — OFFLINE / REAL RETRIEVAL BLOCKED**
 
 本子阶段建立 `EvidenceSupportAssessment` 共享语义边界：它只观察
 Requirement 与来源之间的支持关系，不创建 Evidence、Fact、Mapping、Claim，
@@ -70,6 +71,22 @@ observations 和 cross-source conflict observations，最终业务状态继续�
 变更；Stage20 仍为 `BLOCKED`（等待正式 live evidence sufficiency validation），
 Corpus L3 仍为 `IN_PROGRESS`。
 
+### P0 Evidence Context / Real Retrieval regression (2026-08-24)
+
+Bounded context recovery and enterprise-proof source routing are implemented and
+covered by offline tests. The 36 active calibration cases were re-audited:
+3 `EVIDENCE_REVIEW_READY`, 32 `INSUFFICIENT_EVIDENCE`, 1
+`NO_RELEVANT_EVIDENCE`, 0 `CONFLICTING_EVIDENCE`; Human Gold remains 0 and
+Human Review remains paused.
+
+Three distinct real Retrieval cases were attempted once through the formal
+EnterpriseRetrievalService. All stopped at the existing EmbeddingClient with
+`EMBEDDING_NETWORK_ERROR`; Top-K, Evidence Span and downstream semantic
+assessment were not reached. No LLM/Dify call or retry occurred. The only next
+P0 action is to restore the existing Embedding network path and rerun the same
+controlled regression; do not change Retrieval ranking, chunking, topK, model,
+Provider or retry architecture.
+
 ### Standalone Semantic Gateway foundation (2026-08-24)
 
 本地已实现独立无状态 Node Gateway：`services/semantic-gateway`。共享语义
@@ -88,10 +105,11 @@ Dify 不修改、不部署；下一步需单独决定本地 cutover 与真实 Pr
   合成企业基线 17；17 份合成企业资料已通过 `CompanyMaterialService` 实际导入并索引（51 chunks），
   正式生产检索夹具另保留 21 份材料、329 个 chunk。Golden V2 共 139 个领域问题，业务覆盖 96.8%，
   4 个范围边界缺口已记录为 non-critical；冻结检索基线 Recall@5 仍为 90%。
-- Track B — Real Provider E2E：`RE-ENTRY READY — EMBEDDING TRANSPORT PASS`。已使用公开的
+- Track B — Real Provider E2E：`BLOCKED — EMBEDDING_NETWORK_ERROR`。已使用公开的
   江阴市国有企业集中采购 PDF 完成实际上传、解析、4 个网关分片和需求基线确认；
   140 条需求、17 份合成企业材料已通过正式服务落库。首次真实检索调用在现有
-  `V43_EMBEDDING_API_BASE` 上失败，未进入正文生成、章节修订、Copilot 或 Word，且未重试。
+  `V43_EMBEDDING_API_BASE` 上失败；本轮 3 个正式 Retrieval 回归案例均在 Embedding
+  层失败，未进入 Evidence、正文生成、章节修订、Copilot 或 Word，且未重试。
 - Track C — Deterministic / Offline Product Acceptance：`PASS`（已达到范围内）。
 
 Stage20 当前并行推进 Corpus Readiness L3：以业务问题覆盖、来源权威性、有效期、

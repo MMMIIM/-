@@ -122,6 +122,7 @@ Word or Agent deep documentation unless the task touches it.
 - [Architecture](ARCHITECTURE.md)
 - [UX principles](docs/UX_PRINCIPLES.md)
 - [Roadmap](docs/ROADMAP.md)
+- [Evaluation policy](docs/EVAL_POLICY.md)
 - [Current stage](docs/CURRENT_STAGE.md)
 - [Decisions](docs/decisions/)
 - [V4.3 semantic architecture supplement](docs/v4.3-semantic-architecture.md)
