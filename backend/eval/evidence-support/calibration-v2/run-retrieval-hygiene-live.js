@@ -19,6 +19,16 @@ const CASE_IDS = Object.freeze([
   'V2R-004-COMP-PARTIAL', 'V2R-005-ISO-DIRECT', 'V2R-006-ISO-SCOPE'
 ]);
 const TOP_K = 5;
+const PRE_FIX_METRICS = Object.freeze({
+  denominator: 6,
+  hit_at_1: 4 / 6,
+  hit_at_3: 5 / 6,
+  hit_at_5: 1,
+  mrr: 0.6805555555555556,
+  metadata_at_1: 1,
+  metadata_at_3: 6,
+  metadata_at_5: 10
+});
 const stableEvalUuid = (index) => `00000000-0000-4e43-8000-${String(index + 101).padStart(12, '0')}`;
 
 class EvaluationRepositoryFacade {
@@ -155,7 +165,7 @@ export async function runRetrievalHygieneLive({ env = process.env, reportPath = 
       title: 'P0 RETRIEVAL CANDIDATE HYGIENE CHECKPOINT',
       generated_at: new Date().toISOString(),
       external_calls: { embedding: embeddingCalls, llm: 0, dify: 0, automatic_retry: 0 },
-      pre_fix_baseline: { source: 'GPT_REVIEW_PACKET_LIVE_RETRIEVAL_7.json', label: 'PRE_FIX_BASELINE', denominator: 6, cases: CASE_IDS.map((caseId) => preCase(pre, caseId)) },
+      pre_fix_baseline: { source: 'GPT_REVIEW_PACKET_LIVE_RETRIEVAL_7.json', label: 'PRE_FIX_BASELINE', metrics: PRE_FIX_METRICS, denominator: 6, cases: CASE_IDS.map((caseId) => preCase(pre, caseId)) },
       post_fix: { denominator: post.length, cases: post, metrics: metrics(post) },
       comparison: post.map((item) => compare(preCase(pre, item.case_id), item)),
       acceptance: { metadata_at_5_zero: post.every((item) => item.metadata_count === 0), broken_gold_cases: post.filter((item) => !item.gold_hit_at_5).map((item) => item.case_id), decision_bearing_hit_at_3: metrics(post).hit_at_3, scope_violation: 0 },
@@ -164,7 +174,7 @@ export async function runRetrievalHygieneLive({ env = process.env, reportPath = 
       safety: { corpus_uploaded: false, reembedded: false, llm_executed: false, dify_executed: false, mapping_executed: false, evidence_fact_created: false, claim_gate_executed: false, writer_executed: false }
     };
     await fs.writeFile(reportPath, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
-    const lines = ['# GPT REVIEW PACKET — RETRIEVAL HYGIENE PRE/POST', '', '- GPT_REVIEW_STATUS: `PENDING_REVIEW`', '- EVAL_COMPLETE: `NO`', '- No corpus upload, re-embedding, LLM, Dify, Mapping, Evidence Fact, Claim Gate or Writer execution.', '', '## Execution', '', `- Cases: ${post.length}`, `- Embedding calls: ${embeddingCalls}`, '', '## Post-fix metrics', '', '```json', JSON.stringify(report.post_fix.metrics, null, 2), '```', '', '## Case comparison', ''];
+    const lines = ['# GPT REVIEW PACKET — RETRIEVAL HYGIENE PRE/POST', '', '- GPT_REVIEW_STATUS: `PENDING_REVIEW`', '- EVAL_COMPLETE: `NO`', '- No corpus upload, re-embedding, LLM, Dify, Mapping, Evidence Fact, Claim Gate or Writer execution.', '', '## Execution', '', `- Cases: ${post.length}`, `- Embedding calls: ${embeddingCalls}`, '', '## Pre-fix metrics', '', '```json', JSON.stringify(report.pre_fix_baseline.metrics, null, 2), '```', '', '## Post-fix metrics', '', '```json', JSON.stringify(report.post_fix.metrics, null, 2), '```', '', '## Case comparison', ''];
     for (const item of report.comparison) lines.push(`### ${item.case_id}`, '', `- Requirement: ${item.requirement}`, `- PRE first useful evidence rank: ${item.pre_first_useful_evidence_rank ?? 'NOT_FOUND'}`, `- POST first useful evidence rank: ${item.post_first_useful_evidence_rank ?? 'NOT_FOUND'}`, `- PRE Gold Evidence Set Hit@5: ${item.pre_gold_hit_at_5 ? 'PASS' : 'FAIL'}`, `- POST Gold Evidence Set Hit@5: ${item.post_gold_hit_at_5 ? 'PASS' : 'FAIL'}`, `- Metadata removed from final lane: ${item.metadata_removed_count}`, '', '#### Gold Evidence Set / PRE Top5 / POST Top5', '', '```json', JSON.stringify({ gold_evidence_set: report.post_fix.cases.find((entry) => entry.case_id === item.case_id)?.gold_evidence_set, pre_top5: item.pre_top5, post_top5: item.post_top5 }, null, 2), '```', '');
     lines.push('## Safety', '', '- Persistent multi-chunk Evidence Spans: preserved', '- Formal Evidence records mutated: NO', '- Context Recovery headings: preserved as context-only candidates', '- LLM calls: 0', '- Dify calls: 0');
     await fs.writeFile(markdownPath, `${lines.join('\n')}\n`, 'utf8');

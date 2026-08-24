@@ -9,6 +9,21 @@
 - Cases: 6
 - Embedding calls: 6
 
+## Pre-fix metrics
+
+```json
+{
+  "denominator": 6,
+  "hit_at_1": 0.6666666666666666,
+  "hit_at_3": 0.8333333333333334,
+  "hit_at_5": 1,
+  "mrr": 0.6805555555555556,
+  "metadata_at_1": 1,
+  "metadata_at_3": 6,
+  "metadata_at_5": 10
+}
+```
+
 ## Post-fix metrics
 
 ```json
