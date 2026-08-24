@@ -48,7 +48,8 @@
             ],
             "unresolved_required_dimensions": [],
             "context_recovery_rate": 1
-          }
+          },
+          "rank": 1
         },
         {
           "material_id": "74465632-1b51-42cd-864f-44a3857bb64d",
@@ -79,7 +80,8 @@
             ],
             "unresolved_required_dimensions": [],
             "context_recovery_rate": 1
-          }
+          },
+          "rank": 2
         },
         {
           "material_id": "11cc6e03-f08a-4555-95a4-d97beabc313e",
@@ -114,7 +116,8 @@
               "status_match"
             ],
             "context_recovery_rate": 0.25
-          }
+          },
+          "rank": 3
         },
         {
           "material_id": "11cc6e03-f08a-4555-95a4-d97beabc313e",
@@ -149,7 +152,8 @@
               "status_match"
             ],
             "context_recovery_rate": 0.25
-          }
+          },
+          "rank": 4
         },
         {
           "material_id": "497d3a46-9f52-4a56-a6e4-01d45710ff23",
@@ -184,7 +188,8 @@
               "status_match"
             ],
             "context_recovery_rate": 0.25
-          }
+          },
+          "rank": 5
         }
       ],
       "selected_exact_evidence_span": {
@@ -1954,7 +1959,8 @@
               "status_match"
             ],
             "context_recovery_rate": 0.4
-          }
+          },
+          "rank": 1
         },
         {
           "material_id": "11cc6e03-f08a-4555-95a4-d97beabc313e",
@@ -1991,7 +1997,8 @@
               "quantitative_match"
             ],
             "context_recovery_rate": 0.2
-          }
+          },
+          "rank": 2
         },
         {
           "material_id": "584c221c-1cce-4c5b-9989-8513c4eb241f",
@@ -2028,7 +2035,8 @@
               "quantitative_match"
             ],
             "context_recovery_rate": 0.2
-          }
+          },
+          "rank": 3
         },
         {
           "material_id": "ced71414-29f6-4a2e-aa96-7d60b2e5abf8",
@@ -2065,7 +2073,8 @@
               "quantitative_match"
             ],
             "context_recovery_rate": 0.2
-          }
+          },
+          "rank": 4
         },
         {
           "material_id": "37ecf271-98e4-444c-8adf-0407db4ff948",
@@ -2101,7 +2110,8 @@
               "status_match"
             ],
             "context_recovery_rate": 0.4
-          }
+          },
+          "rank": 5
         }
       ],
       "selected_exact_evidence_span": {
@@ -3848,7 +3858,8 @@
               "quantitative_match"
             ],
             "context_recovery_rate": 0.2
-          }
+          },
+          "rank": 1
         },
         {
           "material_id": "584c221c-1cce-4c5b-9989-8513c4eb241f",
@@ -3885,7 +3896,8 @@
               "quantitative_match"
             ],
             "context_recovery_rate": 0.2
-          }
+          },
+          "rank": 2
         },
         {
           "material_id": "11cc6e03-f08a-4555-95a4-d97beabc313e",
@@ -3922,7 +3934,8 @@
               "quantitative_match"
             ],
             "context_recovery_rate": 0.2
-          }
+          },
+          "rank": 3
         },
         {
           "material_id": "497d3a46-9f52-4a56-a6e4-01d45710ff23",
@@ -3958,7 +3971,8 @@
               "status_match"
             ],
             "context_recovery_rate": 0.4
-          }
+          },
+          "rank": 4
         },
         {
           "material_id": "ced71414-29f6-4a2e-aa96-7d60b2e5abf8",
@@ -3995,7 +4009,8 @@
               "quantitative_match"
             ],
             "context_recovery_rate": 0.2
-          }
+          },
+          "rank": 5
         }
       ],
       "selected_exact_evidence_span": {
@@ -5707,4 +5722,4 @@
     "report_rehydrated_without_embedding_calls": true
   },
   "status": "PASS_RETRIEVAL_SPAN_ONLY"
-}\n
+}
