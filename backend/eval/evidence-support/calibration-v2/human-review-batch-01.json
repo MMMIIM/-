@@ -1,0 +1,759 @@
+{
+  "schema_version": "4.3-evidence-support-calibration-v2-human-review-batch-v1",
+  "batch_id": "CALIBRATION-V2-HUMAN-REVIEW-BATCH-01",
+  "status": "READY_FOR_HUMAN_REVIEW",
+  "source_pool": "candidate-pool-v2-remediated.json",
+  "source_candidate_count": 37,
+  "case_count": 10,
+  "status_counts": {
+    "EVIDENCE_REVIEW_READY": 3,
+    "INSUFFICIENT_EVIDENCE": 4,
+    "NO_RELEVANT_EVIDENCE": 2,
+    "CONFLICTING_EVIDENCE": 1
+  },
+  "challenge_or_ambiguous_count": 1,
+  "model_calls": 0,
+  "provider_calls": 0,
+  "embedding_calls": 0,
+  "automatic_gold_approval": false,
+  "dataset_frozen": false,
+  "calibration_executed": false,
+  "class_imbalance": true,
+  "real_retrieval_top5_cases": 0,
+  "cases": [
+    {
+      "case_id": "V2R-001-PERF-DIRECT",
+      "sequence": 1,
+      "requirement": {
+        "requirement_id": "V2R-001-PERF-DIRECT",
+        "text": "企业应提供可核验的数据交换平台性能测试记录。",
+        "boundary_tags": [
+          "quantitative",
+          "direct_support"
+        ],
+        "difficulty": "EASY"
+      },
+      "sources": [
+        {
+          "source_id": "MCH-D32448917B3E8CAD1214641F8E85D86A",
+          "source_span_id": "ESPAN-F8209B2B73FCFC87DC5118C276BBF52D",
+          "source_span_resolution": "DERIVED_TRANSIENT_FORMAL_CONTRACT",
+          "source_span_persisted": false,
+          "source_verified": true,
+          "document_id": "3c81671f-376e-401b-8525-be26929d5b92",
+          "material_id": "3c81671f-376e-401b-8525-be26929d5b92",
+          "chunk_id": "MCH-D32448917B3E8CAD1214641F8E85D86A",
+          "project_id": "ac1a1037-5e62-44ee-8c28-7b09d48d93e6",
+          "project_name": "E2E-PRODUCTION-RETRIEVAL-V1 [data_classification=synthetic]",
+          "corpus_scope": "ENTERPRISE_PRIVATE",
+          "material_type": "product_documentation",
+          "material_name": "performance-report.md",
+          "source_text": "REPRESENTATIVE_SYNTHETIC\nNOT_REAL_CUSTOMER_DATA\nmaterial_id: SME-004\nsubject: 澄明数科（示范）有限公司",
+          "source_hash": "421e2b4a69e39fb4513d347d6912f1808b6e9acafe7bb14c8bd9cc70086a30e4",
+          "start_offset": 0,
+          "end_offset": 90,
+          "source_chunk_ids": [
+            "MCH-D32448917B3E8CAD1214641F8E85D86A"
+          ],
+          "resolver_version": "evidence-source-span-v1"
+        }
+      ],
+      "system_draft": {
+        "provenance": "SYSTEM_DRAFT_UNREVIEWED",
+        "semantic_relevance": "relevant",
+        "evidence_capability": "capable",
+        "support_level": "full_support",
+        "semantic_relationship": "direct",
+        "status": "EVIDENCE_REVIEW_READY",
+        "reason_codes": [],
+        "support_observations": [
+          {
+            "source_id": "MCH-D32448917B3E8CAD1214641F8E85D86A",
+            "source_span_id": "ESPAN-F8209B2B73FCFC87DC5118C276BBF52D",
+            "support_excerpt": "REPRESENTATIVE_SYNTHETIC\nNOT_REAL_CUSTOMER_DATA\nmaterial_id: SME-004\nsubject: 澄明数科（示范）有限公司",
+            "support_excerpt_hash": "421e2b4a69e39fb4513d347d6912f1808b6e9acafe7bb14c8bd9cc70086a30e4",
+            "observation_type": "direct_support",
+            "reason_codes": []
+          }
+        ],
+        "conflict_observations": []
+      },
+      "review_decision": {
+        "case_id": "V2R-001-PERF-DIRECT",
+        "reviewer_decision": null,
+        "reviewer_status_override": null,
+        "reviewer_semantic_override": null,
+        "reviewer_reason": null,
+        "reviewed_at": null
+      }
+    },
+    {
+      "case_id": "V2R-003-COMP-DIRECT",
+      "sequence": 2,
+      "requirement": {
+        "requirement_id": "V2R-003-COMP-DIRECT",
+        "text": "企业应说明产品在 x86_64、Ubuntu 和 PostgreSQL 环境的兼容性。",
+        "boundary_tags": [
+          "technical",
+          "compatibility"
+        ],
+        "difficulty": "MEDIUM"
+      },
+      "sources": [
+        {
+          "source_id": "MCH-EA8F9FC5473B4FA1539E99B748DA4071",
+          "source_span_id": "ESPAN-25517924C7F718BE23BD47529BE055D2",
+          "source_span_resolution": "DERIVED_TRANSIENT_FORMAL_CONTRACT",
+          "source_span_persisted": false,
+          "source_verified": true,
+          "document_id": "3f9dacfb-2e48-4796-a477-98c60b506831",
+          "material_id": "3f9dacfb-2e48-4796-a477-98c60b506831",
+          "chunk_id": "MCH-EA8F9FC5473B4FA1539E99B748DA4071",
+          "project_id": "ac1a1037-5e62-44ee-8c28-7b09d48d93e6",
+          "project_name": "E2E-PRODUCTION-RETRIEVAL-V1 [data_classification=synthetic]",
+          "corpus_scope": "ENTERPRISE_PRIVATE",
+          "material_type": "product_documentation",
+          "material_name": "compatibility-matrix.md",
+          "source_text": "REPRESENTATIVE_SYNTHETIC\nNOT_REAL_CUSTOMER_DATA\nmaterial_id: SME-005\nsubject: 澄明数科（示范）有限公司",
+          "source_hash": "1721b07ce554845cbc0e33c4c765e2fed6463d7f59554e1a5e3d8a917b09fda0",
+          "start_offset": 0,
+          "end_offset": 90,
+          "source_chunk_ids": [
+            "MCH-EA8F9FC5473B4FA1539E99B748DA4071"
+          ],
+          "resolver_version": "evidence-source-span-v1"
+        }
+      ],
+      "system_draft": {
+        "provenance": "SYSTEM_DRAFT_UNREVIEWED",
+        "semantic_relevance": "relevant",
+        "evidence_capability": "capable",
+        "support_level": "full_support",
+        "semantic_relationship": "direct",
+        "status": "EVIDENCE_REVIEW_READY",
+        "reason_codes": [],
+        "support_observations": [
+          {
+            "source_id": "MCH-EA8F9FC5473B4FA1539E99B748DA4071",
+            "source_span_id": "ESPAN-25517924C7F718BE23BD47529BE055D2",
+            "support_excerpt": "REPRESENTATIVE_SYNTHETIC\nNOT_REAL_CUSTOMER_DATA\nmaterial_id: SME-005\nsubject: 澄明数科（示范）有限公司",
+            "support_excerpt_hash": "1721b07ce554845cbc0e33c4c765e2fed6463d7f59554e1a5e3d8a917b09fda0",
+            "observation_type": "direct_support",
+            "reason_codes": []
+          }
+        ],
+        "conflict_observations": []
+      },
+      "review_decision": {
+        "case_id": "V2R-003-COMP-DIRECT",
+        "reviewer_decision": null,
+        "reviewer_status_override": null,
+        "reviewer_semantic_override": null,
+        "reviewer_reason": null,
+        "reviewed_at": null
+      }
+    },
+    {
+      "case_id": "V2R-005-ISO-DIRECT",
+      "sequence": 3,
+      "requirement": {
+        "requirement_id": "V2R-005-ISO-DIRECT",
+        "text": "企业应提供当前有效的 ISO/IEC 27001 认证信息。",
+        "boundary_tags": [
+          "certification",
+          "validity"
+        ],
+        "difficulty": "EASY"
+      },
+      "sources": [
+        {
+          "source_id": "MCH-0820CC5A439CB986C62E46213029CC71",
+          "source_span_id": "ESPAN-7A5D661264A0C779ED903BDF21BC9E25",
+          "source_span_resolution": "DERIVED_TRANSIENT_FORMAL_CONTRACT",
+          "source_span_persisted": false,
+          "source_verified": true,
+          "document_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+          "material_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+          "chunk_id": "MCH-0820CC5A439CB986C62E46213029CC71",
+          "project_id": "ac1a1037-5e62-44ee-8c28-7b09d48d93e6",
+          "project_name": "E2E-PRODUCTION-RETRIEVAL-V1 [data_classification=synthetic]",
+          "corpus_scope": "ENTERPRISE_PRIVATE",
+          "material_type": "qualification",
+          "material_name": "qualification-iso27001.md",
+          "source_text": "# ISO 27001 受控记录",
+          "source_hash": "e4bbd720010befabbdd08b947acc803b7f0c52b5ccdbf8da7f5b169e76f19215",
+          "start_offset": 92,
+          "end_offset": 108,
+          "source_chunk_ids": [
+            "MCH-0820CC5A439CB986C62E46213029CC71"
+          ],
+          "resolver_version": "evidence-source-span-v1"
+        }
+      ],
+      "system_draft": {
+        "provenance": "SYSTEM_DRAFT_UNREVIEWED",
+        "semantic_relevance": "relevant",
+        "evidence_capability": "capable",
+        "support_level": "full_support",
+        "semantic_relationship": "direct",
+        "status": "EVIDENCE_REVIEW_READY",
+        "reason_codes": [],
+        "support_observations": [
+          {
+            "source_id": "MCH-0820CC5A439CB986C62E46213029CC71",
+            "source_span_id": "ESPAN-7A5D661264A0C779ED903BDF21BC9E25",
+            "support_excerpt": "# ISO 27001 受控记录",
+            "support_excerpt_hash": "e4bbd720010befabbdd08b947acc803b7f0c52b5ccdbf8da7f5b169e76f19215",
+            "observation_type": "direct_support",
+            "reason_codes": []
+          }
+        ],
+        "conflict_observations": []
+      },
+      "review_decision": {
+        "case_id": "V2R-005-ISO-DIRECT",
+        "reviewer_decision": null,
+        "reviewer_status_override": null,
+        "reviewer_semantic_override": null,
+        "reviewer_reason": null,
+        "reviewed_at": null
+      }
+    },
+    {
+      "case_id": "V2R-002-PERF-PARTIAL",
+      "sequence": 4,
+      "requirement": {
+        "requirement_id": "V2R-002-PERF-PARTIAL",
+        "text": "企业应证明接口 P95 响应时间不超过 1 秒。",
+        "boundary_tags": [
+          "quantitative",
+          "exact_numeric_requirement",
+          "partial_support"
+        ],
+        "difficulty": "HARD"
+      },
+      "sources": [
+        {
+          "source_id": "MCH-D32448917B3E8CAD1214641F8E85D86A",
+          "source_span_id": "ESPAN-F8209B2B73FCFC87DC5118C276BBF52D",
+          "source_span_resolution": "DERIVED_TRANSIENT_FORMAL_CONTRACT",
+          "source_span_persisted": false,
+          "source_verified": true,
+          "document_id": "3c81671f-376e-401b-8525-be26929d5b92",
+          "material_id": "3c81671f-376e-401b-8525-be26929d5b92",
+          "chunk_id": "MCH-D32448917B3E8CAD1214641F8E85D86A",
+          "project_id": "ac1a1037-5e62-44ee-8c28-7b09d48d93e6",
+          "project_name": "E2E-PRODUCTION-RETRIEVAL-V1 [data_classification=synthetic]",
+          "corpus_scope": "ENTERPRISE_PRIVATE",
+          "material_type": "product_documentation",
+          "material_name": "performance-report.md",
+          "source_text": "REPRESENTATIVE_SYNTHETIC\nNOT_REAL_CUSTOMER_DATA\nmaterial_id: SME-004\nsubject: 澄明数科（示范）有限公司",
+          "source_hash": "421e2b4a69e39fb4513d347d6912f1808b6e9acafe7bb14c8bd9cc70086a30e4",
+          "start_offset": 0,
+          "end_offset": 90,
+          "source_chunk_ids": [
+            "MCH-D32448917B3E8CAD1214641F8E85D86A"
+          ],
+          "resolver_version": "evidence-source-span-v1"
+        }
+      ],
+      "system_draft": {
+        "provenance": "SYSTEM_DRAFT_UNREVIEWED",
+        "semantic_relevance": "relevant",
+        "evidence_capability": "capable",
+        "support_level": "partial_support",
+        "semantic_relationship": "partial",
+        "status": "INSUFFICIENT_EVIDENCE",
+        "reason_codes": [
+          "SUPPORT_INSUFFICIENT"
+        ],
+        "support_observations": [
+          {
+            "source_id": "MCH-D32448917B3E8CAD1214641F8E85D86A",
+            "source_span_id": "ESPAN-F8209B2B73FCFC87DC5118C276BBF52D",
+            "support_excerpt": "REPRESENTATIVE_SYNTHETIC\nNOT_REAL_CUSTOMER_DATA\nmaterial_id: SME-004\nsubject: 澄明数科（示范）有限公司",
+            "support_excerpt_hash": "421e2b4a69e39fb4513d347d6912f1808b6e9acafe7bb14c8bd9cc70086a30e4",
+            "observation_type": "partial_support",
+            "reason_codes": [
+              "SUPPORT_INSUFFICIENT"
+            ]
+          }
+        ],
+        "conflict_observations": []
+      },
+      "review_decision": {
+        "case_id": "V2R-002-PERF-PARTIAL",
+        "reviewer_decision": null,
+        "reviewer_status_override": null,
+        "reviewer_semantic_override": null,
+        "reviewer_reason": null,
+        "reviewed_at": null
+      }
+    },
+    {
+      "case_id": "V2R-006-ISO-SCOPE",
+      "sequence": 5,
+      "requirement": {
+        "requirement_id": "V2R-006-ISO-SCOPE",
+        "text": "企业应提供指定项目主体的 ISO/IEC 27001 证书。",
+        "boundary_tags": [
+          "wrong_entity",
+          "scope_mismatch",
+          "reference_only"
+        ],
+        "difficulty": "MEDIUM"
+      },
+      "sources": [
+        {
+          "source_id": "MCH-0820CC5A439CB986C62E46213029CC71",
+          "source_span_id": "ESPAN-7A5D661264A0C779ED903BDF21BC9E25",
+          "source_span_resolution": "DERIVED_TRANSIENT_FORMAL_CONTRACT",
+          "source_span_persisted": false,
+          "source_verified": true,
+          "document_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+          "material_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+          "chunk_id": "MCH-0820CC5A439CB986C62E46213029CC71",
+          "project_id": "ac1a1037-5e62-44ee-8c28-7b09d48d93e6",
+          "project_name": "E2E-PRODUCTION-RETRIEVAL-V1 [data_classification=synthetic]",
+          "corpus_scope": "ENTERPRISE_PRIVATE",
+          "material_type": "qualification",
+          "material_name": "qualification-iso27001.md",
+          "source_text": "# ISO 27001 受控记录",
+          "source_hash": "e4bbd720010befabbdd08b947acc803b7f0c52b5ccdbf8da7f5b169e76f19215",
+          "start_offset": 92,
+          "end_offset": 108,
+          "source_chunk_ids": [
+            "MCH-0820CC5A439CB986C62E46213029CC71"
+          ],
+          "resolver_version": "evidence-source-span-v1"
+        }
+      ],
+      "system_draft": {
+        "provenance": "SYSTEM_DRAFT_UNREVIEWED",
+        "semantic_relevance": "relevant",
+        "evidence_capability": "reference_only",
+        "support_level": "reference_only",
+        "semantic_relationship": "related",
+        "status": "NO_RELEVANT_EVIDENCE",
+        "reason_codes": [
+          "SCOPE_MISMATCH"
+        ],
+        "support_observations": [
+          {
+            "source_id": "MCH-0820CC5A439CB986C62E46213029CC71",
+            "source_span_id": "ESPAN-7A5D661264A0C779ED903BDF21BC9E25",
+            "support_excerpt": "# ISO 27001 受控记录",
+            "support_excerpt_hash": "e4bbd720010befabbdd08b947acc803b7f0c52b5ccdbf8da7f5b169e76f19215",
+            "observation_type": "partial_support",
+            "reason_codes": [
+              "SUPPORT_INSUFFICIENT"
+            ]
+          }
+        ],
+        "conflict_observations": []
+      },
+      "review_decision": {
+        "case_id": "V2R-006-ISO-SCOPE",
+        "reviewer_decision": null,
+        "reviewer_status_override": null,
+        "reviewer_semantic_override": null,
+        "reviewer_reason": null,
+        "reviewed_at": null
+      }
+    },
+    {
+      "case_id": "V2R-021-CORPUS-12",
+      "sequence": 6,
+      "requirement": {
+        "requirement_id": "V2R-021-CORPUS-12",
+        "text": "企业应提供与本项目范围相关的可核验材料。",
+        "boundary_tags": [
+          "scope_mismatch",
+          "multiple_weak_evidence"
+        ],
+        "difficulty": "MEDIUM"
+      },
+      "sources": [
+        {
+          "source_id": "MCH-A4211A94C5C7A077F478D979A3ADF86E",
+          "source_span_id": "ESPAN-403BC1522544E742C897D863B1EB8955",
+          "source_span_resolution": "DERIVED_TRANSIENT_FORMAL_CONTRACT",
+          "source_span_persisted": false,
+          "source_verified": true,
+          "document_id": "9876da6b-40c1-4f2d-b47b-290c7c150f4e",
+          "material_id": "9876da6b-40c1-4f2d-b47b-290c7c150f4e",
+          "chunk_id": "MCH-A4211A94C5C7A077F478D979A3ADF86E",
+          "project_id": "518c6772-b200-4b7b-9d45-059297714516",
+          "project_name": "STAGE20-L3-SYNTHETIC-ENTERPRISE [NOT_REAL_CUSTOMER_DATA]",
+          "corpus_scope": "ENTERPRISE_PRIVATE",
+          "material_type": "other",
+          "material_name": "authorization-partner.md",
+          "source_text": "平台可集成某开源数据库和消息组件；部署、许可和技术支持依赖第三方，企业不将第三方能力表述为自有产品能力。",
+          "source_hash": "33d664614db3cd87de0f1c1c95b33111a5999792791f3938fb4650fbdd20df05",
+          "start_offset": 310,
+          "end_offset": 362,
+          "source_chunk_ids": [
+            "MCH-A4211A94C5C7A077F478D979A3ADF86E"
+          ],
+          "resolver_version": "evidence-source-span-v1"
+        }
+      ],
+      "system_draft": {
+        "provenance": "SYSTEM_DRAFT_UNREVIEWED",
+        "semantic_relevance": "relevant",
+        "evidence_capability": "capable",
+        "support_level": "partial_support",
+        "semantic_relationship": "partial",
+        "status": "INSUFFICIENT_EVIDENCE",
+        "reason_codes": [
+          "SUPPORT_INSUFFICIENT"
+        ],
+        "support_observations": [
+          {
+            "source_id": "MCH-A4211A94C5C7A077F478D979A3ADF86E",
+            "source_span_id": "ESPAN-403BC1522544E742C897D863B1EB8955",
+            "support_excerpt": "平台可集成某开源数据库和消息组件；部署、许可和技术支持依赖第三方，企业不将第三方能力表述为自有产品能力。",
+            "support_excerpt_hash": "33d664614db3cd87de0f1c1c95b33111a5999792791f3938fb4650fbdd20df05",
+            "observation_type": "partial_support",
+            "reason_codes": [
+              "SUPPORT_INSUFFICIENT"
+            ]
+          }
+        ],
+        "conflict_observations": []
+      },
+      "review_decision": {
+        "case_id": "V2R-021-CORPUS-12",
+        "reviewer_decision": null,
+        "reviewer_status_override": null,
+        "reviewer_semantic_override": null,
+        "reviewer_reason": null,
+        "reviewed_at": null
+      }
+    },
+    {
+      "case_id": "V2R-030-CORPUS-21",
+      "sequence": 7,
+      "requirement": {
+        "requirement_id": "V2R-030-CORPUS-21",
+        "text": "企业应提供同类项目的实施及验收依据。",
+        "boundary_tags": [
+          "project_experience",
+          "status_unknown",
+          "responsibility_boundary"
+        ],
+        "difficulty": "HARD"
+      },
+      "sources": [
+        {
+          "source_id": "MCH-3FD884E9C86C84ADD445F70EC81FADD9",
+          "source_span_id": "ESPAN-A9329BA2AE8E03755951632A45574198",
+          "source_span_resolution": "DERIVED_TRANSIENT_FORMAL_CONTRACT",
+          "source_span_persisted": false,
+          "source_verified": true,
+          "document_id": "50467edc-0a5e-458f-ba69-1bbf488a115a",
+          "material_id": "50467edc-0a5e-458f-ba69-1bbf488a115a",
+          "chunk_id": "MCH-3FD884E9C86C84ADD445F70EC81FADD9",
+          "project_id": "518c6772-b200-4b7b-9d45-059297714516",
+          "project_name": "STAGE20-L3-SYNTHETIC-ENTERPRISE [NOT_REAL_CUSTOMER_DATA]",
+          "corpus_scope": "ENTERPRISE_PRIVATE",
+          "material_type": "project_case",
+          "material_name": "case-city-governance.md",
+          "source_text": "项目：景云城市治理数据平台；范围：数据目录、交换任务、统一门户和运行监测；项目状态：已完成模拟案例；验收日期：2025-11-20。",
+          "source_hash": "f4f7b9db71c7a29583a29ba9b9bf499740066997570b2ec02e80c41b516e9719",
+          "start_offset": 302,
+          "end_offset": 368,
+          "source_chunk_ids": [
+            "MCH-3FD884E9C86C84ADD445F70EC81FADD9"
+          ],
+          "resolver_version": "evidence-source-span-v1"
+        }
+      ],
+      "system_draft": {
+        "provenance": "SYSTEM_DRAFT_UNREVIEWED",
+        "semantic_relevance": "relevant",
+        "evidence_capability": "capable",
+        "support_level": "partial_support",
+        "semantic_relationship": "partial",
+        "status": "INSUFFICIENT_EVIDENCE",
+        "reason_codes": [
+          "SUPPORT_INSUFFICIENT"
+        ],
+        "support_observations": [
+          {
+            "source_id": "MCH-3FD884E9C86C84ADD445F70EC81FADD9",
+            "source_span_id": "ESPAN-A9329BA2AE8E03755951632A45574198",
+            "support_excerpt": "项目：景云城市治理数据平台；范围：数据目录、交换任务、统一门户和运行监测；项目状态：已完成模拟案例；验收日期：2025-11-20。",
+            "support_excerpt_hash": "f4f7b9db71c7a29583a29ba9b9bf499740066997570b2ec02e80c41b516e9719",
+            "observation_type": "partial_support",
+            "reason_codes": [
+              "SUPPORT_INSUFFICIENT"
+            ]
+          }
+        ],
+        "conflict_observations": []
+      },
+      "review_decision": {
+        "case_id": "V2R-030-CORPUS-21",
+        "reviewer_decision": null,
+        "reviewer_status_override": null,
+        "reviewer_semantic_override": null,
+        "reviewer_reason": null,
+        "reviewed_at": null
+      }
+    },
+    {
+      "case_id": "V2R-015-CORPUS-06",
+      "sequence": 8,
+      "requirement": {
+        "requirement_id": "V2R-015-CORPUS-06",
+        "text": "企业应证明自身具备与该公开行业规范相符的实施能力。",
+        "boundary_tags": [
+          "industry_reference",
+          "enterprise_capability_boundary",
+          "scope_mismatch",
+          "no_relevant"
+        ],
+        "difficulty": "EASY"
+      },
+      "sources": [
+        {
+          "source_id": "MCH-F4CD0E67DBD66EC447EF06D0EDBB083A",
+          "source_span_id": "ESPAN-9364092E47249D44F9B86C33FB712A84",
+          "source_span_resolution": "DERIVED_TRANSIENT_FORMAL_CONTRACT",
+          "source_span_persisted": false,
+          "source_verified": true,
+          "document_id": "eef2ae66-8259-4954-9a88-2e184411fcc5",
+          "material_id": "eef2ae66-8259-4954-9a88-2e184411fcc5",
+          "chunk_id": "MCH-F4CD0E67DBD66EC447EF06D0EDBB083A",
+          "project_id": "00000000-0000-4000-8000-000000000001",
+          "project_name": "平台公共知识库（官方公开资料）",
+          "corpus_scope": "GOVERNMENT_ENTERPRISE",
+          "material_type": "technical_whitepaper",
+          "material_name": "“互联网+政务服务”技术体系建设指南（官方摘录）.md",
+          "source_text": "来源机构：国务院办公厅\n文号：国办函〔2016〕108号",
+          "source_hash": "b27d1bdb75e04a5ce81a501d6213b0fdf98fdb27c082289a8e1c16401ca175b1",
+          "start_offset": 22,
+          "end_offset": 50,
+          "source_chunk_ids": [
+            "MCH-F4CD0E67DBD66EC447EF06D0EDBB083A"
+          ],
+          "resolver_version": "evidence-source-span-v1"
+        }
+      ],
+      "system_draft": {
+        "provenance": "SYSTEM_DRAFT_UNREVIEWED",
+        "semantic_relevance": "irrelevant",
+        "evidence_capability": "not_capable",
+        "support_level": "insufficient",
+        "semantic_relationship": "unrelated",
+        "status": "NO_RELEVANT_EVIDENCE",
+        "reason_codes": [
+          "SEMANTICALLY_IRRELEVANT",
+          "SOURCE_NOT_EVIDENCE_CAPABLE"
+        ],
+        "support_observations": [
+          {
+            "source_id": "MCH-F4CD0E67DBD66EC447EF06D0EDBB083A",
+            "source_span_id": "ESPAN-9364092E47249D44F9B86C33FB712A84",
+            "support_excerpt": "来源机构：国务院办公厅\n文号：国办函〔2016〕108号",
+            "support_excerpt_hash": "b27d1bdb75e04a5ce81a501d6213b0fdf98fdb27c082289a8e1c16401ca175b1",
+            "observation_type": "context",
+            "reason_codes": [
+              "SEMANTICALLY_IRRELEVANT"
+            ]
+          }
+        ],
+        "conflict_observations": []
+      },
+      "review_decision": {
+        "case_id": "V2R-015-CORPUS-06",
+        "reviewer_decision": null,
+        "reviewer_status_override": null,
+        "reviewer_semantic_override": null,
+        "reviewer_reason": null,
+        "reviewed_at": null
+      }
+    },
+    {
+      "case_id": "V2R-009-ISO-CONFLICT",
+      "sequence": 9,
+      "requirement": {
+        "requirement_id": "V2R-009-ISO-CONFLICT",
+        "text": "企业应说明当前 ISO/IEC 27001 证书的有效截止日期。",
+        "boundary_tags": [
+          "conflict",
+          "freshness",
+          "superseded",
+          "validity"
+        ],
+        "difficulty": "HARD"
+      },
+      "sources": [
+        {
+          "source_id": "MCH-0820CC5A439CB986C62E46213029CC71",
+          "source_span_id": "ESPAN-7A5D661264A0C779ED903BDF21BC9E25",
+          "source_span_resolution": "DERIVED_TRANSIENT_FORMAL_CONTRACT",
+          "source_span_persisted": false,
+          "source_verified": true,
+          "document_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+          "material_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+          "chunk_id": "MCH-0820CC5A439CB986C62E46213029CC71",
+          "project_id": "ac1a1037-5e62-44ee-8c28-7b09d48d93e6",
+          "project_name": "E2E-PRODUCTION-RETRIEVAL-V1 [data_classification=synthetic]",
+          "corpus_scope": "ENTERPRISE_PRIVATE",
+          "material_type": "qualification",
+          "material_name": "qualification-iso27001.md",
+          "source_text": "# ISO 27001 受控记录",
+          "source_hash": "e4bbd720010befabbdd08b947acc803b7f0c52b5ccdbf8da7f5b169e76f19215",
+          "start_offset": 92,
+          "end_offset": 108,
+          "source_chunk_ids": [
+            "MCH-0820CC5A439CB986C62E46213029CC71"
+          ],
+          "resolver_version": "evidence-source-span-v1"
+        },
+        {
+          "source_id": "MCH-B2BE9E8E088E44117824E02219F50158",
+          "source_span_id": "ESPAN-817DC81970E79F8873AC6E319F9D7E78",
+          "source_span_resolution": "DERIVED_TRANSIENT_FORMAL_CONTRACT",
+          "source_span_persisted": false,
+          "source_verified": true,
+          "document_id": "b96691fb-e719-4312-8ec9-a9e8acf687c0",
+          "material_id": "b96691fb-e719-4312-8ec9-a9e8acf687c0",
+          "chunk_id": "MCH-B2BE9E8E088E44117824E02219F50158",
+          "project_id": "ac1a1037-5e62-44ee-8c28-7b09d48d93e6",
+          "project_name": "E2E-PRODUCTION-RETRIEVAL-V1 [data_classification=synthetic]",
+          "corpus_scope": "ENTERPRISE_PRIVATE",
+          "material_type": "company_profile",
+          "material_name": "company-profile.md",
+          "source_text": "REPRESENTATIVE_SYNTHETIC\nNOT_REAL_CUSTOMER_DATA\nmaterial_id: SME-001\nsubject: 澄明数科（示范）有限公司",
+          "source_hash": "c7b966eb84cd1c3ab7430f33eaba42509829e7792ff980bc47bb2f0e5f39f0e0",
+          "start_offset": 0,
+          "end_offset": 90,
+          "source_chunk_ids": [
+            "MCH-B2BE9E8E088E44117824E02219F50158"
+          ],
+          "resolver_version": "evidence-source-span-v1"
+        }
+      ],
+      "system_draft": {
+        "provenance": "SYSTEM_DRAFT_UNREVIEWED",
+        "semantic_relevance": "relevant",
+        "evidence_capability": "capable",
+        "support_level": "conflict",
+        "semantic_relationship": "conflict",
+        "status": "CONFLICTING_EVIDENCE",
+        "reason_codes": [
+          "VALIDITY_MISMATCH"
+        ],
+        "support_observations": [],
+        "conflict_observations": [
+          {
+            "source_id": "MCH-0820CC5A439CB986C62E46213029CC71",
+            "source_span_id": "ESPAN-7A5D661264A0C779ED903BDF21BC9E25",
+            "support_excerpt": "# ISO 27001 受控记录",
+            "support_excerpt_hash": "e4bbd720010befabbdd08b947acc803b7f0c52b5ccdbf8da7f5b169e76f19215",
+            "conflict_group_id": "ISO27001_EXPIRY",
+            "dimension": "validity.expiry_date",
+            "observed_value": "2027-11-30",
+            "reason_codes": [
+              "VALIDITY_MISMATCH"
+            ]
+          },
+          {
+            "source_id": "MCH-B2BE9E8E088E44117824E02219F50158",
+            "source_span_id": "ESPAN-817DC81970E79F8873AC6E319F9D7E78",
+            "support_excerpt": "REPRESENTATIVE_SYNTHETIC\nNOT_REAL_CUSTOMER_DATA\nmaterial_id: SME-001\nsubject: 澄明数科（示范）有限公司",
+            "support_excerpt_hash": "c7b966eb84cd1c3ab7430f33eaba42509829e7792ff980bc47bb2f0e5f39f0e0",
+            "conflict_group_id": "ISO27001_EXPIRY",
+            "dimension": "validity.expiry_date",
+            "observed_value": "2028-12-31",
+            "reason_codes": [
+              "VALIDITY_MISMATCH"
+            ]
+          }
+        ]
+      },
+      "review_decision": {
+        "case_id": "V2R-009-ISO-CONFLICT",
+        "reviewer_decision": null,
+        "reviewer_status_override": null,
+        "reviewer_semantic_override": null,
+        "reviewer_reason": null,
+        "reviewed_at": null
+      }
+    },
+    {
+      "case_id": "V2R-004-COMP-PARTIAL",
+      "sequence": 10,
+      "requirement": {
+        "requirement_id": "V2R-004-COMP-PARTIAL",
+        "text": "企业应证明所有国产数据库组合均已完成压力测试。",
+        "boundary_tags": [
+          "technical",
+          "partial_multi_dimension",
+          "unknown"
+        ],
+        "difficulty": "HARD"
+      },
+      "sources": [
+        {
+          "source_id": "MCH-EA8F9FC5473B4FA1539E99B748DA4071",
+          "source_span_id": "ESPAN-25517924C7F718BE23BD47529BE055D2",
+          "source_span_resolution": "DERIVED_TRANSIENT_FORMAL_CONTRACT",
+          "source_span_persisted": false,
+          "source_verified": true,
+          "document_id": "3f9dacfb-2e48-4796-a477-98c60b506831",
+          "material_id": "3f9dacfb-2e48-4796-a477-98c60b506831",
+          "chunk_id": "MCH-EA8F9FC5473B4FA1539E99B748DA4071",
+          "project_id": "ac1a1037-5e62-44ee-8c28-7b09d48d93e6",
+          "project_name": "E2E-PRODUCTION-RETRIEVAL-V1 [data_classification=synthetic]",
+          "corpus_scope": "ENTERPRISE_PRIVATE",
+          "material_type": "product_documentation",
+          "material_name": "compatibility-matrix.md",
+          "source_text": "REPRESENTATIVE_SYNTHETIC\nNOT_REAL_CUSTOMER_DATA\nmaterial_id: SME-005\nsubject: 澄明数科（示范）有限公司",
+          "source_hash": "1721b07ce554845cbc0e33c4c765e2fed6463d7f59554e1a5e3d8a917b09fda0",
+          "start_offset": 0,
+          "end_offset": 90,
+          "source_chunk_ids": [
+            "MCH-EA8F9FC5473B4FA1539E99B748DA4071"
+          ],
+          "resolver_version": "evidence-source-span-v1"
+        }
+      ],
+      "system_draft": {
+        "provenance": "SYSTEM_DRAFT_UNREVIEWED",
+        "semantic_relevance": "relevant",
+        "evidence_capability": "capable",
+        "support_level": "partial_support",
+        "semantic_relationship": "partial",
+        "status": "INSUFFICIENT_EVIDENCE",
+        "reason_codes": [
+          "SUPPORT_INSUFFICIENT"
+        ],
+        "support_observations": [
+          {
+            "source_id": "MCH-EA8F9FC5473B4FA1539E99B748DA4071",
+            "source_span_id": "ESPAN-25517924C7F718BE23BD47529BE055D2",
+            "support_excerpt": "REPRESENTATIVE_SYNTHETIC\nNOT_REAL_CUSTOMER_DATA\nmaterial_id: SME-005\nsubject: 澄明数科（示范）有限公司",
+            "support_excerpt_hash": "1721b07ce554845cbc0e33c4c765e2fed6463d7f59554e1a5e3d8a917b09fda0",
+            "observation_type": "partial_support",
+            "reason_codes": [
+              "SUPPORT_INSUFFICIENT"
+            ]
+          }
+        ],
+        "conflict_observations": []
+      },
+      "review_decision": {
+        "case_id": "V2R-004-COMP-PARTIAL",
+        "reviewer_decision": null,
+        "reviewer_status_override": null,
+        "reviewer_semantic_override": null,
+        "reviewer_reason": null,
+        "reviewed_at": null
+      }
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/evidence-support/human-review-decision-v1",
+  "title": "Calibration V2 Human Review Decision",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "case_id",
+    "reviewer_decision",
+    "reviewer_status_override",
+    "reviewer_semantic_override",
+    "reviewer_reason",
+    "reviewed_at"
+  ],
+  "properties": {
+    "case_id": { "type": "string", "minLength": 1 },
+    "reviewer_decision": { "type": ["string", "null"], "enum": ["APPROVE", "CHANGE", "REJECT", null] },
+    "reviewer_status_override": { "type": ["string", "null"], "enum": ["EVIDENCE_REVIEW_READY", "INSUFFICIENT_EVIDENCE", "NO_RELEVANT_EVIDENCE", "CONFLICTING_EVIDENCE", null] },
+    "reviewer_semantic_override": { "type": ["object", "null"] },
+    "reviewer_reason": { "type": ["string", "null"] },
+    "reviewed_at": { "type": ["string", "null"], "format": "date-time" }
+  }
+}

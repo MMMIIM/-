@@ -1,0 +1,1888 @@
+{
+  "schema_version": "4.3-evidence-support-calibration-v2-evidence-span-forensics-v1",
+  "root_cause": {
+    "review_packet_rendering_bug": false,
+    "candidate_source_span_selection_bug": true,
+    "both": false
+  },
+  "previous_classification": "READY_FOR_HUMAN_REVIEW",
+  "corrected_classification": "HUMAN_REVIEW_BLOCKED_BY_EVIDENCE_SPAN_QUALITY",
+  "model_calls": 0,
+  "provider_calls": 0,
+  "embedding_calls": 0,
+  "db_mutation": false,
+  "case_metrics": {
+    "total": 37,
+    "source_lineage_verified": 37,
+    "evidence_span_verified": 36,
+    "evidence_span_invalid": 1,
+    "evidence_span_ambiguous": 0
+  },
+  "source_metrics": {
+    "source_lineage_verified": 38,
+    "evidence_span_verified": 37,
+    "evidence_span_invalid": 1,
+    "evidence_span_ambiguous": 0
+  },
+  "batch_01_metrics": {
+    "case_count": 10,
+    "source_lineage_verified": 10,
+    "evidence_span_verified": 9,
+    "evidence_span_invalid": 1,
+    "evidence_span_ambiguous": 0
+  },
+  "conflict": {
+    "case_id": "V2R-009-ISO-CONFLICT",
+    "actual_conflicting_values": [],
+    "actual_source_excerpts": [
+      "名称：ISO/IEC 27001\n编号：CM-Q-27001-2024\n状态：active\n有效至：2027-11-30",
+      "企业：澄明数科（示范）有限公司\n规模：100-300 人。\n业务范围：政企应用软件开发、数据交换与治理、系统集成、实施与运维服务。\n限制：本资料不构成项目承诺。"
+    ],
+    "conflict_gold_valid": false,
+    "classification": "GOLD_DESIGN_INVALID"
+  },
+  "cases": [
+    {
+      "case_id": "V2R-001-PERF-DIRECT",
+      "requirement": {
+        "requirement_id": "V2R-001-PERF-DIRECT",
+        "text": "企业应提供可核验的数据交换平台性能测试记录。",
+        "boundary_tags": [
+          "quantitative",
+          "direct_support"
+        ],
+        "difficulty": "EASY"
+      },
+      "material_ids": [
+        "3c81671f-376e-401b-8525-be26929d5b92"
+      ],
+      "chunk_ids": [
+        "MCH-0FBD3599DAF932016F62EB9634B997AF"
+      ],
+      "status": "EVIDENCE_REVIEW_READY",
+      "case_status": "EVIDENCE_SPAN_VERIFIED",
+      "batch_01": true,
+      "sources": [
+        {
+          "old_source": {
+            "source_id": "MCH-D32448917B3E8CAD1214641F8E85D86A",
+            "source_text": "REPRESENTATIVE_SYNTHETIC\nNOT_REAL_CUSTOMER_DATA\nmaterial_id: SME-004\nsubject: 澄明数科（示范）有限公司",
+            "start_offset": 0,
+            "end_offset": 90,
+            "source_hash": "421e2b4a69e39fb4513d347d6912f1808b6e9acafe7bb14c8bd9cc70086a30e4"
+          },
+          "source_lineage_verified": true,
+          "business_relevant_text_exists": true,
+          "correct_evidence_span_identified": true,
+          "old_span_valid": false,
+          "evidence_span_status": "EVIDENCE_SPAN_VERIFIED",
+          "reason": null,
+          "repaired_span": {
+            "source_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
+            "start_offset": 108,
+            "end_offset": 251,
+            "source_hash": "5a54f61d10c64f26414f8dcfb93f3c1eb25076f1063d97f8200f42cad981843c",
+            "source_text": "产品：澄明数据交换平台 V3.2\n环境：8 vCPU、32 GB 内存、PostgreSQL 14、千兆局域网\n条件：50 并发、100 万条基准数据、缓存预热后执行 30 分钟\n指标：数据目录查询平均响应时间\n结果：平均 1.4 秒，P95 1.9 秒。\n日期：2025-05-16。",
+            "context_before": "# 数据交换平台性能测试记录",
+            "context_after": null
+          }
+        }
+      ],
+      "case_still_valid": true
+    },
+    {
+      "case_id": "V2R-002-PERF-PARTIAL",
+      "requirement": {
+        "requirement_id": "V2R-002-PERF-PARTIAL",
+        "text": "企业应证明接口 P95 响应时间不超过 1 秒。",
+        "boundary_tags": [
+          "quantitative",
+          "exact_numeric_requirement",
+          "partial_support"
+        ],
+        "difficulty": "HARD"
+      },
+      "material_ids": [
+        "3c81671f-376e-401b-8525-be26929d5b92"
+      ],
+      "chunk_ids": [
+        "MCH-0FBD3599DAF932016F62EB9634B997AF"
+      ],
+      "status": "INSUFFICIENT_EVIDENCE",
+      "case_status": "EVIDENCE_SPAN_VERIFIED",
+      "batch_01": true,
+      "sources": [
+        {
+          "old_source": {
+            "source_id": "MCH-D32448917B3E8CAD1214641F8E85D86A",
+            "source_text": "REPRESENTATIVE_SYNTHETIC\nNOT_REAL_CUSTOMER_DATA\nmaterial_id: SME-004\nsubject: 澄明数科（示范）有限公司",
+            "start_offset": 0,
+            "end_offset": 90,
+            "source_hash": "421e2b4a69e39fb4513d347d6912f1808b6e9acafe7bb14c8bd9cc70086a30e4"
+          },
+          "source_lineage_verified": true,
+          "business_relevant_text_exists": true,
+          "correct_evidence_span_identified": true,
+          "old_span_valid": false,
+          "evidence_span_status": "EVIDENCE_SPAN_VERIFIED",
+          "reason": null,
+          "repaired_span": {
+            "source_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
+            "start_offset": 108,
+            "end_offset": 251,
+            "source_hash": "5a54f61d10c64f26414f8dcfb93f3c1eb25076f1063d97f8200f42cad981843c",
+            "source_text": "产品：澄明数据交换平台 V3.2\n环境：8 vCPU、32 GB 内存、PostgreSQL 14、千兆局域网\n条件：50 并发、100 万条基准数据、缓存预热后执行 30 分钟\n指标：数据目录查询平均响应时间\n结果：平均 1.4 秒，P95 1.9 秒。\n日期：2025-05-16。",
+            "context_before": "# 数据交换平台性能测试记录",
+            "context_after": null
+          }
+        }
+      ],
+      "case_still_valid": true
+    },
+    {
+      "case_id": "V2R-003-COMP-DIRECT",
+      "requirement": {
+        "requirement_id": "V2R-003-COMP-DIRECT",
+        "text": "企业应说明产品在 x86_64、Ubuntu 和 PostgreSQL 环境的兼容性。",
+        "boundary_tags": [
+          "technical",
+          "compatibility"
+        ],
+        "difficulty": "MEDIUM"
+      },
+      "material_ids": [
+        "3f9dacfb-2e48-4796-a477-98c60b506831"
+      ],
+      "chunk_ids": [
+        "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0"
+      ],
+      "status": "EVIDENCE_REVIEW_READY",
+      "case_status": "EVIDENCE_SPAN_VERIFIED",
+      "batch_01": true,
+      "sources": [
+        {
+          "old_source": {
+            "source_id": "MCH-EA8F9FC5473B4FA1539E99B748DA4071",
+            "source_text": "REPRESENTATIVE_SYNTHETIC\nNOT_REAL_CUSTOMER_DATA\nmaterial_id: SME-005\nsubject: 澄明数科（示范）有限公司",
+            "start_offset": 0,
+            "end_offset": 90,
+            "source_hash": "1721b07ce554845cbc0e33c4c765e2fed6463d7f59554e1a5e3d8a917b09fda0"
+          },
+          "source_lineage_verified": true,
+          "business_relevant_text_exists": true,
+          "correct_evidence_span_identified": true,
+          "old_span_valid": false,
+          "evidence_span_status": "EVIDENCE_SPAN_VERIFIED",
+          "reason": null,
+          "repaired_span": {
+            "source_id": "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0",
+            "start_offset": 103,
+            "end_offset": 256,
+            "source_hash": "623f699df461219e4f6ce813596a352300ed47692c630db6482a97cfc41d37d5",
+            "source_text": "x86_64 + Ubuntu 22.04 + PostgreSQL 14：tested\n鲲鹏 920 + 麒麟 V10 + 达梦 8：partially_tested（完成安装和基础交换用例，未完成压力测试）\n海光 + 统信 UOS + 人大金仓：not_verified\n国产数据库组合：unknown",
+            "context_before": "# 产品兼容性矩阵",
+            "context_after": null
+          }
+        }
+      ],
+      "case_still_valid": true
+    },
+    {
+      "case_id": "V2R-004-COMP-PARTIAL",
+      "requirement": {
+        "requirement_id": "V2R-004-COMP-PARTIAL",
+        "text": "企业应证明所有国产数据库组合均已完成压力测试。",
+        "boundary_tags": [
+          "technical",
+          "partial_multi_dimension",
+          "unknown"
+        ],
+        "difficulty": "HARD"
+      },
+      "material_ids": [
+        "3f9dacfb-2e48-4796-a477-98c60b506831"
+      ],
+      "chunk_ids": [
+        "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0"
+      ],
+      "status": "INSUFFICIENT_EVIDENCE",
+      "case_status": "EVIDENCE_SPAN_VERIFIED",
+      "batch_01": true,
+      "sources": [
+        {
+          "old_source": {
+            "source_id": "MCH-EA8F9FC5473B4FA1539E99B748DA4071",
+            "source_text": "REPRESENTATIVE_SYNTHETIC\nNOT_REAL_CUSTOMER_DATA\nmaterial_id: SME-005\nsubject: 澄明数科（示范）有限公司",
+            "start_offset": 0,
+            "end_offset": 90,
+            "source_hash": "1721b07ce554845cbc0e33c4c765e2fed6463d7f59554e1a5e3d8a917b09fda0"
+          },
+          "source_lineage_verified": true,
+          "business_relevant_text_exists": true,
+          "correct_evidence_span_identified": true,
+          "old_span_valid": false,
+          "evidence_span_status": "EVIDENCE_SPAN_VERIFIED",
+          "reason": null,
+          "repaired_span": {
+            "source_id": "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0",
+            "start_offset": 103,
+            "end_offset": 256,
+            "source_hash": "623f699df461219e4f6ce813596a352300ed47692c630db6482a97cfc41d37d5",
+            "source_text": "x86_64 + Ubuntu 22.04 + PostgreSQL 14：tested\n鲲鹏 920 + 麒麟 V10 + 达梦 8：partially_tested（完成安装和基础交换用例，未完成压力测试）\n海光 + 统信 UOS + 人大金仓：not_verified\n国产数据库组合：unknown",
+            "context_before": "# 产品兼容性矩阵",
+            "context_after": null
+          }
+        }
+      ],
+      "case_still_valid": true
+    },
+    {
+      "case_id": "V2R-005-ISO-DIRECT",
+      "requirement": {
+        "requirement_id": "V2R-005-ISO-DIRECT",
+        "text": "企业应提供当前有效的 ISO/IEC 27001 认证信息。",
+        "boundary_tags": [
+          "certification",
+          "validity"
+        ],
+        "difficulty": "EASY"
+      },
+      "material_ids": [
+        "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e"
+      ],
+      "chunk_ids": [
+        "MCH-A4C2632EF9126FADD349C3004E1C2D84"
+      ],
+      "status": "EVIDENCE_REVIEW_READY",
+      "case_status": "EVIDENCE_SPAN_VERIFIED",
+      "batch_01": true,
+      "sources": [
+        {
+          "old_source": {
+            "source_id": "MCH-0820CC5A439CB986C62E46213029CC71",
+            "source_text": "# ISO 27001 受控记录",
+            "start_offset": 92,
+            "end_offset": 108,
+            "source_hash": "e4bbd720010befabbdd08b947acc803b7f0c52b5ccdbf8da7f5b169e76f19215"
+          },
+          "source_lineage_verified": true,
+          "business_relevant_text_exists": true,
+          "correct_evidence_span_identified": true,
+          "old_span_valid": false,
+          "evidence_span_status": "EVIDENCE_SPAN_VERIFIED",
+          "reason": null,
+          "repaired_span": {
+            "source_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
+            "start_offset": 110,
+            "end_offset": 170,
+            "source_hash": "4aad371afadcb5d360f7461d405d06e706132aa072271064a297010ab458572f",
+            "source_text": "名称：ISO/IEC 27001\n编号：CM-Q-27001-2024\n状态：active\n有效至：2027-11-30",
+            "context_before": "# ISO 27001 受控记录",
+            "context_after": null
+          }
+        }
+      ],
+      "case_still_valid": true
+    },
+    {
+      "case_id": "V2R-006-ISO-SCOPE",
+      "requirement": {
+        "requirement_id": "V2R-006-ISO-SCOPE",
+        "text": "企业应提供指定项目主体的 ISO/IEC 27001 证书。",
+        "boundary_tags": [
+          "wrong_entity",
+          "scope_mismatch",
+          "reference_only"
+        ],
+        "difficulty": "MEDIUM"
+      },
+      "material_ids": [
+        "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e"
+      ],
+      "chunk_ids": [
+        "MCH-A4C2632EF9126FADD349C3004E1C2D84"
+      ],
+      "status": "NO_RELEVANT_EVIDENCE",
+      "case_status": "EVIDENCE_SPAN_VERIFIED",
+      "batch_01": true,
+      "sources": [
+        {
+          "old_source": {
+            "source_id": "MCH-0820CC5A439CB986C62E46213029CC71",
+            "source_text": "# ISO 27001 受控记录",
+            "start_offset": 92,
+            "end_offset": 108,
+            "source_hash": "e4bbd720010befabbdd08b947acc803b7f0c52b5ccdbf8da7f5b169e76f19215"
+          },
+          "source_lineage_verified": true,
+          "business_relevant_text_exists": true,
+          "correct_evidence_span_identified": true,
+          "old_span_valid": false,
+          "evidence_span_status": "EVIDENCE_SPAN_VERIFIED",
+          "reason": null,
+          "repaired_span": {
+            "source_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
+            "start_offset": 110,
+            "end_offset": 170,
+            "source_hash": "4aad371afadcb5d360f7461d405d06e706132aa072271064a297010ab458572f",
+            "source_text": "名称：ISO/IEC 27001\n编号：CM-Q-27001-2024\n状态：active\n有效至：2027-11-30",
+            "context_before": "# ISO 27001 受控记录",
+            "context_after": null
+          }
+        }
+      ],
+      "case_still_valid": true
+    },
+    {
+      "case_id": "V2R-007-PROJECT-STATUS",
+      "requirement": {
+        "requirement_id": "V2R-007-PROJECT-STATUS",
+        "text": "企业应提供已完成并可验收的同类项目记录。",
+        "boundary_tags": [
+          "project_status",
+          "status_unknown",
+          "partial_support"
+        ],
+        "difficulty": "MEDIUM"
+      },
+      "material_ids": [
+        "75924286-5882-4658-bff9-ed587f70b927"
+      ],
+      "chunk_ids": [
+        "MCH-C5D5EB33CB97F715074CC6F4E98EEF17"
+      ],
+      "status": "INSUFFICIENT_EVIDENCE",
+      "case_status": "EVIDENCE_SPAN_VERIFIED",
+      "batch_01": false,
+      "sources": [
+        {
+          "old_source": {
+            "source_id": "MCH-3D0A254CE926B207AFC696BF46520897",
+            "source_text": "# 项目D实施片段",
+            "start_offset": 92,
+            "end_offset": 101,
+            "source_hash": "b89f45caf54952409ae8cc93ff746c800a3668024b0eca0665323f9a3fcf3ecf"
+          },
+          "source_lineage_verified": true,
+          "business_relevant_text_exists": true,
+          "correct_evidence_span_identified": true,
+          "old_span_valid": false,
+          "evidence_span_status": "EVIDENCE_SPAN_VERIFIED",
+          "reason": null,
+          "repaired_span": {
+            "source_id": "MCH-C5D5EB33CB97F715074CC6F4E98EEF17",
+            "start_offset": 103,
+            "end_offset": 171,
+            "source_hash": "62b80cab1a81fc5d2a600db98bf9070114394f1f2726eab5d665a5c2583218c9",
+            "source_text": "项目：南泽业务协同升级片段（虚构）\n客户：南泽公共服务机构（虚构）\n实施片段日期：2025-10-09\n状态不完整，不得推断完工或验收。",
+            "context_before": "# 项目D实施片段",
+            "context_after": null
+          }
+        }
+      ],
+      "case_still_valid": true
+    },
+    {
+      "case_id": "V2R-008-NO-RELEVANT",
+      "requirement": {
+        "requirement_id": "V2R-008-NO-RELEVANT",
+        "text": "企业应提供第三方防火墙权威检测报告扫描件。",
+        "boundary_tags": [
+          "no_relevant",
+          "third_party_boundary"
+        ],
+        "difficulty": "EASY"
+      },
+      "material_ids": [
+        "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e"
+      ],
+      "chunk_ids": [
+        "MCH-A4C2632EF9126FADD349C3004E1C2D84"
+      ],
+      "status": "NO_RELEVANT_EVIDENCE",
+      "case_status": "EVIDENCE_SPAN_VERIFIED",
+      "batch_01": false,
+      "sources": [
+        {
+          "old_source": {
+            "source_id": "MCH-0820CC5A439CB986C62E46213029CC71",
+            "source_text": "# ISO 27001 受控记录",
+            "start_offset": 92,
+            "end_offset": 108,
+            "source_hash": "e4bbd720010befabbdd08b947acc803b7f0c52b5ccdbf8da7f5b169e76f19215"
+          },
+          "source_lineage_verified": true,
+          "business_relevant_text_exists": true,
+          "correct_evidence_span_identified": true,
+          "old_span_valid": false,
+          "evidence_span_status": "EVIDENCE_SPAN_VERIFIED",
+          "reason": null,
+          "repaired_span": {
+            "source_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
+            "start_offset": 110,
+            "end_offset": 170,
+            "source_hash": "4aad371afadcb5d360f7461d405d06e706132aa072271064a297010ab458572f",
+            "source_text": "名称：ISO/IEC 27001\n编号：CM-Q-27001-2024\n状态：active\n有效至：2027-11-30",
+            "context_before": "# ISO 27001 受控记录",
+            "context_after": null
+          }
+        }
+      ],
+      "case_still_valid": true
+    },
+    {
+      "case_id": "V2R-009-ISO-CONFLICT",
+      "requirement": {
+        "requirement_id": "V2R-009-ISO-CONFLICT",
+        "text": "企业应说明当前 ISO/IEC 27001 证书的有效截止日期。",
+        "boundary_tags": [
+          "conflict",
+          "freshness",
+          "superseded",
+          "validity"
+        ],
+        "difficulty": "HARD"
+      },
+      "material_ids": [
+        "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+        "b96691fb-e719-4312-8ec9-a9e8acf687c0"
+      ],
+      "chunk_ids": [
+        "MCH-A4C2632EF9126FADD349C3004E1C2D84",
+        "MCH-04FA33611AFA0AED82194050ED8F63C8"
+      ],
+      "status": "CONFLICTING_EVIDENCE",
+      "case_status": "EVIDENCE_SPAN_INVALID",
+      "batch_01": true,
+      "sources": [
+        {
+          "old_source": {
+            "source_id": "MCH-0820CC5A439CB986C62E46213029CC71",
+            "source_text": "# ISO 27001 受控记录",
+            "start_offset": 92,
+            "end_offset": 108,
+            "source_hash": "e4bbd720010befabbdd08b947acc803b7f0c52b5ccdbf8da7f5b169e76f19215"
+          },
+          "source_lineage_verified": true,
+          "business_relevant_text_exists": true,
+          "correct_evidence_span_identified": true,
+          "old_span_valid": false,
+          "evidence_span_status": "EVIDENCE_SPAN_VERIFIED",
+          "reason": null,
+          "repaired_span": {
+            "source_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
+            "start_offset": 110,
+            "end_offset": 170,
+            "source_hash": "4aad371afadcb5d360f7461d405d06e706132aa072271064a297010ab458572f",
+            "source_text": "名称：ISO/IEC 27001\n编号：CM-Q-27001-2024\n状态：active\n有效至：2027-11-30",
+            "context_before": "# ISO 27001 受控记录",
+            "context_after": null
+          }
+        },
+        {
+          "old_source": {
+            "source_id": "MCH-B2BE9E8E088E44117824E02219F50158",
+            "source_text": "REPRESENTATIVE_SYNTHETIC\nNOT_REAL_CUSTOMER_DATA\nmaterial_id: SME-001\nsubject: 澄明数科（示范）有限公司",
+            "start_offset": 0,
+            "end_offset": 90,
+            "source_hash": "c7b966eb84cd1c3ab7430f33eaba42509829e7792ff980bc47bb2f0e5f39f0e0"
+          },
+          "source_lineage_verified": true,
+          "business_relevant_text_exists": true,
+          "correct_evidence_span_identified": false,
+          "old_span_valid": false,
+          "evidence_span_status": "EVIDENCE_SPAN_INVALID",
+          "reason": "CONFLICT_DIMENSION_NOT_OBSERVED_IN_SOURCE",
+          "repaired_span": {
+            "source_id": "MCH-04FA33611AFA0AED82194050ED8F63C8",
+            "start_offset": 102,
+            "end_offset": 182,
+            "source_hash": "c6f1372438abc539ee0052c18a0764d0a9422c338822613e061e99db0db7ffa0",
+            "source_text": "企业：澄明数科（示范）有限公司\n规模：100-300 人。\n业务范围：政企应用软件开发、数据交换与治理、系统集成、实施与运维服务。\n限制：本资料不构成项目承诺。",
+            "context_before": "# 企业能力简介",
+            "context_after": null
+          }
+        }
+      ],
+      "case_still_valid": false
+    },
+    {
+      "case_id": "V2R-010-CORPUS-01",
+      "requirement": {
+        "requirement_id": "V2R-010-CORPUS-01",
+        "text": "企业应证明自身具备与该公开行业规范相符的实施能力。",
+        "boundary_tags": [
+          "industry_reference",
+          "enterprise_capability_boundary",
+          "scope_mismatch",
+          "third_party_boundary",
+          "freshness"
+        ],
+        "difficulty": "EASY"
+      },
+      "material_ids": [
+        "e9bcafcd-c615-4f6d-b34e-9d1ffcdfef1c"
+      ],
+      "chunk_ids": [
+        "MCH-14B0FC833B35B965E3E60779BDAFFEB2"
+      ],
+      "status": "INSUFFICIENT_EVIDENCE",
+      "case_status": "EVIDENCE_SPAN_VERIFIED",
+      "batch_01": false,
+      "sources": [
+        {
+          "old_source": {
+            "source_id": "MCH-B349280E685FEB7ECD6B73AFFCF32228",
+            "source_text": "# 中华人民共和国政府信息公开条例",
+            "start_offset": 0,
+            "end_offset": 17,
+            "source_hash": "e7e05bc5785225ee9dc46d8012989147918561ac3963c792815c01b333071fbb"
+          },
+          "source_lineage_verified": true,
+          "business_relevant_text_exists": true,
+          "correct_evidence_span_identified": true,
+          "old_span_valid": false,
+          "evidence_span_status": "EVIDENCE_SPAN_VERIFIED",
+          "reason": null,
+          "repaired_span": {
+            "source_id": "MCH-14B0FC833B35B965E3E60779BDAFFEB2",
+            "start_offset": 42,
+            "end_offset": 86,
+            "source_hash": "938025d9580275a9a95198833d5da598db4750f0f7d4bdff613d1c0b3f453054",
+            "source_text": "条例明确政府信息的范围和公开原则，要求行政机关主动公开、依法答复并保障公众获取政府信息。",
+            "context_before": "来源机构：国务院\n文号：国务院令第711号",
+            "context_after": null
+          }
+        }
+      ],
+      "case_still_valid": true
+    },
+    {
+      "case_id": "V2R-011-CORPUS-02",
+      "requirement": {
+        "requirement_id": "V2R-011-CORPUS-02",
+        "text": "企业应证明自身具备与该公开行业规范相符的实施能力。",
+        "boundary_tags": [
+          "industry_reference",
+          "enterprise_capability_boundary",
+          "scope_mismatch"
+        ],
+        "difficulty": "EASY"
+      },
+      "material_ids": [
+        "eef2ae66-8259-4954-9a88-2e184411fcc5"
+      ],
+      "chunk_ids": [
+        "MCH-C327D3EAD9FC460F07059B7F11323BDB"
+      ],
+      "status": "INSUFFICIENT_EVIDENCE",
+      "case_status": "EVIDENCE_SPAN_VERIFIED",
+      "batch_01": false,
+      "sources": [
+        {
+          "old_source": {
+            "source_id": "MCH-F52FD1E6B797D05F42A8B78970237CDB",
+            "source_text": "# “互联网+政务服务”技术体系建设指南",
+            "start_offset": 0,
+            "end_offset": 20,
+            "source_hash": "5989734d45d5f25dca5cf1668d533e1bf72fa90af5e969b01aa898dbfb962859"
+          },
+          "source_lineage_verified": true,
+          "business_relevant_text_exists": true,
+          "correct_evidence_span_identified": true,
+          "old_span_valid": false,
+          "evidence_span_status": "EVIDENCE_SPAN_VERIFIED",
+          "reason": null,
+          "repaired_span": {
+            "source_id": "MCH-C327D3EAD9FC460F07059B7F11323BDB",
+            "start_offset": 52,
+            "end_offset": 94,
+            "source_hash": "7901c5a404c3264e22746c754bb1caa28e57aa6bee2a0a56a59739e63293e924",
+            "source_text": "指南提出统一政务服务信息资源目录、交换体系和平台支撑，推动跨部门数据共享与服务协同。",
+            "context_before": "来源机构：国务院办公厅\n文号：国办函〔2016〕108号",
+            "context_after": null
+          }
+        }
+      ],
+      "case_still_valid": true
+    },
+    {
+      "case_id": "V2R-012-CORPUS-03",
+      "requirement": {
+        "requirement_id": "V2R-012-CORPUS-03",
+        "text": "企业应证明自身具备与该公开行业规范相符的实施能力。",
+        "boundary_tags": [
+          "industry_reference",
+          "enterprise_capability_boundary",
+          "scope_mismatch"
+        ],
+        "difficulty": "EASY"
+      },
+      "material_ids": [
+        "ec1512cf-8424-4e7d-a116-8acb41240cac"
+      ],
+      "chunk_ids": [
+        "MCH-691F11C92C9C6B6ADBA2A616E43132FC"
+      ],
+      "status": "INSUFFICIENT_EVIDENCE",
+      "case_status": "EVIDENCE_SPAN_VERIFIED",
+      "batch_01": false,
+      "sources": [
+        {
+          "old_source": {
+            "source_id": "MCH-9D4817BA134042FEF2F0CF93BAF9A4E7",
+            "source_text": "# 三级医院评审标准（2025年版）",
+            "start_offset": 0,
+            "end_offset": 18,
+            "source_hash": "8e3327638127198c72773eb46bdc274a3150e5bb2e1c87b23ee15b5b5041bd6d"
+          },
+          "source_lineage_verified": true,
+          "business_relevant_text_exists": true,
+          "correct_evidence_span_identified": true,
+          "old_span_valid": false,
+          "evidence_span_status": "EVIDENCE_SPAN_VERIFIED",
+          "reason": null,
+          "repaired_span": {
+            "source_id": "MCH-691F11C92C9C6B6ADBA2A616E43132FC",
+            "start_offset": 53,
+            "end_offset": 95,
+            "source_hash": "74e52fe525f93ffc8c954bcf1b3543dc4678eae0e7a7a7359433e43e1c37624d",
+            "source_text": "标准完善三级医院功能定位、医疗管理和质量安全评审要求，强调依法规范执业和公益性责任。",
+            "context_before": "来源机构：国家卫生健康委员会\n文号：国卫医政发〔2025〕4号",
+            "context_after": null
+          }
+        }
+      ],
+      "case_still_valid": true
+    },
+    {
+      "case_id": "V2R-013-CORPUS-04",
+      "requirement": {
+        "requirement_id": "V2R-013-CORPUS-04",
+        "text": "企业应提供与本项目范围相关的可核验材料。",
+        "boundary_tags": [
+          "scope_mismatch",
+          "multiple_weak_evidence"
+        ],
+        "difficulty": "EASY"
+      },
+      "material_ids": [
+        "9876da6b-40c1-4f2d-b47b-290c7c150f4e"
+      ],
+      "chunk_ids": [
+        "MCH-A4211A94C5C7A077F478D979A3ADF86E"
+      ],
+      "status": "INSUFFICIENT_EVIDENCE",
+      "case_status": "EVIDENCE_SPAN_VERIFIED",
+      "batch_01": false,
+      "sources": [
+        {
+          "old_source": {
+            "source_id": "MCH-465F4A14FE03A088093248F73D1E8705",
+            "source_text": "SYNTHETIC_TEST_MATERIAL=true\nNOT_REAL_CUSTOMER_DATA=true\nsubject: 杭州景云数科有限公司\nsource_type: synthetic_controlled\nsource_org: 杭州景云数科有限公司（虚构测试企业）\nlicense_or_usage_status: INTERNAL_TEST_ONLY\nmaterial_id: L3-ENT-012\nscope: enterprise\nindustry: 政企平台\nmaterial_type: authorization\nreview_status: approved",
+            "start_offset": 0,
+            "end_offset": 295,
+            "source_hash": "e13541a03fa0c898a5eafd07f4d0eb594d5cc8f77df84affdb9c895d5cd7af12"
+          },
+          "source_lineage_verified": true,
+          "business_relevant_text_exists": true,
+          "correct_evidence_span_identified": true,
+          "old_span_valid": false,
+          "evidence_span_status": "EVIDENCE_SPAN_VERIFIED",
+          "reason": null,
+          "repaired_span": {
+            "source_id": "MCH-A4211A94C5C7A077F478D979A3ADF86E",
+            "start_offset": 310,
+            "end_offset": 362,
+            "source_hash": "33d664614db3cd87de0f1c1c95b33111a5999792791f3938fb4650fbdd20df05",
+            "source_text": "平台可集成某开源数据库和消息组件；部署、许可和技术支持依赖第三方，企业不将第三方能力表述为自有产品能力。",
+            "context_before": "# 第三方产品授权说明",
+            "context_after": null
+          }
+        }
+      ],
+      "case_still_valid": true
+    },
+    {
+      "case_id": "V2R-014-CORPUS-05",
+      "requirement": {
+        "requirement_id": "V2R-014-CORPUS-05",
+        "text": "企业应证明自身具备与该公开行业规范相符的实施能力。",
+        "boundary_tags": [
+          "industry_reference",
+          "enterprise_capability_boundary",
+          "scope_mismatch"
+        ],
+        "difficulty": "EASY"
+      },
+      "material_ids": [
+        "e9bcafcd-c615-4f6d-b34e-9d1ffcdfef1c"
+      ],
+      "chunk_ids": [
+        "MCH-14B0FC833B35B965E3E60779BDAFFEB2"
+      ],
+      "status": "INSUFFICIENT_EVIDENCE",
+      "case_status": "EVIDENCE_SPAN_VERIFIED",
+      "batch_01": false,
+      "sources": [
+        {
+          "old_source": {
+            "source_id": "MCH-C4F8AAA8F03FACF305E84D1E1A82D11A",
+            "source_text": "来源机构：国务院\n文号：国务院令第711号",
+            "start_offset": 19,
+            "end_offset": 40,
+            "source_hash": "15d66111659862847140c9a99798c9b8251e1cb763d9defa0a7cd7f5b67a792b"
+          },
+          "source_lineage_verified": true,
+          "business_relevant_text_exists": true,
+          "correct_evidence_span_identified": true,
+          "old_span_valid": false,
+          "evidence_span_status": "EVIDENCE_SPAN_VERIFIED",
+          "reason": null,
+          "repaired_span": {
+            "source_id": "MCH-14B0FC833B35B965E3E60779BDAFFEB2",
+            "start_offset": 42,
+            "end_offset": 86,
+            "source_hash": "938025d9580275a9a95198833d5da598db4750f0f7d4bdff613d1c0b3f453054",
+            "source_text": "条例明确政府信息的范围和公开原则，要求行政机关主动公开、依法答复并保障公众获取政府信息。",
+            "context_before": "来源机构：国务院\n文号：国务院令第711号",
+            "context_after": null
+          }
+        }
+      ],
+      "case_still_valid": true
+    },
+    {
+      "case_id": "V2R-015-CORPUS-06",
+      "requirement": {
+        "requirement_id": "V2R-015-CORPUS-06",
+        "text": "企业应证明自身具备与该公开行业规范相符的实施能力。",
+        "boundary_tags": [
+          "industry_reference",
+          "enterprise_capability_boundary",
+          "scope_mismatch",
+          "no_relevant"
+        ],
+        "difficulty": "EASY"
+      },
+      "material_ids": [
+        "eef2ae66-8259-4954-9a88-2e184411fcc5"
+      ],
+      "chunk_ids": [
+        "MCH-C327D3EAD9FC460F07059B7F11323BDB"
+      ],
+      "status": "NO_RELEVANT_EVIDENCE",
+      "case_status": "EVIDENCE_SPAN_VERIFIED",
+      "batch_01": true,
+      "sources": [
+        {
+          "old_source": {
+            "source_id": "MCH-F4CD0E67DBD66EC447EF06D0EDBB083A",
+            "source_text": "来源机构：国务院办公厅\n文号：国办函〔2016〕108号",
+            "start_offset": 22,
+            "end_offset": 50,
+            "source_hash": "b27d1bdb75e04a5ce81a501d6213b0fdf98fdb27c082289a8e1c16401ca175b1"
+          },
+          "source_lineage_verified": true,
+          "business_relevant_text_exists": true,
+          "correct_evidence_span_identified": true,
+          "old_span_valid": false,
+          "evidence_span_status": "EVIDENCE_SPAN_VERIFIED",
+          "reason": null,
+          "repaired_span": {
+            "source_id": "MCH-C327D3EAD9FC460F07059B7F11323BDB",
+            "start_offset": 52,
+            "end_offset": 94,
+            "source_hash": "7901c5a404c3264e22746c754bb1caa28e57aa6bee2a0a56a59739e63293e924",
+            "source_text": "指南提出统一政务服务信息资源目录、交换体系和平台支撑，推动跨部门数据共享与服务协同。",
+            "context_before": "来源机构：国务院办公厅\n文号：国办函〔2016〕108号",
+            "context_after": null
+          }
+        }
+      ],
+      "case_still_valid": true
+    },
+    {
+      "case_id": "V2R-016-CORPUS-07",
+      "requirement": {
+        "requirement_id": "V2R-016-CORPUS-07",
+        "text": "企业应证明自身具备与该公开行业规范相符的实施能力。",
+        "boundary_tags": [
+          "industry_reference",
+          "enterprise_capability_boundary",
+          "scope_mismatch"
+        ],
+        "difficulty": "EASY"
+      },
+      "material_ids": [
+        "ec1512cf-8424-4e7d-a116-8acb41240cac"
+      ],
+      "chunk_ids": [
+        "MCH-691F11C92C9C6B6ADBA2A616E43132FC"
+      ],
+      "status": "INSUFFICIENT_EVIDENCE",
+      "case_status": "EVIDENCE_SPAN_VERIFIED",
+      "batch_01": false,
+      "sources": [
+        {
+          "old_source": {
+            "source_id": "MCH-0885ECB0FC777B2F33B1B40E8D0E6F5D",
+            "source_text": "来源机构：国家卫生健康委员会\n文号：国卫医政发〔2025〕4号",
+            "start_offset": 20,
+            "end_offset": 51,
+            "source_hash": "fdf81b2d8d1ce09caa12b32c38eb6f3cdfd907d63765e1ca72cf0ec6922302c5"
+          },
+          "source_lineage_verified": true,
+          "business_relevant_text_exists": true,
+          "correct_evidence_span_identified": true,
+          "old_span_valid": false,
+          "evidence_span_status": "EVIDENCE_SPAN_VERIFIED",
+          "reason": null,
+          "repaired_span": {
+            "source_id": "MCH-691F11C92C9C6B6ADBA2A616E43132FC",
+            "start_offset": 53,
+            "end_offset": 95,
+            "source_hash": "74e52fe525f93ffc8c954bcf1b3543dc4678eae0e7a7a7359433e43e1c37624d",
+            "source_text": "标准完善三级医院功能定位、医疗管理和质量安全评审要求，强调依法规范执业和公益性责任。",
+            "context_before": "来源机构：国家卫生健康委员会\n文号：国卫医政发〔2025〕4号",
+            "context_after": null
+          }
+        }
+      ],
+      "case_still_valid": true
+    },
+    {
+      "case_id": "V2R-017-CORPUS-08",
+      "requirement": {
+        "requirement_id": "V2R-017-CORPUS-08",
+        "text": "企业应提供与本项目范围相关的可核验材料。",
+        "boundary_tags": [
+          "scope_mismatch",
+          "multiple_weak_evidence",
+          "third_party_boundary"
+        ],
+        "difficulty": "EASY"
+      },
+      "material_ids": [
+        "9876da6b-40c1-4f2d-b47b-290c7c150f4e"
+      ],
+      "chunk_ids": [
+        "MCH-A4211A94C5C7A077F478D979A3ADF86E"
+      ],
+      "status": "INSUFFICIENT_EVIDENCE",
+      "case_status": "EVIDENCE_SPAN_VERIFIED",
+      "batch_01": false,
+      "sources": [
+        {
+          "old_source": {
+            "source_id": "MCH-9FDF20160FF141120F9E5BF6E15F46E4",
+            "source_text": "# 第三方产品授权说明",
+            "start_offset": 297,
+            "end_offset": 308,
+            "source_hash": "20aaaaeedb4b1922cb31b66fdaec6cd70b8b710bc809edc29a9597dd351fb52f"
+          },
+          "source_lineage_verified": true,
+          "business_relevant_text_exists": true,
+          "correct_evidence_span_identified": true,
+          "old_span_valid": false,
+          "evidence_span_status": "EVIDENCE_SPAN_VERIFIED",
+          "reason": null,
+          "repaired_span": {
+            "source_id": "MCH-A4211A94C5C7A077F478D979A3ADF86E",
+            "start_offset": 310,
+            "end_offset": 362,
+            "source_hash": "33d664614db3cd87de0f1c1c95b33111a5999792791f3938fb4650fbdd20df05",
+            "source_text": "平台可集成某开源数据库和消息组件；部署、许可和技术支持依赖第三方，企业不将第三方能力表述为自有产品能力。",
+            "context_before": "# 第三方产品授权说明",
+            "context_after": null
+          }
+        }
+      ],
+      "case_still_valid": true
+    },
+    {
+      "case_id": "V2R-018-CORPUS-09",
+      "requirement": {
+        "requirement_id": "V2R-018-CORPUS-09",
+        "text": "企业应证明自身具备与该公开行业规范相符的实施能力。",
+        "boundary_tags": [
+          "industry_reference",
+          "enterprise_capability_boundary",
+          "scope_mismatch"
+        ],
+        "difficulty": "MEDIUM"
+      },
+      "material_ids": [
+        "e9bcafcd-c615-4f6d-b34e-9d1ffcdfef1c"
+      ],
+      "chunk_ids": [
+        "MCH-14B0FC833B35B965E3E60779BDAFFEB2"
+      ],
+      "status": "INSUFFICIENT_EVIDENCE",
+      "case_status": "EVIDENCE_SPAN_VERIFIED",
+      "batch_01": false,
+      "sources": [
+        {
+          "old_source": {
+            "source_id": "MCH-14B0FC833B35B965E3E60779BDAFFEB2",
+            "source_text": "条例明确政府信息的范围和公开原则，要求行政机关主动公开、依法答复并保障公众获取政府信息。",
+            "start_offset": 42,
+            "end_offset": 86,
+            "source_hash": "938025d9580275a9a95198833d5da598db4750f0f7d4bdff613d1c0b3f453054"
+          },
+          "source_lineage_verified": true,
+          "business_relevant_text_exists": true,
+          "correct_evidence_span_identified": true,
+          "old_span_valid": true,
+          "evidence_span_status": "EVIDENCE_SPAN_VERIFIED",
+          "reason": null,
+          "repaired_span": {
+            "source_id": "MCH-14B0FC833B35B965E3E60779BDAFFEB2",
+            "start_offset": 42,
+            "end_offset": 86,
+            "source_hash": "938025d9580275a9a95198833d5da598db4750f0f7d4bdff613d1c0b3f453054",
+            "source_text": "条例明确政府信息的范围和公开原则，要求行政机关主动公开、依法答复并保障公众获取政府信息。",
+            "context_before": "来源机构：国务院\n文号：国务院令第711号",
+            "context_after": null
+          }
+        }
+      ],
+      "case_still_valid": true
+    },
+    {
+      "case_id": "V2R-019-CORPUS-10",
+      "requirement": {
+        "requirement_id": "V2R-019-CORPUS-10",
+        "text": "企业应证明自身具备与该公开行业规范相符的实施能力。",
+        "boundary_tags": [
+          "industry_reference",
+          "enterprise_capability_boundary",
+          "scope_mismatch",
+          "freshness"
+        ],
+        "difficulty": "MEDIUM"
+      },
+      "material_ids": [
+        "eef2ae66-8259-4954-9a88-2e184411fcc5"
+      ],
+      "chunk_ids": [
+        "MCH-C327D3EAD9FC460F07059B7F11323BDB"
+      ],
+      "status": "INSUFFICIENT_EVIDENCE",
+      "case_status": "EVIDENCE_SPAN_VERIFIED",
+      "batch_01": false,
+      "sources": [
+        {
+          "old_source": {
+            "source_id": "MCH-C327D3EAD9FC460F07059B7F11323BDB",
+            "source_text": "指南提出统一政务服务信息资源目录、交换体系和平台支撑，推动跨部门数据共享与服务协同。",
+            "start_offset": 52,
+            "end_offset": 94,
+            "source_hash": "7901c5a404c3264e22746c754bb1caa28e57aa6bee2a0a56a59739e63293e924"
+          },
+          "source_lineage_verified": true,
+          "business_relevant_text_exists": true,
+          "correct_evidence_span_identified": true,
+          "old_span_valid": true,
+          "evidence_span_status": "EVIDENCE_SPAN_VERIFIED",
+          "reason": null,
+          "repaired_span": {
+            "source_id": "MCH-C327D3EAD9FC460F07059B7F11323BDB",
+            "start_offset": 52,
+            "end_offset": 94,
+            "source_hash": "7901c5a404c3264e22746c754bb1caa28e57aa6bee2a0a56a59739e63293e924",
+            "source_text": "指南提出统一政务服务信息资源目录、交换体系和平台支撑，推动跨部门数据共享与服务协同。",
+            "context_before": "来源机构：国务院办公厅\n文号：国办函〔2016〕108号",
+            "context_after": null
+          }
+        }
+      ],
+      "case_still_valid": true
+    },
+    {
+      "case_id": "V2R-020-CORPUS-11",
+      "requirement": {
+        "requirement_id": "V2R-020-CORPUS-11",
+        "text": "企业应证明自身具备与该公开行业规范相符的实施能力。",
+        "boundary_tags": [
+          "industry_reference",
+          "enterprise_capability_boundary",
+          "scope_mismatch"
+        ],
+        "difficulty": "MEDIUM"
+      },
+      "material_ids": [
+        "ec1512cf-8424-4e7d-a116-8acb41240cac"
+      ],
+      "chunk_ids": [
+        "MCH-691F11C92C9C6B6ADBA2A616E43132FC"
+      ],
+      "status": "INSUFFICIENT_EVIDENCE",
+      "case_status": "EVIDENCE_SPAN_VERIFIED",
+      "batch_01": false,
+      "sources": [
+        {
+          "old_source": {
+            "source_id": "MCH-691F11C92C9C6B6ADBA2A616E43132FC",
+            "source_text": "标准完善三级医院功能定位、医疗管理和质量安全评审要求，强调依法规范执业和公益性责任。",
+            "start_offset": 53,
+            "end_offset": 95,
+            "source_hash": "74e52fe525f93ffc8c954bcf1b3543dc4678eae0e7a7a7359433e43e1c37624d"
+          },
+          "source_lineage_verified": true,
+          "business_relevant_text_exists": true,
+          "correct_evidence_span_identified": true,
+          "old_span_valid": true,
+          "evidence_span_status": "EVIDENCE_SPAN_VERIFIED",
+          "reason": null,
+          "repaired_span": {
+            "source_id": "MCH-691F11C92C9C6B6ADBA2A616E43132FC",
+            "start_offset": 53,
+            "end_offset": 95,
+            "source_hash": "74e52fe525f93ffc8c954bcf1b3543dc4678eae0e7a7a7359433e43e1c37624d",
+            "source_text": "标准完善三级医院功能定位、医疗管理和质量安全评审要求，强调依法规范执业和公益性责任。",
+            "context_before": "来源机构：国家卫生健康委员会\n文号：国卫医政发〔2025〕4号",
+            "context_after": null
+          }
+        }
+      ],
+      "case_still_valid": true
+    },
+    {
+      "case_id": "V2R-021-CORPUS-12",
+      "requirement": {
+        "requirement_id": "V2R-021-CORPUS-12",
+        "text": "企业应提供与本项目范围相关的可核验材料。",
+        "boundary_tags": [
+          "scope_mismatch",
+          "multiple_weak_evidence"
+        ],
+        "difficulty": "MEDIUM"
+      },
+      "material_ids": [
+        "9876da6b-40c1-4f2d-b47b-290c7c150f4e"
+      ],
+      "chunk_ids": [
+        "MCH-A4211A94C5C7A077F478D979A3ADF86E"
+      ],
+      "status": "INSUFFICIENT_EVIDENCE",
+      "case_status": "EVIDENCE_SPAN_VERIFIED",
+      "batch_01": true,
+      "sources": [
+        {
+          "old_source": {
+            "source_id": "MCH-A4211A94C5C7A077F478D979A3ADF86E",
+            "source_text": "平台可集成某开源数据库和消息组件；部署、许可和技术支持依赖第三方，企业不将第三方能力表述为自有产品能力。",
+            "start_offset": 310,
+            "end_offset": 362,
+            "source_hash": "33d664614db3cd87de0f1c1c95b33111a5999792791f3938fb4650fbdd20df05"
+          },
+          "source_lineage_verified": true,
+          "business_relevant_text_exists": true,
+          "correct_evidence_span_identified": true,
+          "old_span_valid": true,
+          "evidence_span_status": "EVIDENCE_SPAN_VERIFIED",
+          "reason": null,
+          "repaired_span": {
+            "source_id": "MCH-A4211A94C5C7A077F478D979A3ADF86E",
+            "start_offset": 310,
+            "end_offset": 362,
+            "source_hash": "33d664614db3cd87de0f1c1c95b33111a5999792791f3938fb4650fbdd20df05",
+            "source_text": "平台可集成某开源数据库和消息组件；部署、许可和技术支持依赖第三方，企业不将第三方能力表述为自有产品能力。",
+            "context_before": "# 第三方产品授权说明",
+            "context_after": null
+          }
+        }
+      ],
+      "case_still_valid": true
+    },
+    {
+      "case_id": "V2R-022-CORPUS-13",
+      "requirement": {
+        "requirement_id": "V2R-022-CORPUS-13",
+        "text": "企业应证明自身具备与该公开行业规范相符的实施能力。",
+        "boundary_tags": [
+          "industry_reference",
+          "enterprise_capability_boundary",
+          "scope_mismatch"
+        ],
+        "difficulty": "MEDIUM"
+      },
+      "material_ids": [
+        "059bfd18-afbe-4e1d-968c-2d68c02fa3f8"
+      ],
+      "chunk_ids": [
+        "MCH-D4B6B49E0887CDE6B9D4B01706D155CD"
+      ],
+      "status": "INSUFFICIENT_EVIDENCE",
+      "case_status": "EVIDENCE_SPAN_VERIFIED",
+      "batch_01": false,
+      "sources": [
+        {
+          "old_source": {
+            "source_id": "MCH-DBAF15A745A323E679E8E5C19D2EFDBA",
+            "source_text": "# 全国一体化政务大数据体系建设指南",
+            "start_offset": 0,
+            "end_offset": 18,
+            "source_hash": "ac368fd7aecf5532c18d407cdf828eb46800fc0c78736e4c6dea59db68e5423d"
+          },
+          "source_lineage_verified": true,
+          "business_relevant_text_exists": true,
+          "correct_evidence_span_identified": true,
+          "old_span_valid": false,
+          "evidence_span_status": "EVIDENCE_SPAN_VERIFIED",
+          "reason": null,
+          "repaired_span": {
+            "source_id": "MCH-D4B6B49E0887CDE6B9D4B01706D155CD",
+            "start_offset": 50,
+            "end_offset": 103,
+            "source_hash": "d0f690991dd384f14703da7f5b0d6b9149fa8c06c68255e8aea262fc7c8ec88c",
+            "source_text": "指南要求建设标准统一、管理协同、安全可靠的政务大数据体系，推进数据目录、归集、共享、开放和全生命周期安全。",
+            "context_before": "来源机构：国务院办公厅\n文号：国办函〔2022〕102号",
+            "context_after": null
+          }
+        }
+      ],
+      "case_still_valid": true
+    },
+    {
+      "case_id": "V2R-023-CORPUS-14",
+      "requirement": {
+        "requirement_id": "V2R-023-CORPUS-14",
+        "text": "企业应证明自身具备与该公开行业规范相符的实施能力。",
+        "boundary_tags": [
+          "industry_reference",
+          "enterprise_capability_boundary",
+          "scope_mismatch"
+        ],
+        "difficulty": "MEDIUM"
+      },
+      "material_ids": [
+        "18a60d26-78b3-44c9-ac86-8c7231597880"
+      ],
+      "chunk_ids": [
+        "MCH-F00AE9B8C12B0C262DC8C83F61E4F7A5"
+      ],
+      "status": "INSUFFICIENT_EVIDENCE",
+      "case_status": "EVIDENCE_SPAN_VERIFIED",
+      "batch_01": false,
+      "sources": [
+        {
+          "old_source": {
+            "source_id": "MCH-0225B5EF47B634686F6C0A815D0A22F0",
+            "source_text": "# 互联网诊疗监管细则（试行）",
+            "start_offset": 0,
+            "end_offset": 15,
+            "source_hash": "a19cd5873710240371ba9b427db3790a23c5feb88a5d31402df3f733dadf3a9a"
+          },
+          "source_lineage_verified": true,
+          "business_relevant_text_exists": true,
+          "correct_evidence_span_identified": true,
+          "old_span_valid": false,
+          "evidence_span_status": "EVIDENCE_SPAN_VERIFIED",
+          "reason": null,
+          "repaired_span": {
+            "source_id": "MCH-F00AE9B8C12B0C262DC8C83F61E4F7A5",
+            "start_offset": 51,
+            "end_offset": 99,
+            "source_hash": "ae5c957b6fa4638ccf67ddc5894ce83da64b7d2a5723a298d6e4e56aefcf93bb",
+            "source_text": "细则要求建立互联网诊疗医疗质量、安全、药学服务和信息技术管理制度，并落实患者信息和电子病历管理。",
+            "context_before": "来源机构：国家卫生健康委员会办公厅、国家中医药局办公室\n文号：无",
+            "context_after": null
+          }
+        }
+      ],
+      "case_still_valid": true
+    },
+    {
+      "case_id": "V2R-024-CORPUS-15",
+      "requirement": {
+        "requirement_id": "V2R-024-CORPUS-15",
+        "text": "企业应提供同类项目的实施及验收依据。",
+        "boundary_tags": [
+          "project_experience",
+          "status_unknown",
+          "responsibility_boundary",
+          "third_party_boundary"
+        ],
+        "difficulty": "MEDIUM"
+      },
+      "material_ids": [
+        "50467edc-0a5e-458f-ba69-1bbf488a115a"
+      ],
+      "chunk_ids": [
+        "MCH-3FD884E9C86C84ADD445F70EC81FADD9"
+      ],
+      "status": "INSUFFICIENT_EVIDENCE",
+      "case_status": "EVIDENCE_SPAN_VERIFIED",
+      "batch_01": false,
+      "sources": [
+        {
+          "old_source": {
+            "source_id": "MCH-DE72D8B87BB33D46100D0F2612B7C130",
+            "source_text": "SYNTHETIC_TEST_MATERIAL=true\nNOT_REAL_CUSTOMER_DATA=true\nsubject: 杭州景云数科有限公司\nsource_type: synthetic_controlled\nsource_org: 杭州景云数科有限公司（虚构测试企业）\nlicense_or_usage_status: INTERNAL_TEST_ONLY\nmaterial_id: L3-ENT-004\nscope: enterprise\nindustry: 政企平台\nmaterial_type: case\nreview_status: approved",
+            "start_offset": 0,
+            "end_offset": 286,
+            "source_hash": "a620fc15dbabd5a33cc32b8b6be26e9437aa202991891855b14c691f05f6faa8"
+          },
+          "source_lineage_verified": true,
+          "business_relevant_text_exists": true,
+          "correct_evidence_span_identified": true,
+          "old_span_valid": false,
+          "evidence_span_status": "EVIDENCE_SPAN_VERIFIED",
+          "reason": null,
+          "repaired_span": {
+            "source_id": "MCH-3FD884E9C86C84ADD445F70EC81FADD9",
+            "start_offset": 302,
+            "end_offset": 368,
+            "source_hash": "f4f7b9db71c7a29583a29ba9b9bf499740066997570b2ec02e80c41b516e9719",
+            "source_text": "项目：景云城市治理数据平台；范围：数据目录、交换任务、统一门户和运行监测；项目状态：已完成模拟案例；验收日期：2025-11-20。",
+            "context_before": "# 城市治理数据平台案例",
+            "context_after": null
+          }
+        }
+      ],
+      "case_still_valid": true
+    },
+    {
+      "case_id": "V2R-025-CORPUS-16",
+      "requirement": {
+        "requirement_id": "V2R-025-CORPUS-16",
+        "text": "企业应证明自身具备与该公开行业规范相符的实施能力。",
+        "boundary_tags": [
+          "industry_reference",
+          "enterprise_capability_boundary",
+          "scope_mismatch"
+        ],
+        "difficulty": "MEDIUM"
+      },
+      "material_ids": [
+        "059bfd18-afbe-4e1d-968c-2d68c02fa3f8"
+      ],
+      "chunk_ids": [
+        "MCH-D4B6B49E0887CDE6B9D4B01706D155CD"
+      ],
+      "status": "INSUFFICIENT_EVIDENCE",
+      "case_status": "EVIDENCE_SPAN_VERIFIED",
+      "batch_01": false,
+      "sources": [
+        {
+          "old_source": {
+            "source_id": "MCH-B08D31EEA8B5FEB387C866F6B4457D4A",
+            "source_text": "来源机构：国务院办公厅\n文号：国办函〔2022〕102号",
+            "start_offset": 20,
+            "end_offset": 48,
+            "source_hash": "d6ed4510d54ca72ff4fab4182e580495ea90abd8d62c504798442a18f91f5b66"
+          },
+          "source_lineage_verified": true,
+          "business_relevant_text_exists": true,
+          "correct_evidence_span_identified": true,
+          "old_span_valid": false,
+          "evidence_span_status": "EVIDENCE_SPAN_VERIFIED",
+          "reason": null,
+          "repaired_span": {
+            "source_id": "MCH-D4B6B49E0887CDE6B9D4B01706D155CD",
+            "start_offset": 50,
+            "end_offset": 103,
+            "source_hash": "d0f690991dd384f14703da7f5b0d6b9149fa8c06c68255e8aea262fc7c8ec88c",
+            "source_text": "指南要求建设标准统一、管理协同、安全可靠的政务大数据体系，推进数据目录、归集、共享、开放和全生命周期安全。",
+            "context_before": "来源机构：国务院办公厅\n文号：国办函〔2022〕102号",
+            "context_after": null
+          }
+        }
+      ],
+      "case_still_valid": true
+    },
+    {
+      "case_id": "V2R-026-CORPUS-17",
+      "requirement": {
+        "requirement_id": "V2R-026-CORPUS-17",
+        "text": "企业应证明自身具备与该公开行业规范相符的实施能力。",
+        "boundary_tags": [
+          "industry_reference",
+          "enterprise_capability_boundary",
+          "scope_mismatch"
+        ],
+        "difficulty": "MEDIUM"
+      },
+      "material_ids": [
+        "18a60d26-78b3-44c9-ac86-8c7231597880"
+      ],
+      "chunk_ids": [
+        "MCH-F00AE9B8C12B0C262DC8C83F61E4F7A5"
+      ],
+      "status": "INSUFFICIENT_EVIDENCE",
+      "case_status": "EVIDENCE_SPAN_VERIFIED",
+      "batch_01": false,
+      "sources": [
+        {
+          "old_source": {
+            "source_id": "MCH-C7A24BE8B86CB54E8243DCFD3CDC7CAF",
+            "source_text": "来源机构：国家卫生健康委员会办公厅、国家中医药局办公室\n文号：无",
+            "start_offset": 17,
+            "end_offset": 49,
+            "source_hash": "0c31eeb2d582378c3a175aa2d42efe7b4d50231244b2ba101cb472f109efe23a"
+          },
+          "source_lineage_verified": true,
+          "business_relevant_text_exists": true,
+          "correct_evidence_span_identified": true,
+          "old_span_valid": false,
+          "evidence_span_status": "EVIDENCE_SPAN_VERIFIED",
+          "reason": null,
+          "repaired_span": {
+            "source_id": "MCH-F00AE9B8C12B0C262DC8C83F61E4F7A5",
+            "start_offset": 51,
+            "end_offset": 99,
+            "source_hash": "ae5c957b6fa4638ccf67ddc5894ce83da64b7d2a5723a298d6e4e56aefcf93bb",
+            "source_text": "细则要求建立互联网诊疗医疗质量、安全、药学服务和信息技术管理制度，并落实患者信息和电子病历管理。",
+            "context_before": "来源机构：国家卫生健康委员会办公厅、国家中医药局办公室\n文号：无",
+            "context_after": null
+          }
+        }
+      ],
+      "case_still_valid": true
+    },
+    {
+      "case_id": "V2R-027-CORPUS-18",
+      "requirement": {
+        "requirement_id": "V2R-027-CORPUS-18",
+        "text": "企业应提供同类项目的实施及验收依据。",
+        "boundary_tags": [
+          "project_experience",
+          "status_unknown",
+          "responsibility_boundary"
+        ],
+        "difficulty": "MEDIUM"
+      },
+      "material_ids": [
+        "50467edc-0a5e-458f-ba69-1bbf488a115a"
+      ],
+      "chunk_ids": [
+        "MCH-3FD884E9C86C84ADD445F70EC81FADD9"
+      ],
+      "status": "INSUFFICIENT_EVIDENCE",
+      "case_status": "EVIDENCE_SPAN_VERIFIED",
+      "batch_01": false,
+      "sources": [
+        {
+          "old_source": {
+            "source_id": "MCH-6B18A8383C12FE849DCEA4EC3BF21E9B",
+            "source_text": "# 城市治理数据平台案例",
+            "start_offset": 288,
+            "end_offset": 300,
+            "source_hash": "f6369fd692ddf0ffee7893ea5985f6b4c2bc058ff64ad93ad79f4c08bd0dc568"
+          },
+          "source_lineage_verified": true,
+          "business_relevant_text_exists": true,
+          "correct_evidence_span_identified": true,
+          "old_span_valid": false,
+          "evidence_span_status": "EVIDENCE_SPAN_VERIFIED",
+          "reason": null,
+          "repaired_span": {
+            "source_id": "MCH-3FD884E9C86C84ADD445F70EC81FADD9",
+            "start_offset": 302,
+            "end_offset": 368,
+            "source_hash": "f4f7b9db71c7a29583a29ba9b9bf499740066997570b2ec02e80c41b516e9719",
+            "source_text": "项目：景云城市治理数据平台；范围：数据目录、交换任务、统一门户和运行监测；项目状态：已完成模拟案例；验收日期：2025-11-20。",
+            "context_before": "# 城市治理数据平台案例",
+            "context_after": null
+          }
+        }
+      ],
+      "case_still_valid": true
+    },
+    {
+      "case_id": "V2R-028-CORPUS-19",
+      "requirement": {
+        "requirement_id": "V2R-028-CORPUS-19",
+        "text": "企业应证明自身具备与该公开行业规范相符的实施能力。",
+        "boundary_tags": [
+          "industry_reference",
+          "enterprise_capability_boundary",
+          "scope_mismatch",
+          "freshness"
+        ],
+        "difficulty": "MEDIUM"
+      },
+      "material_ids": [
+        "059bfd18-afbe-4e1d-968c-2d68c02fa3f8"
+      ],
+      "chunk_ids": [
+        "MCH-D4B6B49E0887CDE6B9D4B01706D155CD"
+      ],
+      "status": "INSUFFICIENT_EVIDENCE",
+      "case_status": "EVIDENCE_SPAN_VERIFIED",
+      "batch_01": false,
+      "sources": [
+        {
+          "old_source": {
+            "source_id": "MCH-D4B6B49E0887CDE6B9D4B01706D155CD",
+            "source_text": "指南要求建设标准统一、管理协同、安全可靠的政务大数据体系，推进数据目录、归集、共享、开放和全生命周期安全。",
+            "start_offset": 50,
+            "end_offset": 103,
+            "source_hash": "d0f690991dd384f14703da7f5b0d6b9149fa8c06c68255e8aea262fc7c8ec88c"
+          },
+          "source_lineage_verified": true,
+          "business_relevant_text_exists": true,
+          "correct_evidence_span_identified": true,
+          "old_span_valid": true,
+          "evidence_span_status": "EVIDENCE_SPAN_VERIFIED",
+          "reason": null,
+          "repaired_span": {
+            "source_id": "MCH-D4B6B49E0887CDE6B9D4B01706D155CD",
+            "start_offset": 50,
+            "end_offset": 103,
+            "source_hash": "d0f690991dd384f14703da7f5b0d6b9149fa8c06c68255e8aea262fc7c8ec88c",
+            "source_text": "指南要求建设标准统一、管理协同、安全可靠的政务大数据体系，推进数据目录、归集、共享、开放和全生命周期安全。",
+            "context_before": "来源机构：国务院办公厅\n文号：国办函〔2022〕102号",
+            "context_after": null
+          }
+        }
+      ],
+      "case_still_valid": true
+    },
+    {
+      "case_id": "V2R-029-CORPUS-20",
+      "requirement": {
+        "requirement_id": "V2R-029-CORPUS-20",
+        "text": "企业应证明自身具备与该公开行业规范相符的实施能力。",
+        "boundary_tags": [
+          "industry_reference",
+          "enterprise_capability_boundary",
+          "scope_mismatch"
+        ],
+        "difficulty": "MEDIUM"
+      },
+      "material_ids": [
+        "18a60d26-78b3-44c9-ac86-8c7231597880"
+      ],
+      "chunk_ids": [
+        "MCH-F00AE9B8C12B0C262DC8C83F61E4F7A5"
+      ],
+      "status": "INSUFFICIENT_EVIDENCE",
+      "case_status": "EVIDENCE_SPAN_VERIFIED",
+      "batch_01": false,
+      "sources": [
+        {
+          "old_source": {
+            "source_id": "MCH-F00AE9B8C12B0C262DC8C83F61E4F7A5",
+            "source_text": "细则要求建立互联网诊疗医疗质量、安全、药学服务和信息技术管理制度，并落实患者信息和电子病历管理。",
+            "start_offset": 51,
+            "end_offset": 99,
+            "source_hash": "ae5c957b6fa4638ccf67ddc5894ce83da64b7d2a5723a298d6e4e56aefcf93bb"
+          },
+          "source_lineage_verified": true,
+          "business_relevant_text_exists": true,
+          "correct_evidence_span_identified": true,
+          "old_span_valid": true,
+          "evidence_span_status": "EVIDENCE_SPAN_VERIFIED",
+          "reason": null,
+          "repaired_span": {
+            "source_id": "MCH-F00AE9B8C12B0C262DC8C83F61E4F7A5",
+            "start_offset": 51,
+            "end_offset": 99,
+            "source_hash": "ae5c957b6fa4638ccf67ddc5894ce83da64b7d2a5723a298d6e4e56aefcf93bb",
+            "source_text": "细则要求建立互联网诊疗医疗质量、安全、药学服务和信息技术管理制度，并落实患者信息和电子病历管理。",
+            "context_before": "来源机构：国家卫生健康委员会办公厅、国家中医药局办公室\n文号：无",
+            "context_after": null
+          }
+        }
+      ],
+      "case_still_valid": true
+    },
+    {
+      "case_id": "V2R-030-CORPUS-21",
+      "requirement": {
+        "requirement_id": "V2R-030-CORPUS-21",
+        "text": "企业应提供同类项目的实施及验收依据。",
+        "boundary_tags": [
+          "project_experience",
+          "status_unknown",
+          "responsibility_boundary"
+        ],
+        "difficulty": "HARD"
+      },
+      "material_ids": [
+        "50467edc-0a5e-458f-ba69-1bbf488a115a"
+      ],
+      "chunk_ids": [
+        "MCH-3FD884E9C86C84ADD445F70EC81FADD9"
+      ],
+      "status": "INSUFFICIENT_EVIDENCE",
+      "case_status": "EVIDENCE_SPAN_VERIFIED",
+      "batch_01": true,
+      "sources": [
+        {
+          "old_source": {
+            "source_id": "MCH-3FD884E9C86C84ADD445F70EC81FADD9",
+            "source_text": "项目：景云城市治理数据平台；范围：数据目录、交换任务、统一门户和运行监测；项目状态：已完成模拟案例；验收日期：2025-11-20。",
+            "start_offset": 302,
+            "end_offset": 368,
+            "source_hash": "f4f7b9db71c7a29583a29ba9b9bf499740066997570b2ec02e80c41b516e9719"
+          },
+          "source_lineage_verified": true,
+          "business_relevant_text_exists": true,
+          "correct_evidence_span_identified": true,
+          "old_span_valid": true,
+          "evidence_span_status": "EVIDENCE_SPAN_VERIFIED",
+          "reason": null,
+          "repaired_span": {
+            "source_id": "MCH-3FD884E9C86C84ADD445F70EC81FADD9",
+            "start_offset": 302,
+            "end_offset": 368,
+            "source_hash": "f4f7b9db71c7a29583a29ba9b9bf499740066997570b2ec02e80c41b516e9719",
+            "source_text": "项目：景云城市治理数据平台；范围：数据目录、交换任务、统一门户和运行监测；项目状态：已完成模拟案例；验收日期：2025-11-20。",
+            "context_before": "# 城市治理数据平台案例",
+            "context_after": null
+          }
+        }
+      ],
+      "case_still_valid": true
+    },
+    {
+      "case_id": "V2R-031-CORPUS-22",
+      "requirement": {
+        "requirement_id": "V2R-031-CORPUS-22",
+        "text": "企业应证明自身具备与该公开行业规范相符的实施能力。",
+        "boundary_tags": [
+          "industry_reference",
+          "enterprise_capability_boundary",
+          "scope_mismatch",
+          "third_party_boundary"
+        ],
+        "difficulty": "HARD"
+      },
+      "material_ids": [
+        "940965e1-aa0d-45a6-8c48-6997ea2af579"
+      ],
+      "chunk_ids": [
+        "MCH-AA06CCA0AAB70F8845956B5EC308200B"
+      ],
+      "status": "INSUFFICIENT_EVIDENCE",
+      "case_status": "EVIDENCE_SPAN_VERIFIED",
+      "batch_01": false,
+      "sources": [
+        {
+          "old_source": {
+            "source_id": "MCH-38EE2539CAD89F7618F2BDA4225F6A45",
+            "source_text": "# 全国一体化政务服务平台移动端建设指南",
+            "start_offset": 0,
+            "end_offset": 20,
+            "source_hash": "7384ff8328ef57ad067f22ec54a0ffaf855487fd3ed59e560d8bbe2facbed55a"
+          },
+          "source_lineage_verified": true,
+          "business_relevant_text_exists": true,
+          "correct_evidence_span_identified": true,
+          "old_span_valid": false,
+          "evidence_span_status": "EVIDENCE_SPAN_VERIFIED",
+          "reason": null,
+          "repaired_span": {
+            "source_id": "MCH-AA06CCA0AAB70F8845956B5EC308200B",
+            "start_offset": 52,
+            "end_offset": 96,
+            "source_hash": "00aa3b36f52592e25e8c4f264dc61c306cfe209e0c824e0c3136e1fb7a3b2968",
+            "source_text": "指南要求移动政务服务统一标准、统一管理、互联互通，并加强重要政务数据和敏感个人信息保护。",
+            "context_before": "来源机构：国务院办公厅\n文号：国办函〔2021〕105号",
+            "context_after": null
+          }
+        }
+      ],
+      "case_still_valid": true
+    },
+    {
+      "case_id": "V2R-032-CORPUS-23",
+      "requirement": {
+        "requirement_id": "V2R-032-CORPUS-23",
+        "text": "企业应证明自身具备与该公开行业规范相符的实施能力。",
+        "boundary_tags": [
+          "industry_reference",
+          "enterprise_capability_boundary",
+          "scope_mismatch"
+        ],
+        "difficulty": "HARD"
+      },
+      "material_ids": [
+        "ee0bdad1-d7f1-4964-be5f-f30bdab7da93"
+      ],
+      "chunk_ids": [
+        "MCH-570840910F18554A68173F2480DC2D5A"
+      ],
+      "status": "INSUFFICIENT_EVIDENCE",
+      "case_status": "EVIDENCE_SPAN_VERIFIED",
+      "batch_01": false,
+      "sources": [
+        {
+          "old_source": {
+            "source_id": "MCH-30EB8577EBEB9697F56A43EFD4309980",
+            "source_text": "# 互联网诊疗管理办法（试行）等三个文件",
+            "start_offset": 0,
+            "end_offset": 20,
+            "source_hash": "8d9a30d4ef7a877b513cfe18b0992ae0fc02e6da8b7c7f814123569758f90e80"
+          },
+          "source_lineage_verified": true,
+          "business_relevant_text_exists": true,
+          "correct_evidence_span_identified": true,
+          "old_span_valid": false,
+          "evidence_span_status": "EVIDENCE_SPAN_VERIFIED",
+          "reason": null,
+          "repaired_span": {
+            "source_id": "MCH-570840910F18554A68173F2480DC2D5A",
+            "start_offset": 64,
+            "end_offset": 108,
+            "source_hash": "6007609ba29c56961d068689e5ef85d3a485112edb1328b75bace4030615bd76",
+            "source_text": "三个文件规范互联网诊疗、互联网医院和远程医疗服务，强调医疗质量、医疗安全与服务准入管理。",
+            "context_before": "来源机构：国家卫生健康委员会、国家中医药管理局\n文号：国卫医发〔2018〕25号",
+            "context_after": null
+          }
+        }
+      ],
+      "case_still_valid": true
+    },
+    {
+      "case_id": "V2R-033-CORPUS-24",
+      "requirement": {
+        "requirement_id": "V2R-033-CORPUS-24",
+        "text": "企业应提供同类项目的实施及验收依据。",
+        "boundary_tags": [
+          "project_experience",
+          "status_unknown",
+          "responsibility_boundary"
+        ],
+        "difficulty": "HARD"
+      },
+      "material_ids": [
+        "e0d9548d-02f6-4eab-bceb-6a37e6f46d3d"
+      ],
+      "chunk_ids": [
+        "MCH-00AFC7A231D91C6A9FF01082FBFC0BDE"
+      ],
+      "status": "INSUFFICIENT_EVIDENCE",
+      "case_status": "EVIDENCE_SPAN_VERIFIED",
+      "batch_01": false,
+      "sources": [
+        {
+          "old_source": {
+            "source_id": "MCH-C64312B771B223BD65F4ED37C9F13EBC",
+            "source_text": "SYNTHETIC_TEST_MATERIAL=true\nNOT_REAL_CUSTOMER_DATA=true\nsubject: 杭州景云数科有限公司\nsource_type: synthetic_controlled\nsource_org: 杭州景云数科有限公司（虚构测试企业）\nlicense_or_usage_status: INTERNAL_TEST_ONLY\nmaterial_id: L3-ENT-005\nscope: enterprise\nindustry: 医疗行业\nmaterial_type: case\nreview_status: approved",
+            "start_offset": 0,
+            "end_offset": 286,
+            "source_hash": "a64f539ba6f7a75136fea6ce9e4c842858077d88eebf31c87b2e30bff4c4f29b"
+          },
+          "source_lineage_verified": true,
+          "business_relevant_text_exists": true,
+          "correct_evidence_span_identified": true,
+          "old_span_valid": false,
+          "evidence_span_status": "EVIDENCE_SPAN_VERIFIED",
+          "reason": null,
+          "repaired_span": {
+            "source_id": "MCH-00AFC7A231D91C6A9FF01082FBFC0BDE",
+            "start_offset": 307,
+            "end_offset": 386,
+            "source_hash": "d29c7d831c7eab2aac8a0acab1f8ffd8759d84d664ef995e3d051d201a841e9f",
+            "source_text": "项目：景云医院数据集成试点；内容：完成接口联调和数据目录梳理；只有中选通知，没有合同和验收记录；日期：2025-10（具体日不详）。相关但不足以证明正式验收。",
+            "context_before": "# 医院数据集成案例（材料不充分）",
+            "context_after": null
+          }
+        }
+      ],
+      "case_still_valid": true
+    },
+    {
+      "case_id": "V2R-034-CORPUS-25",
+      "requirement": {
+        "requirement_id": "V2R-034-CORPUS-25",
+        "text": "企业应证明自身具备与该公开行业规范相符的实施能力。",
+        "boundary_tags": [
+          "industry_reference",
+          "enterprise_capability_boundary",
+          "scope_mismatch"
+        ],
+        "difficulty": "HARD"
+      },
+      "material_ids": [
+        "940965e1-aa0d-45a6-8c48-6997ea2af579"
+      ],
+      "chunk_ids": [
+        "MCH-AA06CCA0AAB70F8845956B5EC308200B"
+      ],
+      "status": "INSUFFICIENT_EVIDENCE",
+      "case_status": "EVIDENCE_SPAN_VERIFIED",
+      "batch_01": false,
+      "sources": [
+        {
+          "old_source": {
+            "source_id": "MCH-E51E3BC7E1BB9BFCBEF703EB1E399F0C",
+            "source_text": "来源机构：国务院办公厅\n文号：国办函〔2021〕105号",
+            "start_offset": 22,
+            "end_offset": 50,
+            "source_hash": "c7c982370d0d61c4388b68664e106e5ce62a866fd935b557ca2add1d6d3cd0a7"
+          },
+          "source_lineage_verified": true,
+          "business_relevant_text_exists": true,
+          "correct_evidence_span_identified": true,
+          "old_span_valid": false,
+          "evidence_span_status": "EVIDENCE_SPAN_VERIFIED",
+          "reason": null,
+          "repaired_span": {
+            "source_id": "MCH-AA06CCA0AAB70F8845956B5EC308200B",
+            "start_offset": 52,
+            "end_offset": 96,
+            "source_hash": "00aa3b36f52592e25e8c4f264dc61c306cfe209e0c824e0c3136e1fb7a3b2968",
+            "source_text": "指南要求移动政务服务统一标准、统一管理、互联互通，并加强重要政务数据和敏感个人信息保护。",
+            "context_before": "来源机构：国务院办公厅\n文号：国办函〔2021〕105号",
+            "context_after": null
+          }
+        }
+      ],
+      "case_still_valid": true
+    },
+    {
+      "case_id": "V2R-035-CORPUS-26",
+      "requirement": {
+        "requirement_id": "V2R-035-CORPUS-26",
+        "text": "企业应证明自身具备与该公开行业规范相符的实施能力。",
+        "boundary_tags": [
+          "industry_reference",
+          "enterprise_capability_boundary",
+          "scope_mismatch"
+        ],
+        "difficulty": "HARD"
+      },
+      "material_ids": [
+        "ee0bdad1-d7f1-4964-be5f-f30bdab7da93"
+      ],
+      "chunk_ids": [
+        "MCH-570840910F18554A68173F2480DC2D5A"
+      ],
+      "status": "INSUFFICIENT_EVIDENCE",
+      "case_status": "EVIDENCE_SPAN_VERIFIED",
+      "batch_01": false,
+      "sources": [
+        {
+          "old_source": {
+            "source_id": "MCH-1CF9DA591A5EB66522691D232B78DEF8",
+            "source_text": "来源机构：国家卫生健康委员会、国家中医药管理局\n文号：国卫医发〔2018〕25号",
+            "start_offset": 22,
+            "end_offset": 62,
+            "source_hash": "bc7e66937f7123c12e109412310a620dd6f753c7181d74d6b7404ae1fe16472d"
+          },
+          "source_lineage_verified": true,
+          "business_relevant_text_exists": true,
+          "correct_evidence_span_identified": true,
+          "old_span_valid": false,
+          "evidence_span_status": "EVIDENCE_SPAN_VERIFIED",
+          "reason": null,
+          "repaired_span": {
+            "source_id": "MCH-570840910F18554A68173F2480DC2D5A",
+            "start_offset": 64,
+            "end_offset": 108,
+            "source_hash": "6007609ba29c56961d068689e5ef85d3a485112edb1328b75bace4030615bd76",
+            "source_text": "三个文件规范互联网诊疗、互联网医院和远程医疗服务，强调医疗质量、医疗安全与服务准入管理。",
+            "context_before": "来源机构：国家卫生健康委员会、国家中医药管理局\n文号：国卫医发〔2018〕25号",
+            "context_after": null
+          }
+        }
+      ],
+      "case_still_valid": true
+    },
+    {
+      "case_id": "V2R-036-CORPUS-27",
+      "requirement": {
+        "requirement_id": "V2R-036-CORPUS-27",
+        "text": "企业应提供同类项目的实施及验收依据。",
+        "boundary_tags": [
+          "project_experience",
+          "status_unknown",
+          "responsibility_boundary"
+        ],
+        "difficulty": "HARD"
+      },
+      "material_ids": [
+        "e0d9548d-02f6-4eab-bceb-6a37e6f46d3d"
+      ],
+      "chunk_ids": [
+        "MCH-00AFC7A231D91C6A9FF01082FBFC0BDE"
+      ],
+      "status": "INSUFFICIENT_EVIDENCE",
+      "case_status": "EVIDENCE_SPAN_VERIFIED",
+      "batch_01": false,
+      "sources": [
+        {
+          "old_source": {
+            "source_id": "MCH-8C9EAB0DF1050455D2CCAE2D4EE17DFE",
+            "source_text": "# 医院数据集成案例（材料不充分）",
+            "start_offset": 288,
+            "end_offset": 305,
+            "source_hash": "bd608480059bb7be24993d502fd83c531e91608296693be86765957a6397969b"
+          },
+          "source_lineage_verified": true,
+          "business_relevant_text_exists": true,
+          "correct_evidence_span_identified": true,
+          "old_span_valid": false,
+          "evidence_span_status": "EVIDENCE_SPAN_VERIFIED",
+          "reason": null,
+          "repaired_span": {
+            "source_id": "MCH-00AFC7A231D91C6A9FF01082FBFC0BDE",
+            "start_offset": 307,
+            "end_offset": 386,
+            "source_hash": "d29c7d831c7eab2aac8a0acab1f8ffd8759d84d664ef995e3d051d201a841e9f",
+            "source_text": "项目：景云医院数据集成试点；内容：完成接口联调和数据目录梳理；只有中选通知，没有合同和验收记录；日期：2025-10（具体日不详）。相关但不足以证明正式验收。",
+            "context_before": "# 医院数据集成案例（材料不充分）",
+            "context_after": null
+          }
+        }
+      ],
+      "case_still_valid": true
+    },
+    {
+      "case_id": "V2R-037-CORPUS-28",
+      "requirement": {
+        "requirement_id": "V2R-037-CORPUS-28",
+        "text": "企业应证明自身具备与该公开行业规范相符的实施能力。",
+        "boundary_tags": [
+          "industry_reference",
+          "enterprise_capability_boundary",
+          "scope_mismatch",
+          "freshness"
+        ],
+        "difficulty": "HARD"
+      },
+      "material_ids": [
+        "940965e1-aa0d-45a6-8c48-6997ea2af579"
+      ],
+      "chunk_ids": [
+        "MCH-AA06CCA0AAB70F8845956B5EC308200B"
+      ],
+      "status": "INSUFFICIENT_EVIDENCE",
+      "case_status": "EVIDENCE_SPAN_VERIFIED",
+      "batch_01": false,
+      "sources": [
+        {
+          "old_source": {
+            "source_id": "MCH-AA06CCA0AAB70F8845956B5EC308200B",
+            "source_text": "指南要求移动政务服务统一标准、统一管理、互联互通，并加强重要政务数据和敏感个人信息保护。",
+            "start_offset": 52,
+            "end_offset": 96,
+            "source_hash": "00aa3b36f52592e25e8c4f264dc61c306cfe209e0c824e0c3136e1fb7a3b2968"
+          },
+          "source_lineage_verified": true,
+          "business_relevant_text_exists": true,
+          "correct_evidence_span_identified": true,
+          "old_span_valid": true,
+          "evidence_span_status": "EVIDENCE_SPAN_VERIFIED",
+          "reason": null,
+          "repaired_span": {
+            "source_id": "MCH-AA06CCA0AAB70F8845956B5EC308200B",
+            "start_offset": 52,
+            "end_offset": 96,
+            "source_hash": "00aa3b36f52592e25e8c4f264dc61c306cfe209e0c824e0c3136e1fb7a3b2968",
+            "source_text": "指南要求移动政务服务统一标准、统一管理、互联互通，并加强重要政务数据和敏感个人信息保护。",
+            "context_before": "来源机构：国务院办公厅\n文号：国办函〔2021〕105号",
+            "context_after": null
+          }
+        }
+      ],
+      "case_still_valid": true
+    }
+  ]
+}

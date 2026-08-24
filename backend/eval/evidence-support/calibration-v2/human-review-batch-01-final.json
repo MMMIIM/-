@@ -1,0 +1,1092 @@
+{
+  "schema_version": "4.3-evidence-support-calibration-v2-human-review-batch-v2",
+  "batch_id": "CALIBRATION-V2-HUMAN-REVIEW-BATCH-01-FINAL",
+  "status": "READY_FOR_HUMAN_REVIEW",
+  "source_report": "semantic-reaudit-v2.json",
+  "source_candidate_count": 37,
+  "active_candidate_count": 36,
+  "rejected_count": 1,
+  "rejected_cases": [
+    {
+      "case_id": "V2R-009-ISO-CONFLICT",
+      "requirement": {
+        "requirement_id": "V2R-009-ISO-CONFLICT",
+        "text": "企业应说明当前 ISO/IEC 27001 证书的有效截止日期。",
+        "boundary_tags": [
+          "conflict",
+          "freshness",
+          "superseded",
+          "validity"
+        ],
+        "difficulty": "HARD"
+      },
+      "reason": "REJECT_FROM_CALIBRATION",
+      "rejection_code": "GOLD_DESIGN_INVALID",
+      "sources": [
+        {
+          "source_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
+          "source_span_id": "ESPAN-526EF0A7628E652EFFEED01024894E1A",
+          "material_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+          "document_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+          "chunk_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
+          "material_name": "qualification-iso27001.md",
+          "material_type": "qualification",
+          "corpus_scope": "ENTERPRISE_PRIVATE",
+          "project_id": "ac1a1037-5e62-44ee-8c28-7b09d48d93e6",
+          "project_name": "E2E-PRODUCTION-RETRIEVAL-V1 [data_classification=synthetic]",
+          "source_span_resolution": "DETERMINISTIC_EVIDENCE_CHUNK",
+          "source_text": "名称：ISO/IEC 27001\n编号：CM-Q-27001-2024\n状态：active\n有效至：2027-11-30",
+          "context_before": "# ISO 27001 受控记录",
+          "context_after": null,
+          "source_hash": "4aad371afadcb5d360f7461d405d06e706132aa072271064a297010ab458572f",
+          "start_offset": 110,
+          "end_offset": 170,
+          "source_lineage_verified": true,
+          "evidence_span_verified": true
+        },
+        {
+          "source_id": "MCH-04FA33611AFA0AED82194050ED8F63C8",
+          "source_span_id": "ESPAN-158E08FA33136AF6B08EB70ACEE77477",
+          "material_id": "b96691fb-e719-4312-8ec9-a9e8acf687c0",
+          "document_id": "b96691fb-e719-4312-8ec9-a9e8acf687c0",
+          "chunk_id": "MCH-04FA33611AFA0AED82194050ED8F63C8",
+          "material_name": "company-profile.md",
+          "material_type": "company_profile",
+          "corpus_scope": "ENTERPRISE_PRIVATE",
+          "project_id": "ac1a1037-5e62-44ee-8c28-7b09d48d93e6",
+          "project_name": "E2E-PRODUCTION-RETRIEVAL-V1 [data_classification=synthetic]",
+          "source_span_resolution": "DETERMINISTIC_EVIDENCE_CHUNK",
+          "source_text": "企业：澄明数科（示范）有限公司\n规模：100-300 人。\n业务范围：政企应用软件开发、数据交换与治理、系统集成、实施与运维服务。\n限制：本资料不构成项目承诺。",
+          "context_before": "# 企业能力简介",
+          "context_after": null,
+          "source_hash": "c6f1372438abc539ee0052c18a0764d0a9422c338822613e061e99db0db7ffa0",
+          "start_offset": 102,
+          "end_offset": 182,
+          "source_lineage_verified": true,
+          "evidence_span_verified": false
+        }
+      ],
+      "old_draft_status": "CONFLICTING_EVIDENCE",
+      "new_draft_status": null,
+      "old_semantics": [
+        {
+          "assessment_id": "ESA-1F7BD448BF3830FF0E46F241B9DCD782",
+          "semantic_relevance": "relevant",
+          "evidence_capability": "capable",
+          "support_level": "conflict",
+          "semantic_relationship": "conflict",
+          "review_dimensions": {
+            "subject_match": "unknown",
+            "scope_match": "unknown",
+            "status_match": "mismatch",
+            "quantitative_match": "unknown",
+            "entity_match": "unknown",
+            "validity_match": "mismatch",
+            "source_authority": "match",
+            "support_sufficiency": "mismatch"
+          },
+          "reason_codes": [
+            "VALIDITY_MISMATCH"
+          ],
+          "support_observations": [],
+          "conflict_observations": [
+            {
+              "source_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
+              "source_span_id": "ESPAN-526EF0A7628E652EFFEED01024894E1A",
+              "support_excerpt": "名称：ISO/IEC 27001\n编号：CM-Q-27001-2024\n状态：active\n有效至：2027-11-30",
+              "support_excerpt_hash": "4aad371afadcb5d360f7461d405d06e706132aa072271064a297010ab458572f",
+              "conflict_group_id": "ISO27001_EXPIRY",
+              "dimension": "validity.expiry_date",
+              "observed_value": "2027-11-30",
+              "reason_codes": [
+                "VALIDITY_MISMATCH"
+              ]
+            }
+          ]
+        },
+        {
+          "assessment_id": "ESA-2BC3EB1D7794739BFEBBF4976B74661F",
+          "semantic_relevance": "relevant",
+          "evidence_capability": "capable",
+          "support_level": "conflict",
+          "semantic_relationship": "conflict",
+          "review_dimensions": {
+            "subject_match": "unknown",
+            "scope_match": "unknown",
+            "status_match": "mismatch",
+            "quantitative_match": "unknown",
+            "entity_match": "unknown",
+            "validity_match": "mismatch",
+            "source_authority": "match",
+            "support_sufficiency": "mismatch"
+          },
+          "reason_codes": [
+            "VALIDITY_MISMATCH"
+          ],
+          "support_observations": [],
+          "conflict_observations": [
+            {
+              "source_id": "MCH-04FA33611AFA0AED82194050ED8F63C8",
+              "source_span_id": "ESPAN-158E08FA33136AF6B08EB70ACEE77477",
+              "support_excerpt": "企业：澄明数科（示范）有限公司\n规模：100-300 人。\n业务范围：政企应用软件开发、数据交换与治理、系统集成、实施与运维服务。\n限制：本资料不构成项目承诺。",
+              "support_excerpt_hash": "c6f1372438abc539ee0052c18a0764d0a9422c338822613e061e99db0db7ffa0",
+              "conflict_group_id": "ISO27001_EXPIRY",
+              "dimension": "validity.expiry_date",
+              "observed_value": "2028-12-31",
+              "reason_codes": [
+                "VALIDITY_MISMATCH"
+              ]
+            }
+          ]
+        }
+      ],
+      "new_semantics": [],
+      "expected_gold": "CONFLICTING_EVIDENCE",
+      "gold_provenance": "SYSTEM_DRAFT_UNREVIEWED"
+    }
+  ],
+  "case_count": 10,
+  "selected_case_ids": [
+    "V2R-001-PERF-DIRECT",
+    "V2R-003-COMP-DIRECT",
+    "V2R-005-ISO-DIRECT",
+    "V2R-002-PERF-PARTIAL",
+    "V2R-004-COMP-PARTIAL",
+    "V2R-006-ISO-SCOPE",
+    "V2R-015-CORPUS-06",
+    "V2R-008-NO-RELEVANT",
+    "V2R-021-CORPUS-12",
+    "V2R-030-CORPUS-21"
+  ],
+  "status_counts": {
+    "EVIDENCE_REVIEW_READY": 3,
+    "INSUFFICIENT_EVIDENCE": 6,
+    "NO_RELEVANT_EVIDENCE": 1,
+    "CONFLICTING_EVIDENCE": 0
+  },
+  "boundary_coverage": [
+    "direct/full support",
+    "quantitative adverse fact",
+    "multi-dimension partial",
+    "subject/scope insufficiency",
+    "industry reference != enterprise capability",
+    "true no-relevant",
+    "third-party boundary",
+    "project status boundary"
+  ],
+  "model_calls": 0,
+  "provider_calls": 0,
+  "embedding_calls": 0,
+  "automatic_human_approval": false,
+  "dataset_frozen": false,
+  "calibration_executed": false,
+  "manual_sample_gate_ready": true,
+  "conflict_case_missing": true,
+  "cases": [
+    {
+      "case_id": "V2R-001-PERF-DIRECT",
+      "sequence": 1,
+      "why_this_case_is_in_calibration": "测试明确业务性能记录是否能直接支持要求。",
+      "requirement": {
+        "requirement_id": "V2R-001-PERF-DIRECT",
+        "text": "企业应提供可核验的数据交换平台性能测试记录。",
+        "boundary_tags": [
+          "quantitative",
+          "direct_support"
+        ],
+        "difficulty": "EASY"
+      },
+      "sources": [
+        {
+          "source_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
+          "source_span_id": "ESPAN-556290DF829683393C94DC83256B7734",
+          "material_id": "3c81671f-376e-401b-8525-be26929d5b92",
+          "document_id": "3c81671f-376e-401b-8525-be26929d5b92",
+          "chunk_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
+          "material_name": "performance-report.md",
+          "material_type": "product_documentation",
+          "corpus_scope": "ENTERPRISE_PRIVATE",
+          "project_id": "ac1a1037-5e62-44ee-8c28-7b09d48d93e6",
+          "project_name": "E2E-PRODUCTION-RETRIEVAL-V1 [data_classification=synthetic]",
+          "source_span_resolution": "DETERMINISTIC_EVIDENCE_CHUNK",
+          "source_text": "产品：澄明数据交换平台 V3.2\n环境：8 vCPU、32 GB 内存、PostgreSQL 14、千兆局域网\n条件：50 并发、100 万条基准数据、缓存预热后执行 30 分钟\n指标：数据目录查询平均响应时间\n结果：平均 1.4 秒，P95 1.9 秒。\n日期：2025-05-16。",
+          "context_before": "# 数据交换平台性能测试记录",
+          "context_after": null,
+          "source_hash": "5a54f61d10c64f26414f8dcfb93f3c1eb25076f1063d97f8200f42cad981843c",
+          "start_offset": 108,
+          "end_offset": 251,
+          "source_lineage_verified": true,
+          "evidence_span_verified": true
+        }
+      ],
+      "system_draft": {
+        "provenance": "SYSTEM_DRAFT_REAUDITED",
+        "status": "EVIDENCE_REVIEW_READY",
+        "status_label": "可以进入证据审核",
+        "semantics": {
+          "semantic_relevance": "relevant",
+          "evidence_capability": "capable",
+          "support_level": "full_support",
+          "semantic_relationship": "direct",
+          "review_dimensions": {
+            "subject_match": "match",
+            "scope_match": "match",
+            "status_match": "match",
+            "quantitative_match": "match",
+            "entity_match": "match",
+            "validity_match": "unknown",
+            "source_authority": "match",
+            "support_sufficiency": "match"
+          },
+          "reason_codes": [],
+          "support_observations": [
+            {
+              "source_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
+              "source_span_id": "ESPAN-556290DF829683393C94DC83256B7734",
+              "support_excerpt": "产品：澄明数据交换平台 V3.2\n环境：8 vCPU、32 GB 内存、PostgreSQL 14、千兆局域网\n条件：50 并发、100 万条基准数据、缓存预热后执行 30 分钟\n指标：数据目录查询平均响应时间\n结果：平均 1.4 秒，P95 1.9 秒。\n日期：2025-05-16。",
+              "support_excerpt_hash": "5a54f61d10c64f26414f8dcfb93f3c1eb25076f1063d97f8200f42cad981843c",
+              "observation_type": "direct_support",
+              "reason_codes": []
+            }
+          ],
+          "conflict_observations": [],
+          "semantic_boundaries": [
+            "UNCHANGED"
+          ],
+          "audit_reason": [
+            "修复后的业务来源与原系统草稿语义一致。"
+          ]
+        },
+        "old_draft_status": "EVIDENCE_REVIEW_READY",
+        "expected_gold": "EVIDENCE_REVIEW_READY",
+        "gold_provenance": "SYSTEM_DRAFT_UNREVIEWED"
+      },
+      "review_decision": {
+        "reviewer_decision": null,
+        "reviewer_status_override": null,
+        "reviewer_semantic_override": null,
+        "reviewer_reason": null,
+        "reviewed_at": null
+      }
+    },
+    {
+      "case_id": "V2R-003-COMP-DIRECT",
+      "sequence": 2,
+      "why_this_case_is_in_calibration": "测试兼容性矩阵中的明确 tested 结果能否形成直接支持。",
+      "requirement": {
+        "requirement_id": "V2R-003-COMP-DIRECT",
+        "text": "企业应说明产品在 x86_64、Ubuntu 和 PostgreSQL 环境的兼容性。",
+        "boundary_tags": [
+          "technical",
+          "compatibility"
+        ],
+        "difficulty": "MEDIUM"
+      },
+      "sources": [
+        {
+          "source_id": "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0",
+          "source_span_id": "ESPAN-37AC823A6C7DD8506CA995B24C9D9766",
+          "material_id": "3f9dacfb-2e48-4796-a477-98c60b506831",
+          "document_id": "3f9dacfb-2e48-4796-a477-98c60b506831",
+          "chunk_id": "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0",
+          "material_name": "compatibility-matrix.md",
+          "material_type": "product_documentation",
+          "corpus_scope": "ENTERPRISE_PRIVATE",
+          "project_id": "ac1a1037-5e62-44ee-8c28-7b09d48d93e6",
+          "project_name": "E2E-PRODUCTION-RETRIEVAL-V1 [data_classification=synthetic]",
+          "source_span_resolution": "DETERMINISTIC_EVIDENCE_CHUNK",
+          "source_text": "x86_64 + Ubuntu 22.04 + PostgreSQL 14：tested\n鲲鹏 920 + 麒麟 V10 + 达梦 8：partially_tested（完成安装和基础交换用例，未完成压力测试）\n海光 + 统信 UOS + 人大金仓：not_verified\n国产数据库组合：unknown",
+          "context_before": "# 产品兼容性矩阵",
+          "context_after": null,
+          "source_hash": "623f699df461219e4f6ce813596a352300ed47692c630db6482a97cfc41d37d5",
+          "start_offset": 103,
+          "end_offset": 256,
+          "source_lineage_verified": true,
+          "evidence_span_verified": true
+        }
+      ],
+      "system_draft": {
+        "provenance": "SYSTEM_DRAFT_REAUDITED",
+        "status": "EVIDENCE_REVIEW_READY",
+        "status_label": "可以进入证据审核",
+        "semantics": {
+          "semantic_relevance": "relevant",
+          "evidence_capability": "capable",
+          "support_level": "full_support",
+          "semantic_relationship": "direct",
+          "review_dimensions": {
+            "subject_match": "match",
+            "scope_match": "match",
+            "status_match": "match",
+            "quantitative_match": "unknown",
+            "entity_match": "match",
+            "validity_match": "unknown",
+            "source_authority": "match",
+            "support_sufficiency": "match"
+          },
+          "reason_codes": [],
+          "support_observations": [
+            {
+              "source_id": "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0",
+              "source_span_id": "ESPAN-37AC823A6C7DD8506CA995B24C9D9766",
+              "support_excerpt": "x86_64 + Ubuntu 22.04 + PostgreSQL 14：tested\n鲲鹏 920 + 麒麟 V10 + 达梦 8：partially_tested（完成安装和基础交换用例，未完成压力测试）\n海光 + 统信 UOS + 人大金仓：not_verified\n国产数据库组合：unknown",
+              "support_excerpt_hash": "623f699df461219e4f6ce813596a352300ed47692c630db6482a97cfc41d37d5",
+              "observation_type": "direct_support",
+              "reason_codes": []
+            }
+          ],
+          "conflict_observations": [],
+          "semantic_boundaries": [
+            "UNCHANGED"
+          ],
+          "audit_reason": [
+            "修复后的业务来源与原系统草稿语义一致。"
+          ]
+        },
+        "old_draft_status": "EVIDENCE_REVIEW_READY",
+        "expected_gold": "EVIDENCE_REVIEW_READY",
+        "gold_provenance": "SYSTEM_DRAFT_UNREVIEWED"
+      },
+      "review_decision": {
+        "reviewer_decision": null,
+        "reviewer_status_override": null,
+        "reviewer_semantic_override": null,
+        "reviewer_reason": null,
+        "reviewed_at": null
+      }
+    },
+    {
+      "case_id": "V2R-005-ISO-DIRECT",
+      "sequence": 3,
+      "why_this_case_is_in_calibration": "测试资质名称、编号、状态和有效期是否构成完整证明。",
+      "requirement": {
+        "requirement_id": "V2R-005-ISO-DIRECT",
+        "text": "企业应提供当前有效的 ISO/IEC 27001 认证信息。",
+        "boundary_tags": [
+          "certification",
+          "validity"
+        ],
+        "difficulty": "EASY"
+      },
+      "sources": [
+        {
+          "source_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
+          "source_span_id": "ESPAN-526EF0A7628E652EFFEED01024894E1A",
+          "material_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+          "document_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+          "chunk_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
+          "material_name": "qualification-iso27001.md",
+          "material_type": "qualification",
+          "corpus_scope": "ENTERPRISE_PRIVATE",
+          "project_id": "ac1a1037-5e62-44ee-8c28-7b09d48d93e6",
+          "project_name": "E2E-PRODUCTION-RETRIEVAL-V1 [data_classification=synthetic]",
+          "source_span_resolution": "DETERMINISTIC_EVIDENCE_CHUNK",
+          "source_text": "名称：ISO/IEC 27001\n编号：CM-Q-27001-2024\n状态：active\n有效至：2027-11-30",
+          "context_before": "# ISO 27001 受控记录",
+          "context_after": null,
+          "source_hash": "4aad371afadcb5d360f7461d405d06e706132aa072271064a297010ab458572f",
+          "start_offset": 110,
+          "end_offset": 170,
+          "source_lineage_verified": true,
+          "evidence_span_verified": true
+        }
+      ],
+      "system_draft": {
+        "provenance": "SYSTEM_DRAFT_REAUDITED",
+        "status": "EVIDENCE_REVIEW_READY",
+        "status_label": "可以进入证据审核",
+        "semantics": {
+          "semantic_relevance": "relevant",
+          "evidence_capability": "capable",
+          "support_level": "full_support",
+          "semantic_relationship": "direct",
+          "review_dimensions": {
+            "subject_match": "match",
+            "scope_match": "match",
+            "status_match": "match",
+            "quantitative_match": "unknown",
+            "entity_match": "match",
+            "validity_match": "match",
+            "source_authority": "match",
+            "support_sufficiency": "match"
+          },
+          "reason_codes": [],
+          "support_observations": [
+            {
+              "source_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
+              "source_span_id": "ESPAN-526EF0A7628E652EFFEED01024894E1A",
+              "support_excerpt": "名称：ISO/IEC 27001\n编号：CM-Q-27001-2024\n状态：active\n有效至：2027-11-30",
+              "support_excerpt_hash": "4aad371afadcb5d360f7461d405d06e706132aa072271064a297010ab458572f",
+              "observation_type": "direct_support",
+              "reason_codes": []
+            }
+          ],
+          "conflict_observations": [],
+          "semantic_boundaries": [
+            "UNCHANGED"
+          ],
+          "audit_reason": [
+            "修复后的业务来源与原系统草稿语义一致。"
+          ]
+        },
+        "old_draft_status": "EVIDENCE_REVIEW_READY",
+        "expected_gold": "EVIDENCE_REVIEW_READY",
+        "gold_provenance": "SYSTEM_DRAFT_UNREVIEWED"
+      },
+      "review_decision": {
+        "reviewer_decision": null,
+        "reviewer_status_override": null,
+        "reviewer_semantic_override": null,
+        "reviewer_reason": null,
+        "reviewed_at": null
+      }
+    },
+    {
+      "case_id": "V2R-002-PERF-PARTIAL",
+      "sequence": 4,
+      "why_this_case_is_in_calibration": "测试系统能否区分“没有数值证据”和“有明确数值但不满足要求”。",
+      "requirement": {
+        "requirement_id": "V2R-002-PERF-PARTIAL",
+        "text": "企业应证明接口 P95 响应时间不超过 1 秒。",
+        "boundary_tags": [
+          "quantitative",
+          "exact_numeric_requirement",
+          "partial_support"
+        ],
+        "difficulty": "HARD"
+      },
+      "sources": [
+        {
+          "source_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
+          "source_span_id": "ESPAN-556290DF829683393C94DC83256B7734",
+          "material_id": "3c81671f-376e-401b-8525-be26929d5b92",
+          "document_id": "3c81671f-376e-401b-8525-be26929d5b92",
+          "chunk_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
+          "material_name": "performance-report.md",
+          "material_type": "product_documentation",
+          "corpus_scope": "ENTERPRISE_PRIVATE",
+          "project_id": "ac1a1037-5e62-44ee-8c28-7b09d48d93e6",
+          "project_name": "E2E-PRODUCTION-RETRIEVAL-V1 [data_classification=synthetic]",
+          "source_span_resolution": "DETERMINISTIC_EVIDENCE_CHUNK",
+          "source_text": "产品：澄明数据交换平台 V3.2\n环境：8 vCPU、32 GB 内存、PostgreSQL 14、千兆局域网\n条件：50 并发、100 万条基准数据、缓存预热后执行 30 分钟\n指标：数据目录查询平均响应时间\n结果：平均 1.4 秒，P95 1.9 秒。\n日期：2025-05-16。",
+          "context_before": "# 数据交换平台性能测试记录",
+          "context_after": null,
+          "source_hash": "5a54f61d10c64f26414f8dcfb93f3c1eb25076f1063d97f8200f42cad981843c",
+          "start_offset": 108,
+          "end_offset": 251,
+          "source_lineage_verified": true,
+          "evidence_span_verified": true
+        }
+      ],
+      "system_draft": {
+        "provenance": "SYSTEM_DRAFT_REAUDITED",
+        "status": "INSUFFICIENT_EVIDENCE",
+        "status_label": "证据不足",
+        "semantics": {
+          "semantic_relevance": "relevant",
+          "evidence_capability": "capable",
+          "support_level": "partial_support",
+          "semantic_relationship": "partial",
+          "review_dimensions": {
+            "subject_match": "match",
+            "scope_match": "unknown",
+            "status_match": "unknown",
+            "quantitative_match": "mismatch",
+            "entity_match": "unknown",
+            "validity_match": "unknown",
+            "source_authority": "match",
+            "support_sufficiency": "mismatch"
+          },
+          "reason_codes": [
+            "QUANTITATIVE_MISMATCH",
+            "SUPPORT_INSUFFICIENT"
+          ],
+          "support_observations": [
+            {
+              "source_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
+              "source_span_id": "ESPAN-556290DF829683393C94DC83256B7734",
+              "support_excerpt": "产品：澄明数据交换平台 V3.2\n环境：8 vCPU、32 GB 内存、PostgreSQL 14、千兆局域网\n条件：50 并发、100 万条基准数据、缓存预热后执行 30 分钟\n指标：数据目录查询平均响应时间\n结果：平均 1.4 秒，P95 1.9 秒。\n日期：2025-05-16。",
+              "support_excerpt_hash": "5a54f61d10c64f26414f8dcfb93f3c1eb25076f1063d97f8200f42cad981843c",
+              "observation_type": "partial_support",
+              "reason_codes": [
+                "QUANTITATIVE_MISMATCH",
+                "SUPPORT_INSUFFICIENT"
+              ]
+            }
+          ],
+          "conflict_observations": [],
+          "semantic_boundaries": [
+            "ADVERSE_FACT"
+          ],
+          "audit_reason": [
+            "实际 P95 1.9 秒高于要求上限 1 秒；属于明确不满足事实，不是缺少数值证据。"
+          ]
+        },
+        "old_draft_status": "INSUFFICIENT_EVIDENCE",
+        "expected_gold": "INSUFFICIENT_EVIDENCE",
+        "gold_provenance": "SYSTEM_DRAFT_UNREVIEWED"
+      },
+      "review_decision": {
+        "reviewer_decision": null,
+        "reviewer_status_override": null,
+        "reviewer_semantic_override": null,
+        "reviewer_reason": null,
+        "reviewed_at": null
+      }
+    },
+    {
+      "case_id": "V2R-004-COMP-PARTIAL",
+      "sequence": 5,
+      "why_this_case_is_in_calibration": "测试多环境、多状态兼容性要求是否被误判为全部满足。",
+      "requirement": {
+        "requirement_id": "V2R-004-COMP-PARTIAL",
+        "text": "企业应证明所有国产数据库组合均已完成压力测试。",
+        "boundary_tags": [
+          "technical",
+          "partial_multi_dimension",
+          "unknown"
+        ],
+        "difficulty": "HARD"
+      },
+      "sources": [
+        {
+          "source_id": "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0",
+          "source_span_id": "ESPAN-37AC823A6C7DD8506CA995B24C9D9766",
+          "material_id": "3f9dacfb-2e48-4796-a477-98c60b506831",
+          "document_id": "3f9dacfb-2e48-4796-a477-98c60b506831",
+          "chunk_id": "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0",
+          "material_name": "compatibility-matrix.md",
+          "material_type": "product_documentation",
+          "corpus_scope": "ENTERPRISE_PRIVATE",
+          "project_id": "ac1a1037-5e62-44ee-8c28-7b09d48d93e6",
+          "project_name": "E2E-PRODUCTION-RETRIEVAL-V1 [data_classification=synthetic]",
+          "source_span_resolution": "DETERMINISTIC_EVIDENCE_CHUNK",
+          "source_text": "x86_64 + Ubuntu 22.04 + PostgreSQL 14：tested\n鲲鹏 920 + 麒麟 V10 + 达梦 8：partially_tested（完成安装和基础交换用例，未完成压力测试）\n海光 + 统信 UOS + 人大金仓：not_verified\n国产数据库组合：unknown",
+          "context_before": "# 产品兼容性矩阵",
+          "context_after": null,
+          "source_hash": "623f699df461219e4f6ce813596a352300ed47692c630db6482a97cfc41d37d5",
+          "start_offset": 103,
+          "end_offset": 256,
+          "source_lineage_verified": true,
+          "evidence_span_verified": true
+        }
+      ],
+      "system_draft": {
+        "provenance": "SYSTEM_DRAFT_REAUDITED",
+        "status": "INSUFFICIENT_EVIDENCE",
+        "status_label": "证据不足",
+        "semantics": {
+          "semantic_relevance": "relevant",
+          "evidence_capability": "capable",
+          "support_level": "partial_support",
+          "semantic_relationship": "partial",
+          "review_dimensions": {
+            "subject_match": "match",
+            "scope_match": "unknown",
+            "status_match": "unknown",
+            "quantitative_match": "unknown",
+            "entity_match": "unknown",
+            "validity_match": "unknown",
+            "source_authority": "match",
+            "support_sufficiency": "mismatch"
+          },
+          "reason_codes": [
+            "SUPPORT_INSUFFICIENT"
+          ],
+          "support_observations": [
+            {
+              "source_id": "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0",
+              "source_span_id": "ESPAN-37AC823A6C7DD8506CA995B24C9D9766",
+              "support_excerpt": "x86_64 + Ubuntu 22.04 + PostgreSQL 14：tested\n鲲鹏 920 + 麒麟 V10 + 达梦 8：partially_tested（完成安装和基础交换用例，未完成压力测试）\n海光 + 统信 UOS + 人大金仓：not_verified\n国产数据库组合：unknown",
+              "support_excerpt_hash": "623f699df461219e4f6ce813596a352300ed47692c630db6482a97cfc41d37d5",
+              "observation_type": "partial_support",
+              "reason_codes": [
+                "SUPPORT_INSUFFICIENT"
+              ]
+            }
+          ],
+          "conflict_observations": [],
+          "semantic_boundaries": [
+            "UNCHANGED"
+          ],
+          "audit_reason": [
+            "修复后的业务来源与原系统草稿语义一致。"
+          ]
+        },
+        "old_draft_status": "INSUFFICIENT_EVIDENCE",
+        "expected_gold": "INSUFFICIENT_EVIDENCE",
+        "gold_provenance": "SYSTEM_DRAFT_UNREVIEWED"
+      },
+      "review_decision": {
+        "reviewer_decision": null,
+        "reviewer_status_override": null,
+        "reviewer_semantic_override": null,
+        "reviewer_reason": null,
+        "reviewed_at": null
+      }
+    },
+    {
+      "case_id": "V2R-006-ISO-SCOPE",
+      "sequence": 6,
+      "why_this_case_is_in_calibration": "测试相关证书存在但指定主体和项目范围没有被证明时的边界。",
+      "requirement": {
+        "requirement_id": "V2R-006-ISO-SCOPE",
+        "text": "企业应提供指定项目主体的 ISO/IEC 27001 证书。",
+        "boundary_tags": [
+          "wrong_entity",
+          "scope_mismatch",
+          "reference_only"
+        ],
+        "difficulty": "MEDIUM"
+      },
+      "sources": [
+        {
+          "source_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
+          "source_span_id": "ESPAN-526EF0A7628E652EFFEED01024894E1A",
+          "material_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+          "document_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+          "chunk_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
+          "material_name": "qualification-iso27001.md",
+          "material_type": "qualification",
+          "corpus_scope": "ENTERPRISE_PRIVATE",
+          "project_id": "ac1a1037-5e62-44ee-8c28-7b09d48d93e6",
+          "project_name": "E2E-PRODUCTION-RETRIEVAL-V1 [data_classification=synthetic]",
+          "source_span_resolution": "DETERMINISTIC_EVIDENCE_CHUNK",
+          "source_text": "名称：ISO/IEC 27001\n编号：CM-Q-27001-2024\n状态：active\n有效至：2027-11-30",
+          "context_before": "# ISO 27001 受控记录",
+          "context_after": null,
+          "source_hash": "4aad371afadcb5d360f7461d405d06e706132aa072271064a297010ab458572f",
+          "start_offset": 110,
+          "end_offset": 170,
+          "source_lineage_verified": true,
+          "evidence_span_verified": true
+        }
+      ],
+      "system_draft": {
+        "provenance": "SYSTEM_DRAFT_REAUDITED",
+        "status": "INSUFFICIENT_EVIDENCE",
+        "status_label": "证据不足",
+        "semantics": {
+          "semantic_relevance": "relevant",
+          "evidence_capability": "capable",
+          "support_level": "partial_support",
+          "semantic_relationship": "partial",
+          "review_dimensions": {
+            "subject_match": "mismatch",
+            "scope_match": "mismatch",
+            "status_match": "unknown",
+            "quantitative_match": "unknown",
+            "entity_match": "mismatch",
+            "validity_match": "unknown",
+            "source_authority": "match",
+            "support_sufficiency": "mismatch"
+          },
+          "reason_codes": [
+            "SUBJECT_MISMATCH",
+            "SCOPE_MISMATCH",
+            "ENTITY_MISMATCH",
+            "SUPPORT_INSUFFICIENT"
+          ],
+          "support_observations": [
+            {
+              "source_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
+              "source_span_id": "ESPAN-526EF0A7628E652EFFEED01024894E1A",
+              "support_excerpt": "名称：ISO/IEC 27001\n编号：CM-Q-27001-2024\n状态：active\n有效至：2027-11-30",
+              "support_excerpt_hash": "4aad371afadcb5d360f7461d405d06e706132aa072271064a297010ab458572f",
+              "observation_type": "partial_support",
+              "reason_codes": [
+                "SUBJECT_MISMATCH",
+                "SCOPE_MISMATCH",
+                "ENTITY_MISMATCH",
+                "SUPPORT_INSUFFICIENT"
+              ]
+            }
+          ],
+          "conflict_observations": [],
+          "semantic_boundaries": [
+            "SUBJECT_OR_SCOPE_UNPROVEN"
+          ],
+          "audit_reason": [
+            "来源确实包含 ISO 证书事实，但未证明指定项目主体，属于相关但主体/范围不足。"
+          ]
+        },
+        "old_draft_status": "NO_RELEVANT_EVIDENCE",
+        "expected_gold": "NO_RELEVANT_EVIDENCE",
+        "gold_provenance": "SYSTEM_DRAFT_UNREVIEWED"
+      },
+      "review_decision": {
+        "reviewer_decision": null,
+        "reviewer_status_override": null,
+        "reviewer_semantic_override": null,
+        "reviewer_reason": null,
+        "reviewed_at": null
+      }
+    },
+    {
+      "case_id": "V2R-015-CORPUS-06",
+      "sequence": 7,
+      "why_this_case_is_in_calibration": "测试行业公开规范与企业自身实施能力之间的边界。",
+      "requirement": {
+        "requirement_id": "V2R-015-CORPUS-06",
+        "text": "企业应证明自身具备与该公开行业规范相符的实施能力。",
+        "boundary_tags": [
+          "industry_reference",
+          "enterprise_capability_boundary",
+          "scope_mismatch",
+          "no_relevant"
+        ],
+        "difficulty": "EASY"
+      },
+      "sources": [
+        {
+          "source_id": "MCH-C327D3EAD9FC460F07059B7F11323BDB",
+          "source_span_id": "ESPAN-32F52CE708CC106C1D0717D41BD765FF",
+          "material_id": "eef2ae66-8259-4954-9a88-2e184411fcc5",
+          "document_id": "eef2ae66-8259-4954-9a88-2e184411fcc5",
+          "chunk_id": "MCH-C327D3EAD9FC460F07059B7F11323BDB",
+          "material_name": "“互联网+政务服务”技术体系建设指南（官方摘录）.md",
+          "material_type": "technical_whitepaper",
+          "corpus_scope": "GOVERNMENT_ENTERPRISE",
+          "project_id": "00000000-0000-4000-8000-000000000001",
+          "project_name": "平台公共知识库（官方公开资料）",
+          "source_span_resolution": "DETERMINISTIC_EVIDENCE_CHUNK",
+          "source_text": "指南提出统一政务服务信息资源目录、交换体系和平台支撑，推动跨部门数据共享与服务协同。",
+          "context_before": "来源机构：国务院办公厅\n文号：国办函〔2016〕108号",
+          "context_after": null,
+          "source_hash": "7901c5a404c3264e22746c754bb1caa28e57aa6bee2a0a56a59739e63293e924",
+          "start_offset": 52,
+          "end_offset": 94,
+          "source_lineage_verified": true,
+          "evidence_span_verified": true
+        }
+      ],
+      "system_draft": {
+        "provenance": "SYSTEM_DRAFT_REAUDITED",
+        "status": "INSUFFICIENT_EVIDENCE",
+        "status_label": "证据不足",
+        "semantics": {
+          "semantic_relevance": "relevant",
+          "evidence_capability": "not_capable",
+          "support_level": "insufficient",
+          "semantic_relationship": "related",
+          "review_dimensions": {
+            "subject_match": "mismatch",
+            "scope_match": "mismatch",
+            "status_match": "unknown",
+            "quantitative_match": "unknown",
+            "entity_match": "mismatch",
+            "validity_match": "unknown",
+            "source_authority": "mismatch",
+            "support_sufficiency": "mismatch"
+          },
+          "reason_codes": [
+            "SOURCE_NOT_EVIDENCE_CAPABLE",
+            "SUPPORT_INSUFFICIENT"
+          ],
+          "support_observations": [
+            {
+              "source_id": "MCH-C327D3EAD9FC460F07059B7F11323BDB",
+              "source_span_id": "ESPAN-32F52CE708CC106C1D0717D41BD765FF",
+              "support_excerpt": "指南提出统一政务服务信息资源目录、交换体系和平台支撑，推动跨部门数据共享与服务协同。",
+              "support_excerpt_hash": "7901c5a404c3264e22746c754bb1caa28e57aa6bee2a0a56a59739e63293e924",
+              "observation_type": "context",
+              "reason_codes": [
+                "SOURCE_NOT_EVIDENCE_CAPABLE",
+                "SUPPORT_INSUFFICIENT"
+              ]
+            }
+          ],
+          "conflict_observations": [],
+          "semantic_boundaries": [
+            "INDUSTRY_REFERENCE_NOT_ENTERPRISE_CAPABILITY"
+          ],
+          "audit_reason": [
+            "行业规范与需求语义相关，但不能证明企业自身已具备相应实施能力。"
+          ]
+        },
+        "old_draft_status": "NO_RELEVANT_EVIDENCE",
+        "expected_gold": "NO_RELEVANT_EVIDENCE",
+        "gold_provenance": "SYSTEM_DRAFT_UNREVIEWED"
+      },
+      "review_decision": {
+        "reviewer_decision": null,
+        "reviewer_status_override": null,
+        "reviewer_semantic_override": null,
+        "reviewer_reason": null,
+        "reviewed_at": null
+      }
+    },
+    {
+      "case_id": "V2R-008-NO-RELEVANT",
+      "sequence": 8,
+      "why_this_case_is_in_calibration": "测试相近资质资料是否会被误当成第三方防火墙检测报告。",
+      "requirement": {
+        "requirement_id": "V2R-008-NO-RELEVANT",
+        "text": "企业应提供第三方防火墙权威检测报告扫描件。",
+        "boundary_tags": [
+          "no_relevant",
+          "third_party_boundary"
+        ],
+        "difficulty": "EASY"
+      },
+      "sources": [
+        {
+          "source_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
+          "source_span_id": "ESPAN-526EF0A7628E652EFFEED01024894E1A",
+          "material_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+          "document_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+          "chunk_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
+          "material_name": "qualification-iso27001.md",
+          "material_type": "qualification",
+          "corpus_scope": "ENTERPRISE_PRIVATE",
+          "project_id": "ac1a1037-5e62-44ee-8c28-7b09d48d93e6",
+          "project_name": "E2E-PRODUCTION-RETRIEVAL-V1 [data_classification=synthetic]",
+          "source_span_resolution": "DETERMINISTIC_EVIDENCE_CHUNK",
+          "source_text": "名称：ISO/IEC 27001\n编号：CM-Q-27001-2024\n状态：active\n有效至：2027-11-30",
+          "context_before": "# ISO 27001 受控记录",
+          "context_after": null,
+          "source_hash": "4aad371afadcb5d360f7461d405d06e706132aa072271064a297010ab458572f",
+          "start_offset": 110,
+          "end_offset": 170,
+          "source_lineage_verified": true,
+          "evidence_span_verified": true
+        }
+      ],
+      "system_draft": {
+        "provenance": "SYSTEM_DRAFT_REAUDITED",
+        "status": "NO_RELEVANT_EVIDENCE",
+        "status_label": "没有相关证据",
+        "semantics": {
+          "semantic_relevance": "irrelevant",
+          "evidence_capability": "not_capable",
+          "support_level": "insufficient",
+          "semantic_relationship": "unrelated",
+          "review_dimensions": {
+            "subject_match": "mismatch",
+            "scope_match": "mismatch",
+            "status_match": "unknown",
+            "quantitative_match": "unknown",
+            "entity_match": "mismatch",
+            "validity_match": "unknown",
+            "source_authority": "mismatch",
+            "support_sufficiency": "mismatch"
+          },
+          "reason_codes": [
+            "SEMANTICALLY_IRRELEVANT",
+            "SOURCE_NOT_EVIDENCE_CAPABLE"
+          ],
+          "support_observations": [
+            {
+              "source_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
+              "source_span_id": "ESPAN-526EF0A7628E652EFFEED01024894E1A",
+              "support_excerpt": "名称：ISO/IEC 27001\n编号：CM-Q-27001-2024\n状态：active\n有效至：2027-11-30",
+              "support_excerpt_hash": "4aad371afadcb5d360f7461d405d06e706132aa072271064a297010ab458572f",
+              "observation_type": "context",
+              "reason_codes": [
+                "SEMANTICALLY_IRRELEVANT"
+              ]
+            }
+          ],
+          "conflict_observations": [],
+          "semantic_boundaries": [
+            "UNCHANGED"
+          ],
+          "audit_reason": [
+            "修复后的业务来源与原系统草稿语义一致。"
+          ]
+        },
+        "old_draft_status": "NO_RELEVANT_EVIDENCE",
+        "expected_gold": "NO_RELEVANT_EVIDENCE",
+        "gold_provenance": "SYSTEM_DRAFT_UNREVIEWED"
+      },
+      "review_decision": {
+        "reviewer_decision": null,
+        "reviewer_status_override": null,
+        "reviewer_semantic_override": null,
+        "reviewer_reason": null,
+        "reviewed_at": null
+      }
+    },
+    {
+      "case_id": "V2R-021-CORPUS-12",
+      "sequence": 9,
+      "why_this_case_is_in_calibration": "测试第三方组件依赖能否被错误表述为企业自有能力。",
+      "requirement": {
+        "requirement_id": "V2R-021-CORPUS-12",
+        "text": "企业应提供与本项目范围相关的可核验材料。",
+        "boundary_tags": [
+          "scope_mismatch",
+          "multiple_weak_evidence"
+        ],
+        "difficulty": "MEDIUM"
+      },
+      "sources": [
+        {
+          "source_id": "MCH-A4211A94C5C7A077F478D979A3ADF86E",
+          "source_span_id": "ESPAN-403BC1522544E742C897D863B1EB8955",
+          "material_id": "9876da6b-40c1-4f2d-b47b-290c7c150f4e",
+          "document_id": "9876da6b-40c1-4f2d-b47b-290c7c150f4e",
+          "chunk_id": "MCH-A4211A94C5C7A077F478D979A3ADF86E",
+          "material_name": "authorization-partner.md",
+          "material_type": "other",
+          "corpus_scope": "ENTERPRISE_PRIVATE",
+          "project_id": "518c6772-b200-4b7b-9d45-059297714516",
+          "project_name": "STAGE20-L3-SYNTHETIC-ENTERPRISE [NOT_REAL_CUSTOMER_DATA]",
+          "source_span_resolution": "DETERMINISTIC_EVIDENCE_CHUNK",
+          "source_text": "平台可集成某开源数据库和消息组件；部署、许可和技术支持依赖第三方，企业不将第三方能力表述为自有产品能力。",
+          "context_before": "# 第三方产品授权说明",
+          "context_after": null,
+          "source_hash": "33d664614db3cd87de0f1c1c95b33111a5999792791f3938fb4650fbdd20df05",
+          "start_offset": 310,
+          "end_offset": 362,
+          "source_lineage_verified": true,
+          "evidence_span_verified": true
+        }
+      ],
+      "system_draft": {
+        "provenance": "SYSTEM_DRAFT_REAUDITED",
+        "status": "INSUFFICIENT_EVIDENCE",
+        "status_label": "证据不足",
+        "semantics": {
+          "semantic_relevance": "relevant",
+          "evidence_capability": "capable",
+          "support_level": "partial_support",
+          "semantic_relationship": "partial",
+          "review_dimensions": {
+            "subject_match": "match",
+            "scope_match": "unknown",
+            "status_match": "unknown",
+            "quantitative_match": "unknown",
+            "entity_match": "unknown",
+            "validity_match": "unknown",
+            "source_authority": "match",
+            "support_sufficiency": "mismatch"
+          },
+          "reason_codes": [
+            "SUPPORT_INSUFFICIENT"
+          ],
+          "support_observations": [
+            {
+              "source_id": "MCH-A4211A94C5C7A077F478D979A3ADF86E",
+              "source_span_id": "ESPAN-403BC1522544E742C897D863B1EB8955",
+              "support_excerpt": "平台可集成某开源数据库和消息组件；部署、许可和技术支持依赖第三方，企业不将第三方能力表述为自有产品能力。",
+              "support_excerpt_hash": "33d664614db3cd87de0f1c1c95b33111a5999792791f3938fb4650fbdd20df05",
+              "observation_type": "partial_support",
+              "reason_codes": [
+                "SUPPORT_INSUFFICIENT"
+              ]
+            }
+          ],
+          "conflict_observations": [],
+          "semantic_boundaries": [
+            "UNCHANGED"
+          ],
+          "audit_reason": [
+            "修复后的业务来源与原系统草稿语义一致。"
+          ]
+        },
+        "old_draft_status": "INSUFFICIENT_EVIDENCE",
+        "expected_gold": "INSUFFICIENT_EVIDENCE",
+        "gold_provenance": "SYSTEM_DRAFT_UNREVIEWED"
+      },
+      "review_decision": {
+        "reviewer_decision": null,
+        "reviewer_status_override": null,
+        "reviewer_semantic_override": null,
+        "reviewer_reason": null,
+        "reviewed_at": null
+      }
+    },
+    {
+      "case_id": "V2R-030-CORPUS-21",
+      "sequence": 10,
+      "why_this_case_is_in_calibration": "测试项目案例存在但验收或项目状态不足时的保守判断。",
+      "requirement": {
+        "requirement_id": "V2R-030-CORPUS-21",
+        "text": "企业应提供同类项目的实施及验收依据。",
+        "boundary_tags": [
+          "project_experience",
+          "status_unknown",
+          "responsibility_boundary"
+        ],
+        "difficulty": "HARD"
+      },
+      "sources": [
+        {
+          "source_id": "MCH-3FD884E9C86C84ADD445F70EC81FADD9",
+          "source_span_id": "ESPAN-A9329BA2AE8E03755951632A45574198",
+          "material_id": "50467edc-0a5e-458f-ba69-1bbf488a115a",
+          "document_id": "50467edc-0a5e-458f-ba69-1bbf488a115a",
+          "chunk_id": "MCH-3FD884E9C86C84ADD445F70EC81FADD9",
+          "material_name": "case-city-governance.md",
+          "material_type": "project_case",
+          "corpus_scope": "ENTERPRISE_PRIVATE",
+          "project_id": "518c6772-b200-4b7b-9d45-059297714516",
+          "project_name": "STAGE20-L3-SYNTHETIC-ENTERPRISE [NOT_REAL_CUSTOMER_DATA]",
+          "source_span_resolution": "DETERMINISTIC_EVIDENCE_CHUNK",
+          "source_text": "项目：景云城市治理数据平台；范围：数据目录、交换任务、统一门户和运行监测；项目状态：已完成模拟案例；验收日期：2025-11-20。",
+          "context_before": "# 城市治理数据平台案例",
+          "context_after": null,
+          "source_hash": "f4f7b9db71c7a29583a29ba9b9bf499740066997570b2ec02e80c41b516e9719",
+          "start_offset": 302,
+          "end_offset": 368,
+          "source_lineage_verified": true,
+          "evidence_span_verified": true
+        }
+      ],
+      "system_draft": {
+        "provenance": "SYSTEM_DRAFT_REAUDITED",
+        "status": "INSUFFICIENT_EVIDENCE",
+        "status_label": "证据不足",
+        "semantics": {
+          "semantic_relevance": "relevant",
+          "evidence_capability": "capable",
+          "support_level": "partial_support",
+          "semantic_relationship": "partial",
+          "review_dimensions": {
+            "subject_match": "match",
+            "scope_match": "unknown",
+            "status_match": "unknown",
+            "quantitative_match": "unknown",
+            "entity_match": "unknown",
+            "validity_match": "unknown",
+            "source_authority": "match",
+            "support_sufficiency": "mismatch"
+          },
+          "reason_codes": [
+            "SUPPORT_INSUFFICIENT"
+          ],
+          "support_observations": [
+            {
+              "source_id": "MCH-3FD884E9C86C84ADD445F70EC81FADD9",
+              "source_span_id": "ESPAN-A9329BA2AE8E03755951632A45574198",
+              "support_excerpt": "项目：景云城市治理数据平台；范围：数据目录、交换任务、统一门户和运行监测；项目状态：已完成模拟案例；验收日期：2025-11-20。",
+              "support_excerpt_hash": "f4f7b9db71c7a29583a29ba9b9bf499740066997570b2ec02e80c41b516e9719",
+              "observation_type": "partial_support",
+              "reason_codes": [
+                "SUPPORT_INSUFFICIENT"
+              ]
+            }
+          ],
+          "conflict_observations": [],
+          "semantic_boundaries": [
+            "UNCHANGED"
+          ],
+          "audit_reason": [
+            "修复后的业务来源与原系统草稿语义一致。"
+          ]
+        },
+        "old_draft_status": "INSUFFICIENT_EVIDENCE",
+        "expected_gold": "INSUFFICIENT_EVIDENCE",
+        "gold_provenance": "SYSTEM_DRAFT_UNREVIEWED"
+      },
+      "review_decision": {
+        "reviewer_decision": null,
+        "reviewer_status_override": null,
+        "reviewer_semantic_override": null,
+        "reviewer_reason": null,
+        "reviewed_at": null
+      }
+    }
+  ]
+}

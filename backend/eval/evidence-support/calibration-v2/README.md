@@ -35,6 +35,35 @@ legacy `backend/eval/sufficiency/live-calibration-set.js` fixture.
 - `audit-remediated.js` / `remediation-audit-v2.json`: deterministic remediation
   audit and aggregation consistency report.
 - `review-packet-v2-remediated.md`: expanded human review packet.
+- `build-human-review-batch-01.js`: deterministic selection of the first ten
+  human-review cases; it does not alter the candidate pool or write Gold.
+- `human-review-batch-01.md` / `human-review-batch-01.json`: business-readable
+  Batch 1 packet and its empty review-decision structure.
+- `human-review-decision-schema-v1.json`: schema for later human decisions;
+  all decision fields are null until a reviewer responds.
+- `repair-evidence-spans-v2.js`: read-only deterministic forensic and repair
+  pass. It separates `SOURCE_LINEAGE_VERIFIED` from
+  `EVIDENCE_SPAN_VERIFIED` and never mutates the database.
+- `evidence-span-forensics-v2.json`: root-cause, 37-case and Batch 1 span
+  metrics. The original conflict draft is marked `GOLD_DESIGN_INVALID` because
+  the second source has no expiry fact.
+- `candidate-pool-v2-evidence-span-repaired.json`: repaired transient spans;
+  the original candidate pool and draft status remain preserved.
+- `human-review-batch-01-v2.md` / `.json`: repaired packet. It remains blocked
+  until every selected case has a verified evidence span.
+- `semantic-reaudit-v2.js`: read-only semantic re-audit over the repaired spans;
+  it recomputes the formal aggregation, rejects invalid conflict Gold, and
+  distinguishes adverse numeric facts, subject/scope insufficiency and
+  industry-reference capability boundaries without changing Gold.
+- `semantic-reaudit-v2.json`: machine-readable 37-case re-audit report.
+- `semantic-reaudit-v2-samples.md`: three directly readable representative
+  cases required by the manual sample gate.
+- `build-human-review-batch-01-final.js`: builds the approved ten-case human
+  review packet from the re-audited 36 active cases; it excludes V2R-009 and
+  keeps every reviewer decision field null.
+- `human-review-batch-01-final.md` / `.json`: directly readable Batch 1 packet
+  with `WHY_THIS_CASE_IS_IN_CALIBRATION`, full repaired Evidence text and
+  explicit APPROVE/CHANGE/REJECT choices.
 
 Run:
 
@@ -43,8 +72,28 @@ npm run audit:evidence-support-v2 -w backend
 npm run reconcile:evidence-support-v2-lineage -w backend
 npm run audit:evidence-support-v2-remediation -w backend
 npm run build:evidence-support-v2-remediation-review -w backend
+npm run build:evidence-support-v2-human-batch-01 -w backend
+npm run forensics:evidence-support-v2-spans -w backend
+npm run build:evidence-support-v2-human-batch-01-v2 -w backend
+npm run audit:evidence-support-v2-semantics -w backend
+npm run build:evidence-support-v2-human-batch-01-final -w backend
 ```
 
 The reconciliation command performs read-only SQL and deterministic local
 Source Span resolution. No model, Provider, Dify, embedding or Retrieval call
-is made, and no production database mutation is performed.
+is made, and no production database mutation is performed. Batch 1 generation
+is also offline-only; it preserves exact source excerpts and remains
+`SYSTEM_DRAFT_UNREVIEWED`.
+
+The semantic re-audit is offline-only. It uses the repaired formal source
+spans and `aggregateEvidenceSufficiency()`; it never calls a model, Provider,
+Embedding or Gateway, and it does not modify the candidate pool, Gold or
+production state. `V2R-009-ISO-CONFLICT` is excluded when the second source
+does not contain a same-dimension observed value.
+
+The final Batch 1 packet is a Gold quality gate only. It is not a frozen
+dataset and must not be treated as completed calibration until a human
+reviewer explicitly records decisions.
+
+The repaired packet is intentionally not reviewable while its forensic report
+is `HUMAN_REVIEW_BLOCKED_BY_EVIDENCE_SPAN_QUALITY`.
