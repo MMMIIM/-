@@ -24,12 +24,12 @@ Authoritative detail: `ARCHITECTURE.md`, `docs/CURRENT_STAGE.md`, `docs/ROADMAP.
 
 - Stages 13–16, 18–19: PASS / FROZEN, including Word foundation and deterministic Agent safety.
 - Stage 17: REOPENED_FOR_P0_FIX + METRIC_REBASE_REQUIRED; retrieval architecture
-  semantics remain frozen while candidate hygiene is reviewed.
+  semantics remain frozen while candidate/source hygiene is reviewed.
 
 ## Current stage
 
 Stage 20 — P0 Real Evidence Retrieval Revalidation: **PARTIAL / BLOCKED — PENDING
-SUBSTANTIVE HYGIENE GPT REVIEW**.
+SOURCE ELIGIBILITY GPT REVIEW**.
 Stage 21-A Runtime Connectivity Foundation remains **PASS / FROZEN**. One managed
 SSH session provides the gateway forward and SOCKS egress; Gateway, SOCKS HTTPS,
 Embedding smoke, readiness, and monitor recovery passed. Stage20-S shared Evidence Support
@@ -82,6 +82,15 @@ cutover decision.
   eligible; ISO9001 remains topic-only. Packet:
   `GPT_REVIEW_PACKET_SUBSTANTIVE_HYGIENE_OFFLINE.md/.json`; GPT review remains
   pending and `EVAL_COMPLETE=NO`.
+- Phase-2B source eligibility replay uses all 120 captured raw occurrences:
+  56 eligible, 64 ineligible, 21 derived artifacts, 22 internal-process
+  artifacts, 21 low-specificity claims, 0 unknown. POST_V3 Top5 leakage for
+  metadata, non-substantive, non-evidence-source, derived, internal-process,
+  and low-specificity candidates is 0; decision-bearing Hit@5 is 100% and all
+  six confirmed false positives are excluded. ISO9001 is source-eligible but
+  topic-only; V2R-006 remains source-eligible. Packet:
+  `GPT_REVIEW_PACKET_EVIDENCE_SOURCE_ELIGIBILITY_OFFLINE.md/.json`;
+  `GPT_REVIEW_STATUS=PENDING_REVIEW`, `EVAL_COMPLETE=NO`.
 - Full case-level packet: all 12 cases persisted in `backend/eval/evidence-support/calibration-v2/GPT_REVIEW_PACKET.md` and `.json`; `GPT_REVIEW_STATUS=PENDING_REVIEW`, `EVAL_COMPLETE=NO`.
 - Gold qualification packet: `GPT_REVIEW_PACKET_GOLD_QUALIFICATION.md` and `.json` contain all 12 independent A–I checks; 7 `GOLD_READY_FOR_RETRIEVAL`, 5 `GOLD_PARTIAL`, current index verified 9/12.
 - Context recovery audit: 158 dimensions total (93 required, 65 not applicable),
@@ -89,12 +98,13 @@ cutover decision.
 
 ## Active blocker and next step
 
-The P0 context/retrieval audit and two-phase candidate-hygiene implementation
-preserve Retrieval ranking semantics and formal contracts. Phase-1 removes
-explicit heading/metadata pollution; Phase-2 deterministically rejects
-non-substantive fragments while retaining legitimate topic-only business text.
-The next step is GPT review of
-`GPT_REVIEW_PACKET_SUBSTANTIVE_HYGIENE_OFFLINE.md/.json`. Do not infer Gold
+The P0 context/retrieval audit and two-phase candidate/source-hygiene
+implementation preserve Retrieval ranking semantics and formal contracts.
+Phase-1 removes explicit heading/metadata pollution; Phase-2A rejects
+non-substantive fragments; Phase-2B rejects ineligible or non-auditable source
+provenance while retaining raw audit/context candidates. The next step is GPT
+review of
+`GPT_REVIEW_PACKET_EVIDENCE_SOURCE_ELIGIBILITY_OFFLINE.md/.json`. Do not infer Gold
 from runtime heuristics or nearest Requirements, and do not change ranking,
 chunking, topK, MMR, Provider, or retry architecture.
 

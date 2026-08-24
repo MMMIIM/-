@@ -37,6 +37,7 @@
     "audit:retrieval-eval-integrity": "node eval/evidence-support/calibration-v2/audit-retrieval-eval-integrity.js",
     "eval:retrieval-hygiene-live": "node eval/evidence-support/calibration-v2/run-retrieval-hygiene-live.js",
     "eval:retrieval-hygiene-offline": "node eval/evidence-support/calibration-v2/replay-retrieval-substantive-hygiene.js",
+    "eval:retrieval-source-eligibility-offline": "node eval/evidence-support/calibration-v2/replay-retrieval-source-eligibility.js",
     "eval:evidence-bearing-gold-live": "node eval/evidence-support/calibration-v2/run-targeted-gold-live-retrieval.js",
     "build:evidence-support-v2-human-batch-01-final": "node eval/evidence-support/calibration-v2/build-human-review-batch-01-final.js",
     "eval:sufficiency-live": "node eval/sufficiency/live-validation.js",

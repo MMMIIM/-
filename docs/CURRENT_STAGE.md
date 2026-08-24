@@ -218,6 +218,36 @@ The packet is `GPT_REVIEW_PACKET_SUBSTANTIVE_HYGIENE_OFFLINE.md/.json` with
 `GPT_REVIEW_STATUS=PENDING_REVIEW` and `EVAL_COMPLETE=NO`. No new Embedding,
 LLM or Dify call was made in Phase-2.
 
+### P0 Evidence source eligibility / anti-laundering gate (2026-08-24)
+
+Phase 2B is implemented as a deterministic source-eligibility gate after
+structural and substantive hygiene and before formal Evidence TopK. The gate
+classifies provenance into original business/technical/project/qualification
+facts or authoritative references, and excludes internal process, system/eval/
+control-plane artifacts and non-auditable claims. `UNKNOWN` remains excluded;
+low-specificity claims are retained in audit metadata and never auto-promoted.
+Raw candidates remain available for audit/context recovery, while only source
+eligible candidates can enter the formal evidence lane. Excluded rows are
+persisted with their raw rank and an audit-only rank; they cannot become formal
+Evidence, Fact, Mapping, Claim or Writer input.
+
+The offline POST_V3 packet is
+`backend/eval/evidence-support/calibration-v2/GPT_REVIEW_PACKET_EVIDENCE_SOURCE_ELIGIBILITY_OFFLINE.md/.json`.
+It replays all 120 captured candidate occurrences with independent reviewed
+expectations: 56 source-eligible, 64 ineligible, 21 derived artifacts, 22
+internal-process artifacts, 21 low-specificity claims, and 0 unknown. POST_V3
+has zero metadata, non-substantive, non-evidence-source, derived-artifact,
+internal-process, and low-specificity leakage at Top5; decision-bearing Hit@5
+remains 100%, and all six confirmed false positives are excluded. ISO9001 is
+source-eligible but remains topic-only; V2R-006 remains source-eligible at the
+scope boundary. `GPT_REVIEW_STATUS=PENDING_REVIEW`, `EVAL_COMPLETE=NO`; no
+Embedding, LLM, Dify, retry, or production lifecycle call was made.
+
+Stage17 remains **REOPENED_FOR_P0_FIX + METRIC_REBASE_REQUIRED + PENDING_GPT_REVIEW**;
+Stage20 remains **PARTIAL / BLOCKED** pending review of the source-eligibility
+packet and later formal evidence validation. Do not change ranking, chunking,
+topK, MMR, Provider, or retry architecture.
+
 ### Standalone Semantic Gateway foundation (2026-08-24)
 
 本地已实现独立无状态 Node Gateway：`services/semantic-gateway`。共享语义
