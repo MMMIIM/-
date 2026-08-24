@@ -1,8 +1,8 @@
 {
   "schema_version": "stage20-evidence-sufficiency-offline-v3.1-closure",
   "title": "Stage20 Evidence Sufficiency V3.1 Negative Subject Contract Closure",
-  "gpt_review_status": "PENDING_REVIEW",
-  "eval_complete": false,
+  "gpt_review_status": "PASS",
+  "eval_complete": true,
   "neg_subject": {
     "source_text": "认证主体：ENTITY_B\n名称：ISO/IEC 27001\n状态：active\n有效至：2027-11-30",
     "requirement_subject": "ENTITY_A",

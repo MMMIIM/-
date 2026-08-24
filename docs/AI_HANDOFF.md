@@ -34,20 +34,21 @@ Authoritative detail: `ARCHITECTURE.md`, `docs/CURRENT_STAGE.md`, `docs/ROADMAP.
 
 ## Current stage
 
-Stage 20-S — Evidence Sufficiency Offline Validation Baseline: **IN PROGRESS —
-OFFLINE BASELINE / GPT REVIEW PENDING**. The six frozen synthetic cases are
+Stage 20-S — Evidence Sufficiency Offline Validation Baseline V3.1: **PASS / ACCEPTED**.
+The six frozen synthetic cases are
 evaluated through the side-effect-free EvidenceSupportAssessment contract; no
 Embedding, LLM or Dify call is allowed. Packet:
 `backend/eval/evidence-support/calibration-v2/GPT_REVIEW_PACKET_EVIDENCE_SUFFICIENCY_OFFLINE_V3.md/.json`.
 V3 separates automated 25/25 and 6/6 dimension metrics from field-level
 GPT-reviewed metrics, keeps V2R-003 child fields pending, and source-grounds the
-subject-mismatch and conflict controls. Independent review is still pending.
+subject-mismatch and conflict controls. Independent GPT review is PASS.
 V3.1 closure fixes the NEG-SUBJECT support-sufficiency contradiction and keeps
 its independently ungrounded entity dimension unknown. Closure packet:
 `backend/eval/evidence-support/calibration-v2/GPT_REVIEW_PACKET_EVIDENCE_SUFFICIENCY_OFFLINE_V3_1.md/.json`.
-Stage 20 overall remains **PARTIAL / BLOCKED** until independent review and
-formal evidence-sufficiency acceptance. Stage 20 — P0 Real Evidence Retrieval
-Revalidation remains the parent track.
+`GPT_REVIEW_STATUS=PASS` and `EVAL_COMPLETE=YES` apply only to the V3.1 offline
+baseline, not to Stage20 as a whole. Stage 20 remains **PARTIAL / BLOCKED**;
+PostgreSQL integration is the next prerequisite before final freeze review.
+Stage 20 — P0 Real Evidence Retrieval Revalidation remains the parent track.
 Stage 21-A Runtime Connectivity Foundation remains **PASS / FROZEN**. One managed
 SSH session provides the gateway forward and SOCKS egress; Gateway, SOCKS HTTPS,
 Embedding smoke, readiness, and monitor recovery passed. Stage20-S shared Evidence Support

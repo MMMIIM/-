@@ -3,29 +3,32 @@
 ## Stage 20-S — Evidence Sufficiency Offline Validation Baseline
 
 Priority: **P0**
-Status: **IN PROGRESS — OFFLINE BASELINE / GPT REVIEW PENDING**
+Status: **OFFLINE BASELINE V3.1 ACCEPTED — STAGE20 REMAINS PARTIAL / BLOCKED**
 
 本轮只使用冻结的六个代表性合成案例和已保存的证据输入，验证
 `EvidenceSupportAssessment` 的业务状态、必需维度、反证识别、冲突识别以及
 技术失败隔离。该评测不是 Retrieval Hit@K，不调用 Embedding、LLM 或 Dify，
 不写 Evidence、Fact、Mapping、Claim、Readiness 或 Writer 状态。评测包位于
 `backend/eval/evidence-support/calibration-v2/GPT_REVIEW_PACKET_EVIDENCE_SUFFICIENCY_OFFLINE_V3.md/.json`；
-`GPT_REVIEW_STATUS=PENDING_REVIEW`、`EVAL_COMPLETE=NO`。Stage17 Retrieval
+V3.1 已完成独立 GPT review，`GPT_REVIEW_STATUS=PASS`、`EVAL_COMPLETE=YES`。
+这些状态仅适用于 Evidence Sufficiency Offline Baseline V3.1，不代表 Stage20
+整体完成。Stage17 Retrieval
 合同与指标保持 PASS / FROZEN；Stage20 总体仍为 PARTIAL / BLOCKED，不能据此
 宣称 Stage20 完成或自动进入 live calibration。
 
 V3 在保留上述修正的基础上分离自动指标与 GPT-reviewed 指标，纠正 V2R-003
 子字段 provenance，重建 source-grounded 主体不匹配与带有各自需求相对语义的
 冲突控制。自动必需维度准确率为 25/25、自动未决维度为 6/6；GPT-reviewed
-分母只包含明确标记的字段，仍待独立复核。V3.1 closure packet 进一步固定
+分母只包含明确标记的字段。V3.1 closure packet 进一步固定
 NEG-SUBJECT 的 `support_sufficiency=mismatch` 与 `entity_match=unknown`，根因
 归类为 `FIXTURE_ONLY`。
 
 Closure packet：
 `backend/eval/evidence-support/calibration-v2/GPT_REVIEW_PACKET_EVIDENCE_SUFFICIENCY_OFFLINE_V3_1.md/.json`。
 
-下一步：等待独立 GPT / 人工复核离线包；在新的明确授权前不调用外部模型，
-不修改 Retrieval、排名、MMR、topK、Source Eligibility 或 Stage17 冻结规则。
+下一步：恢复 PostgreSQL 并通过集成回归，再重新评估 Stage20 剩余生产/E2E
+门禁。在新的明确授权前不调用外部模型，不修改 Retrieval、排名、MMR、topK、
+Source Eligibility 或 Stage17 冻结规则。
 
 ## Stage 21-A — Runtime Connectivity Foundation
 
