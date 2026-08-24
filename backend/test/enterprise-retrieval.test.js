@@ -13,7 +13,7 @@ test('Embedding Client 验证批量数量、维度和有限数值',async()=>{
 });
 
 test('Retrieval Query 只使用 Canonical Requirement 且不创建 Evidence',async()=>{
-  let completed;let evidenceWrites=0;const repository={getCanonicalRequirementForRetrieval:async()=>({id:REQUIREMENT_ID,project_id:PROJECT_ID,req_id:'REQ-001',text:'国产化部署',requirement_category:'technical'}),createRetrievalRun:async(value)=>({retrieval_run_id:'run',...value}),listChunksForRetrieval:async()=>[{chunk_id:'C1',chunk_hash:'H1',source_text:'麒麟环境',embedding_id:null}],prepareRetrievalCandidates:async(value)=>{assert.equal(value.candidateK,20);return[{chunk_id:'C1',material_id:'M1',source_text:'麒麟环境',embedding_id:'E1',similarity_score:.9,rank:1}]},completeRetrievalRun:async(value)=>{completed=value;return{run:{status:'succeeded'},raw_candidates:value.ranking.raw_candidates,final_candidates:value.ranking.final_candidates,results:value.ranking.final_candidates};},failRetrievalRun:async()=>{},createEvidenceRecord:async()=>{evidenceWrites+=1;}};
+  let completed;let evidenceWrites=0;const repository={getCanonicalRequirementForRetrieval:async()=>({id:REQUIREMENT_ID,project_id:PROJECT_ID,req_id:'REQ-001',text:'国产化部署',requirement_category:'technical'}),createRetrievalRun:async(value)=>({retrieval_run_id:'run',...value}),listChunksForRetrieval:async()=>[{chunk_id:'C1',chunk_hash:'H1',source_text:'麒麟环境',material_type:'product_documentation',embedding_id:null}],prepareRetrievalCandidates:async(value)=>{assert.equal(value.candidateK,20);return[{chunk_id:'C1',material_id:'M1',source_text:'麒麟环境',material_type:'product_documentation',embedding_id:'E1',similarity_score:.9,rank:1}]},completeRetrievalRun:async(value)=>{completed=value;return{run:{status:'succeeded'},raw_candidates:value.ranking.raw_candidates,final_candidates:value.ranking.final_candidates,results:value.ranking.final_candidates};},failRetrievalRun:async()=>{},createEvidenceRecord:async()=>{evidenceWrites+=1;}};
   const embeddingClient={model:'fixture',version:'v1',dimension:3,embed:async(texts)=>{assert.deepEqual(texts,['国产化部署','麒麟环境']);return[[1,0,0],[.9,.1,0]];}};const service=new EnterpriseRetrievalService({repository,embeddingClient,defaultTopK:4,clock:()=>10});
   await assert.rejects(()=>service.retrieve(REQUIREMENT_ID,{query_text:'伪造'}),(error)=>error.code==='RETRIEVAL_QUERY_IMMUTABLE');const result=await service.retrieve(REQUIREMENT_ID,{});assert.equal(result.run.status,'succeeded');assert.equal(result.answer_status,'CANDIDATES_FOUND');assert.equal(completed.ranking.fallback_mode,'raw_vector');assert.equal(result.final_candidates.length,1);assert.equal(evidenceWrites,0);
 });
@@ -29,8 +29,8 @@ test('Enterprise proof retrieval never promotes government reference material in
   const repository={
     getCanonicalRequirementForRetrieval:async()=>({id:REQUIREMENT_ID,project_id:PROJECT_ID,req_id:'REQ-001',text:'企业应证明自身具备实施能力。',requirement_category:'technical'}),
     createRetrievalRun:async(value)=>({retrieval_run_id:'run',...value}),
-    listChunksForRetrieval:async()=>[{chunk_id:'C1',chunk_hash:'H1',source_text:'行业指南说明。',material_id:'M1',corpus_scope:'GOVERNMENT_ENTERPRISE',embedding_id:null}],
-    prepareRetrievalCandidates:async()=>[{chunk_id:'C1',chunk_hash:'H1',source_text:'行业指南说明。',material_id:'M1',corpus_scope:'GOVERNMENT_ENTERPRISE',embedding_id:'E1',similarity_score:.99,rank:1}],
+    listChunksForRetrieval:async()=>[{chunk_id:'C1',chunk_hash:'H1',source_text:'行业指南说明。',material_id:'M1',material_type:'other',source_type:'official',source_authority:'administrative_regulation',corpus_scope:'GOVERNMENT_ENTERPRISE',embedding_id:null}],
+    prepareRetrievalCandidates:async()=>[{chunk_id:'C1',chunk_hash:'H1',source_text:'行业指南说明。',material_id:'M1',material_type:'other',source_type:'official',source_authority:'administrative_regulation',corpus_scope:'GOVERNMENT_ENTERPRISE',embedding_id:'E1',similarity_score:.99,rank:1}],
     completeRetrievalRun:async(value)=>{completed=value;return{run:{status:'succeeded'},raw_candidates:[],final_candidates:[],results:[]};},
     failRetrievalRun:async()=>{}
   };
@@ -48,14 +48,14 @@ test('formal evidence retrieval filters heading and metadata candidates before f
     getCanonicalRequirementForRetrieval: async () => ({ id: REQUIREMENT_ID, project_id: PROJECT_ID, req_id: 'REQ-001', text: '系统应提供可核验的测试记录。', requirement_category: 'technical' }),
     createRetrievalRun: async (value) => ({ retrieval_run_id: 'run', ...value }),
     listChunksForRetrieval: async () => [
-      { chunk_id: 'heading', chunk_hash: 'H1', source_text: '# ISO 27001 受控记录', material_id: 'M1', embedding_id: null },
-      { chunk_id: 'business', chunk_hash: 'H2', source_text: '名称：ISO/IEC 27001\n状态：active\n有效至：2027-11-30', material_id: 'M1', embedding_id: null },
-      { chunk_id: 'wrong-heading', chunk_hash: 'H3', source_text: '# ISO 9001 受控记录', material_id: 'M2', embedding_id: null }
+      { chunk_id: 'heading', chunk_hash: 'H1', source_text: '# ISO 27001 受控记录', material_id: 'M1', material_type: 'qualification', embedding_id: null },
+      { chunk_id: 'business', chunk_hash: 'H2', source_text: '名称：ISO/IEC 27001\n状态：active\n有效至：2027-11-30', material_id: 'M1', material_type: 'qualification', embedding_id: null },
+      { chunk_id: 'wrong-heading', chunk_hash: 'H3', source_text: '# ISO 9001 受控记录', material_id: 'M2', material_type: 'qualification', embedding_id: null }
     ],
     prepareRetrievalCandidates: async () => [
-      { chunk_id: 'heading', chunk_hash: 'H1', source_text: '# ISO 27001 受控记录', material_id: 'M1', embedding_id: 'E1', similarity_score: 0.99, rank: 1 },
-      { chunk_id: 'business', chunk_hash: 'H2', source_text: '名称：ISO/IEC 27001\n状态：active\n有效至：2027-11-30', material_id: 'M1', embedding_id: 'E2', similarity_score: 0.8, rank: 2 },
-      { chunk_id: 'wrong-heading', chunk_hash: 'H3', source_text: '# ISO 9001 受控记录', material_id: 'M2', embedding_id: 'E3', similarity_score: 0.7, rank: 3 }
+      { chunk_id: 'heading', chunk_hash: 'H1', source_text: '# ISO 27001 受控记录', material_id: 'M1', material_type: 'qualification', embedding_id: 'E1', similarity_score: 0.99, rank: 1 },
+      { chunk_id: 'business', chunk_hash: 'H2', source_text: '名称：ISO/IEC 27001\n状态：active\n有效至：2027-11-30', material_id: 'M1', material_type: 'qualification', embedding_id: 'E2', similarity_score: 0.8, rank: 2 },
+      { chunk_id: 'wrong-heading', chunk_hash: 'H3', source_text: '# ISO 9001 受控记录', material_id: 'M2', material_type: 'qualification', embedding_id: 'E3', similarity_score: 0.7, rank: 3 }
     ],
     completeRetrievalRun: async (value) => { completed = value; return { run: { status: 'succeeded' }, raw_candidates: value.ranking.raw_candidates, final_candidates: value.ranking.final_candidates, results: value.ranking.final_candidates }; },
     failRetrievalRun: async () => {}

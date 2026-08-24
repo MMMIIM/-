@@ -18,14 +18,14 @@ test('formal evidence lane excludes non-evidence roles unless requirement asks f
   const requirement = { text: '企业应提供 ISO/IEC 27001 认证信息。', requirement_category: 'qualification' };
   assert.equal(isFormalEvidenceChunkEligible({ requirement, candidate: { chunk_role: 'HEADING' } }), false);
   assert.equal(isFormalEvidenceChunkEligible({ requirement, candidate: { chunk_role: 'METADATA' } }), false);
-  assert.equal(isFormalEvidenceChunkEligible({ requirement: { text: '请提供文件编号。', requirement_category: 'metadata' }, candidate: { chunk_role: 'METADATA', source_text: 'document_id: DOC-1' } }), true);
+  assert.equal(isFormalEvidenceChunkEligible({ requirement: { text: '请提供文件编号。', requirement_category: 'metadata' }, candidate: { chunk_role: 'METADATA', source_text: 'document_id: DOC-1', material_type: 'company_profile' } }), false);
 });
 
 test('candidate partition preserves business order and marks excluded context', () => {
   const requirement = { text: '企业应提供性能测试记录。', requirement_category: 'technical' };
   const result = partitionRetrievalCandidates({ requirement, candidates: [
     { chunk_id: 'heading', source_text: '# 性能测试记录', similarity_score: 0.99, version: 'embedding-v1' },
-    { chunk_id: 'business', source_text: '结果：平均 1.4 秒，P95 1.9 秒。', similarity_score: 0.8 },
+    { chunk_id: 'business', source_text: '结果：平均 1.4 秒，P95 1.9 秒。', material_type: 'product_documentation', similarity_score: 0.8 },
     { chunk_id: 'front', source_text: '目录\n投标邀请', similarity_score: 0.7 }
   ] });
   assert.deepEqual(result.eligible_candidates.map((item) => item.chunk_id), ['business']);
@@ -48,10 +48,11 @@ test('known fragments and labels are non-substantive while factual rows remain s
 test('substantive hygiene excludes noise but keeps legitimate topic-only business text', () => {
   const result = partitionRetrievalCandidates({ requirement: { text: '企业应提供兼容性说明。', requirement_category: 'technical' }, candidates: [
     { chunk_id: 'label', source_text: '必须包含：', similarity_score: 0.99 },
-    { chunk_id: 'topic', source_text: '企业软件基础能力，安全、够用。', similarity_score: 0.8 },
-    { chunk_id: 'fact', source_text: '鲲鹏 + 麒麟 + 达梦：partially_tested（未完成压力测试）', similarity_score: 0.7 }
+    { chunk_id: 'topic', source_text: '企业软件基础能力，安全、够用。', material_type: 'company_profile', similarity_score: 0.8 },
+    { chunk_id: 'fact', source_text: '鲲鹏 + 麒麟 + 达梦：partially_tested（未完成压力测试）', material_type: 'technical_solution', similarity_score: 0.7 }
   ] });
-  assert.deepEqual(result.eligible_candidates.map((item) => item.chunk_id), ['topic', 'fact']);
+  assert.deepEqual(result.eligible_candidates.map((item) => item.chunk_id), ['fact']);
   assert.equal(result.all_candidates.find((item) => item.chunk_id === 'label').substantive_class, 'LABEL_ONLY');
   assert.equal(result.all_candidates.find((item) => item.chunk_id === 'topic').substantive_candidate, true);
+  assert.equal(result.all_candidates.find((item) => item.chunk_id === 'topic').evidence_source_class, 'NON_AUDITABLE_CLAIM');
 });

@@ -1,6 +1,8 @@
 export const RETRIEVAL_CHUNK_ROLE_VERSION = 'retrieval-chunk-role-v1';
 import { applySubstantiveCandidate, RETRIEVAL_SUBSTANTIVE_VERSION } from './retrieval-substantive-candidate.js';
+import { applyEvidenceSourceEligibility, RETRIEVAL_SOURCE_ELIGIBILITY_VERSION } from './retrieval-source-eligibility.js';
 export { classifySubstantiveCandidate } from './retrieval-substantive-candidate.js';
+export { classifyEvidenceSourceEligibility } from './retrieval-source-eligibility.js';
 
 export const RETRIEVAL_CHUNK_ROLES = Object.freeze([
   'BUSINESS_CONTENT',
@@ -64,6 +66,8 @@ export function isFormalEvidenceChunkEligible({ requirement = {}, candidate = {}
   const role = candidate.chunk_role ?? classifyRetrievalChunkRole(candidate).role;
   const substantive = candidate.substantive_candidate ?? applySubstantiveCandidate(candidate).substantive_candidate;
   if (!substantive) return false;
+  const sourceEligible = applyEvidenceSourceEligibility(candidate).evidence_source_eligible;
+  if (!sourceEligible) return false;
   if (['HEADING', 'FRONT_MATTER'].includes(role)) return requirementExplicitlyRequestsMetadata(requirement);
   if (role === 'METADATA') return requirementExplicitlyRequestsMetadata(requirement);
   return true;
@@ -78,7 +82,9 @@ export function applyRetrievalChunkRole(candidate = {}) {
     chunk_role_version: classified.version,
     chunk_role_reason: classified.reason,
     ...applySubstantiveCandidate(candidate),
-    substantive_version: RETRIEVAL_SUBSTANTIVE_VERSION
+    substantive_version: RETRIEVAL_SUBSTANTIVE_VERSION,
+    ...applyEvidenceSourceEligibility(candidate),
+    evidence_source_version: RETRIEVAL_SOURCE_ELIGIBILITY_VERSION
   };
 }
 
@@ -89,7 +95,9 @@ export function partitionRetrievalCandidates({ requirement = {}, candidates = []
   const classified = annotated.map((candidate) => ({
     ...candidate,
     candidate_eligibility: eligibleIds.has(candidate.chunk_id) ? 'EVIDENCE_ELIGIBLE' : 'CONTEXT_ONLY',
-    candidate_exclusion_reason: eligibleIds.has(candidate.chunk_id) ? null : (candidate.substantive_candidate ? 'NON_EVIDENCE_ROLE' : candidate.substantive_reason)
+    candidate_exclusion_reason: eligibleIds.has(candidate.chunk_id)
+      ? null
+      : (!candidate.substantive_candidate ? candidate.substantive_reason : (!candidate.evidence_source_eligible ? candidate.evidence_source_reason : 'NON_EVIDENCE_ROLE'))
   }));
   const excluded = classified.filter((candidate) => candidate.candidate_eligibility === 'CONTEXT_ONLY');
   return {
