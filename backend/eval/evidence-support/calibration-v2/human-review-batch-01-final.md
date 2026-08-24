@@ -59,6 +59,7 @@ support level：full_support
 semantic relationship：direct
 review dimensions：{"subject_match":"match","scope_match":"match","status_match":"match","quantitative_match":"match","entity_match":"match","validity_match":"unknown","source_authority":"match","support_sufficiency":"match"}
 reason codes：无
+context recovery：[{"required_dimensions":["validity_match"],"recovery_state":"UNRESOLVED_AFTER_CONTEXT","recovered_dimensions":{},"unresolved_dimensions":["validity_match"],"context_origins":["SECTION_HEADING","MATERIAL_METADATA"],"exact_span_preserved":true}]
 
 ## System Draft Business Status
 
@@ -123,6 +124,7 @@ support level：full_support
 semantic relationship：direct
 review dimensions：{"subject_match":"match","scope_match":"match","status_match":"match","quantitative_match":"unknown","entity_match":"match","validity_match":"unknown","source_authority":"match","support_sufficiency":"match"}
 reason codes：无
+context recovery：[{"required_dimensions":["quantitative_match","validity_match"],"recovery_state":"UNRESOLVED_AFTER_CONTEXT","recovered_dimensions":{},"unresolved_dimensions":["quantitative_match","validity_match"],"context_origins":["SECTION_HEADING","MATERIAL_METADATA"],"exact_span_preserved":true}]
 
 ## System Draft Business Status
 
@@ -187,6 +189,7 @@ support level：full_support
 semantic relationship：direct
 review dimensions：{"subject_match":"match","scope_match":"match","status_match":"match","quantitative_match":"unknown","entity_match":"match","validity_match":"match","source_authority":"match","support_sufficiency":"match"}
 reason codes：无
+context recovery：[{"required_dimensions":["quantitative_match"],"recovery_state":"UNRESOLVED_AFTER_CONTEXT","recovered_dimensions":{},"unresolved_dimensions":["quantitative_match"],"context_origins":["SECTION_HEADING","MATERIAL_METADATA"],"exact_span_preserved":true}]
 
 ## System Draft Business Status
 
@@ -253,6 +256,7 @@ support level：partial_support
 semantic relationship：partial
 review dimensions：{"subject_match":"match","scope_match":"unknown","status_match":"unknown","quantitative_match":"mismatch","entity_match":"unknown","validity_match":"unknown","source_authority":"match","support_sufficiency":"mismatch"}
 reason codes：QUANTITATIVE_MISMATCH、SUPPORT_INSUFFICIENT
+context recovery：[{"required_dimensions":["scope_match","status_match","entity_match","validity_match"],"recovery_state":"UNRESOLVED_AFTER_CONTEXT","recovered_dimensions":{"scope_match":{"status":"resolved","origin":"EXACT_SPAN","source_text":"产品：澄明数据交换平台 V3.2\n环境：8 vCPU、32 GB 内存、PostgreSQL 14、千兆局域网\n条件：50 并发、100 万条基准数据、缓存预热后执行 30 分钟\n指标：数据目录查询平均响应时间\n结果：平均 1.4 秒，P95 1.9 秒。\n日期：2025-05-16。","source_id":"MCH-0FBD3599DAF932016F62EB9634B997AF","chunk_id":"MCH-0FBD3599DAF932016F62EB9634B997AF"},"status_match":{"status":"resolved","origin":"EXACT_SPAN","source_text":"产品：澄明数据交换平台 V3.2\n环境：8 vCPU、32 GB 内存、PostgreSQL 14、千兆局域网\n条件：50 并发、100 万条基准数据、缓存预热后执行 30 分钟\n指标：数据目录查询平均响应时间\n结果：平均 1.4 秒，P95 1.9 秒。\n日期：2025-05-16。","source_id":"MCH-0FBD3599DAF932016F62EB9634B997AF","chunk_id":"MCH-0FBD3599DAF932016F62EB9634B997AF"},"entity_match":{"status":"resolved","origin":"EXACT_SPAN","source_text":"产品：澄明数据交换平台 V3.2\n环境：8 vCPU、32 GB 内存、PostgreSQL 14、千兆局域网\n条件：50 并发、100 万条基准数据、缓存预热后执行 30 分钟\n指标：数据目录查询平均响应时间\n结果：平均 1.4 秒，P95 1.9 秒。\n日期：2025-05-16。","source_id":"MCH-0FBD3599DAF932016F62EB9634B997AF","chunk_id":"MCH-0FBD3599DAF932016F62EB9634B997AF"}},"unresolved_dimensions":["validity_match"],"context_origins":["SECTION_HEADING","MATERIAL_METADATA"],"exact_span_preserved":true}]
 
 ## System Draft Business Status
 
@@ -315,8 +319,9 @@ semantic relevance：relevant
 evidence capability：capable
 support level：partial_support
 semantic relationship：partial
-review dimensions：{"subject_match":"match","scope_match":"unknown","status_match":"unknown","quantitative_match":"unknown","entity_match":"unknown","validity_match":"unknown","source_authority":"match","support_sufficiency":"mismatch"}
-reason codes：SUPPORT_INSUFFICIENT
+review dimensions：{"subject_match":"match","scope_match":"unknown","status_match":"mismatch","quantitative_match":"unknown","entity_match":"unknown","validity_match":"unknown","source_authority":"match","support_sufficiency":"mismatch"}
+reason codes：STATUS_MISMATCH、SUPPORT_INSUFFICIENT
+context recovery：[{"required_dimensions":["scope_match","quantitative_match","entity_match","validity_match"],"recovery_state":"UNRESOLVED_AFTER_CONTEXT","recovered_dimensions":{"scope_match":{"status":"resolved","origin":"EXACT_SPAN","source_text":"x86_64 + Ubuntu 22.04 + PostgreSQL 14：tested\n鲲鹏 920 + 麒麟 V10 + 达梦 8：partially_tested（完成安装和基础交换用例，未完成压力测试）\n海光 + 统信 UOS + 人大金仓：not_verified\n国产数据库组合：unknown","source_id":"MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0","chunk_id":"MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0"}},"unresolved_dimensions":["quantitative_match","entity_match","validity_match"],"context_origins":["SECTION_HEADING","MATERIAL_METADATA"],"exact_span_preserved":true}]
 
 ## System Draft Business Status
 
@@ -324,7 +329,7 @@ reason codes：SUPPORT_INSUFFICIENT
 
 ## 系统理由
 
-- 修复后的业务来源与原系统草稿语义一致。
+- 来源直接表明至少部分数据库组合未完成压力测试，另有组合未验证或未知，因此不能支持“所有组合均已完成压力测试”的全称要求。
 
 ## 人工审核选项
 
@@ -381,6 +386,7 @@ support level：partial_support
 semantic relationship：partial
 review dimensions：{"subject_match":"mismatch","scope_match":"mismatch","status_match":"unknown","quantitative_match":"unknown","entity_match":"mismatch","validity_match":"unknown","source_authority":"match","support_sufficiency":"mismatch"}
 reason codes：SUBJECT_MISMATCH、SCOPE_MISMATCH、ENTITY_MISMATCH、SUPPORT_INSUFFICIENT
+context recovery：[{"required_dimensions":["status_match","quantitative_match","validity_match"],"recovery_state":"UNRESOLVED_AFTER_CONTEXT","recovered_dimensions":{"status_match":{"status":"resolved","origin":"EXACT_SPAN","source_text":"名称：ISO/IEC 27001\n编号：CM-Q-27001-2024\n状态：active\n有效至：2027-11-30","source_id":"MCH-A4C2632EF9126FADD349C3004E1C2D84","chunk_id":"MCH-A4C2632EF9126FADD349C3004E1C2D84"},"validity_match":{"status":"resolved","origin":"EXACT_SPAN","source_text":"名称：ISO/IEC 27001\n编号：CM-Q-27001-2024\n状态：active\n有效至：2027-11-30","source_id":"MCH-A4C2632EF9126FADD349C3004E1C2D84","chunk_id":"MCH-A4C2632EF9126FADD349C3004E1C2D84"}},"unresolved_dimensions":["quantitative_match"],"context_origins":["SECTION_HEADING","MATERIAL_METADATA"],"exact_span_preserved":true}]
 
 ## System Draft Business Status
 
@@ -443,6 +449,7 @@ support level：insufficient
 semantic relationship：related
 review dimensions：{"subject_match":"mismatch","scope_match":"mismatch","status_match":"unknown","quantitative_match":"unknown","entity_match":"mismatch","validity_match":"unknown","source_authority":"mismatch","support_sufficiency":"mismatch"}
 reason codes：SOURCE_NOT_EVIDENCE_CAPABLE、SUPPORT_INSUFFICIENT
+context recovery：[{"required_dimensions":["status_match","quantitative_match","validity_match"],"recovery_state":"UNRESOLVED_AFTER_CONTEXT","recovered_dimensions":{},"unresolved_dimensions":["status_match","quantitative_match","validity_match"],"context_origins":["SECTION_HEADING","MATERIAL_METADATA"],"exact_span_preserved":true}]
 
 ## System Draft Business Status
 
@@ -507,6 +514,7 @@ support level：insufficient
 semantic relationship：unrelated
 review dimensions：{"subject_match":"mismatch","scope_match":"mismatch","status_match":"unknown","quantitative_match":"unknown","entity_match":"mismatch","validity_match":"unknown","source_authority":"mismatch","support_sufficiency":"mismatch"}
 reason codes：SEMANTICALLY_IRRELEVANT、SOURCE_NOT_EVIDENCE_CAPABLE
+context recovery：[{"required_dimensions":["status_match","quantitative_match","validity_match"],"recovery_state":"UNRESOLVED_AFTER_CONTEXT","recovered_dimensions":{"status_match":{"status":"resolved","origin":"EXACT_SPAN","source_text":"名称：ISO/IEC 27001\n编号：CM-Q-27001-2024\n状态：active\n有效至：2027-11-30","source_id":"MCH-A4C2632EF9126FADD349C3004E1C2D84","chunk_id":"MCH-A4C2632EF9126FADD349C3004E1C2D84"},"validity_match":{"status":"resolved","origin":"EXACT_SPAN","source_text":"名称：ISO/IEC 27001\n编号：CM-Q-27001-2024\n状态：active\n有效至：2027-11-30","source_id":"MCH-A4C2632EF9126FADD349C3004E1C2D84","chunk_id":"MCH-A4C2632EF9126FADD349C3004E1C2D84"}},"unresolved_dimensions":["quantitative_match"],"context_origins":["SECTION_HEADING","MATERIAL_METADATA"],"exact_span_preserved":true}]
 
 ## System Draft Business Status
 
@@ -568,6 +576,7 @@ support level：partial_support
 semantic relationship：partial
 review dimensions：{"subject_match":"match","scope_match":"unknown","status_match":"unknown","quantitative_match":"unknown","entity_match":"unknown","validity_match":"unknown","source_authority":"match","support_sufficiency":"mismatch"}
 reason codes：SUPPORT_INSUFFICIENT
+context recovery：[{"required_dimensions":["scope_match","status_match","quantitative_match","entity_match","validity_match"],"recovery_state":"UNRESOLVED_AFTER_CONTEXT","recovered_dimensions":{"scope_match":{"status":"resolved","origin":"MATERIAL_METADATA","source_text":"material_name=authorization-partner.md；material_type=other；corpus_scope=ENTERPRISE_PRIVATE；project_name=STAGE20-L3-SYNTHETIC-ENTERPRISE [NOT_REAL_CUSTOMER_DATA]","source_id":null,"chunk_id":null}},"unresolved_dimensions":["status_match","quantitative_match","entity_match","validity_match"],"context_origins":["SECTION_HEADING","MATERIAL_METADATA"],"exact_span_preserved":true}]
 
 ## System Draft Business Status
 
@@ -629,6 +638,7 @@ support level：partial_support
 semantic relationship：partial
 review dimensions：{"subject_match":"match","scope_match":"unknown","status_match":"unknown","quantitative_match":"unknown","entity_match":"unknown","validity_match":"unknown","source_authority":"match","support_sufficiency":"mismatch"}
 reason codes：SUPPORT_INSUFFICIENT
+context recovery：[{"required_dimensions":["scope_match","status_match","quantitative_match","entity_match","validity_match"],"recovery_state":"UNRESOLVED_AFTER_CONTEXT","recovered_dimensions":{"scope_match":{"status":"resolved","origin":"EXACT_SPAN","source_text":"项目：景云城市治理数据平台；范围：数据目录、交换任务、统一门户和运行监测；项目状态：已完成模拟案例；验收日期：2025-11-20。","source_id":"MCH-3FD884E9C86C84ADD445F70EC81FADD9","chunk_id":"MCH-3FD884E9C86C84ADD445F70EC81FADD9"},"status_match":{"status":"resolved","origin":"EXACT_SPAN","source_text":"项目：景云城市治理数据平台；范围：数据目录、交换任务、统一门户和运行监测；项目状态：已完成模拟案例；验收日期：2025-11-20。","source_id":"MCH-3FD884E9C86C84ADD445F70EC81FADD9","chunk_id":"MCH-3FD884E9C86C84ADD445F70EC81FADD9"},"entity_match":{"status":"resolved","origin":"EXACT_SPAN","source_text":"项目：景云城市治理数据平台；范围：数据目录、交换任务、统一门户和运行监测；项目状态：已完成模拟案例；验收日期：2025-11-20。","source_id":"MCH-3FD884E9C86C84ADD445F70EC81FADD9","chunk_id":"MCH-3FD884E9C86C84ADD445F70EC81FADD9"}},"unresolved_dimensions":["quantitative_match","validity_match"],"context_origins":["SECTION_HEADING","MATERIAL_METADATA"],"exact_span_preserved":true}]
 
 ## System Draft Business Status
 

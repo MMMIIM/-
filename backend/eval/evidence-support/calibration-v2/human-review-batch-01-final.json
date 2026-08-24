@@ -257,6 +257,23 @@
             "修复后的业务来源与原系统草稿语义一致。"
           ]
         },
+        "context_recovery": [
+          {
+            "required_dimensions": [
+              "validity_match"
+            ],
+            "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+            "recovered_dimensions": {},
+            "unresolved_dimensions": [
+              "validity_match"
+            ],
+            "context_origins": [
+              "SECTION_HEADING",
+              "MATERIAL_METADATA"
+            ],
+            "exact_span_preserved": true
+          }
+        ],
         "old_draft_status": "EVIDENCE_REVIEW_READY",
         "expected_gold": "EVIDENCE_REVIEW_READY",
         "gold_provenance": "SYSTEM_DRAFT_UNREVIEWED"
@@ -343,6 +360,25 @@
             "修复后的业务来源与原系统草稿语义一致。"
           ]
         },
+        "context_recovery": [
+          {
+            "required_dimensions": [
+              "quantitative_match",
+              "validity_match"
+            ],
+            "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+            "recovered_dimensions": {},
+            "unresolved_dimensions": [
+              "quantitative_match",
+              "validity_match"
+            ],
+            "context_origins": [
+              "SECTION_HEADING",
+              "MATERIAL_METADATA"
+            ],
+            "exact_span_preserved": true
+          }
+        ],
         "old_draft_status": "EVIDENCE_REVIEW_READY",
         "expected_gold": "EVIDENCE_REVIEW_READY",
         "gold_provenance": "SYSTEM_DRAFT_UNREVIEWED"
@@ -429,6 +465,23 @@
             "修复后的业务来源与原系统草稿语义一致。"
           ]
         },
+        "context_recovery": [
+          {
+            "required_dimensions": [
+              "quantitative_match"
+            ],
+            "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+            "recovered_dimensions": {},
+            "unresolved_dimensions": [
+              "quantitative_match"
+            ],
+            "context_origins": [
+              "SECTION_HEADING",
+              "MATERIAL_METADATA"
+            ],
+            "exact_span_preserved": true
+          }
+        ],
         "old_draft_status": "EVIDENCE_REVIEW_READY",
         "expected_gold": "EVIDENCE_REVIEW_READY",
         "gold_provenance": "SYSTEM_DRAFT_UNREVIEWED"
@@ -522,6 +575,48 @@
             "实际 P95 1.9 秒高于要求上限 1 秒；属于明确不满足事实，不是缺少数值证据。"
           ]
         },
+        "context_recovery": [
+          {
+            "required_dimensions": [
+              "scope_match",
+              "status_match",
+              "entity_match",
+              "validity_match"
+            ],
+            "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+            "recovered_dimensions": {
+              "scope_match": {
+                "status": "resolved",
+                "origin": "EXACT_SPAN",
+                "source_text": "产品：澄明数据交换平台 V3.2\n环境：8 vCPU、32 GB 内存、PostgreSQL 14、千兆局域网\n条件：50 并发、100 万条基准数据、缓存预热后执行 30 分钟\n指标：数据目录查询平均响应时间\n结果：平均 1.4 秒，P95 1.9 秒。\n日期：2025-05-16。",
+                "source_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
+                "chunk_id": "MCH-0FBD3599DAF932016F62EB9634B997AF"
+              },
+              "status_match": {
+                "status": "resolved",
+                "origin": "EXACT_SPAN",
+                "source_text": "产品：澄明数据交换平台 V3.2\n环境：8 vCPU、32 GB 内存、PostgreSQL 14、千兆局域网\n条件：50 并发、100 万条基准数据、缓存预热后执行 30 分钟\n指标：数据目录查询平均响应时间\n结果：平均 1.4 秒，P95 1.9 秒。\n日期：2025-05-16。",
+                "source_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
+                "chunk_id": "MCH-0FBD3599DAF932016F62EB9634B997AF"
+              },
+              "entity_match": {
+                "status": "resolved",
+                "origin": "EXACT_SPAN",
+                "source_text": "产品：澄明数据交换平台 V3.2\n环境：8 vCPU、32 GB 内存、PostgreSQL 14、千兆局域网\n条件：50 并发、100 万条基准数据、缓存预热后执行 30 分钟\n指标：数据目录查询平均响应时间\n结果：平均 1.4 秒，P95 1.9 秒。\n日期：2025-05-16。",
+                "source_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
+                "chunk_id": "MCH-0FBD3599DAF932016F62EB9634B997AF"
+              }
+            },
+            "unresolved_dimensions": [
+              "validity_match"
+            ],
+            "context_origins": [
+              "SECTION_HEADING",
+              "MATERIAL_METADATA"
+            ],
+            "exact_span_preserved": true
+          }
+        ],
         "old_draft_status": "INSUFFICIENT_EVIDENCE",
         "expected_gold": "INSUFFICIENT_EVIDENCE",
         "gold_provenance": "SYSTEM_DRAFT_UNREVIEWED"
@@ -583,7 +678,7 @@
           "review_dimensions": {
             "subject_match": "match",
             "scope_match": "unknown",
-            "status_match": "unknown",
+            "status_match": "mismatch",
             "quantitative_match": "unknown",
             "entity_match": "unknown",
             "validity_match": "unknown",
@@ -591,6 +686,7 @@
             "support_sufficiency": "mismatch"
           },
           "reason_codes": [
+            "STATUS_MISMATCH",
             "SUPPORT_INSUFFICIENT"
           ],
           "support_observations": [
@@ -601,18 +697,49 @@
               "support_excerpt_hash": "623f699df461219e4f6ce813596a352300ed47692c630db6482a97cfc41d37d5",
               "observation_type": "partial_support",
               "reason_codes": [
+                "STATUS_MISMATCH",
                 "SUPPORT_INSUFFICIENT"
               ]
             }
           ],
           "conflict_observations": [],
           "semantic_boundaries": [
-            "UNCHANGED"
+            "UNIVERSAL_CLAIM_ADVERSE_FACT"
           ],
           "audit_reason": [
-            "修复后的业务来源与原系统草稿语义一致。"
+            "来源直接表明至少部分数据库组合未完成压力测试，另有组合未验证或未知，因此不能支持“所有组合均已完成压力测试”的全称要求。"
           ]
         },
+        "context_recovery": [
+          {
+            "required_dimensions": [
+              "scope_match",
+              "quantitative_match",
+              "entity_match",
+              "validity_match"
+            ],
+            "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+            "recovered_dimensions": {
+              "scope_match": {
+                "status": "resolved",
+                "origin": "EXACT_SPAN",
+                "source_text": "x86_64 + Ubuntu 22.04 + PostgreSQL 14：tested\n鲲鹏 920 + 麒麟 V10 + 达梦 8：partially_tested（完成安装和基础交换用例，未完成压力测试）\n海光 + 统信 UOS + 人大金仓：not_verified\n国产数据库组合：unknown",
+                "source_id": "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0",
+                "chunk_id": "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0"
+              }
+            },
+            "unresolved_dimensions": [
+              "quantitative_match",
+              "entity_match",
+              "validity_match"
+            ],
+            "context_origins": [
+              "SECTION_HEADING",
+              "MATERIAL_METADATA"
+            ],
+            "exact_span_preserved": true
+          }
+        ],
         "old_draft_status": "INSUFFICIENT_EVIDENCE",
         "expected_gold": "INSUFFICIENT_EVIDENCE",
         "gold_provenance": "SYSTEM_DRAFT_UNREVIEWED"
@@ -710,6 +837,40 @@
             "来源确实包含 ISO 证书事实，但未证明指定项目主体，属于相关但主体/范围不足。"
           ]
         },
+        "context_recovery": [
+          {
+            "required_dimensions": [
+              "status_match",
+              "quantitative_match",
+              "validity_match"
+            ],
+            "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+            "recovered_dimensions": {
+              "status_match": {
+                "status": "resolved",
+                "origin": "EXACT_SPAN",
+                "source_text": "名称：ISO/IEC 27001\n编号：CM-Q-27001-2024\n状态：active\n有效至：2027-11-30",
+                "source_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
+                "chunk_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84"
+              },
+              "validity_match": {
+                "status": "resolved",
+                "origin": "EXACT_SPAN",
+                "source_text": "名称：ISO/IEC 27001\n编号：CM-Q-27001-2024\n状态：active\n有效至：2027-11-30",
+                "source_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
+                "chunk_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84"
+              }
+            },
+            "unresolved_dimensions": [
+              "quantitative_match"
+            ],
+            "context_origins": [
+              "SECTION_HEADING",
+              "MATERIAL_METADATA"
+            ],
+            "exact_span_preserved": true
+          }
+        ],
         "old_draft_status": "NO_RELEVANT_EVIDENCE",
         "expected_gold": "NO_RELEVANT_EVIDENCE",
         "gold_provenance": "SYSTEM_DRAFT_UNREVIEWED"
@@ -804,6 +965,27 @@
             "行业规范与需求语义相关，但不能证明企业自身已具备相应实施能力。"
           ]
         },
+        "context_recovery": [
+          {
+            "required_dimensions": [
+              "status_match",
+              "quantitative_match",
+              "validity_match"
+            ],
+            "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+            "recovered_dimensions": {},
+            "unresolved_dimensions": [
+              "status_match",
+              "quantitative_match",
+              "validity_match"
+            ],
+            "context_origins": [
+              "SECTION_HEADING",
+              "MATERIAL_METADATA"
+            ],
+            "exact_span_preserved": true
+          }
+        ],
         "old_draft_status": "NO_RELEVANT_EVIDENCE",
         "expected_gold": "NO_RELEVANT_EVIDENCE",
         "gold_provenance": "SYSTEM_DRAFT_UNREVIEWED"
@@ -895,6 +1077,40 @@
             "修复后的业务来源与原系统草稿语义一致。"
           ]
         },
+        "context_recovery": [
+          {
+            "required_dimensions": [
+              "status_match",
+              "quantitative_match",
+              "validity_match"
+            ],
+            "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+            "recovered_dimensions": {
+              "status_match": {
+                "status": "resolved",
+                "origin": "EXACT_SPAN",
+                "source_text": "名称：ISO/IEC 27001\n编号：CM-Q-27001-2024\n状态：active\n有效至：2027-11-30",
+                "source_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
+                "chunk_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84"
+              },
+              "validity_match": {
+                "status": "resolved",
+                "origin": "EXACT_SPAN",
+                "source_text": "名称：ISO/IEC 27001\n编号：CM-Q-27001-2024\n状态：active\n有效至：2027-11-30",
+                "source_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
+                "chunk_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84"
+              }
+            },
+            "unresolved_dimensions": [
+              "quantitative_match"
+            ],
+            "context_origins": [
+              "SECTION_HEADING",
+              "MATERIAL_METADATA"
+            ],
+            "exact_span_preserved": true
+          }
+        ],
         "old_draft_status": "NO_RELEVANT_EVIDENCE",
         "expected_gold": "NO_RELEVANT_EVIDENCE",
         "gold_provenance": "SYSTEM_DRAFT_UNREVIEWED"
@@ -985,6 +1201,38 @@
             "修复后的业务来源与原系统草稿语义一致。"
           ]
         },
+        "context_recovery": [
+          {
+            "required_dimensions": [
+              "scope_match",
+              "status_match",
+              "quantitative_match",
+              "entity_match",
+              "validity_match"
+            ],
+            "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+            "recovered_dimensions": {
+              "scope_match": {
+                "status": "resolved",
+                "origin": "MATERIAL_METADATA",
+                "source_text": "material_name=authorization-partner.md；material_type=other；corpus_scope=ENTERPRISE_PRIVATE；project_name=STAGE20-L3-SYNTHETIC-ENTERPRISE [NOT_REAL_CUSTOMER_DATA]",
+                "source_id": null,
+                "chunk_id": null
+              }
+            },
+            "unresolved_dimensions": [
+              "status_match",
+              "quantitative_match",
+              "entity_match",
+              "validity_match"
+            ],
+            "context_origins": [
+              "SECTION_HEADING",
+              "MATERIAL_METADATA"
+            ],
+            "exact_span_preserved": true
+          }
+        ],
         "old_draft_status": "INSUFFICIENT_EVIDENCE",
         "expected_gold": "INSUFFICIENT_EVIDENCE",
         "gold_provenance": "SYSTEM_DRAFT_UNREVIEWED"
@@ -1076,6 +1324,50 @@
             "修复后的业务来源与原系统草稿语义一致。"
           ]
         },
+        "context_recovery": [
+          {
+            "required_dimensions": [
+              "scope_match",
+              "status_match",
+              "quantitative_match",
+              "entity_match",
+              "validity_match"
+            ],
+            "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+            "recovered_dimensions": {
+              "scope_match": {
+                "status": "resolved",
+                "origin": "EXACT_SPAN",
+                "source_text": "项目：景云城市治理数据平台；范围：数据目录、交换任务、统一门户和运行监测；项目状态：已完成模拟案例；验收日期：2025-11-20。",
+                "source_id": "MCH-3FD884E9C86C84ADD445F70EC81FADD9",
+                "chunk_id": "MCH-3FD884E9C86C84ADD445F70EC81FADD9"
+              },
+              "status_match": {
+                "status": "resolved",
+                "origin": "EXACT_SPAN",
+                "source_text": "项目：景云城市治理数据平台；范围：数据目录、交换任务、统一门户和运行监测；项目状态：已完成模拟案例；验收日期：2025-11-20。",
+                "source_id": "MCH-3FD884E9C86C84ADD445F70EC81FADD9",
+                "chunk_id": "MCH-3FD884E9C86C84ADD445F70EC81FADD9"
+              },
+              "entity_match": {
+                "status": "resolved",
+                "origin": "EXACT_SPAN",
+                "source_text": "项目：景云城市治理数据平台；范围：数据目录、交换任务、统一门户和运行监测；项目状态：已完成模拟案例；验收日期：2025-11-20。",
+                "source_id": "MCH-3FD884E9C86C84ADD445F70EC81FADD9",
+                "chunk_id": "MCH-3FD884E9C86C84ADD445F70EC81FADD9"
+              }
+            },
+            "unresolved_dimensions": [
+              "quantitative_match",
+              "validity_match"
+            ],
+            "context_origins": [
+              "SECTION_HEADING",
+              "MATERIAL_METADATA"
+            ],
+            "exact_span_preserved": true
+          }
+        ],
         "old_draft_status": "INSUFFICIENT_EVIDENCE",
         "expected_gold": "INSUFFICIENT_EVIDENCE",
         "gold_provenance": "SYSTEM_DRAFT_UNREVIEWED"

@@ -84,7 +84,8 @@ function reviewCase(item, sequence) {
       provenance: 'SYSTEM_DRAFT_REAUDITED',
       status: item.new_draft_status,
       status_label: STATUS_LABELS[item.new_draft_status] || item.new_draft_status,
-      semantics: displaySemantics(item),
+    semantics: displaySemantics(item),
+      context_recovery: item.context_recovery || [],
       old_draft_status: item.old_draft_status,
       expected_gold: item.expected_gold,
       gold_provenance: item.gold_provenance
@@ -148,6 +149,7 @@ function caseMarkdown(item) {
     `semantic relationship：${semantics.semantic_relationship}`,
     `review dimensions：${JSON.stringify(semantics.review_dimensions)}`,
     `reason codes：${semantics.reason_codes.join('、') || '无'}`,
+    `context recovery：${JSON.stringify(item.system_draft.context_recovery)}`,
     '',
     '## System Draft Business Status',
     '',

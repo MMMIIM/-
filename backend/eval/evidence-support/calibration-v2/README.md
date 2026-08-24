@@ -64,6 +64,14 @@ legacy `backend/eval/sufficiency/live-calibration-set.js` fixture.
 - `human-review-batch-01-final.md` / `.json`: directly readable Batch 1 packet
   with `WHY_THIS_CASE_IS_IN_CALIBRATION`, full repaired Evidence text and
   explicit APPROVE/CHANGE/REJECT choices.
+- `evidence-context-expansion.js`: production-bounded exact-span/context
+  expansion. Exact citation and context window remain separate and every
+  recovered dimension records its origin.
+- `enterprise-evidence-source-router.js`: deterministic enterprise-proof
+  routing. Government/industry material can remain reference context but is
+  never promoted to enterprise proof candidates.
+- `audit-context-recovery-v2.js` / `context-recovery-v2.json`: offline audit of
+  missing-dimension recovery across all 36 active cases.
 
 Run:
 
@@ -76,6 +84,7 @@ npm run build:evidence-support-v2-human-batch-01 -w backend
 npm run forensics:evidence-support-v2-spans -w backend
 npm run build:evidence-support-v2-human-batch-01-v2 -w backend
 npm run audit:evidence-support-v2-semantics -w backend
+npm run audit:evidence-support-v2-context -w backend
 npm run build:evidence-support-v2-human-batch-01-final -w backend
 ```
 
@@ -90,6 +99,13 @@ spans and `aggregateEvidenceSufficiency()`; it never calls a model, Provider,
 Embedding or Gateway, and it does not modify the candidate pool, Gold or
 production state. `V2R-009-ISO-CONFLICT` is excluded when the second source
 does not contain a same-dimension observed value.
+
+The context audit is also offline-only. It reports which dimensions can be
+recovered from the exact span, bounded same-chunk context, adjacent chunks in
+the same document, or authoritative material metadata. Unresolved dimensions
+remain unresolved; context never replaces the exact citation. The formal
+retrieval service applies the same enterprise-proof routing policy before
+reranking, so industry/reference sources cannot enter the proof lane.
 
 The final Batch 1 packet is a Gold quality gate only. It is not a frozen
 dataset and must not be treated as completed calibration until a human

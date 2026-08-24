@@ -6,6 +6,7 @@ import {
   aggregateEvidenceSufficiency,
   createEvidenceSupportAssessment
 } from '../../../src/pipeline/evidence-support-assessment-contract-v1.js';
+import { expandEvidenceContext } from '../../../src/pipeline/evidence-context-expansion.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const INPUT_PATH = path.join(HERE, 'candidate-pool-v2-evidence-span-repaired.json');
@@ -94,6 +95,46 @@ function numericAdverseFact(item, source) {
   };
 }
 
+function categoricalAdverseFact(item, source) {
+  const requirement = textOf(item.requirement.text);
+  const sourceText = textOf(source.source_text);
+  const universal = /所有.*(?:组合|环境|数据库|平台).*(?:均|全部).*(?:完成|已).*(?:压力测试|测试)/i.test(requirement);
+  const adverse = /partially_tested|未完成压力测试|not_verified|unknown/i.test(sourceText);
+  if (!universal || !adverse) return null;
+  const original = item.draft_semantics[0] || {};
+  const reasons = ['STATUS_MISMATCH', 'SUPPORT_INSUFFICIENT'];
+  return {
+    semantic_relevance: 'relevant',
+    evidence_capability: 'capable',
+    support_level: 'partial_support',
+    semantic_relationship: 'partial',
+    review_dimensions: { ...baseDimensions(original), status_match: 'mismatch', support_sufficiency: 'mismatch' },
+    reason_codes: reasons,
+    support_observations: [sourceObservation(source, 'partial_support', reasons)],
+    audit_reason: '来源直接表明至少部分数据库组合未完成压力测试，另有组合未验证或未知，因此不能支持“所有组合均已完成压力测试”的全称要求。',
+    semantic_boundary: 'UNIVERSAL_CLAIM_ADVERSE_FACT'
+  };
+}
+
+function explicitStatusAdverseFact(item, source) {
+  const requirement = textOf(item.requirement.text);
+  const sourceText = textOf(source.source_text);
+  if (!/(已完成|可验收|验收)/.test(requirement) || !/(状态不完整|不得推断完工|不得推断.*验收|没有合同和验收记录)/.test(sourceText)) return null;
+  const original = item.draft_semantics[0] || {};
+  const reasons = ['STATUS_MISMATCH', 'SUPPORT_INSUFFICIENT'];
+  return {
+    semantic_relevance: 'relevant',
+    evidence_capability: 'capable',
+    support_level: 'partial_support',
+    semantic_relationship: 'partial',
+    review_dimensions: { ...baseDimensions(original), status_match: 'mismatch', support_sufficiency: 'mismatch' },
+    reason_codes: reasons,
+    support_observations: [sourceObservation(source, 'partial_support', reasons)],
+    audit_reason: '来源明确说明状态或验收依据不完整，不能把项目记录升级为已完成且可验收。',
+    semantic_boundary: 'PROJECT_STATUS_UNPROVEN'
+  };
+}
+
 function scopeInsufficient(item, source) {
   const tags = item.requirement.boundary_tags || [];
   const requirement = textOf(item.requirement.text);
@@ -161,6 +202,8 @@ function defaultObservation(item, source) {
 
 function reassessSource(item, source) {
   const observation = numericAdverseFact(item, source)
+    || categoricalAdverseFact(item, source)
+    || explicitStatusAdverseFact(item, source)
     || scopeInsufficient(item, source)
     || industryCapabilityBoundary(item, source)
     || defaultObservation(item, source);
@@ -169,6 +212,44 @@ function reassessSource(item, source) {
     evaluatorVersion: EVALUATOR_VERSION
   });
   return { assessment, audit_reason, semantic_boundary };
+}
+
+function contextRecovery(item, source, assessment) {
+  const missingDimensions = Object.entries(assessment.review_dimensions || {})
+    .filter(([name, value]) => value === 'unknown' && ['subject_match', 'scope_match', 'entity_match', 'status_match', 'validity_match', 'quantitative_match'].includes(name))
+    .map(([name]) => name);
+  const expansion = expandEvidenceContext({
+    exactSpan: {
+      source_id: source.source_id,
+      source_span_id: source.source_span_id,
+      anchor_chunk_id: source.chunk_id,
+      source_text: source.source_text,
+      section: source.context_before || null
+    },
+    material: {
+      id: source.material_id,
+      original_name: source.material_name,
+      material_type: source.material_type,
+      corpus_scope: source.corpus_scope,
+      project_name: source.project_name
+    },
+    chunks: [{
+      chunk_id: source.chunk_id,
+      material_id: source.material_id,
+      chunk_index: 0,
+      section: source.context_before || null,
+      source_text: source.source_text
+    }],
+    missingDimensions
+  });
+  return {
+    required_dimensions: missingDimensions,
+    recovery_state: expansion.recovery_state,
+    recovered_dimensions: expansion.recovered_dimensions,
+    unresolved_dimensions: expansion.unresolved_dimensions,
+    context_origins: expansion.context_window.map(item => item.origin),
+    exact_span_preserved: expansion.exact_evidence_span.source_text === source.source_text
+  };
 }
 
 function summarizeAssessment(assessment) {
@@ -252,6 +333,7 @@ export function runSemanticReaudit({ pool = JSON.parse(fs.readFileSync(INPUT_PAT
       new_semantics: next.semantics,
       support_observations: assessments.flatMap(assessment => assessment.support_observations),
       conflict_observations: assessments.flatMap(assessment => assessment.conflict_observations),
+      context_recovery: sourceAudits.map((itemAudit, index) => contextRecovery(item, item.sources?.[index] || {}, itemAudit.assessment)),
       semantic_boundaries: unique(sourceAudits.map(audit => audit.semantic_boundary)),
       change_reason: unique(sourceAudits.map(audit => audit.audit_reason)),
       status_changed: statusChanged,
@@ -282,6 +364,18 @@ export function runSemanticReaudit({ pool = JSON.parse(fs.readFileSync(INPUT_PAT
   const statusChangedCount = auditedCases.filter(item => item.status_changed).length;
   const semanticOnlyChangedCount = auditedCases.filter(item => item.semantic_changed && !item.status_changed).length;
   const unchangedCount = auditedCases.filter(item => !item.semantic_changed && !item.status_changed).length;
+  const contextEntries = auditedCases.flatMap(item => item.context_recovery || []);
+  const recovered = contextEntries.flatMap(item => Object.values(item.recovered_dimensions || {}));
+  const contextRecoverySummary = {
+    cases_requiring_expansion: auditedCases.filter(item => (item.context_recovery || []).some(entry => entry.required_dimensions.length > 0)).length,
+    resolved_same_chunk: recovered.filter(item => ['EXACT_SPAN', 'SAME_SENTENCE', 'SAME_PARAGRAPH', 'TABLE_HEADER', 'SECTION_HEADING', 'SAME_CHUNK_CONTEXT'].includes(item.origin)).length,
+    resolved_adjacent_chunk: recovered.filter(item => item.origin === 'ADJACENT_CHUNK').length,
+    resolved_material_metadata: recovered.filter(item => item.origin === 'MATERIAL_METADATA').length,
+    resolved_retrieval_expansion: recovered.filter(item => item.origin === 'ADJACENT_CHUNK').length,
+    still_unresolved: auditedCases.filter(item => (item.context_recovery || []).some(entry => entry.unresolved_dimensions.length > 0)).length,
+    recovered_dimension_count: recovered.length,
+    unresolved_dimension_count: contextEntries.reduce((count, item) => count + item.unresolved_dimensions.length, 0)
+  };
 
   return {
     schema_version: '4.3-evidence-support-calibration-v2-semantic-reaudit-v1',
@@ -299,6 +393,7 @@ export function runSemanticReaudit({ pool = JSON.parse(fs.readFileSync(INPUT_PAT
     status_changed_count: statusChangedCount,
     semantic_only_changed_count: semanticOnlyChangedCount,
     unchanged_count: unchangedCount,
+    context_recovery: contextRecoverySummary,
     cases: auditedCases,
     boundary: {
       numeric_adverse_fact_supported_by_contract: true,

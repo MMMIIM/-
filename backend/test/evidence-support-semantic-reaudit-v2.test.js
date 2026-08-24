@@ -21,8 +21,8 @@ test('semantic re-audit excludes invalid conflict Gold and reports complete stat
     CONFLICTING_EVIDENCE: 0
   });
   assert.equal(report.status_changed_count, 2);
-  assert.equal(report.semantic_only_changed_count, 20);
-  assert.equal(report.unchanged_count, 14);
+  assert.equal(report.semantic_only_changed_count, 24);
+  assert.equal(report.unchanged_count, 10);
   assert.equal(report.contract_gap_found, false);
   assert.equal(report.human_review.reviewed_count, 0);
 });
@@ -47,6 +47,15 @@ test('scope mismatch is relevant but insufficient, not NO_RELEVANT_EVIDENCE', ()
   assert.equal(item.new_semantics[0].review_dimensions.scope_match, 'mismatch');
   assert.ok(item.new_semantics[0].reason_codes.includes('SUBJECT_MISMATCH'));
   assert.ok(item.new_semantics[0].reason_codes.includes('SCOPE_MISMATCH'));
+});
+
+test('universal compatibility requirement records explicit adverse status facts', () => {
+  const report = runSemanticReaudit({ pool });
+  const item = report.cases.find(candidate => candidate.case_id === 'V2R-004-COMP-PARTIAL');
+  assert.equal(item.new_draft_status, 'INSUFFICIENT_EVIDENCE');
+  assert.equal(item.new_semantics[0].review_dimensions.status_match, 'mismatch');
+  assert.ok(item.new_semantics[0].reason_codes.includes('STATUS_MISMATCH'));
+  assert.match(item.change_reason.join('；'), /未完成压力测试/);
 });
 
 test('industry reference remains relevant context but cannot prove enterprise capability', () => {
@@ -76,4 +85,12 @@ test('every valid case is aggregate-consistent and manual samples expose source 
   for (const value of ['V2R-003-COMP-DIRECT', 'V2R-002-PERF-PARTIAL', 'V2R-009-ISO-CONFLICT']) assert.match(samples, new RegExp(value));
   assert.match(samples, /P95 1\.9 秒/);
   assert.match(samples, /有效至：2027-11-30/);
+});
+
+test('context recovery keeps exact span separate and reports unresolved dimensions', () => {
+  const report = runSemanticReaudit({ pool });
+  assert.equal(report.context_recovery.cases_requiring_expansion, 36);
+  assert.equal(report.context_recovery.resolved_adjacent_chunk, 0);
+  assert.equal(report.context_recovery.still_unresolved, 36);
+  assert.ok(report.cases.every(item => item.context_recovery.every(entry => entry.exact_span_preserved)));
 });

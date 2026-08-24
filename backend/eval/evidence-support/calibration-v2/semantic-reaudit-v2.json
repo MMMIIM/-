@@ -160,8 +160,18 @@
     "CONFLICTING_EVIDENCE": 0
   },
   "status_changed_count": 2,
-  "semantic_only_changed_count": 20,
-  "unchanged_count": 14,
+  "semantic_only_changed_count": 24,
+  "unchanged_count": 10,
+  "context_recovery": {
+    "cases_requiring_expansion": 36,
+    "resolved_same_chunk": 20,
+    "resolved_adjacent_chunk": 0,
+    "resolved_material_metadata": 25,
+    "resolved_retrieval_expansion": 0,
+    "still_unresolved": 36,
+    "recovered_dimension_count": 45,
+    "unresolved_dimension_count": 113
+  },
   "cases": [
     {
       "case_id": "V2R-001-PERF-DIRECT",
@@ -272,6 +282,23 @@
         }
       ],
       "conflict_observations": [],
+      "context_recovery": [
+        {
+          "required_dimensions": [
+            "validity_match"
+          ],
+          "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+          "recovered_dimensions": {},
+          "unresolved_dimensions": [
+            "validity_match"
+          ],
+          "context_origins": [
+            "SECTION_HEADING",
+            "MATERIAL_METADATA"
+          ],
+          "exact_span_preserved": true
+        }
+      ],
       "semantic_boundaries": [
         "UNCHANGED"
       ],
@@ -407,6 +434,48 @@
         }
       ],
       "conflict_observations": [],
+      "context_recovery": [
+        {
+          "required_dimensions": [
+            "scope_match",
+            "status_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+          "recovered_dimensions": {
+            "scope_match": {
+              "status": "resolved",
+              "origin": "EXACT_SPAN",
+              "source_text": "产品：澄明数据交换平台 V3.2\n环境：8 vCPU、32 GB 内存、PostgreSQL 14、千兆局域网\n条件：50 并发、100 万条基准数据、缓存预热后执行 30 分钟\n指标：数据目录查询平均响应时间\n结果：平均 1.4 秒，P95 1.9 秒。\n日期：2025-05-16。",
+              "source_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
+              "chunk_id": "MCH-0FBD3599DAF932016F62EB9634B997AF"
+            },
+            "status_match": {
+              "status": "resolved",
+              "origin": "EXACT_SPAN",
+              "source_text": "产品：澄明数据交换平台 V3.2\n环境：8 vCPU、32 GB 内存、PostgreSQL 14、千兆局域网\n条件：50 并发、100 万条基准数据、缓存预热后执行 30 分钟\n指标：数据目录查询平均响应时间\n结果：平均 1.4 秒，P95 1.9 秒。\n日期：2025-05-16。",
+              "source_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
+              "chunk_id": "MCH-0FBD3599DAF932016F62EB9634B997AF"
+            },
+            "entity_match": {
+              "status": "resolved",
+              "origin": "EXACT_SPAN",
+              "source_text": "产品：澄明数据交换平台 V3.2\n环境：8 vCPU、32 GB 内存、PostgreSQL 14、千兆局域网\n条件：50 并发、100 万条基准数据、缓存预热后执行 30 分钟\n指标：数据目录查询平均响应时间\n结果：平均 1.4 秒，P95 1.9 秒。\n日期：2025-05-16。",
+              "source_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
+              "chunk_id": "MCH-0FBD3599DAF932016F62EB9634B997AF"
+            }
+          },
+          "unresolved_dimensions": [
+            "validity_match"
+          ],
+          "context_origins": [
+            "SECTION_HEADING",
+            "MATERIAL_METADATA"
+          ],
+          "exact_span_preserved": true
+        }
+      ],
       "semantic_boundaries": [
         "ADVERSE_FACT"
       ],
@@ -528,6 +597,25 @@
         }
       ],
       "conflict_observations": [],
+      "context_recovery": [
+        {
+          "required_dimensions": [
+            "quantitative_match",
+            "validity_match"
+          ],
+          "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+          "recovered_dimensions": {},
+          "unresolved_dimensions": [
+            "quantitative_match",
+            "validity_match"
+          ],
+          "context_origins": [
+            "SECTION_HEADING",
+            "MATERIAL_METADATA"
+          ],
+          "exact_span_preserved": true
+        }
+      ],
       "semantic_boundaries": [
         "UNCHANGED"
       ],
@@ -622,7 +710,7 @@
           "review_dimensions": {
             "subject_match": "match",
             "scope_match": "unknown",
-            "status_match": "unknown",
+            "status_match": "mismatch",
             "quantitative_match": "unknown",
             "entity_match": "unknown",
             "validity_match": "unknown",
@@ -630,6 +718,7 @@
             "support_sufficiency": "mismatch"
           },
           "reason_codes": [
+            "STATUS_MISMATCH",
             "SUPPORT_INSUFFICIENT"
           ],
           "support_observations": [
@@ -640,6 +729,7 @@
               "support_excerpt_hash": "623f699df461219e4f6ce813596a352300ed47692c630db6482a97cfc41d37d5",
               "observation_type": "partial_support",
               "reason_codes": [
+                "STATUS_MISMATCH",
                 "SUPPORT_INSUFFICIENT"
               ]
             }
@@ -655,19 +745,50 @@
           "support_excerpt_hash": "623f699df461219e4f6ce813596a352300ed47692c630db6482a97cfc41d37d5",
           "observation_type": "partial_support",
           "reason_codes": [
+            "STATUS_MISMATCH",
             "SUPPORT_INSUFFICIENT"
           ]
         }
       ],
       "conflict_observations": [],
+      "context_recovery": [
+        {
+          "required_dimensions": [
+            "scope_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+          "recovered_dimensions": {
+            "scope_match": {
+              "status": "resolved",
+              "origin": "EXACT_SPAN",
+              "source_text": "x86_64 + Ubuntu 22.04 + PostgreSQL 14：tested\n鲲鹏 920 + 麒麟 V10 + 达梦 8：partially_tested（完成安装和基础交换用例，未完成压力测试）\n海光 + 统信 UOS + 人大金仓：not_verified\n国产数据库组合：unknown",
+              "source_id": "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0",
+              "chunk_id": "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0"
+            }
+          },
+          "unresolved_dimensions": [
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "context_origins": [
+            "SECTION_HEADING",
+            "MATERIAL_METADATA"
+          ],
+          "exact_span_preserved": true
+        }
+      ],
       "semantic_boundaries": [
-        "UNCHANGED"
+        "UNIVERSAL_CLAIM_ADVERSE_FACT"
       ],
       "change_reason": [
-        "修复后的业务来源与原系统草稿语义一致。"
+        "来源直接表明至少部分数据库组合未完成压力测试，另有组合未验证或未知，因此不能支持“所有组合均已完成压力测试”的全称要求。"
       ],
       "status_changed": false,
-      "semantic_changed": false,
+      "semantic_changed": true,
       "aggregate_consistent": true,
       "expected_gold": "INSUFFICIENT_EVIDENCE",
       "gold_provenance": "SYSTEM_DRAFT_UNREVIEWED"
@@ -781,6 +902,23 @@
         }
       ],
       "conflict_observations": [],
+      "context_recovery": [
+        {
+          "required_dimensions": [
+            "quantitative_match"
+          ],
+          "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+          "recovered_dimensions": {},
+          "unresolved_dimensions": [
+            "quantitative_match"
+          ],
+          "context_origins": [
+            "SECTION_HEADING",
+            "MATERIAL_METADATA"
+          ],
+          "exact_span_preserved": true
+        }
+      ],
       "semantic_boundaries": [
         "UNCHANGED"
       ],
@@ -922,6 +1060,40 @@
         }
       ],
       "conflict_observations": [],
+      "context_recovery": [
+        {
+          "required_dimensions": [
+            "status_match",
+            "quantitative_match",
+            "validity_match"
+          ],
+          "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+          "recovered_dimensions": {
+            "status_match": {
+              "status": "resolved",
+              "origin": "EXACT_SPAN",
+              "source_text": "名称：ISO/IEC 27001\n编号：CM-Q-27001-2024\n状态：active\n有效至：2027-11-30",
+              "source_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
+              "chunk_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84"
+            },
+            "validity_match": {
+              "status": "resolved",
+              "origin": "EXACT_SPAN",
+              "source_text": "名称：ISO/IEC 27001\n编号：CM-Q-27001-2024\n状态：active\n有效至：2027-11-30",
+              "source_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
+              "chunk_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84"
+            }
+          },
+          "unresolved_dimensions": [
+            "quantitative_match"
+          ],
+          "context_origins": [
+            "SECTION_HEADING",
+            "MATERIAL_METADATA"
+          ],
+          "exact_span_preserved": true
+        }
+      ],
       "semantic_boundaries": [
         "SUBJECT_OR_SCOPE_UNPROVEN"
       ],
@@ -1016,7 +1188,7 @@
           "review_dimensions": {
             "subject_match": "match",
             "scope_match": "unknown",
-            "status_match": "unknown",
+            "status_match": "mismatch",
             "quantitative_match": "unknown",
             "entity_match": "unknown",
             "validity_match": "unknown",
@@ -1024,6 +1196,7 @@
             "support_sufficiency": "mismatch"
           },
           "reason_codes": [
+            "STATUS_MISMATCH",
             "SUPPORT_INSUFFICIENT"
           ],
           "support_observations": [
@@ -1034,6 +1207,7 @@
               "support_excerpt_hash": "62b80cab1a81fc5d2a600db98bf9070114394f1f2726eab5d665a5c2583218c9",
               "observation_type": "partial_support",
               "reason_codes": [
+                "STATUS_MISMATCH",
                 "SUPPORT_INSUFFICIENT"
               ]
             }
@@ -1049,19 +1223,56 @@
           "support_excerpt_hash": "62b80cab1a81fc5d2a600db98bf9070114394f1f2726eab5d665a5c2583218c9",
           "observation_type": "partial_support",
           "reason_codes": [
+            "STATUS_MISMATCH",
             "SUPPORT_INSUFFICIENT"
           ]
         }
       ],
       "conflict_observations": [],
+      "context_recovery": [
+        {
+          "required_dimensions": [
+            "scope_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+          "recovered_dimensions": {
+            "scope_match": {
+              "status": "resolved",
+              "origin": "MATERIAL_METADATA",
+              "source_text": "material_name=project-d-fragment.md；material_type=project_case；corpus_scope=ENTERPRISE_PRIVATE；project_name=E2E-PRODUCTION-RETRIEVAL-V1 [data_classification=synthetic]",
+              "source_id": null,
+              "chunk_id": null
+            },
+            "entity_match": {
+              "status": "resolved",
+              "origin": "EXACT_SPAN",
+              "source_text": "项目：南泽业务协同升级片段（虚构）\n客户：南泽公共服务机构（虚构）\n实施片段日期：2025-10-09\n状态不完整，不得推断完工或验收。",
+              "source_id": "MCH-C5D5EB33CB97F715074CC6F4E98EEF17",
+              "chunk_id": "MCH-C5D5EB33CB97F715074CC6F4E98EEF17"
+            }
+          },
+          "unresolved_dimensions": [
+            "quantitative_match",
+            "validity_match"
+          ],
+          "context_origins": [
+            "SECTION_HEADING",
+            "MATERIAL_METADATA"
+          ],
+          "exact_span_preserved": true
+        }
+      ],
       "semantic_boundaries": [
-        "UNCHANGED"
+        "PROJECT_STATUS_UNPROVEN"
       ],
       "change_reason": [
-        "修复后的业务来源与原系统草稿语义一致。"
+        "来源明确说明状态或验收依据不完整，不能把项目记录升级为已完成且可验收。"
       ],
       "status_changed": false,
-      "semantic_changed": false,
+      "semantic_changed": true,
       "aggregate_consistent": true,
       "expected_gold": "INSUFFICIENT_EVIDENCE",
       "gold_provenance": "SYSTEM_DRAFT_UNREVIEWED"
@@ -1187,6 +1398,40 @@
         }
       ],
       "conflict_observations": [],
+      "context_recovery": [
+        {
+          "required_dimensions": [
+            "status_match",
+            "quantitative_match",
+            "validity_match"
+          ],
+          "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+          "recovered_dimensions": {
+            "status_match": {
+              "status": "resolved",
+              "origin": "EXACT_SPAN",
+              "source_text": "名称：ISO/IEC 27001\n编号：CM-Q-27001-2024\n状态：active\n有效至：2027-11-30",
+              "source_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
+              "chunk_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84"
+            },
+            "validity_match": {
+              "status": "resolved",
+              "origin": "EXACT_SPAN",
+              "source_text": "名称：ISO/IEC 27001\n编号：CM-Q-27001-2024\n状态：active\n有效至：2027-11-30",
+              "source_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
+              "chunk_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84"
+            }
+          },
+          "unresolved_dimensions": [
+            "quantitative_match"
+          ],
+          "context_origins": [
+            "SECTION_HEADING",
+            "MATERIAL_METADATA"
+          ],
+          "exact_span_preserved": true
+        }
+      ],
       "semantic_boundaries": [
         "UNCHANGED"
       ],
@@ -1324,6 +1569,38 @@
         }
       ],
       "conflict_observations": [],
+      "context_recovery": [
+        {
+          "required_dimensions": [
+            "scope_match",
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+          "recovered_dimensions": {
+            "scope_match": {
+              "status": "resolved",
+              "origin": "MATERIAL_METADATA",
+              "source_text": "material_name=中华人民共和国政府信息公开条例（官方摘录）.md；material_type=other；corpus_scope=GENERAL；project_name=平台公共知识库（官方公开资料）",
+              "source_id": null,
+              "chunk_id": null
+            }
+          },
+          "unresolved_dimensions": [
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "context_origins": [
+            "SECTION_HEADING",
+            "MATERIAL_METADATA"
+          ],
+          "exact_span_preserved": true
+        }
+      ],
       "semantic_boundaries": [
         "INDUSTRY_REFERENCE_NOT_ENTERPRISE_CAPABILITY"
       ],
@@ -1459,6 +1736,38 @@
         }
       ],
       "conflict_observations": [],
+      "context_recovery": [
+        {
+          "required_dimensions": [
+            "scope_match",
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+          "recovered_dimensions": {
+            "scope_match": {
+              "status": "resolved",
+              "origin": "MATERIAL_METADATA",
+              "source_text": "material_name=“互联网+政务服务”技术体系建设指南（官方摘录）.md；material_type=technical_whitepaper；corpus_scope=GOVERNMENT_ENTERPRISE；project_name=平台公共知识库（官方公开资料）",
+              "source_id": null,
+              "chunk_id": null
+            }
+          },
+          "unresolved_dimensions": [
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "context_origins": [
+            "SECTION_HEADING",
+            "MATERIAL_METADATA"
+          ],
+          "exact_span_preserved": true
+        }
+      ],
       "semantic_boundaries": [
         "INDUSTRY_REFERENCE_NOT_ENTERPRISE_CAPABILITY"
       ],
@@ -1594,6 +1903,38 @@
         }
       ],
       "conflict_observations": [],
+      "context_recovery": [
+        {
+          "required_dimensions": [
+            "scope_match",
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+          "recovered_dimensions": {
+            "scope_match": {
+              "status": "resolved",
+              "origin": "MATERIAL_METADATA",
+              "source_text": "material_name=三级医院评审标准（2025年版）（官方摘录）.md；material_type=technical_whitepaper；corpus_scope=HEALTHCARE；project_name=平台公共知识库（官方公开资料）",
+              "source_id": null,
+              "chunk_id": null
+            }
+          },
+          "unresolved_dimensions": [
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "context_origins": [
+            "SECTION_HEADING",
+            "MATERIAL_METADATA"
+          ],
+          "exact_span_preserved": true
+        }
+      ],
       "semantic_boundaries": [
         "INDUSTRY_REFERENCE_NOT_ENTERPRISE_CAPABILITY"
       ],
@@ -1725,6 +2066,38 @@
         }
       ],
       "conflict_observations": [],
+      "context_recovery": [
+        {
+          "required_dimensions": [
+            "scope_match",
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+          "recovered_dimensions": {
+            "scope_match": {
+              "status": "resolved",
+              "origin": "MATERIAL_METADATA",
+              "source_text": "material_name=authorization-partner.md；material_type=other；corpus_scope=ENTERPRISE_PRIVATE；project_name=STAGE20-L3-SYNTHETIC-ENTERPRISE [NOT_REAL_CUSTOMER_DATA]",
+              "source_id": null,
+              "chunk_id": null
+            }
+          },
+          "unresolved_dimensions": [
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "context_origins": [
+            "SECTION_HEADING",
+            "MATERIAL_METADATA"
+          ],
+          "exact_span_preserved": true
+        }
+      ],
       "semantic_boundaries": [
         "UNCHANGED"
       ],
@@ -1860,6 +2233,38 @@
         }
       ],
       "conflict_observations": [],
+      "context_recovery": [
+        {
+          "required_dimensions": [
+            "scope_match",
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+          "recovered_dimensions": {
+            "scope_match": {
+              "status": "resolved",
+              "origin": "MATERIAL_METADATA",
+              "source_text": "material_name=中华人民共和国政府信息公开条例（官方摘录）.md；material_type=other；corpus_scope=GENERAL；project_name=平台公共知识库（官方公开资料）",
+              "source_id": null,
+              "chunk_id": null
+            }
+          },
+          "unresolved_dimensions": [
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "context_origins": [
+            "SECTION_HEADING",
+            "MATERIAL_METADATA"
+          ],
+          "exact_span_preserved": true
+        }
+      ],
       "semantic_boundaries": [
         "INDUSTRY_REFERENCE_NOT_ENTERPRISE_CAPABILITY"
       ],
@@ -1997,6 +2402,27 @@
         }
       ],
       "conflict_observations": [],
+      "context_recovery": [
+        {
+          "required_dimensions": [
+            "status_match",
+            "quantitative_match",
+            "validity_match"
+          ],
+          "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+          "recovered_dimensions": {},
+          "unresolved_dimensions": [
+            "status_match",
+            "quantitative_match",
+            "validity_match"
+          ],
+          "context_origins": [
+            "SECTION_HEADING",
+            "MATERIAL_METADATA"
+          ],
+          "exact_span_preserved": true
+        }
+      ],
       "semantic_boundaries": [
         "INDUSTRY_REFERENCE_NOT_ENTERPRISE_CAPABILITY"
       ],
@@ -2132,6 +2558,38 @@
         }
       ],
       "conflict_observations": [],
+      "context_recovery": [
+        {
+          "required_dimensions": [
+            "scope_match",
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+          "recovered_dimensions": {
+            "scope_match": {
+              "status": "resolved",
+              "origin": "MATERIAL_METADATA",
+              "source_text": "material_name=三级医院评审标准（2025年版）（官方摘录）.md；material_type=technical_whitepaper；corpus_scope=HEALTHCARE；project_name=平台公共知识库（官方公开资料）",
+              "source_id": null,
+              "chunk_id": null
+            }
+          },
+          "unresolved_dimensions": [
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "context_origins": [
+            "SECTION_HEADING",
+            "MATERIAL_METADATA"
+          ],
+          "exact_span_preserved": true
+        }
+      ],
       "semantic_boundaries": [
         "INDUSTRY_REFERENCE_NOT_ENTERPRISE_CAPABILITY"
       ],
@@ -2264,6 +2722,38 @@
         }
       ],
       "conflict_observations": [],
+      "context_recovery": [
+        {
+          "required_dimensions": [
+            "scope_match",
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+          "recovered_dimensions": {
+            "scope_match": {
+              "status": "resolved",
+              "origin": "MATERIAL_METADATA",
+              "source_text": "material_name=authorization-partner.md；material_type=other；corpus_scope=ENTERPRISE_PRIVATE；project_name=STAGE20-L3-SYNTHETIC-ENTERPRISE [NOT_REAL_CUSTOMER_DATA]",
+              "source_id": null,
+              "chunk_id": null
+            }
+          },
+          "unresolved_dimensions": [
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "context_origins": [
+            "SECTION_HEADING",
+            "MATERIAL_METADATA"
+          ],
+          "exact_span_preserved": true
+        }
+      ],
       "semantic_boundaries": [
         "UNCHANGED"
       ],
@@ -2399,6 +2889,38 @@
         }
       ],
       "conflict_observations": [],
+      "context_recovery": [
+        {
+          "required_dimensions": [
+            "scope_match",
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+          "recovered_dimensions": {
+            "scope_match": {
+              "status": "resolved",
+              "origin": "MATERIAL_METADATA",
+              "source_text": "material_name=中华人民共和国政府信息公开条例（官方摘录）.md；material_type=other；corpus_scope=GENERAL；project_name=平台公共知识库（官方公开资料）",
+              "source_id": null,
+              "chunk_id": null
+            }
+          },
+          "unresolved_dimensions": [
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "context_origins": [
+            "SECTION_HEADING",
+            "MATERIAL_METADATA"
+          ],
+          "exact_span_preserved": true
+        }
+      ],
       "semantic_boundaries": [
         "INDUSTRY_REFERENCE_NOT_ENTERPRISE_CAPABILITY"
       ],
@@ -2535,6 +3057,38 @@
         }
       ],
       "conflict_observations": [],
+      "context_recovery": [
+        {
+          "required_dimensions": [
+            "scope_match",
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+          "recovered_dimensions": {
+            "scope_match": {
+              "status": "resolved",
+              "origin": "MATERIAL_METADATA",
+              "source_text": "material_name=“互联网+政务服务”技术体系建设指南（官方摘录）.md；material_type=technical_whitepaper；corpus_scope=GOVERNMENT_ENTERPRISE；project_name=平台公共知识库（官方公开资料）",
+              "source_id": null,
+              "chunk_id": null
+            }
+          },
+          "unresolved_dimensions": [
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "context_origins": [
+            "SECTION_HEADING",
+            "MATERIAL_METADATA"
+          ],
+          "exact_span_preserved": true
+        }
+      ],
       "semantic_boundaries": [
         "INDUSTRY_REFERENCE_NOT_ENTERPRISE_CAPABILITY"
       ],
@@ -2670,6 +3224,38 @@
         }
       ],
       "conflict_observations": [],
+      "context_recovery": [
+        {
+          "required_dimensions": [
+            "scope_match",
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+          "recovered_dimensions": {
+            "scope_match": {
+              "status": "resolved",
+              "origin": "MATERIAL_METADATA",
+              "source_text": "material_name=三级医院评审标准（2025年版）（官方摘录）.md；material_type=technical_whitepaper；corpus_scope=HEALTHCARE；project_name=平台公共知识库（官方公开资料）",
+              "source_id": null,
+              "chunk_id": null
+            }
+          },
+          "unresolved_dimensions": [
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "context_origins": [
+            "SECTION_HEADING",
+            "MATERIAL_METADATA"
+          ],
+          "exact_span_preserved": true
+        }
+      ],
       "semantic_boundaries": [
         "INDUSTRY_REFERENCE_NOT_ENTERPRISE_CAPABILITY"
       ],
@@ -2801,6 +3387,38 @@
         }
       ],
       "conflict_observations": [],
+      "context_recovery": [
+        {
+          "required_dimensions": [
+            "scope_match",
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+          "recovered_dimensions": {
+            "scope_match": {
+              "status": "resolved",
+              "origin": "MATERIAL_METADATA",
+              "source_text": "material_name=authorization-partner.md；material_type=other；corpus_scope=ENTERPRISE_PRIVATE；project_name=STAGE20-L3-SYNTHETIC-ENTERPRISE [NOT_REAL_CUSTOMER_DATA]",
+              "source_id": null,
+              "chunk_id": null
+            }
+          },
+          "unresolved_dimensions": [
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "context_origins": [
+            "SECTION_HEADING",
+            "MATERIAL_METADATA"
+          ],
+          "exact_span_preserved": true
+        }
+      ],
       "semantic_boundaries": [
         "UNCHANGED"
       ],
@@ -2936,6 +3554,38 @@
         }
       ],
       "conflict_observations": [],
+      "context_recovery": [
+        {
+          "required_dimensions": [
+            "scope_match",
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+          "recovered_dimensions": {
+            "scope_match": {
+              "status": "resolved",
+              "origin": "MATERIAL_METADATA",
+              "source_text": "material_name=全国一体化政务大数据体系建设指南（官方摘录）.md；material_type=technical_whitepaper；corpus_scope=GOVERNMENT_ENTERPRISE；project_name=平台公共知识库（官方公开资料）",
+              "source_id": null,
+              "chunk_id": null
+            }
+          },
+          "unresolved_dimensions": [
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "context_origins": [
+            "SECTION_HEADING",
+            "MATERIAL_METADATA"
+          ],
+          "exact_span_preserved": true
+        }
+      ],
       "semantic_boundaries": [
         "INDUSTRY_REFERENCE_NOT_ENTERPRISE_CAPABILITY"
       ],
@@ -3071,6 +3721,38 @@
         }
       ],
       "conflict_observations": [],
+      "context_recovery": [
+        {
+          "required_dimensions": [
+            "scope_match",
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+          "recovered_dimensions": {
+            "scope_match": {
+              "status": "resolved",
+              "origin": "MATERIAL_METADATA",
+              "source_text": "material_name=互联网诊疗监管细则（试行）（官方摘录）.md；material_type=other；corpus_scope=HEALTHCARE；project_name=平台公共知识库（官方公开资料）",
+              "source_id": null,
+              "chunk_id": null
+            }
+          },
+          "unresolved_dimensions": [
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "context_origins": [
+            "SECTION_HEADING",
+            "MATERIAL_METADATA"
+          ],
+          "exact_span_preserved": true
+        }
+      ],
       "semantic_boundaries": [
         "INDUSTRY_REFERENCE_NOT_ENTERPRISE_CAPABILITY"
       ],
@@ -3204,6 +3886,50 @@
         }
       ],
       "conflict_observations": [],
+      "context_recovery": [
+        {
+          "required_dimensions": [
+            "scope_match",
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+          "recovered_dimensions": {
+            "scope_match": {
+              "status": "resolved",
+              "origin": "EXACT_SPAN",
+              "source_text": "项目：景云城市治理数据平台；范围：数据目录、交换任务、统一门户和运行监测；项目状态：已完成模拟案例；验收日期：2025-11-20。",
+              "source_id": "MCH-3FD884E9C86C84ADD445F70EC81FADD9",
+              "chunk_id": "MCH-3FD884E9C86C84ADD445F70EC81FADD9"
+            },
+            "status_match": {
+              "status": "resolved",
+              "origin": "EXACT_SPAN",
+              "source_text": "项目：景云城市治理数据平台；范围：数据目录、交换任务、统一门户和运行监测；项目状态：已完成模拟案例；验收日期：2025-11-20。",
+              "source_id": "MCH-3FD884E9C86C84ADD445F70EC81FADD9",
+              "chunk_id": "MCH-3FD884E9C86C84ADD445F70EC81FADD9"
+            },
+            "entity_match": {
+              "status": "resolved",
+              "origin": "EXACT_SPAN",
+              "source_text": "项目：景云城市治理数据平台；范围：数据目录、交换任务、统一门户和运行监测；项目状态：已完成模拟案例；验收日期：2025-11-20。",
+              "source_id": "MCH-3FD884E9C86C84ADD445F70EC81FADD9",
+              "chunk_id": "MCH-3FD884E9C86C84ADD445F70EC81FADD9"
+            }
+          },
+          "unresolved_dimensions": [
+            "quantitative_match",
+            "validity_match"
+          ],
+          "context_origins": [
+            "SECTION_HEADING",
+            "MATERIAL_METADATA"
+          ],
+          "exact_span_preserved": true
+        }
+      ],
       "semantic_boundaries": [
         "UNCHANGED"
       ],
@@ -3339,6 +4065,38 @@
         }
       ],
       "conflict_observations": [],
+      "context_recovery": [
+        {
+          "required_dimensions": [
+            "scope_match",
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+          "recovered_dimensions": {
+            "scope_match": {
+              "status": "resolved",
+              "origin": "MATERIAL_METADATA",
+              "source_text": "material_name=全国一体化政务大数据体系建设指南（官方摘录）.md；material_type=technical_whitepaper；corpus_scope=GOVERNMENT_ENTERPRISE；project_name=平台公共知识库（官方公开资料）",
+              "source_id": null,
+              "chunk_id": null
+            }
+          },
+          "unresolved_dimensions": [
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "context_origins": [
+            "SECTION_HEADING",
+            "MATERIAL_METADATA"
+          ],
+          "exact_span_preserved": true
+        }
+      ],
       "semantic_boundaries": [
         "INDUSTRY_REFERENCE_NOT_ENTERPRISE_CAPABILITY"
       ],
@@ -3474,6 +4232,38 @@
         }
       ],
       "conflict_observations": [],
+      "context_recovery": [
+        {
+          "required_dimensions": [
+            "scope_match",
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+          "recovered_dimensions": {
+            "scope_match": {
+              "status": "resolved",
+              "origin": "MATERIAL_METADATA",
+              "source_text": "material_name=互联网诊疗监管细则（试行）（官方摘录）.md；material_type=other；corpus_scope=HEALTHCARE；project_name=平台公共知识库（官方公开资料）",
+              "source_id": null,
+              "chunk_id": null
+            }
+          },
+          "unresolved_dimensions": [
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "context_origins": [
+            "SECTION_HEADING",
+            "MATERIAL_METADATA"
+          ],
+          "exact_span_preserved": true
+        }
+      ],
       "semantic_boundaries": [
         "INDUSTRY_REFERENCE_NOT_ENTERPRISE_CAPABILITY"
       ],
@@ -3606,6 +4396,50 @@
         }
       ],
       "conflict_observations": [],
+      "context_recovery": [
+        {
+          "required_dimensions": [
+            "scope_match",
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+          "recovered_dimensions": {
+            "scope_match": {
+              "status": "resolved",
+              "origin": "EXACT_SPAN",
+              "source_text": "项目：景云城市治理数据平台；范围：数据目录、交换任务、统一门户和运行监测；项目状态：已完成模拟案例；验收日期：2025-11-20。",
+              "source_id": "MCH-3FD884E9C86C84ADD445F70EC81FADD9",
+              "chunk_id": "MCH-3FD884E9C86C84ADD445F70EC81FADD9"
+            },
+            "status_match": {
+              "status": "resolved",
+              "origin": "EXACT_SPAN",
+              "source_text": "项目：景云城市治理数据平台；范围：数据目录、交换任务、统一门户和运行监测；项目状态：已完成模拟案例；验收日期：2025-11-20。",
+              "source_id": "MCH-3FD884E9C86C84ADD445F70EC81FADD9",
+              "chunk_id": "MCH-3FD884E9C86C84ADD445F70EC81FADD9"
+            },
+            "entity_match": {
+              "status": "resolved",
+              "origin": "EXACT_SPAN",
+              "source_text": "项目：景云城市治理数据平台；范围：数据目录、交换任务、统一门户和运行监测；项目状态：已完成模拟案例；验收日期：2025-11-20。",
+              "source_id": "MCH-3FD884E9C86C84ADD445F70EC81FADD9",
+              "chunk_id": "MCH-3FD884E9C86C84ADD445F70EC81FADD9"
+            }
+          },
+          "unresolved_dimensions": [
+            "quantitative_match",
+            "validity_match"
+          ],
+          "context_origins": [
+            "SECTION_HEADING",
+            "MATERIAL_METADATA"
+          ],
+          "exact_span_preserved": true
+        }
+      ],
       "semantic_boundaries": [
         "UNCHANGED"
       ],
@@ -3742,6 +4576,38 @@
         }
       ],
       "conflict_observations": [],
+      "context_recovery": [
+        {
+          "required_dimensions": [
+            "scope_match",
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+          "recovered_dimensions": {
+            "scope_match": {
+              "status": "resolved",
+              "origin": "MATERIAL_METADATA",
+              "source_text": "material_name=全国一体化政务大数据体系建设指南（官方摘录）.md；material_type=technical_whitepaper；corpus_scope=GOVERNMENT_ENTERPRISE；project_name=平台公共知识库（官方公开资料）",
+              "source_id": null,
+              "chunk_id": null
+            }
+          },
+          "unresolved_dimensions": [
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "context_origins": [
+            "SECTION_HEADING",
+            "MATERIAL_METADATA"
+          ],
+          "exact_span_preserved": true
+        }
+      ],
       "semantic_boundaries": [
         "INDUSTRY_REFERENCE_NOT_ENTERPRISE_CAPABILITY"
       ],
@@ -3877,6 +4743,38 @@
         }
       ],
       "conflict_observations": [],
+      "context_recovery": [
+        {
+          "required_dimensions": [
+            "scope_match",
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+          "recovered_dimensions": {
+            "scope_match": {
+              "status": "resolved",
+              "origin": "MATERIAL_METADATA",
+              "source_text": "material_name=互联网诊疗监管细则（试行）（官方摘录）.md；material_type=other；corpus_scope=HEALTHCARE；project_name=平台公共知识库（官方公开资料）",
+              "source_id": null,
+              "chunk_id": null
+            }
+          },
+          "unresolved_dimensions": [
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "context_origins": [
+            "SECTION_HEADING",
+            "MATERIAL_METADATA"
+          ],
+          "exact_span_preserved": true
+        }
+      ],
       "semantic_boundaries": [
         "INDUSTRY_REFERENCE_NOT_ENTERPRISE_CAPABILITY"
       ],
@@ -4009,6 +4907,50 @@
         }
       ],
       "conflict_observations": [],
+      "context_recovery": [
+        {
+          "required_dimensions": [
+            "scope_match",
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+          "recovered_dimensions": {
+            "scope_match": {
+              "status": "resolved",
+              "origin": "EXACT_SPAN",
+              "source_text": "项目：景云城市治理数据平台；范围：数据目录、交换任务、统一门户和运行监测；项目状态：已完成模拟案例；验收日期：2025-11-20。",
+              "source_id": "MCH-3FD884E9C86C84ADD445F70EC81FADD9",
+              "chunk_id": "MCH-3FD884E9C86C84ADD445F70EC81FADD9"
+            },
+            "status_match": {
+              "status": "resolved",
+              "origin": "EXACT_SPAN",
+              "source_text": "项目：景云城市治理数据平台；范围：数据目录、交换任务、统一门户和运行监测；项目状态：已完成模拟案例；验收日期：2025-11-20。",
+              "source_id": "MCH-3FD884E9C86C84ADD445F70EC81FADD9",
+              "chunk_id": "MCH-3FD884E9C86C84ADD445F70EC81FADD9"
+            },
+            "entity_match": {
+              "status": "resolved",
+              "origin": "EXACT_SPAN",
+              "source_text": "项目：景云城市治理数据平台；范围：数据目录、交换任务、统一门户和运行监测；项目状态：已完成模拟案例；验收日期：2025-11-20。",
+              "source_id": "MCH-3FD884E9C86C84ADD445F70EC81FADD9",
+              "chunk_id": "MCH-3FD884E9C86C84ADD445F70EC81FADD9"
+            }
+          },
+          "unresolved_dimensions": [
+            "quantitative_match",
+            "validity_match"
+          ],
+          "context_origins": [
+            "SECTION_HEADING",
+            "MATERIAL_METADATA"
+          ],
+          "exact_span_preserved": true
+        }
+      ],
       "semantic_boundaries": [
         "UNCHANGED"
       ],
@@ -4145,6 +5087,38 @@
         }
       ],
       "conflict_observations": [],
+      "context_recovery": [
+        {
+          "required_dimensions": [
+            "scope_match",
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+          "recovered_dimensions": {
+            "scope_match": {
+              "status": "resolved",
+              "origin": "MATERIAL_METADATA",
+              "source_text": "material_name=全国一体化政务服务平台移动端建设指南（官方摘录）.md；material_type=technical_whitepaper；corpus_scope=GOVERNMENT_ENTERPRISE；project_name=平台公共知识库（官方公开资料）",
+              "source_id": null,
+              "chunk_id": null
+            }
+          },
+          "unresolved_dimensions": [
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "context_origins": [
+            "SECTION_HEADING",
+            "MATERIAL_METADATA"
+          ],
+          "exact_span_preserved": true
+        }
+      ],
       "semantic_boundaries": [
         "INDUSTRY_REFERENCE_NOT_ENTERPRISE_CAPABILITY"
       ],
@@ -4280,6 +5254,38 @@
         }
       ],
       "conflict_observations": [],
+      "context_recovery": [
+        {
+          "required_dimensions": [
+            "scope_match",
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+          "recovered_dimensions": {
+            "scope_match": {
+              "status": "resolved",
+              "origin": "MATERIAL_METADATA",
+              "source_text": "material_name=互联网诊疗管理办法（试行）等三个文件（官方摘录）.md；material_type=other；corpus_scope=HEALTHCARE；project_name=平台公共知识库（官方公开资料）",
+              "source_id": null,
+              "chunk_id": null
+            }
+          },
+          "unresolved_dimensions": [
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "context_origins": [
+            "SECTION_HEADING",
+            "MATERIAL_METADATA"
+          ],
+          "exact_span_preserved": true
+        }
+      ],
       "semantic_boundaries": [
         "INDUSTRY_REFERENCE_NOT_ENTERPRISE_CAPABILITY"
       ],
@@ -4374,7 +5380,7 @@
           "review_dimensions": {
             "subject_match": "match",
             "scope_match": "unknown",
-            "status_match": "unknown",
+            "status_match": "mismatch",
             "quantitative_match": "unknown",
             "entity_match": "unknown",
             "validity_match": "unknown",
@@ -4382,6 +5388,7 @@
             "support_sufficiency": "mismatch"
           },
           "reason_codes": [
+            "STATUS_MISMATCH",
             "SUPPORT_INSUFFICIENT"
           ],
           "support_observations": [
@@ -4392,6 +5399,7 @@
               "support_excerpt_hash": "d29c7d831c7eab2aac8a0acab1f8ffd8759d84d664ef995e3d051d201a841e9f",
               "observation_type": "partial_support",
               "reason_codes": [
+                "STATUS_MISMATCH",
                 "SUPPORT_INSUFFICIENT"
               ]
             }
@@ -4407,19 +5415,56 @@
           "support_excerpt_hash": "d29c7d831c7eab2aac8a0acab1f8ffd8759d84d664ef995e3d051d201a841e9f",
           "observation_type": "partial_support",
           "reason_codes": [
+            "STATUS_MISMATCH",
             "SUPPORT_INSUFFICIENT"
           ]
         }
       ],
       "conflict_observations": [],
+      "context_recovery": [
+        {
+          "required_dimensions": [
+            "scope_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+          "recovered_dimensions": {
+            "scope_match": {
+              "status": "resolved",
+              "origin": "MATERIAL_METADATA",
+              "source_text": "material_name=case-hospital-insufficient.md；material_type=project_case；corpus_scope=ENTERPRISE_PRIVATE；project_name=STAGE20-L3-SYNTHETIC-ENTERPRISE [NOT_REAL_CUSTOMER_DATA]",
+              "source_id": null,
+              "chunk_id": null
+            },
+            "entity_match": {
+              "status": "resolved",
+              "origin": "EXACT_SPAN",
+              "source_text": "项目：景云医院数据集成试点；内容：完成接口联调和数据目录梳理；只有中选通知，没有合同和验收记录；日期：2025-10（具体日不详）。相关但不足以证明正式验收。",
+              "source_id": "MCH-00AFC7A231D91C6A9FF01082FBFC0BDE",
+              "chunk_id": "MCH-00AFC7A231D91C6A9FF01082FBFC0BDE"
+            }
+          },
+          "unresolved_dimensions": [
+            "quantitative_match",
+            "validity_match"
+          ],
+          "context_origins": [
+            "SECTION_HEADING",
+            "MATERIAL_METADATA"
+          ],
+          "exact_span_preserved": true
+        }
+      ],
       "semantic_boundaries": [
-        "UNCHANGED"
+        "PROJECT_STATUS_UNPROVEN"
       ],
       "change_reason": [
-        "修复后的业务来源与原系统草稿语义一致。"
+        "来源明确说明状态或验收依据不完整，不能把项目记录升级为已完成且可验收。"
       ],
       "status_changed": false,
-      "semantic_changed": false,
+      "semantic_changed": true,
       "aggregate_consistent": true,
       "expected_gold": "INSUFFICIENT_EVIDENCE",
       "gold_provenance": "SYSTEM_DRAFT_UNREVIEWED"
@@ -4547,6 +5592,38 @@
         }
       ],
       "conflict_observations": [],
+      "context_recovery": [
+        {
+          "required_dimensions": [
+            "scope_match",
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+          "recovered_dimensions": {
+            "scope_match": {
+              "status": "resolved",
+              "origin": "MATERIAL_METADATA",
+              "source_text": "material_name=全国一体化政务服务平台移动端建设指南（官方摘录）.md；material_type=technical_whitepaper；corpus_scope=GOVERNMENT_ENTERPRISE；project_name=平台公共知识库（官方公开资料）",
+              "source_id": null,
+              "chunk_id": null
+            }
+          },
+          "unresolved_dimensions": [
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "context_origins": [
+            "SECTION_HEADING",
+            "MATERIAL_METADATA"
+          ],
+          "exact_span_preserved": true
+        }
+      ],
       "semantic_boundaries": [
         "INDUSTRY_REFERENCE_NOT_ENTERPRISE_CAPABILITY"
       ],
@@ -4682,6 +5759,38 @@
         }
       ],
       "conflict_observations": [],
+      "context_recovery": [
+        {
+          "required_dimensions": [
+            "scope_match",
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+          "recovered_dimensions": {
+            "scope_match": {
+              "status": "resolved",
+              "origin": "MATERIAL_METADATA",
+              "source_text": "material_name=互联网诊疗管理办法（试行）等三个文件（官方摘录）.md；material_type=other；corpus_scope=HEALTHCARE；project_name=平台公共知识库（官方公开资料）",
+              "source_id": null,
+              "chunk_id": null
+            }
+          },
+          "unresolved_dimensions": [
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "context_origins": [
+            "SECTION_HEADING",
+            "MATERIAL_METADATA"
+          ],
+          "exact_span_preserved": true
+        }
+      ],
       "semantic_boundaries": [
         "INDUSTRY_REFERENCE_NOT_ENTERPRISE_CAPABILITY"
       ],
@@ -4776,7 +5885,7 @@
           "review_dimensions": {
             "subject_match": "match",
             "scope_match": "unknown",
-            "status_match": "unknown",
+            "status_match": "mismatch",
             "quantitative_match": "unknown",
             "entity_match": "unknown",
             "validity_match": "unknown",
@@ -4784,6 +5893,7 @@
             "support_sufficiency": "mismatch"
           },
           "reason_codes": [
+            "STATUS_MISMATCH",
             "SUPPORT_INSUFFICIENT"
           ],
           "support_observations": [
@@ -4794,6 +5904,7 @@
               "support_excerpt_hash": "d29c7d831c7eab2aac8a0acab1f8ffd8759d84d664ef995e3d051d201a841e9f",
               "observation_type": "partial_support",
               "reason_codes": [
+                "STATUS_MISMATCH",
                 "SUPPORT_INSUFFICIENT"
               ]
             }
@@ -4809,19 +5920,56 @@
           "support_excerpt_hash": "d29c7d831c7eab2aac8a0acab1f8ffd8759d84d664ef995e3d051d201a841e9f",
           "observation_type": "partial_support",
           "reason_codes": [
+            "STATUS_MISMATCH",
             "SUPPORT_INSUFFICIENT"
           ]
         }
       ],
       "conflict_observations": [],
+      "context_recovery": [
+        {
+          "required_dimensions": [
+            "scope_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+          "recovered_dimensions": {
+            "scope_match": {
+              "status": "resolved",
+              "origin": "MATERIAL_METADATA",
+              "source_text": "material_name=case-hospital-insufficient.md；material_type=project_case；corpus_scope=ENTERPRISE_PRIVATE；project_name=STAGE20-L3-SYNTHETIC-ENTERPRISE [NOT_REAL_CUSTOMER_DATA]",
+              "source_id": null,
+              "chunk_id": null
+            },
+            "entity_match": {
+              "status": "resolved",
+              "origin": "EXACT_SPAN",
+              "source_text": "项目：景云医院数据集成试点；内容：完成接口联调和数据目录梳理；只有中选通知，没有合同和验收记录；日期：2025-10（具体日不详）。相关但不足以证明正式验收。",
+              "source_id": "MCH-00AFC7A231D91C6A9FF01082FBFC0BDE",
+              "chunk_id": "MCH-00AFC7A231D91C6A9FF01082FBFC0BDE"
+            }
+          },
+          "unresolved_dimensions": [
+            "quantitative_match",
+            "validity_match"
+          ],
+          "context_origins": [
+            "SECTION_HEADING",
+            "MATERIAL_METADATA"
+          ],
+          "exact_span_preserved": true
+        }
+      ],
       "semantic_boundaries": [
-        "UNCHANGED"
+        "PROJECT_STATUS_UNPROVEN"
       ],
       "change_reason": [
-        "修复后的业务来源与原系统草稿语义一致。"
+        "来源明确说明状态或验收依据不完整，不能把项目记录升级为已完成且可验收。"
       ],
       "status_changed": false,
-      "semantic_changed": false,
+      "semantic_changed": true,
       "aggregate_consistent": true,
       "expected_gold": "INSUFFICIENT_EVIDENCE",
       "gold_provenance": "SYSTEM_DRAFT_UNREVIEWED"
@@ -4950,6 +6098,38 @@
         }
       ],
       "conflict_observations": [],
+      "context_recovery": [
+        {
+          "required_dimensions": [
+            "scope_match",
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+          "recovered_dimensions": {
+            "scope_match": {
+              "status": "resolved",
+              "origin": "MATERIAL_METADATA",
+              "source_text": "material_name=全国一体化政务服务平台移动端建设指南（官方摘录）.md；material_type=technical_whitepaper；corpus_scope=GOVERNMENT_ENTERPRISE；project_name=平台公共知识库（官方公开资料）",
+              "source_id": null,
+              "chunk_id": null
+            }
+          },
+          "unresolved_dimensions": [
+            "status_match",
+            "quantitative_match",
+            "entity_match",
+            "validity_match"
+          ],
+          "context_origins": [
+            "SECTION_HEADING",
+            "MATERIAL_METADATA"
+          ],
+          "exact_span_preserved": true
+        }
+      ],
       "semantic_boundaries": [
         "INDUSTRY_REFERENCE_NOT_ENTERPRISE_CAPABILITY"
       ],

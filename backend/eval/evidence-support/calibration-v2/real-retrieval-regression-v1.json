@@ -1,0 +1,64 @@
+{
+  "schema_version": "4.3-real-retrieval-regression-v1",
+  "project_id": "91ab7f01-2bfb-4d49-8a81-ddfcb20ee903",
+  "requirement_refs": [
+    "REQ-001",
+    "REQ-009",
+    "REQ-012"
+  ],
+  "model_calls": 0,
+  "llm_calls": 0,
+  "automatic_retry": false,
+  "embedding_calls": 3,
+  "cases": [
+    {
+      "requirement_id": "REQ-001",
+      "requirement": "制定统一的技术标准、数据标准和业务标准，通过“一网统管”核心平台和数字底座，实现城市治理一图展现、城市态势一脑分析、处置力量一键点调、城市事件一键流转、社会要素一格汇聚、移动应用一端接入、市民热线一呼即通、基层实战统一赋能、开发平台统一底座。",
+      "latency_ms": 76,
+      "error_code": "EMBEDDING_NETWORK_ERROR",
+      "error_message": "Embedding 服务网络请求失败。",
+      "final_semantic_result": "NOT_REACHED",
+      "top5_actual_source_excerpts": [],
+      "selected_exact_evidence_span": null,
+      "context_window": [],
+      "recovered_dimensions": {}
+    },
+    {
+      "requirement_id": "REQ-009",
+      "requirement": "平台需满足全市各专业条线管理人员、网格员使用，支持在线用户量>=10000人，支持并发量100次/秒，普通话智能识别率≥98%，智能语音合成准确率≥97.5%。",
+      "latency_ms": 14,
+      "error_code": "EMBEDDING_NETWORK_ERROR",
+      "error_message": "Embedding 服务网络请求失败。",
+      "final_semantic_result": "NOT_REACHED",
+      "top5_actual_source_excerpts": [],
+      "selected_exact_evidence_span": null,
+      "context_window": [],
+      "recovered_dimensions": {}
+    },
+    {
+      "requirement_id": "REQ-012",
+      "requirement": "兼容X86架构，配合支持国产化的操作系统和数据库改造，满足多元的资源申请，支持业务创新。",
+      "latency_ms": 12,
+      "error_code": "EMBEDDING_NETWORK_ERROR",
+      "error_message": "Embedding 服务网络请求失败。",
+      "final_semantic_result": "NOT_REACHED",
+      "top5_actual_source_excerpts": [],
+      "selected_exact_evidence_span": null,
+      "context_window": [],
+      "recovered_dimensions": {}
+    }
+  ],
+  "metrics": {
+    "material_hit_at_5": null,
+    "document_hit_at_5": null,
+    "chunk_hit_at_5": null,
+    "evidence_bearing_chunk_recall_at_5": null,
+    "qualified_evidence_span_rate": null,
+    "context_recovery_rate": null,
+    "evidence_gap_recovery_rate": null,
+    "metadata_header_false_evidence_rate": "NOT_EVALUATED_MODEL_PROHIBITED",
+    "enterprise_evidence_source_routing_precision": "NOT_APPLICABLE_FOR_SELECTED_TECHNICAL_CASES",
+    "metric_note": "Recall and semantic false-evidence metrics require an independent labeled Gold set and were not guessed."
+  },
+  "status": "BLOCKED_EMBEDDING_OR_RETRIEVAL"
+}
