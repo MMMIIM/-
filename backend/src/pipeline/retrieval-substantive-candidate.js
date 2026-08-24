@@ -33,6 +33,24 @@ const ABSTRACT_LIST = new Set(['可控', '可追溯', '可审核', '可修改', 
 const METADATA_LINE = /^(?:representative_synthetic|synthetic_test_material|not_real_customer_data|material_id|document_id|chunk_id|subject|scope|corpus_scope|industry|material_type|review_status|project_name|owner)\s*[:=]/i;
 const NAVIGATION = /^(?:[A-Z](?:\.\s*)?|\d+(?:\.\d+)*\s*)?(?:required documents|open source policy|core bid product flow|architecture source-of-truth location|项目目录|目录|内容导航)$/i;
 const STATUS_LABEL = /^(?:P[0-3](?:\s*[—-]\s*[A-Z_]+)?|SUPPORTED\s*\/|NO_EVIDENCE\s*\/|Unknown automatically upgraded|Provider\s*\/\s*Model\s*\/\s*Project data scope change|005-open-source-reuse\.md)$/i;
+const FACTUAL_PREDICATE = /(?:\b(?:is|are|was|were|has|have|had|supports?|provides?|delivers?|completed?|deployed?|uses?|meets?|includes?|contains?|runs?|passed?|certified?|approved?|registered?|active|available|verified|recorded|accepted|responsible|requires?|ensures?|achieves?|achieved)\b|(?:具有|具备|拥有|支持|提供|完成|通过|采用|满足|包含|包括|达到|部署|负责|承担|实现|可以|能够|使用|配置|运行|记录|验收|签订|获得|认证|注册))/iu;
+const FACT_ROW = /(?:^|[|\t])\s*[^|\t:：=]{1,48}\s*[:：=]\s*\S/;
+const SENTENCE_PUNCTUATION = /[。！？!?；;，,。]/u;
+
+/**
+ * A short label is not an auditable proposition unless it carries a
+ * structured factual value.  This is deliberately lexical and language-
+ * neutral: it looks for predicate/value shape, never a business vocabulary.
+ */
+export function isLabelLikeNounPhrase(value) {
+  const source = normalize(value);
+  if (!source || source.includes('\n') || source.length > 80) return false;
+  if (FACT_ROW.test(source)) return false;
+  if (SENTENCE_PUNCTUATION.test(source)) return false;
+  if (FACTUAL_PREDICATE.test(source)) return false;
+  if (/=>|→|->/.test(source)) return false;
+  return /^[\p{L}\p{N}\p{M}_/ .&()+-]+$/u.test(source);
+}
 
 function isMetadataBlock(valueLines) {
   return valueLines.length > 0 && valueLines.every((line) => {
@@ -63,6 +81,7 @@ export function classifySubstantiveCandidate(candidate = {}) {
   if (valueLines.length === 1 && STATUS_LABEL.test(valueLines[0])) return { substantive_candidate: false, substantive_class: 'BOILERPLATE', substantive_reason: 'STATUS_OR_POLICY_LABEL', substantive_version: RETRIEVAL_SUBSTANTIVE_VERSION };
   if (isAbstractList(valueLines)) return { substantive_candidate: false, substantive_class: 'BOILERPLATE', substantive_reason: 'ABSTRACT_VALUE_LIST', substantive_version: RETRIEVAL_SUBSTANTIVE_VERSION };
   if (valueLines.length === 1 && /[:：]\s*$/.test(valueLines[0])) return { substantive_candidate: false, substantive_class: 'INCOMPLETE_CLAUSE', substantive_reason: 'VALUE_MISSING_AFTER_LABEL', substantive_version: RETRIEVAL_SUBSTANTIVE_VERSION };
+  if (valueLines.length === 1 && isLabelLikeNounPhrase(valueLines[0])) return { substantive_candidate: false, substantive_class: 'LABEL_ONLY', substantive_reason: 'LABEL_LIKE_NOUN_PHRASE', substantive_version: RETRIEVAL_SUBSTANTIVE_VERSION };
   if (valueLines.length === 1 && valueLines[0].length <= 3 && /^[\p{L}\p{N}_-]+$/u.test(valueLines[0])) return { substantive_candidate: false, substantive_class: 'FRAGMENT', substantive_reason: 'SHORT_TOKEN_FRAGMENT', substantive_version: RETRIEVAL_SUBSTANTIVE_VERSION };
   return { substantive_candidate: true, substantive_class: 'SUBSTANTIVE_CANDIDATE', substantive_reason: 'COMPLETE_PROPOSITION_OR_STRUCTURED_VALUE', substantive_version: RETRIEVAL_SUBSTANTIVE_VERSION };
 }

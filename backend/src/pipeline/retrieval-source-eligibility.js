@@ -1,3 +1,5 @@
+import { isLabelLikeNounPhrase } from './retrieval-substantive-candidate.js';
+
 export const RETRIEVAL_SOURCE_ELIGIBILITY_VERSION = 'retrieval-source-eligibility-v1';
 
 export const EVIDENCE_SOURCE_CLASSES = Object.freeze([
@@ -70,6 +72,7 @@ function sourceOrigin(candidate) {
 
 function isLowSpecificityClaim(source) {
   if (!source) return false;
+  if (isLabelLikeNounPhrase(source)) return true;
   const withoutAbstract = source.replace(ABSTRACT_TERM, '').replace(/[，,、。；;：:（）()\s]/g, '');
   const shortLabel = source.length <= 24 && !/[\n，,：:；;]/.test(source) && !/[\d%]/.test(source);
   return (withoutAbstract.length <= 12 && !AUDITABLE_DIMENSION.test(source)) || shortLabel;
@@ -115,6 +118,9 @@ export function classifyEvidenceSourceEligibility(candidate = {}) {
   if (SYSTEM_MARKER.test(source) && (materialType === 'company_profile' || !provenance)) {
     const systemClass = /(?:system|系统|状态|确定性传播|control[ _-]?plane|控制面|控制平面|supported|insufficient|no[_ -]?evidence|needs?[_ -]?review)/i.test(source) ? 'SYSTEM_DERIVED_ARTIFACT' : 'INTERNAL_PROCESS_ARTIFACT';
     return { evidence_source_eligible: false, evidence_source_class: systemClass, evidence_source_reason: systemClass === 'SYSTEM_DERIVED_ARTIFACT' ? 'SYSTEM_DERIVED_TEXT' : 'INTERNAL_PROCESS_TEXT', low_specificity_claim: false, evidence_source_version: RETRIEVAL_SOURCE_ELIGIBILITY_VERSION };
+  }
+  if (isLabelLikeNounPhrase(source)) {
+    return { evidence_source_eligible: false, evidence_source_class: 'NON_AUDITABLE_CLAIM', evidence_source_reason: 'LOW_SPECIFICITY_CLAIM', low_specificity_claim: true, evidence_source_version: RETRIEVAL_SOURCE_ELIGIBILITY_VERSION };
   }
   if (provenance?.evidence_source_class === 'AUTHORITATIVE_REFERENCE_FACT') return { ...provenance, low_specificity_claim: false, evidence_source_version: RETRIEVAL_SOURCE_ELIGIBILITY_VERSION };
   if (isLowSpecificityClaim(source) && (materialType === 'company_profile' || !provenance)) {

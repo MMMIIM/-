@@ -16,6 +16,8 @@ export const INPUT_PATH = path.join(HERE, 'GPT_REVIEW_PACKET_SUBSTANTIVE_HYGIENE
 export const INTEGRITY_PACKET_PATH = path.join(HERE, 'GPT_REVIEW_PACKET_RETRIEVAL_EVAL_INTEGRITY.json');
 export const REPORT_PATH = path.join(HERE, 'GPT_REVIEW_PACKET_EVIDENCE_SOURCE_ELIGIBILITY_OFFLINE.json');
 export const MARKDOWN_PATH = path.join(HERE, 'GPT_REVIEW_PACKET_EVIDENCE_SOURCE_ELIGIBILITY_OFFLINE.md');
+export const POST_V4_REPORT_PATH = path.join(HERE, 'GPT_REVIEW_PACKET_EVIDENCE_SOURCE_ELIGIBILITY_POST_V4.json');
+export const POST_V4_MARKDOWN_PATH = path.join(HERE, 'GPT_REVIEW_PACKET_EVIDENCE_SOURCE_ELIGIBILITY_POST_V4.md');
 export const CASE_IDS = Object.freeze([
   'V2R-001-PERF-DIRECT', 'V2R-002-PERF-PARTIAL', 'V2R-003-COMP-DIRECT',
   'V2R-004-COMP-PARTIAL', 'V2R-005-ISO-DIRECT', 'V2R-006-ISO-SCOPE'
@@ -25,6 +27,8 @@ export const TOP_K = 5;
 const CONTEXT_ROLES = new Set(['HEADING', 'METADATA', 'FRONT_MATTER']);
 const DECISION_BEARING_CLASS = 'EVIDENCE_BEARING';
 const GPT_EXPECTATION_SOURCE = 'GPT_REVIEWED_REGRESSION_EXPECTATION';
+const AUTO_EXPECTATION_SOURCE = 'AUTO_DRAFT_EXPECTATION';
+const PENDING_EXPECTATION_SOURCE = 'PENDING_GPT_REVIEW';
 
 // Evaluation-only, independently reviewed regression expectations. These are
 // not production rules and are intentionally keyed by fixture identity.
@@ -34,7 +38,11 @@ const CONFIRMED_FALSE_POSITIVE_EXPECTATIONS = Object.freeze({
   'MCH-889DDF9919EF0E6485406DAB6A159A11': ['SYSTEM_DERIVED_ARTIFACT', 'GPT_CONFIRMED_STATUS_DERIVED'],
   'MCH-6BA94F47BCD831E596F751A2BEA49AB8': ['INTERNAL_PROCESS_ARTIFACT', 'GPT_CONFIRMED_TEST_PROCESS'],
   'MCH-2684A33DDF84C68B4CA59C348136BB30': ['INTERNAL_PROCESS_ARTIFACT', 'GPT_CONFIRMED_CODE_PROCESS'],
-  'MCH-10C2129A5D37AB29824CE98DF6E32F0D': ['INTERNAL_PROCESS_ARTIFACT', 'GPT_CONFIRMED_PRESENTATION_LABEL']
+  'MCH-10C2129A5D37AB29824CE98DF6E32F0D': ['INTERNAL_PROCESS_ARTIFACT', 'GPT_CONFIRMED_PRESENTATION_LABEL'],
+  'MCH-555802B2C6B93AE17E478E4ECC99308A': ['NON_AUDITABLE_CLAIM', 'GPT_CONFIRMED_LOW_SPECIFICITY_CLAIM'],
+  'MCH-DDCF46F5C7751B5B84EA724E094CBCFB': ['CONTROL_PLANE_ARTIFACT', 'GPT_CONFIRMED_CONTROL_PLANE'],
+  'MCH-363BD137AFF31336472D4E7F4F537C8F': ['SYSTEM_DERIVED_ARTIFACT', 'GPT_CONFIRMED_STATUS_DERIVED'],
+  'MCH-52CC0CDE792C8009A7790CA3F184A28E': ['NON_AUDITABLE_CLAIM', 'GPT_CONFIRMED_LABEL_LIKE_NOUN_PHRASE']
 });
 
 const normalize = (value) => String(value ?? '').normalize('NFKC').replace(/\r\n?/g, '\n').trim();
@@ -42,7 +50,7 @@ const rankOf = (candidate, fallback) => Number(candidate.raw_vector_rank ?? cand
 
 function independentExpectedSourceEligibility(candidate) {
   const override = CONFIRMED_FALSE_POSITIVE_EXPECTATIONS[candidate.chunk_id];
-  if (override) return { value: override[0], reason: override[1] };
+  if (override) return { value: override[0], reason: override[1], provenance: GPT_EXPECTATION_SOURCE };
   const source = normalize(candidate.source_text ?? candidate.raw_original_text);
   const materialType = String(candidate.material_type ?? '').toLowerCase();
   const authority = String(candidate.source_authority ?? candidate.authority_level ?? '').toLowerCase();
@@ -68,6 +76,7 @@ function annotate(candidate, caseId, integrityPacket) {
   const sourceEligibility = classifyEvidenceSourceEligibility(candidate);
   const expected = independentExpectedSourceEligibility(candidate);
   const relative = expectedLookup(integrityPacket, caseId, candidate.chunk_id);
+  const expectationProvenance = expected.provenance || AUTO_EXPECTATION_SOURCE;
   return {
     ...candidate,
     source_text: candidate.source_text ?? candidate.raw_original_text ?? '',
@@ -81,9 +90,14 @@ function annotate(candidate, caseId, integrityPacket) {
     evidence_source_reason: sourceEligibility.evidence_source_reason,
     low_specificity_claim: sourceEligibility.low_specificity_claim,
     evidence_source_version: sourceEligibility.evidence_source_version,
-    GPT_REVIEW_EXPECTED_SOURCE_ELIGIBILITY: expected.value,
-    GPT_REVIEW_EXPECTED_SOURCE_ELIGIBILITY_REASON: expected.reason,
-    decision_bearing_expectation_source: GPT_EXPECTATION_SOURCE,
+    candidate_eligibility: substantive.substantive_candidate && sourceEligibility.evidence_source_eligible ? 'EVIDENCE_ELIGIBLE' : 'CONTEXT_ONLY',
+    candidate_exclusion_reason: substantive.substantive_candidate ? (sourceEligibility.evidence_source_eligible ? null : sourceEligibility.evidence_source_reason) : substantive.substantive_reason,
+    expected_source_eligibility: expected.value,
+    expected_source_eligibility_reason: expected.reason,
+    source_eligibility_expectation_provenance: expectationProvenance,
+    gpt_reviewed_source_eligibility: expectationProvenance === GPT_EXPECTATION_SOURCE ? expected.value : null,
+    gpt_reviewed_source_eligibility_reason: expectationProvenance === GPT_EXPECTATION_SOURCE ? expected.reason : null,
+    decision_bearing_expectation_source: relative ? GPT_EXPECTATION_SOURCE : PENDING_EXPECTATION_SOURCE,
     requirement_relative_classification: relative?.GPT_REVIEW_EXPECTED_CLASSIFICATION ?? 'NOT_REVIEWED_IN_EXISTING_PACKET',
     raw_vector_rank: rankOf(candidate, 0)
   };
@@ -100,12 +114,12 @@ function phaseCandidates(requirement, raw, caseId, integrityPacket, phase) {
     ? annotated
     : annotated.filter((candidate) => phase1Eligible(requirement, candidate)
       && (phase === 'POST_V1' || candidate.substantive_candidate)
-      && (phase !== 'POST_V3' || candidate.evidence_source_eligible));
+      && (!['POST_V3', 'POST_V4'].includes(phase) || candidate.evidence_source_eligible));
   return candidates.slice(0, TOP_K).map((candidate, index) => ({
     ...candidate,
     phase_rank: index + 1,
     phase,
-    phase_eligibility: phase === 'POST_V3' ? 'FINAL_EVIDENCE_ELIGIBLE' : phase === 'POST_V2' ? 'SUBSTANTIVE_EVIDENCE_CANDIDATE' : phase === 'POST_V1' ? 'STRUCTURAL_EVIDENCE_CANDIDATE' : 'LEGACY_BASELINE'
+    phase_eligibility: ['POST_V3', 'POST_V4'].includes(phase) ? 'FINAL_EVIDENCE_ELIGIBLE' : phase === 'POST_V2' ? 'SUBSTANTIVE_EVIDENCE_CANDIDATE' : phase === 'POST_V1' ? 'STRUCTURAL_EVIDENCE_CANDIDATE' : 'LEGACY_BASELINE'
   }));
 }
 
@@ -181,16 +195,17 @@ function aggregatePhase(cases, phase) {
   return { exact_gold: exact, decision_bearing: decision, hygiene: hygieneMetrics(inputs), raw_candidate_count: cases.reduce((sum, item) => sum + item.raw_candidate_count, 0), rejected_non_substantive_count: cases.reduce((sum, item) => sum + item.rejected_non_substantive_count, 0) };
 }
 
-export function replayCase(caseRecord, integrityPacket) {
+export function replayCase(caseRecord, integrityPacket, { includePostV4 = false } = {}) {
   const requirement = { text: caseRecord.requirement };
   const raw = (caseRecord.raw_candidate_pool || caseRecord.candidate_hygiene?.all_candidates || []).slice().sort((a, b) => rankOf(a, 0) - rankOf(b, 0));
   const annotated = raw.map((candidate) => annotate(candidate, caseRecord.case_id, integrityPacket));
   const gold = splitGold(caseRecord);
   const decisionBearingIds = idsForExpectedClassification(integrityPacket, caseRecord.case_id, DECISION_BEARING_CLASS);
   const phases = {};
-  for (const phase of ['PRE', 'POST_V1', 'POST_V2', 'POST_V3']) phases[phase.toLowerCase()] = phaseCandidates(requirement, annotated, caseRecord.case_id, integrityPacket, phase);
+  const phaseNames = ['PRE', 'POST_V1', 'POST_V2', 'POST_V3', ...(includePostV4 ? ['POST_V4'] : [])];
+  for (const phase of phaseNames) phases[phase.toLowerCase()] = phaseCandidates(requirement, annotated, caseRecord.case_id, integrityPacket, phase);
   const buildMetric = (phaseCandidatesValue) => ({ phase_candidates: phaseCandidatesValue, goldEvidenceIds: new Set(gold.gold_evidence_chunk_ids), decisionBearingIds: new Set(decisionBearingIds) });
-  return {
+  const result = {
     case_id: caseRecord.case_id,
     requirement: caseRecord.requirement,
     gold_evidence_set: gold.gold_evidence_set,
@@ -204,33 +219,67 @@ export function replayCase(caseRecord, integrityPacket) {
     post_v2: { case_id: caseRecord.case_id, phase: 'POST_V2', ...buildMetric(phases.post_v2), metrics: { exact_gold: rankMetrics([buildMetric(phases.post_v2)], 'goldEvidenceIds'), decision_bearing: rankMetrics([buildMetric(phases.post_v2)], 'decisionBearingIds'), hygiene: hygieneMetrics([{ phase_candidates: phases.post_v2 }]) } },
     post_v3: { case_id: caseRecord.case_id, phase: 'POST_V3', ...buildMetric(phases.post_v3), metrics: { exact_gold: rankMetrics([buildMetric(phases.post_v3)], 'goldEvidenceIds'), decision_bearing: rankMetrics([buildMetric(phases.post_v3)], 'decisionBearingIds'), hygiene: hygieneMetrics([{ phase_candidates: phases.post_v3 }]) } }
   };
+  if (includePostV4) result.post_v4 = { case_id: caseRecord.case_id, phase: 'POST_V4', ...buildMetric(phases.post_v4), metrics: { exact_gold: rankMetrics([buildMetric(phases.post_v4)], 'goldEvidenceIds'), decision_bearing: rankMetrics([buildMetric(phases.post_v4)], 'decisionBearingIds'), hygiene: hygieneMetrics([{ phase_candidates: phases.post_v4 }]) } };
+  return result;
 }
 
-export function buildOfflineReport({ inputPacket, integrityPacket }) {
-  const cases = (inputPacket.cases || []).filter((item) => CASE_IDS.includes(item.case_id)).map((item) => replayCase(item, integrityPacket));
+export function buildOfflineReport({ inputPacket, integrityPacket, includePostV4 = false }) {
+  const cases = (inputPacket.cases || []).filter((item) => CASE_IDS.includes(item.case_id)).map((item) => replayCase(item, integrityPacket, { includePostV4 }));
   const phases = { pre: aggregatePhase(cases, 'pre'), post_v1: aggregatePhase(cases, 'post_v1'), post_v2: aggregatePhase(cases, 'post_v2'), post_v3: aggregatePhase(cases, 'post_v3') };
+  if (includePostV4) phases.post_v4 = aggregatePhase(cases, 'post_v4');
+  const finalPhase = includePostV4 ? phases.post_v4 : phases.post_v3;
   const falsePositiveIds = Object.keys(CONFIRMED_FALSE_POSITIVE_EXPECTATIONS);
-  const allSixExcluded = falsePositiveIds.every((chunkId) => cases.every((item) => !item.post_v3.phase_candidates.some((candidate) => candidate.chunk_id === chunkId)));
+  const finalPhaseKey = includePostV4 ? 'post_v4' : 'post_v3';
+  const allConfirmedExcluded = falsePositiveIds.every((chunkId) => cases.every((item) => !item[finalPhaseKey].phase_candidates.some((candidate) => candidate.chunk_id === chunkId)));
   const iso9001 = cases.find((item) => item.case_id === 'V2R-005-ISO-DIRECT')?.raw_candidate_pool.find((candidate) => candidate.original_name === 'qualification-iso9001.md');
   const iso9001Expected = (integrityPacket.candidate_reclassification || []).find((item) => item.case_id === 'V2R-005-ISO-DIRECT' && item.chunk_id === iso9001?.chunk_id);
   const boundary = cases.find((item) => item.case_id === 'V2R-006-ISO-SCOPE')?.raw_candidate_pool.find((candidate) => candidate.chunk_id === 'MCH-70376020855F97D43106A81E5F040C7F');
-  const knownDecisionGoldRetained = phases.post_v3.decision_bearing.hit_at_5 === 1;
+  const knownDecisionGoldRetained = finalPhase.decision_bearing.hit_at_5 === 1;
+  const allCandidates = cases.flatMap((item) => item.raw_candidate_pool);
+  const gptReviewedExpectationCount = allCandidates.filter((candidate) => candidate.source_eligibility_expectation_provenance === GPT_EXPECTATION_SOURCE).length;
+  const autoExpectationCount = allCandidates.filter((candidate) => candidate.source_eligibility_expectation_provenance === AUTO_EXPECTATION_SOURCE).length;
+  const wronglyAttributedGptLabels = allCandidates.filter((candidate) => candidate.source_eligibility_expectation_provenance !== GPT_EXPECTATION_SOURCE && candidate.gpt_reviewed_source_eligibility !== null).length;
+  const v2r001Rank = finalPhase.decision_bearing.first_rank_by_case.find((item) => item.case_id === 'V2R-001-PERF-DIRECT')?.rank ?? null;
+  const quality = {
+    decision_bearing: finalPhase.decision_bearing,
+    exact_gold: finalPhase.exact_gold,
+    v2r001_first_decision_bearing_rank: v2r001Rank,
+    v2r006_boundary_source_eligible: boundary?.evidence_source_eligible === true
+  };
+  const postV4Pass = includePostV4
+    && finalPhase.hygiene.metadata_at_5 === 0
+    && finalPhase.hygiene.non_substantive_at_5 === 0
+    && finalPhase.hygiene.non_evidence_source_at_5 === 0
+    && finalPhase.hygiene.derived_artifact_leakage_at_5 === 0
+    && finalPhase.hygiene.internal_process_artifact_leakage_at_5 === 0
+    && finalPhase.hygiene.low_specificity_claim_at_5 === 0
+    && finalPhase.decision_bearing.hit_at_3 === 1
+    && finalPhase.decision_bearing.hit_at_5 === 1
+    && finalPhase.exact_gold.hit_at_3 === 1
+    && finalPhase.exact_gold.hit_at_5 === 1
+    && v2r001Rank !== null && v2r001Rank <= 2
+    && quality.v2r006_boundary_source_eligible
+    && allConfirmedExcluded
+    && wronglyAttributedGptLabels === 0;
   return {
-    schema_version: '4.3-retrieval-source-eligibility-offline-v1',
+    schema_version: includePostV4 ? '4.3-retrieval-source-eligibility-post-v4-offline-v1' : '4.3-retrieval-source-eligibility-offline-v1',
     title: 'P0 EVIDENCE SOURCE ELIGIBILITY CHECKPOINT',
+    evaluation_phase: includePostV4 ? 'POST_V4' : 'POST_V3',
     generated_at: new Date().toISOString(),
     structural_hygiene: { phase1_preserved: true, phase2a_preserved: true, structural_false_negative_confirmed: 0 },
-    source_eligibility: { total_candidate_occurrences: cases.reduce((sum, item) => sum + item.raw_candidate_count, 0), ...sourceCounts(cases), confirmed_false_positive_expectation_count: falsePositiveIds.length },
+    source_eligibility: { total_candidate_occurrences: cases.reduce((sum, item) => sum + item.raw_candidate_count, 0), ...sourceCounts(cases), confirmed_false_positive_expectation_count: falsePositiveIds.length, gpt_reviewed_expectation_count: gptReviewedExpectationCount, auto_expectation_count: autoExpectationCount, wrongly_attributed_gpt_labels_remaining: wronglyAttributedGptLabels },
     phases,
+    quality,
     acceptance: {
-      metadata_at_5_zero: phases.post_v3.hygiene.metadata_at_5 === 0,
-      non_substantive_at_5_zero: phases.post_v3.hygiene.non_substantive_at_5 === 0,
-      non_evidence_source_at_5_zero: phases.post_v3.hygiene.non_evidence_source_at_5 === 0,
-      derived_artifact_leakage_at_5_zero: phases.post_v3.hygiene.derived_artifact_leakage_at_5 === 0,
-      internal_process_artifact_leakage_at_5_zero: phases.post_v3.hygiene.internal_process_artifact_leakage_at_5 === 0,
-      low_specificity_claim_at_5_zero: phases.post_v3.hygiene.low_specificity_claim_at_5 === 0,
-      broken_decision_bearing_gold: phases.post_v3.decision_bearing.hit_at_5 < 1,
-      all_six_confirmed_false_positives_excluded: allSixExcluded,
+      metadata_at_5_zero: finalPhase.hygiene.metadata_at_5 === 0,
+      non_substantive_at_5_zero: finalPhase.hygiene.non_substantive_at_5 === 0,
+      non_evidence_source_at_5_zero: finalPhase.hygiene.non_evidence_source_at_5 === 0,
+      derived_artifact_leakage_at_5_zero: finalPhase.hygiene.derived_artifact_leakage_at_5 === 0,
+      internal_process_artifact_leakage_at_5_zero: finalPhase.hygiene.internal_process_artifact_leakage_at_5 === 0,
+      low_specificity_claim_at_5_zero: finalPhase.hygiene.low_specificity_claim_at_5 === 0,
+      broken_decision_bearing_gold: finalPhase.decision_bearing.hit_at_5 < 1,
+      all_confirmed_source_eligibility_corrections_excluded: allConfirmedExcluded,
+      wrongly_attributed_gpt_labels_remaining: wronglyAttributedGptLabels,
       iso9001_source_eligible: iso9001?.evidence_source_eligible === true,
       iso9001_evidence_bearing: iso9001Expected?.GPT_REVIEW_EXPECTED_CLASSIFICATION === 'EVIDENCE_BEARING',
       v2r006_boundary_source_eligible: boundary?.evidence_source_eligible === true,
@@ -242,10 +291,12 @@ export function buildOfflineReport({ inputPacket, integrityPacket }) {
         && phases.post_v3.hygiene.internal_process_artifact_leakage_at_5 === 0
         && phases.post_v3.hygiene.low_specificity_claim_at_5 === 0
         && phases.post_v3.decision_bearing.hit_at_5 === 1
-        && allSixExcluded && iso9001?.evidence_source_eligible === true
+        && allConfirmedExcluded && iso9001?.evidence_source_eligible === true
         && iso9001Expected?.GPT_REVIEW_EXPECTED_CLASSIFICATION !== 'EVIDENCE_BEARING'
         && boundary?.evidence_source_eligible === true
-        && knownDecisionGoldRetained
+        && phases.post_v3.decision_bearing.hit_at_5 === 1
+        && knownDecisionGoldRetained,
+      ...(includePostV4 ? { post_v4_pass: postV4Pass } : {})
     },
     anti_laundering: { final_top5_system_derived_artifacts: phases.post_v3.hygiene.derived_artifact_leakage_at_5, final_top5_internal_process_artifacts: phases.post_v3.hygiene.internal_process_artifact_leakage_at_5 },
     gpt_review_status: 'PENDING_REVIEW',
@@ -255,18 +306,20 @@ export function buildOfflineReport({ inputPacket, integrityPacket }) {
 }
 
 function markdown(report) {
-  const lines = ['# P0 EVIDENCE SOURCE ELIGIBILITY CHECKPOINT', '', '- GPT_REVIEW_STATUS: `PENDING_REVIEW`', '- EVAL_COMPLETE: `NO`', '- Offline replay only. Embedding, LLM and Dify calls: 0.', '', '## Source eligibility summary', '```json', JSON.stringify({ structural_hygiene: report.structural_hygiene, source_eligibility: report.source_eligibility, acceptance: report.acceptance, anti_laundering: report.anti_laundering }, null, 2), '```', '', '## PRE / POST_V1 / POST_V2 / POST_V3 metrics', '```json', JSON.stringify(report.phases, null, 2), '```', ''];
+  const finalPhase = report.evaluation_phase || 'POST_V3';
+  const phaseLabel = finalPhase === 'POST_V4' ? 'PRE / POST_V1 / POST_V2 / POST_V3 / POST_V4' : 'PRE / POST_V1 / POST_V2 / POST_V3';
+  const lines = ['# P0 EVIDENCE SOURCE ELIGIBILITY CHECKPOINT', '', `- EVALUATION_PHASE: \`${finalPhase}\``, '- GPT_REVIEW_STATUS: `PENDING_REVIEW`', '- EVAL_COMPLETE: `NO`', '- Offline replay only. Embedding, LLM and Dify calls: 0.', '', '## Source eligibility summary', '```json', JSON.stringify({ structural_hygiene: report.structural_hygiene, source_eligibility: report.source_eligibility, quality: report.quality, acceptance: report.acceptance, anti_laundering: report.anti_laundering }, null, 2), '```', '', `## ${phaseLabel} metrics`, '```json', JSON.stringify(report.phases, null, 2), '```', ''];
   for (const item of report.cases ?? []) {
-    lines.push(`## ${item.case_id}`, '', `Requirement: ${item.requirement}`, '', '### Gold Evidence / Context', '```json', JSON.stringify({ gold_evidence_set: item.gold_evidence_set, gold_context_set: item.gold_context_set }, null, 2), '```', '', `Raw candidate occurrences: ${item.raw_candidate_count}`, `Rejected non-substantive occurrences: ${item.rejected_non_substantive_count}`, '', '### All raw candidates with independent source-eligibility expectation', '```json', JSON.stringify(item.raw_candidate_pool, null, 2), '```', '', '### PRE / POST_V1 / POST_V2 / POST_V3', '```json', JSON.stringify({ pre: item.pre, post_v1: item.post_v1, post_v2: item.post_v2, post_v3: item.post_v3 }, null, 2), '```', '');
+    lines.push(`## ${item.case_id}`, '', `Requirement: ${item.requirement}`, '', '### Gold Evidence / Context', '```json', JSON.stringify({ gold_evidence_set: item.gold_evidence_set, gold_context_set: item.gold_context_set }, null, 2), '```', '', `Raw candidate occurrences: ${item.raw_candidate_count}`, `Rejected non-substantive occurrences: ${item.rejected_non_substantive_count}`, '', '### All raw candidates with runtime result, expectation and provenance', '```json', JSON.stringify(item.raw_candidate_pool, null, 2), '```', '', `### ${phaseLabel}`, '```json', JSON.stringify({ pre: item.pre, post_v1: item.post_v1, post_v2: item.post_v2, post_v3: item.post_v3, ...(item.post_v4 ? { post_v4: item.post_v4 } : {}) }, null, 2), '```', '');
   }
   return `${lines.join('\n')}\n`;
 }
 
-export async function runOfflineReplay({ inputPath = INPUT_PATH, integrityPath = INTEGRITY_PACKET_PATH, reportPath = REPORT_PATH, markdownPath = MARKDOWN_PATH } = {}) {
+export async function runOfflineReplay({ inputPath = INPUT_PATH, integrityPath = INTEGRITY_PACKET_PATH, reportPath = REPORT_PATH, markdownPath = MARKDOWN_PATH, includePostV4 = false } = {}) {
   const inputPacket = JSON.parse(await fs.readFile(inputPath, 'utf8'));
   const integrityPacket = JSON.parse(await fs.readFile(integrityPath, 'utf8'));
-  const report = buildOfflineReport({ inputPacket, integrityPacket });
-  const reportWithCases = { ...report, cases: (inputPacket.cases || []).filter((item) => CASE_IDS.includes(item.case_id)).map((item) => replayCase(item, integrityPacket)) };
+  const report = buildOfflineReport({ inputPacket, integrityPacket, includePostV4 });
+  const reportWithCases = { ...report, cases: (inputPacket.cases || []).filter((item) => CASE_IDS.includes(item.case_id)).map((item) => replayCase(item, integrityPacket, { includePostV4 })) };
   await fs.writeFile(reportPath, `${JSON.stringify(reportWithCases, null, 2)}\n`, 'utf8');
   await fs.writeFile(markdownPath, markdown(reportWithCases), 'utf8');
   return reportWithCases;
