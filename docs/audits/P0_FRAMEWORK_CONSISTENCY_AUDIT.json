@@ -1,0 +1,57 @@
+{
+  "audit": {
+    "title": "P0 FULL FRAMEWORK CONSISTENCY AUDIT",
+    "mode": "READ_ONLY",
+    "date": "2026-08-24",
+    "branch": "feat/v4.3-semantic-boundary-routing",
+    "head": "d16be0ab995ae908203308e3d3fc44d749a8f4e4",
+    "baseline_clean_at_start": true,
+    "external_calls": {"embedding": 0, "llm": 0, "dify": 0, "provider": 0},
+    "modifications": {"business_code": 0, "migrations": 0, "database": 0, "runtime_config": 0},
+    "remediation_addendum": {"date":"2026-08-24","source":"GPT DECISION P0 Framework Remediation Batch 1","current_findings_total":14,"current_P0":4,"current_P1":8,"current_P2":2,"status":"IMPLEMENTED_PENDING_REVIEW","external_calls":{"embedding":0,"llm":0,"dify":0,"provider":0}},
+    "generated_outputs": [
+      "docs/audits/P0_FRAMEWORK_CONSISTENCY_AUDIT.md",
+      "docs/audits/P0_FRAMEWORK_CONSISTENCY_AUDIT.json",
+      "docs/audits/FRAMEWORK_INVARIANT_MATRIX.md",
+      "docs/audits/CONCEPT_OWNERSHIP_MATRIX.md"
+    ]
+  },
+  "inventory": {
+    "backend_src_files": 105,
+    "frontend_src_files": 19,
+    "shared_package_files": 2,
+    "migrations": 44,
+    "backend_test_files": 84,
+    "postgres_integration_files": 5,
+    "frontend_test_files": 11,
+    "eval_files": 257,
+    "adrs": ["001", "002", "003", "004", "005", "006", "007", "008", "009", "010", "011"]
+  },
+  "findings": [
+    {"id":"P0-TRUST-001","severity":"P0","category":"trust-boundary","concept":"response_payload_json","reachability":"PRODUCTION","files":["backend/src/contract.js:85-96","backend/src/dify.js:27-37","backend/src/dify.js:86-93"],"summary":"extractResponsePayload accepts top-level outputs fallback; only data.outputs.response_payload_json is frozen.","why_tests_missed":"No negative test for top-level outputs."},
+    {"id":"P0-LIFE-001","severity":"P0","category":"lifecycle","concept":"DocumentVersion confirmation","reachability":"PRODUCTION","files":["backend/src/app.js:333-335","backend/src/service.js:63-68","backend/src/contract.js:99-105"],"summary":"/confirm checks critical only and writes through repository, bypassing warning confirmation text gate.","why_tests_missed":"Warning gate tested through service, not actual duplicate route."},
+    {"id":"P1-API-001","severity":"P1","category":"source-of-truth","concept":"document-version API","reachability":"PRODUCTION","files":["backend/src/app.js:333","backend/src/app.js:423-425"],"summary":"Same GET route is registered twice with different envelopes."},
+    {"id":"P0-SEC-ACTOR-001","severity":"P0","category":"provider/security","concept":"reviewer identity","reachability":"PRODUCTION","files":["backend/src/request-actor.js","backend/src/app.js","backend/src/server.js"],"summary":"Formal reviewer/editor identity is now resolved from server configuration; missing trusted actor fails safely. Production still requires a real authenticated adapter."},
+    {"id":"P0-LEGACY-BYPASS-001","severity":"P0","category":"provider/security","concept":"LEGACY_DIFY_PROVIDER_SHIM","reachability":"PRODUCTION-GATED","files":["backend/src/server.js","backend/src/app.js","backend/.env.example"],"summary":"Legacy GenerationService/Dify routes are behind V43_LEGACY_GENERATION_COMPAT and default OFF; compatibility code is retained."},
+    {"id":"P1-STATE-001","severity":"P1","category":"state-machine","concept":"generation/task states","reachability":"PRODUCTION","files":["backend/src/pipeline/generation-audit.js:11-46","backend/migrations/014_document_generation_loop.sql:6-7"],"summary":"State vocabularies are repeated in code and DB checks without one cross-layer registry."},
+    {"id":"P1-CONTRACT-001","severity":"P1","category":"source-of-truth","concept":"domain enums","reachability":"PRODUCTION/EVAL","files":["packages/semantic-contracts/index.js:26-79","backend/src/pipeline/evidence-review-contract.js:4-10","backend/src/pipeline/retrieval-source-eligibility.js:3-14","backend/migrations/010,011,014,021,026,044"],"summary":"High-value enums repeat across contracts, migrations, services, UI and eval."},
+    {"id":"P1-DB-001","severity":"P1","category":"DB/service","concept":"retrieval rank","reachability":"PRODUCTION","files":["backend/src/db.js:200,202"],"summary":"rank uses audit/reranked/raw fallbacks while reranked_rank may remain null."},
+    {"id":"P1-RETRY-001","severity":"P1","category":"default/fallback","concept":"document batch retry","reachability":"PRODUCTION","files":["backend/src/pipeline/document-generation-service.js:11-12"],"summary":"Transient gateway/network errors are retried once and explicit retry can reset failed tasks."},
+    {"id":"P1-EVAL-001","severity":"P1","category":"eval leakage","concept":"evaluation freeze","reachability":"EVAL_ONLY","files":["backend/eval/evidence-support/calibration-v2/GPT_REVIEW_PACKET*"],"summary":"Current packets remain GPT_REVIEW_STATUS=PENDING_REVIEW and EVAL_COMPLETE=NO."},
+    {"id":"P1-API-002","severity":"P1","category":"source-of-truth","concept":"API envelope","reachability":"PRODUCTION","files":["backend/src/app.js:15-17,33-65,111-115,353-355,423-425","frontend/src/api.js"],"summary":"sendData and raw route responses use multiple success shapes."},
+    {"id":"P2-DATA-001","severity":"P2","category":"source-of-truth","concept":"Material vs Document","reachability":"PRODUCTION","files":["backend/migrations/025_evidence_source_span_v1.sql:3-7,22"],"summary":"Current span schema requires source_document_id=material_id."},
+    {"id":"P2-DOC-001","severity":"P2","category":"documentation drift","concept":"Stage17/20 wording","reachability":"DOC_ONLY","files":["docs/CURRENT_STAGE.md","docs/AI_HANDOFF.md","docs/ROADMAP.md"],"summary":"Architecture freeze and evidence-track reopen wording is not expressed with one status phrase."},
+    {"id":"P1-INDEX-HYGIENE-001","severity":"P1","category":"retrieval/index hygiene","concept":"raw candidate-pool crowding","reachability":"PRODUCTION","files":["backend/src/pipeline/retrieval-source-eligibility.js","backend/src/pipeline/enterprise-retrieval-service.js"],"summary":"Source-ineligible system/internal/eval-like chunks may exist in the raw indexed candidate pool and crowd decision-bearing evidence before the final source gate; not fixed in Batch 1."}
+  ],
+  "finding_counts": {"total":14,"P0":4,"P1":8,"P2":2},
+  "p0_categories": {"trust_boundary":1,"lifecycle":1,"source_of_truth":0,"eval_leakage":0,"default_fallback":0,"state_machine":0,"db_service":0,"provider_security":0},
+  "invariants": {"enforced":["I01","I03","I04","I05","I06","I07","I08","I09","I12","I15"],"partial":["I02","I10","I11","I13","I14"],"missing":[],"contradicted":["I16"]},
+  "tests": {"backend":{"passed":642,"failed":0},"frontend":{"passed":50,"failed":0},"postgres":{"passed":41,"failed":0},"build":"PASS","lint":"PASS","diff_check":"PASS_WITH_EXISTING_LINE_ENDING_WARNINGS"},
+  "test_quality": {"tautological_confirmed":0,"weak_oracle_gaps":2,"missing_negative_controls":2},
+  "metric_integrity": {"self_grading_confirmed":0,"gold_leakage_production_confirmed":0,"denominator_or_metric_drift_risk":1,"gpt_review_status":"PENDING_REVIEW","eval_complete":false},
+  "legacy_paths": [{"path":"Dify GenerationService","classification":"LEGACY_COMPAT","reachability":"PRODUCTION-GATED","default_enabled":false}],
+  "invariant_additions": [{"id":"I16","name":"Warning != Confirmed without Explicit Acknowledgement","status":"CONTRADICTED","finding":"P0-LIFE-001"}],
+  "canonical_concepts_added": ["DOCUMENT_VERSION_CONFIRMATION"],
+  "decision": {"status":"IMPLEMENTED_PENDING_GPT_REVIEW","remediation_authorized":true,"next_action":"GPT review of remediation packet","do_not_fix_yet":false},
+  "git": {"commits_created":0,"push":false,"merge":false,"deploy":false,"final_expected_untracked_audit_outputs":true}
+}

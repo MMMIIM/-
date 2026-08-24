@@ -1,0 +1,27 @@
+{
+  "packet": "P0_FRAMEWORK_REMEDIATION_BATCH1",
+  "date": "2026-08-24",
+  "status": "IMPLEMENTED_PENDING_GPT_REVIEW",
+  "external_calls": {"embedding": 0, "llm": 0, "dify": 0, "provider": 0},
+  "findings": {
+    "P0-TRUST-001": {"status": "fixed", "owner": "contract.js", "accepted_path": "data.outputs.response_payload_json", "fallbacks": false},
+    "P0-LIFE-001": {"status": "fixed", "owner": "GenerationService.confirmVersion", "routes": ["/api/document-versions/:versionId/confirm", "/api/document-versions/:versionId/review-decisions"], "repository_policy_bypass": false},
+    "P0-LEGACY-BYPASS-001": {"status": "fixed", "compatibility_flag": "V43_LEGACY_GENERATION_COMPAT", "default": false, "silent_v43_to_dify_fallback": false},
+    "P0-SEC-ACTOR-001": {"status": "fixed", "owner": "request-actor.js", "client_identity_authoritative": false, "missing_actor": "AUTHENTICATED_ACTOR_REQUIRED"},
+    "P1-INDEX-HYGIENE-001": {"status": "open", "fixed_in_batch": false, "escalate_to_p0_if": "verified decision-bearing Gold is missed due to raw-pool crowding"}
+  },
+  "invariants": {
+    "I06": "ENFORCED",
+    "I16": "CONTRADICTED"
+  },
+  "canonical_concept": {
+    "name": "DOCUMENT_VERSION_CONFIRMATION",
+    "owner": "GenerationService.confirmVersion",
+    "db": ["document_versions", "review_decisions.confirmation_text", "review_decisions.actor_id"],
+    "allowed": ["pass -> confirmed", "warning + non_empty_ack -> confirmed"],
+    "forbidden": ["critical -> confirmed", "warning_without_ack -> confirmed"]
+  },
+  "source_eligibility": {"unchanged": true, "raw_index_presence_distinct_from_formal_eligibility": true},
+  "tests": {"targeted": {"status":"PASS","passed":14,"failed":0}, "backend": {"status":"PASS","passed":646,"failed":0}, "frontend": {"status":"PASS","passed":50,"failed":0}, "postgres": {"status":"PASS","passed":41,"failed":0}, "build": "PASS", "lint": "PASS", "diff_check": "PASS_WITH_EXISTING_LINE_ENDING_WARNINGS"},
+  "git": {"push": false, "merge": false, "deploy": false}
+}
