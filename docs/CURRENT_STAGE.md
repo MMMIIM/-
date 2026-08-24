@@ -9,14 +9,15 @@ Status: **IN PROGRESS — OFFLINE BASELINE / GPT REVIEW PENDING**
 `EvidenceSupportAssessment` 的业务状态、必需维度、反证识别、冲突识别以及
 技术失败隔离。该评测不是 Retrieval Hit@K，不调用 Embedding、LLM 或 Dify，
 不写 Evidence、Fact、Mapping、Claim、Readiness 或 Writer 状态。评测包位于
-`backend/eval/evidence-support/calibration-v2/GPT_REVIEW_PACKET_EVIDENCE_SUFFICIENCY_OFFLINE_V2.md/.json`；
+`backend/eval/evidence-support/calibration-v2/GPT_REVIEW_PACKET_EVIDENCE_SUFFICIENCY_OFFLINE_V3.md/.json`；
 `GPT_REVIEW_STATUS=PENDING_REVIEW`、`EVAL_COMPLETE=NO`。Stage17 Retrieval
 合同与指标保持 PASS / FROZEN；Stage20 总体仍为 PARTIAL / BLOCKED，不能据此
 宣称 Stage20 完成或自动进入 live calibration。
 
-V2 修正了 V2R-002 的 `support_sufficiency` 矛盾、V2R-004 的必需维度归类以及
-V2R-006 的未知主体范围边界，并改为字段级 Oracle provenance。修正后必需维度
-准确率为 25/25，未决必需维度准确率为 6/6；这些仍是待独立复核的离线结果。
+V3 在保留上述修正的基础上分离自动指标与 GPT-reviewed 指标，纠正 V2R-003
+子字段 provenance，重建 source-grounded 主体不匹配与带有各自需求相对语义的
+冲突控制。自动必需维度准确率为 25/25、自动未决维度为 6/6；GPT-reviewed
+分母只包含明确标记的字段，仍待独立复核。
 
 下一步：等待独立 GPT / 人工复核离线包；在新的明确授权前不调用外部模型，
 不修改 Retrieval、排名、MMR、topK、Source Eligibility 或 Stage17 冻结规则。

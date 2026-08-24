@@ -38,11 +38,10 @@ Stage 20-S — Evidence Sufficiency Offline Validation Baseline: **IN PROGRESS �
 OFFLINE BASELINE / GPT REVIEW PENDING**. The six frozen synthetic cases are
 evaluated through the side-effect-free EvidenceSupportAssessment contract; no
 Embedding, LLM or Dify call is allowed. Packet:
-`backend/eval/evidence-support/calibration-v2/GPT_REVIEW_PACKET_EVIDENCE_SUFFICIENCY_OFFLINE_V2.md/.json`.
-V2 corrected the V2R-002 support-sufficiency contradiction, V2R-004 required
-dimension accounting, V2R-006 unknown-vs-mismatch scope boundary, and promoted
-oracle provenance to field-level tracking. Metrics are 25/25 required-dimension
-accuracy and 6/6 unresolved-required accuracy; independent review is still pending.
+`backend/eval/evidence-support/calibration-v2/GPT_REVIEW_PACKET_EVIDENCE_SUFFICIENCY_OFFLINE_V3.md/.json`.
+V3 separates automated 25/25 and 6/6 dimension metrics from field-level
+GPT-reviewed metrics, keeps V2R-003 child fields pending, and source-grounds the
+subject-mismatch and conflict controls. Independent review is still pending.
 Stage 20 overall remains **PARTIAL / BLOCKED** until independent review and
 formal evidence-sufficiency acceptance. Stage 20 — P0 Real Evidence Retrieval
 Revalidation remains the parent track.
