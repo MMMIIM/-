@@ -101,16 +101,23 @@ labels (7/7 metadata and 4/4 topic candidates), while the corrected classifier
 records 0 current false-evidence labels; REQ-009 and REQ-012 remain unqualified
 because the indexed corpus does not contain the requested verified dimensions.
 
-The 12-case targeted Gold mapping is executable only when each case has a formal
-Requirement ID and independently verified source span. Current repository/DB
-inspection found 0/12 executable mappings and 12/12 `GOLD_INVALID` mappings
-(missing formal Requirement IDs, metadata/title expectations, reference-only
-content, or absent source spans). The live runner therefore completed safely as
-`BLOCKED_GOLD_INVALID` with 0 Embedding calls; no Requirement rows were created
-to force the evaluation. Four independent canonical synthetic Retrieval samples
-(`E2E-REQ-001..004`) were executed once through the formal service and reached
-Requirement-relative qualified spans, but they are diagnostic samples rather than
-the 12-case Gold metric.
+The previous blanket `GOLD_INVALID` result has been superseded by the read-only
+case-level qualification packet
+`backend/eval/evidence-support/calibration-v2/GPT_REVIEW_PACKET_GOLD_QUALIFICATION.md`
+and `.json`. Retrieval Gold uses an independent `eval_requirement_id` and does
+not require a formal production Requirement row. The qualification found 7/12
+`GOLD_READY_FOR_RETRIEVAL` cases with persisted exact spans and current index
+bindings, and 5/12 `GOLD_PARTIAL` cases whose exact chunk/hash can be resolved
+but whose span/manifest binding is transient; three of those five also lack a
+current embedding row. No case was collapsed into a generic invalid state.
+
+No live Retrieval was run in this qualification: Embedding/LLM/Dify calls and DB
+writes were all zero. Expected Material/Document/Chunk/Span IDs remain evaluator
+only and are not passed to query construction, filters, ranking, MMR, classifiers
+or context expansion. The 7 ready cases are the only future executable set; the
+5 partial cases require deterministic manifest/span repair before inclusion.
+Four independent canonical synthetic Retrieval samples (`E2E-REQ-001..004`)
+remain diagnostic samples rather than the 12-case Gold metric.
 
 Stage17 remains **PASS / FROZEN UNDER P0 REGRESSION REVIEW**, not finally approved;
 Stage20 remains **PARTIAL**. Human Gold review stays paused. The next required

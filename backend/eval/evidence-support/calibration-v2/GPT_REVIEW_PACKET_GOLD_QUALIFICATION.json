@@ -1,0 +1,925 @@
+{
+  "schema_version": "4.3-targeted-retrieval-gold-qualification-v1",
+  "title": "P0 TARGETED GOLD QUALIFICATION CHECKPOINT",
+  "generated_at": "2026-08-24T05:59:37.025Z",
+  "evaluation": "targeted-evidence-bearing-retrieval",
+  "case_count": 12,
+  "case_level_results_complete": true,
+  "live_retrieval_executed": false,
+  "external_calls": {
+    "embedding": 0,
+    "llm": 0,
+    "dify": 0,
+    "automatic_retry": 0
+  },
+  "database_writes": 0,
+  "aggregate": {
+    "total_cases": 12,
+    "GOLD_READY_FOR_RETRIEVAL": 7,
+    "GOLD_PARTIAL": 5,
+    "GOLD_STALE": 0,
+    "GOLD_LINEAGE_INVALID": 0,
+    "GOLD_REQUIREMENT_INVALID": 0,
+    "GOLD_CORPUS_MISMATCH": 0,
+    "GOLD_LEAKAGE_RISK": 0,
+    "rejected": 0,
+    "group_ready": 7,
+    "group_repairable": 5,
+    "group_reject_rebuild": 0,
+    "material_verified": 12,
+    "document_verified": 12,
+    "chunk_verified": 12,
+    "span_verified": 7,
+    "current_index_verified": 9,
+    "formal_tender_requirement": 0,
+    "frozen_eval_query": 12,
+    "synthetic_query": 0,
+    "invalid_query": 0,
+    "gold_independence_pass": 12,
+    "runtime_expected_ids_seen": 0
+  },
+  "independence": {
+    "gold_leakage_audit": "PASS",
+    "runtime_sees_expected_ids": false,
+    "evaluator_only_after_retrieval": true
+  },
+  "mapping_eval": "NOT_EXECUTED",
+  "cases": [
+    {
+      "case_id": "V2R-001-PERF-DIRECT",
+      "eval_requirement_id": "EVAL-RET-001",
+      "requirement": {
+        "exact_text": "企业应提供可核验的数据交换平台性能测试记录。",
+        "formal_requirement_id": null,
+        "provenance": "FROZEN_EVAL_QUERY",
+        "intent": "quantitative_performance",
+        "target_project_id": "ac1a1037-5e62-44ee-8c28-7b09d48d93e6",
+        "allowed_scope": "ENTERPRISE_PROJECT_SCOPE"
+      },
+      "expected_source": {
+        "material_id": "3c81671f-376e-401b-8525-be26929d5b92",
+        "document_id": "3c81671f-376e-401b-8525-be26929d5b92",
+        "chunk_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
+        "verified_span_id": "ESPAN-7C976B914F1C677C5D80017CCD2C307B",
+        "expected_span_hash": "b5522622368a1f3144b6ae8ea08d106cec5174b7d36221525e0b7cb0bcdc5934",
+        "expected_source_text": "# 数据交换平台性能测试记录\n\n产品：澄明数据交换平台 V3.2\n环境：8 vCPU、32 GB 内存、PostgreSQL 14、千兆局域网\n条件：50 并发、100 万条基准数据、缓存预热后执行 30 分钟\n指标：数据目录查询平均响应时间\n结果：平均 1.4 秒，P95 1.9 秒。\n日期：2025-05-16。",
+        "current_material_exists": true,
+        "current_chunk_exists": true,
+        "current_span_exists": true,
+        "current_index": true,
+        "current_index_model": "Qwen/Qwen3-Embedding-0.6B",
+        "current_index_dimension": 1024,
+        "source_chunk_range": {
+          "char_start": 108,
+          "char_end": 251
+        },
+        "persisted_span_range": {
+          "start_offset": 92,
+          "end_offset": 251
+        }
+      },
+      "dimensions": {
+        "requirement_identity": "VALID",
+        "requirement_provenance": "FROZEN_EVAL_QUERY",
+        "corpus_binding": "VALID",
+        "material_lineage": "VERIFIED",
+        "document_lineage": "VERIFIED",
+        "chunk_lineage": "VERIFIED",
+        "span_verification": "VERIFIED",
+        "index_presence": "CURRENT",
+        "gold_independence": "PASS",
+        "allowed_scope": "ENTERPRISE_PROJECT_SCOPE",
+        "scope_allowed": true,
+        "source_resolution": "PERSISTED_EXACT_SPAN",
+        "source_hash_exact": true,
+        "source_text_exact": true,
+        "runtime_expected_ids_seen": false
+      },
+      "readiness": {
+        "status": "GOLD_READY_FOR_RETRIEVAL",
+        "group": "READY",
+        "reasons": [
+          "persisted_span_exact_hash_and_current_index_verified"
+        ],
+        "semantic_notes": [
+          "legacy_expected_chunk_was_metadata"
+        ]
+      },
+      "execution": {
+        "status": "NOT_EXECUTED",
+        "top_k": [],
+        "embedding_calls": 0,
+        "runtime_expected_ids_seen": false
+      },
+      "safety": {
+        "evidence_fact_created": false,
+        "formal_mapping_created": false,
+        "claim_gate_state": "NOT_CREATED",
+        "db_write_performed": false
+      }
+    },
+    {
+      "case_id": "V2R-002-PERF-PARTIAL",
+      "eval_requirement_id": "EVAL-RET-002",
+      "requirement": {
+        "exact_text": "企业应证明接口 P95 响应时间不超过 1 秒。",
+        "formal_requirement_id": null,
+        "provenance": "FROZEN_EVAL_QUERY",
+        "intent": "quantitative_performance",
+        "target_project_id": "ac1a1037-5e62-44ee-8c28-7b09d48d93e6",
+        "allowed_scope": "ENTERPRISE_PROJECT_SCOPE"
+      },
+      "expected_source": {
+        "material_id": "3c81671f-376e-401b-8525-be26929d5b92",
+        "document_id": "3c81671f-376e-401b-8525-be26929d5b92",
+        "chunk_id": "MCH-0FBD3599DAF932016F62EB9634B997AF",
+        "verified_span_id": "ESPAN-7C976B914F1C677C5D80017CCD2C307B",
+        "expected_span_hash": "b5522622368a1f3144b6ae8ea08d106cec5174b7d36221525e0b7cb0bcdc5934",
+        "expected_source_text": "# 数据交换平台性能测试记录\n\n产品：澄明数据交换平台 V3.2\n环境：8 vCPU、32 GB 内存、PostgreSQL 14、千兆局域网\n条件：50 并发、100 万条基准数据、缓存预热后执行 30 分钟\n指标：数据目录查询平均响应时间\n结果：平均 1.4 秒，P95 1.9 秒。\n日期：2025-05-16。",
+        "current_material_exists": true,
+        "current_chunk_exists": true,
+        "current_span_exists": true,
+        "current_index": true,
+        "current_index_model": "Qwen/Qwen3-Embedding-0.6B",
+        "current_index_dimension": 1024,
+        "source_chunk_range": {
+          "char_start": 108,
+          "char_end": 251
+        },
+        "persisted_span_range": {
+          "start_offset": 92,
+          "end_offset": 251
+        }
+      },
+      "dimensions": {
+        "requirement_identity": "VALID",
+        "requirement_provenance": "FROZEN_EVAL_QUERY",
+        "corpus_binding": "VALID",
+        "material_lineage": "VERIFIED",
+        "document_lineage": "VERIFIED",
+        "chunk_lineage": "VERIFIED",
+        "span_verification": "VERIFIED",
+        "index_presence": "CURRENT",
+        "gold_independence": "PASS",
+        "allowed_scope": "ENTERPRISE_PROJECT_SCOPE",
+        "scope_allowed": true,
+        "source_resolution": "PERSISTED_EXACT_SPAN",
+        "source_hash_exact": true,
+        "source_text_exact": true,
+        "runtime_expected_ids_seen": false
+      },
+      "readiness": {
+        "status": "GOLD_READY_FOR_RETRIEVAL",
+        "group": "READY",
+        "reasons": [
+          "persisted_span_exact_hash_and_current_index_verified"
+        ],
+        "semantic_notes": [
+          "legacy_expected_chunk_was_metadata",
+          "target_threshold_differs_from_formal_requirement"
+        ]
+      },
+      "execution": {
+        "status": "NOT_EXECUTED",
+        "top_k": [],
+        "embedding_calls": 0,
+        "runtime_expected_ids_seen": false
+      },
+      "safety": {
+        "evidence_fact_created": false,
+        "formal_mapping_created": false,
+        "claim_gate_state": "NOT_CREATED",
+        "db_write_performed": false
+      }
+    },
+    {
+      "case_id": "V2R-003-COMP-DIRECT",
+      "eval_requirement_id": "EVAL-RET-003",
+      "requirement": {
+        "exact_text": "企业应说明产品在 x86_64、Ubuntu 和 PostgreSQL 环境的兼容性。",
+        "formal_requirement_id": null,
+        "provenance": "FROZEN_EVAL_QUERY",
+        "intent": "platform_compatibility",
+        "target_project_id": "ac1a1037-5e62-44ee-8c28-7b09d48d93e6",
+        "allowed_scope": "ENTERPRISE_PROJECT_SCOPE"
+      },
+      "expected_source": {
+        "material_id": "3f9dacfb-2e48-4796-a477-98c60b506831",
+        "document_id": "3f9dacfb-2e48-4796-a477-98c60b506831",
+        "chunk_id": "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0",
+        "verified_span_id": "ESPAN-DB796CE9A6685C040977607A8228D832",
+        "expected_span_hash": "bb48093928c5a0df95f9c5d308dbff9edc625d6c357253e43cc8beda7ad77d5b",
+        "expected_source_text": "# 产品兼容性矩阵\n\nx86_64 + Ubuntu 22.04 + PostgreSQL 14：tested\n鲲鹏 920 + 麒麟 V10 + 达梦 8：partially_tested（完成安装和基础交换用例，未完成压力测试）\n海光 + 统信 UOS + 人大金仓：not_verified\n国产数据库组合：unknown",
+        "current_material_exists": true,
+        "current_chunk_exists": true,
+        "current_span_exists": true,
+        "current_index": true,
+        "current_index_model": "Qwen/Qwen3-Embedding-0.6B",
+        "current_index_dimension": 1024,
+        "source_chunk_range": {
+          "char_start": 103,
+          "char_end": 256
+        },
+        "persisted_span_range": {
+          "start_offset": 92,
+          "end_offset": 256
+        }
+      },
+      "dimensions": {
+        "requirement_identity": "VALID",
+        "requirement_provenance": "FROZEN_EVAL_QUERY",
+        "corpus_binding": "VALID",
+        "material_lineage": "VERIFIED",
+        "document_lineage": "VERIFIED",
+        "chunk_lineage": "VERIFIED",
+        "span_verification": "VERIFIED",
+        "index_presence": "CURRENT",
+        "gold_independence": "PASS",
+        "allowed_scope": "ENTERPRISE_PROJECT_SCOPE",
+        "scope_allowed": true,
+        "source_resolution": "PERSISTED_EXACT_SPAN",
+        "source_hash_exact": true,
+        "source_text_exact": true,
+        "runtime_expected_ids_seen": false
+      },
+      "readiness": {
+        "status": "GOLD_READY_FOR_RETRIEVAL",
+        "group": "READY",
+        "reasons": [
+          "persisted_span_exact_hash_and_current_index_verified"
+        ],
+        "semantic_notes": [
+          "legacy_expected_chunk_was_metadata"
+        ]
+      },
+      "execution": {
+        "status": "NOT_EXECUTED",
+        "top_k": [],
+        "embedding_calls": 0,
+        "runtime_expected_ids_seen": false
+      },
+      "safety": {
+        "evidence_fact_created": false,
+        "formal_mapping_created": false,
+        "claim_gate_state": "NOT_CREATED",
+        "db_write_performed": false
+      }
+    },
+    {
+      "case_id": "V2R-004-COMP-PARTIAL",
+      "eval_requirement_id": "EVAL-RET-004",
+      "requirement": {
+        "exact_text": "企业应证明所有国产数据库组合均已完成压力测试。",
+        "formal_requirement_id": null,
+        "provenance": "FROZEN_EVAL_QUERY",
+        "intent": "platform_compatibility",
+        "target_project_id": "ac1a1037-5e62-44ee-8c28-7b09d48d93e6",
+        "allowed_scope": "ENTERPRISE_PROJECT_SCOPE"
+      },
+      "expected_source": {
+        "material_id": "3f9dacfb-2e48-4796-a477-98c60b506831",
+        "document_id": "3f9dacfb-2e48-4796-a477-98c60b506831",
+        "chunk_id": "MCH-7F11A857F9B5A05D9B22E30CD4F1BEE0",
+        "verified_span_id": "ESPAN-DB796CE9A6685C040977607A8228D832",
+        "expected_span_hash": "bb48093928c5a0df95f9c5d308dbff9edc625d6c357253e43cc8beda7ad77d5b",
+        "expected_source_text": "# 产品兼容性矩阵\n\nx86_64 + Ubuntu 22.04 + PostgreSQL 14：tested\n鲲鹏 920 + 麒麟 V10 + 达梦 8：partially_tested（完成安装和基础交换用例，未完成压力测试）\n海光 + 统信 UOS + 人大金仓：not_verified\n国产数据库组合：unknown",
+        "current_material_exists": true,
+        "current_chunk_exists": true,
+        "current_span_exists": true,
+        "current_index": true,
+        "current_index_model": "Qwen/Qwen3-Embedding-0.6B",
+        "current_index_dimension": 1024,
+        "source_chunk_range": {
+          "char_start": 103,
+          "char_end": 256
+        },
+        "persisted_span_range": {
+          "start_offset": 92,
+          "end_offset": 256
+        }
+      },
+      "dimensions": {
+        "requirement_identity": "VALID",
+        "requirement_provenance": "FROZEN_EVAL_QUERY",
+        "corpus_binding": "VALID",
+        "material_lineage": "VERIFIED",
+        "document_lineage": "VERIFIED",
+        "chunk_lineage": "VERIFIED",
+        "span_verification": "VERIFIED",
+        "index_presence": "CURRENT",
+        "gold_independence": "PASS",
+        "allowed_scope": "ENTERPRISE_PROJECT_SCOPE",
+        "scope_allowed": true,
+        "source_resolution": "PERSISTED_EXACT_SPAN",
+        "source_hash_exact": true,
+        "source_text_exact": true,
+        "runtime_expected_ids_seen": false
+      },
+      "readiness": {
+        "status": "GOLD_READY_FOR_RETRIEVAL",
+        "group": "READY",
+        "reasons": [
+          "persisted_span_exact_hash_and_current_index_verified"
+        ],
+        "semantic_notes": [
+          "legacy_expected_chunk_was_metadata",
+          "target_scope_differs_from_formal_requirement"
+        ]
+      },
+      "execution": {
+        "status": "NOT_EXECUTED",
+        "top_k": [],
+        "embedding_calls": 0,
+        "runtime_expected_ids_seen": false
+      },
+      "safety": {
+        "evidence_fact_created": false,
+        "formal_mapping_created": false,
+        "claim_gate_state": "NOT_CREATED",
+        "db_write_performed": false
+      }
+    },
+    {
+      "case_id": "V2R-005-ISO-DIRECT",
+      "eval_requirement_id": "EVAL-RET-005",
+      "requirement": {
+        "exact_text": "企业应提供当前有效的 ISO/IEC 27001 认证信息。",
+        "formal_requirement_id": null,
+        "provenance": "FROZEN_EVAL_QUERY",
+        "intent": "qualification_validity",
+        "target_project_id": "ac1a1037-5e62-44ee-8c28-7b09d48d93e6",
+        "allowed_scope": "ENTERPRISE_PROJECT_SCOPE"
+      },
+      "expected_source": {
+        "material_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+        "document_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+        "chunk_id": "MCH-0820CC5A439CB986C62E46213029CC71",
+        "verified_span_id": "ESPAN-9ABC2E493608BCA753CEF663057CD6DE",
+        "expected_span_hash": "6bbf2de2c97df192f2c009aa1a730a10c49879d1f07b7c7cb4a7f1e950152684",
+        "expected_source_text": "# ISO 27001 受控记录\n\n名称：ISO/IEC 27001\n编号：CM-Q-27001-2024\n状态：active\n有效至：2027-11-30",
+        "current_material_exists": true,
+        "current_chunk_exists": true,
+        "current_span_exists": true,
+        "current_index": true,
+        "current_index_model": "Qwen/Qwen3-Embedding-0.6B",
+        "current_index_dimension": 1024,
+        "source_chunk_range": {
+          "char_start": 92,
+          "char_end": 108
+        },
+        "persisted_span_range": {
+          "start_offset": 92,
+          "end_offset": 170
+        }
+      },
+      "dimensions": {
+        "requirement_identity": "VALID",
+        "requirement_provenance": "FROZEN_EVAL_QUERY",
+        "corpus_binding": "VALID",
+        "material_lineage": "VERIFIED",
+        "document_lineage": "VERIFIED",
+        "chunk_lineage": "VERIFIED",
+        "span_verification": "VERIFIED",
+        "index_presence": "CURRENT",
+        "gold_independence": "PASS",
+        "allowed_scope": "ENTERPRISE_PROJECT_SCOPE",
+        "scope_allowed": true,
+        "source_resolution": "PERSISTED_EXACT_SPAN",
+        "source_hash_exact": true,
+        "source_text_exact": true,
+        "runtime_expected_ids_seen": false
+      },
+      "readiness": {
+        "status": "GOLD_READY_FOR_RETRIEVAL",
+        "group": "READY",
+        "reasons": [
+          "persisted_span_exact_hash_and_current_index_verified"
+        ],
+        "semantic_notes": [
+          "legacy_expected_chunk_was_title_only"
+        ]
+      },
+      "execution": {
+        "status": "NOT_EXECUTED",
+        "top_k": [],
+        "embedding_calls": 0,
+        "runtime_expected_ids_seen": false
+      },
+      "safety": {
+        "evidence_fact_created": false,
+        "formal_mapping_created": false,
+        "claim_gate_state": "NOT_CREATED",
+        "db_write_performed": false
+      }
+    },
+    {
+      "case_id": "V2R-006-ISO-SCOPE",
+      "eval_requirement_id": "EVAL-RET-006",
+      "requirement": {
+        "exact_text": "企业应提供指定项目主体的 ISO/IEC 27001 证书。",
+        "formal_requirement_id": null,
+        "provenance": "FROZEN_EVAL_QUERY",
+        "intent": "qualification_validity",
+        "target_project_id": "ac1a1037-5e62-44ee-8c28-7b09d48d93e6",
+        "allowed_scope": "ENTERPRISE_PROJECT_SCOPE"
+      },
+      "expected_source": {
+        "material_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+        "document_id": "57b9e5fe-9549-42aa-88d5-fccc5c0afe2e",
+        "chunk_id": "MCH-0820CC5A439CB986C62E46213029CC71",
+        "verified_span_id": "ESPAN-9ABC2E493608BCA753CEF663057CD6DE",
+        "expected_span_hash": "6bbf2de2c97df192f2c009aa1a730a10c49879d1f07b7c7cb4a7f1e950152684",
+        "expected_source_text": "# ISO 27001 受控记录\n\n名称：ISO/IEC 27001\n编号：CM-Q-27001-2024\n状态：active\n有效至：2027-11-30",
+        "current_material_exists": true,
+        "current_chunk_exists": true,
+        "current_span_exists": true,
+        "current_index": true,
+        "current_index_model": "Qwen/Qwen3-Embedding-0.6B",
+        "current_index_dimension": 1024,
+        "source_chunk_range": {
+          "char_start": 92,
+          "char_end": 108
+        },
+        "persisted_span_range": {
+          "start_offset": 92,
+          "end_offset": 170
+        }
+      },
+      "dimensions": {
+        "requirement_identity": "VALID",
+        "requirement_provenance": "FROZEN_EVAL_QUERY",
+        "corpus_binding": "VALID",
+        "material_lineage": "VERIFIED",
+        "document_lineage": "VERIFIED",
+        "chunk_lineage": "VERIFIED",
+        "span_verification": "VERIFIED",
+        "index_presence": "CURRENT",
+        "gold_independence": "PASS",
+        "allowed_scope": "ENTERPRISE_PROJECT_SCOPE",
+        "scope_allowed": true,
+        "source_resolution": "PERSISTED_EXACT_SPAN",
+        "source_hash_exact": true,
+        "source_text_exact": true,
+        "runtime_expected_ids_seen": false
+      },
+      "readiness": {
+        "status": "GOLD_READY_FOR_RETRIEVAL",
+        "group": "READY",
+        "reasons": [
+          "persisted_span_exact_hash_and_current_index_verified"
+        ],
+        "semantic_notes": [
+          "legacy_expected_chunk_was_title_only",
+          "subject_scope_not_verified"
+        ]
+      },
+      "execution": {
+        "status": "NOT_EXECUTED",
+        "top_k": [],
+        "embedding_calls": 0,
+        "runtime_expected_ids_seen": false
+      },
+      "safety": {
+        "evidence_fact_created": false,
+        "formal_mapping_created": false,
+        "claim_gate_state": "NOT_CREATED",
+        "db_write_performed": false
+      }
+    },
+    {
+      "case_id": "V2R-007-PROJECT-STATUS",
+      "eval_requirement_id": "EVAL-RET-007",
+      "requirement": {
+        "exact_text": "企业应提供已完成并可验收的同类项目记录。",
+        "formal_requirement_id": null,
+        "provenance": "FROZEN_EVAL_QUERY",
+        "intent": "project_implementation_status",
+        "target_project_id": "ac1a1037-5e62-44ee-8c28-7b09d48d93e6",
+        "allowed_scope": "ENTERPRISE_PROJECT_SCOPE"
+      },
+      "expected_source": {
+        "material_id": "75924286-5882-4658-bff9-ed587f70b927",
+        "document_id": "75924286-5882-4658-bff9-ed587f70b927",
+        "chunk_id": "MCH-C5D5EB33CB97F715074CC6F4E98EEF17",
+        "verified_span_id": "ESPAN-06CAB70C047B196B20B49523A71D7661",
+        "expected_span_hash": "6ed02e81de495a410e8a220b74f07851df39a8b72bec308e69ab83878a31b31f",
+        "expected_source_text": "# 项目D实施片段\n\n项目：南泽业务协同升级片段（虚构）\n客户：南泽公共服务机构（虚构）\n实施片段日期：2025-10-09\n状态不完整，不得推断完工或验收。",
+        "current_material_exists": true,
+        "current_chunk_exists": true,
+        "current_span_exists": true,
+        "current_index": true,
+        "current_index_model": "Qwen/Qwen3-Embedding-0.6B",
+        "current_index_dimension": 1024,
+        "source_chunk_range": {
+          "char_start": 103,
+          "char_end": 171
+        },
+        "persisted_span_range": {
+          "start_offset": 92,
+          "end_offset": 171
+        }
+      },
+      "dimensions": {
+        "requirement_identity": "VALID",
+        "requirement_provenance": "FROZEN_EVAL_QUERY",
+        "corpus_binding": "VALID",
+        "material_lineage": "VERIFIED",
+        "document_lineage": "VERIFIED",
+        "chunk_lineage": "VERIFIED",
+        "span_verification": "VERIFIED",
+        "index_presence": "CURRENT",
+        "gold_independence": "PASS",
+        "allowed_scope": "ENTERPRISE_PROJECT_SCOPE",
+        "scope_allowed": true,
+        "source_resolution": "PERSISTED_EXACT_SPAN",
+        "source_hash_exact": true,
+        "source_text_exact": true,
+        "runtime_expected_ids_seen": false
+      },
+      "readiness": {
+        "status": "GOLD_READY_FOR_RETRIEVAL",
+        "group": "READY",
+        "reasons": [
+          "persisted_span_exact_hash_and_current_index_verified"
+        ],
+        "semantic_notes": [
+          "legacy_expected_chunk_was_title_only",
+          "source_explicitly_says_status_incomplete"
+        ]
+      },
+      "execution": {
+        "status": "NOT_EXECUTED",
+        "top_k": [],
+        "embedding_calls": 0,
+        "runtime_expected_ids_seen": false
+      },
+      "safety": {
+        "evidence_fact_created": false,
+        "formal_mapping_created": false,
+        "claim_gate_state": "NOT_CREATED",
+        "db_write_performed": false
+      }
+    },
+    {
+      "case_id": "V2R-010-CORPUS-01",
+      "eval_requirement_id": "EVAL-RET-008",
+      "requirement": {
+        "exact_text": "企业应证明自身具备与该公开行业规范相符的实施能力。",
+        "formal_requirement_id": null,
+        "provenance": "FROZEN_EVAL_QUERY",
+        "intent": "enterprise_capability_boundary",
+        "target_project_id": "00000000-0000-4000-8000-000000000001",
+        "allowed_scope": "PUBLIC_OR_INDUSTRY_REFERENCE"
+      },
+      "expected_source": {
+        "material_id": "e9bcafcd-c615-4f6d-b34e-9d1ffcdfef1c",
+        "document_id": "e9bcafcd-c615-4f6d-b34e-9d1ffcdfef1c",
+        "chunk_id": "MCH-B349280E685FEB7ECD6B73AFFCF32228",
+        "verified_span_id": null,
+        "expected_span_hash": "e7e05bc5785225ee9dc46d8012989147918561ac3963c792815c01b333071fbb",
+        "expected_source_text": "# 中华人民共和国政府信息公开条例",
+        "current_material_exists": true,
+        "current_chunk_exists": true,
+        "current_span_exists": false,
+        "current_index": true,
+        "current_index_model": "Qwen/Qwen3-Embedding-0.6B",
+        "current_index_dimension": 1024,
+        "source_chunk_range": {
+          "char_start": 0,
+          "char_end": 17
+        },
+        "persisted_span_range": null
+      },
+      "dimensions": {
+        "requirement_identity": "VALID",
+        "requirement_provenance": "FROZEN_EVAL_QUERY",
+        "corpus_binding": "VALID",
+        "material_lineage": "VERIFIED",
+        "document_lineage": "VERIFIED",
+        "chunk_lineage": "VERIFIED",
+        "span_verification": "UNVERIFIED",
+        "index_presence": "CURRENT",
+        "gold_independence": "PASS",
+        "allowed_scope": "PUBLIC_OR_INDUSTRY_REFERENCE",
+        "scope_allowed": true,
+        "source_resolution": "DETERMINISTIC_CHUNK_REFERENCE_ONLY",
+        "source_hash_exact": true,
+        "source_text_exact": true,
+        "runtime_expected_ids_seen": false
+      },
+      "readiness": {
+        "status": "GOLD_PARTIAL",
+        "group": "REPAIRABLE",
+        "reasons": [
+          "exact_source_chunk_resolved_deterministically",
+          "source_span_or_eval_manifest_binding_not_persisted"
+        ],
+        "semantic_notes": [
+          "expected_chunk_is_title_only",
+          "industry_reference_does_not_prove_enterprise_capability"
+        ]
+      },
+      "execution": {
+        "status": "NOT_EXECUTED",
+        "top_k": [],
+        "embedding_calls": 0,
+        "runtime_expected_ids_seen": false
+      },
+      "safety": {
+        "evidence_fact_created": false,
+        "formal_mapping_created": false,
+        "claim_gate_state": "NOT_CREATED",
+        "db_write_performed": false
+      }
+    },
+    {
+      "case_id": "V2R-015-CORPUS-06",
+      "eval_requirement_id": "EVAL-RET-009",
+      "requirement": {
+        "exact_text": "企业应证明自身具备与该公开行业规范相符的实施能力。",
+        "formal_requirement_id": null,
+        "provenance": "FROZEN_EVAL_QUERY",
+        "intent": "enterprise_capability_boundary",
+        "target_project_id": "00000000-0000-4000-8000-000000000001",
+        "allowed_scope": "PUBLIC_OR_INDUSTRY_REFERENCE"
+      },
+      "expected_source": {
+        "material_id": "eef2ae66-8259-4954-9a88-2e184411fcc5",
+        "document_id": "eef2ae66-8259-4954-9a88-2e184411fcc5",
+        "chunk_id": "MCH-F4CD0E67DBD66EC447EF06D0EDBB083A",
+        "verified_span_id": null,
+        "expected_span_hash": "b27d1bdb75e04a5ce81a501d6213b0fdf98fdb27c082289a8e1c16401ca175b1",
+        "expected_source_text": "来源机构：国务院办公厅\n文号：国办函〔2016〕108号",
+        "current_material_exists": true,
+        "current_chunk_exists": true,
+        "current_span_exists": false,
+        "current_index": true,
+        "current_index_model": "Qwen/Qwen3-Embedding-0.6B",
+        "current_index_dimension": 1024,
+        "source_chunk_range": {
+          "char_start": 22,
+          "char_end": 50
+        },
+        "persisted_span_range": null
+      },
+      "dimensions": {
+        "requirement_identity": "VALID",
+        "requirement_provenance": "FROZEN_EVAL_QUERY",
+        "corpus_binding": "VALID",
+        "material_lineage": "VERIFIED",
+        "document_lineage": "VERIFIED",
+        "chunk_lineage": "VERIFIED",
+        "span_verification": "UNVERIFIED",
+        "index_presence": "CURRENT",
+        "gold_independence": "PASS",
+        "allowed_scope": "PUBLIC_OR_INDUSTRY_REFERENCE",
+        "scope_allowed": true,
+        "source_resolution": "DETERMINISTIC_CHUNK_REFERENCE_ONLY",
+        "source_hash_exact": true,
+        "source_text_exact": true,
+        "runtime_expected_ids_seen": false
+      },
+      "readiness": {
+        "status": "GOLD_PARTIAL",
+        "group": "REPAIRABLE",
+        "reasons": [
+          "exact_source_chunk_resolved_deterministically",
+          "source_span_or_eval_manifest_binding_not_persisted"
+        ],
+        "semantic_notes": [
+          "expected_chunk_is_metadata",
+          "negative_control_is_reference_only"
+        ]
+      },
+      "execution": {
+        "status": "NOT_EXECUTED",
+        "top_k": [],
+        "embedding_calls": 0,
+        "runtime_expected_ids_seen": false
+      },
+      "safety": {
+        "evidence_fact_created": false,
+        "formal_mapping_created": false,
+        "claim_gate_state": "NOT_CREATED",
+        "db_write_performed": false
+      }
+    },
+    {
+      "case_id": "V2R-021-CORPUS-12",
+      "eval_requirement_id": "EVAL-RET-010",
+      "requirement": {
+        "exact_text": "企业应提供与本项目范围相关的可核验材料。",
+        "formal_requirement_id": null,
+        "provenance": "FROZEN_EVAL_QUERY",
+        "intent": "enterprise_capability_boundary",
+        "target_project_id": "518c6772-b200-4b7b-9d45-059297714516",
+        "allowed_scope": "ENTERPRISE_PROJECT_SCOPE"
+      },
+      "expected_source": {
+        "material_id": "9876da6b-40c1-4f2d-b47b-290c7c150f4e",
+        "document_id": "9876da6b-40c1-4f2d-b47b-290c7c150f4e",
+        "chunk_id": "MCH-A4211A94C5C7A077F478D979A3ADF86E",
+        "verified_span_id": null,
+        "expected_span_hash": "33d664614db3cd87de0f1c1c95b33111a5999792791f3938fb4650fbdd20df05",
+        "expected_source_text": "平台可集成某开源数据库和消息组件；部署、许可和技术支持依赖第三方，企业不将第三方能力表述为自有产品能力。",
+        "current_material_exists": true,
+        "current_chunk_exists": true,
+        "current_span_exists": false,
+        "current_index": false,
+        "current_index_model": null,
+        "current_index_dimension": null,
+        "source_chunk_range": {
+          "char_start": 310,
+          "char_end": 362
+        },
+        "persisted_span_range": null
+      },
+      "dimensions": {
+        "requirement_identity": "VALID",
+        "requirement_provenance": "FROZEN_EVAL_QUERY",
+        "corpus_binding": "VALID",
+        "material_lineage": "VERIFIED",
+        "document_lineage": "VERIFIED",
+        "chunk_lineage": "VERIFIED",
+        "span_verification": "UNVERIFIED",
+        "index_presence": "MISSING",
+        "gold_independence": "PASS",
+        "allowed_scope": "ENTERPRISE_PROJECT_SCOPE",
+        "scope_allowed": true,
+        "source_resolution": "DETERMINISTIC_CHUNK_REFERENCE_ONLY",
+        "source_hash_exact": true,
+        "source_text_exact": true,
+        "runtime_expected_ids_seen": false
+      },
+      "readiness": {
+        "status": "GOLD_PARTIAL",
+        "group": "REPAIRABLE",
+        "reasons": [
+          "exact_source_chunk_resolved_deterministically",
+          "source_span_or_eval_manifest_binding_not_persisted",
+          "current_embedding_index_missing"
+        ],
+        "semantic_notes": [
+          "source_span_not_persisted_for_project",
+          "third_party_boundary_is_not_generic_project_proof"
+        ]
+      },
+      "execution": {
+        "status": "NOT_EXECUTED",
+        "top_k": [],
+        "embedding_calls": 0,
+        "runtime_expected_ids_seen": false
+      },
+      "safety": {
+        "evidence_fact_created": false,
+        "formal_mapping_created": false,
+        "claim_gate_state": "NOT_CREATED",
+        "db_write_performed": false
+      }
+    },
+    {
+      "case_id": "V2R-024-CORPUS-15",
+      "eval_requirement_id": "EVAL-RET-011",
+      "requirement": {
+        "exact_text": "企业应提供同类项目的实施及验收依据。",
+        "formal_requirement_id": null,
+        "provenance": "FROZEN_EVAL_QUERY",
+        "intent": "enterprise_capability_boundary",
+        "target_project_id": "518c6772-b200-4b7b-9d45-059297714516",
+        "allowed_scope": "ENTERPRISE_PROJECT_SCOPE"
+      },
+      "expected_source": {
+        "material_id": "50467edc-0a5e-458f-ba69-1bbf488a115a",
+        "document_id": "50467edc-0a5e-458f-ba69-1bbf488a115a",
+        "chunk_id": "MCH-3FD884E9C86C84ADD445F70EC81FADD9",
+        "verified_span_id": null,
+        "expected_span_hash": "f4f7b9db71c7a29583a29ba9b9bf499740066997570b2ec02e80c41b516e9719",
+        "expected_source_text": "项目：景云城市治理数据平台；范围：数据目录、交换任务、统一门户和运行监测；项目状态：已完成模拟案例；验收日期：2025-11-20。",
+        "current_material_exists": true,
+        "current_chunk_exists": true,
+        "current_span_exists": false,
+        "current_index": false,
+        "current_index_model": null,
+        "current_index_dimension": null,
+        "source_chunk_range": {
+          "char_start": 302,
+          "char_end": 368
+        },
+        "persisted_span_range": null
+      },
+      "dimensions": {
+        "requirement_identity": "VALID",
+        "requirement_provenance": "FROZEN_EVAL_QUERY",
+        "corpus_binding": "VALID",
+        "material_lineage": "VERIFIED",
+        "document_lineage": "VERIFIED",
+        "chunk_lineage": "VERIFIED",
+        "span_verification": "UNVERIFIED",
+        "index_presence": "MISSING",
+        "gold_independence": "PASS",
+        "allowed_scope": "ENTERPRISE_PROJECT_SCOPE",
+        "scope_allowed": true,
+        "source_resolution": "DETERMINISTIC_CHUNK_REFERENCE_ONLY",
+        "source_hash_exact": true,
+        "source_text_exact": true,
+        "runtime_expected_ids_seen": false
+      },
+      "readiness": {
+        "status": "GOLD_PARTIAL",
+        "group": "REPAIRABLE",
+        "reasons": [
+          "exact_source_chunk_resolved_deterministically",
+          "source_span_or_eval_manifest_binding_not_persisted",
+          "current_embedding_index_missing"
+        ],
+        "semantic_notes": [
+          "source_span_not_persisted_for_project"
+        ]
+      },
+      "execution": {
+        "status": "NOT_EXECUTED",
+        "top_k": [],
+        "embedding_calls": 0,
+        "runtime_expected_ids_seen": false
+      },
+      "safety": {
+        "evidence_fact_created": false,
+        "formal_mapping_created": false,
+        "claim_gate_state": "NOT_CREATED",
+        "db_write_performed": false
+      }
+    },
+    {
+      "case_id": "V2R-030-CORPUS-21",
+      "eval_requirement_id": "EVAL-RET-012",
+      "requirement": {
+        "exact_text": "企业应提供同类项目的实施及验收依据。",
+        "formal_requirement_id": null,
+        "provenance": "FROZEN_EVAL_QUERY",
+        "intent": "enterprise_capability_boundary",
+        "target_project_id": "518c6772-b200-4b7b-9d45-059297714516",
+        "allowed_scope": "ENTERPRISE_PROJECT_SCOPE"
+      },
+      "expected_source": {
+        "material_id": "50467edc-0a5e-458f-ba69-1bbf488a115a",
+        "document_id": "50467edc-0a5e-458f-ba69-1bbf488a115a",
+        "chunk_id": "MCH-3FD884E9C86C84ADD445F70EC81FADD9",
+        "verified_span_id": null,
+        "expected_span_hash": "f4f7b9db71c7a29583a29ba9b9bf499740066997570b2ec02e80c41b516e9719",
+        "expected_source_text": "项目：景云城市治理数据平台；范围：数据目录、交换任务、统一门户和运行监测；项目状态：已完成模拟案例；验收日期：2025-11-20。",
+        "current_material_exists": true,
+        "current_chunk_exists": true,
+        "current_span_exists": false,
+        "current_index": false,
+        "current_index_model": null,
+        "current_index_dimension": null,
+        "source_chunk_range": {
+          "char_start": 302,
+          "char_end": 368
+        },
+        "persisted_span_range": null
+      },
+      "dimensions": {
+        "requirement_identity": "VALID",
+        "requirement_provenance": "FROZEN_EVAL_QUERY",
+        "corpus_binding": "VALID",
+        "material_lineage": "VERIFIED",
+        "document_lineage": "VERIFIED",
+        "chunk_lineage": "VERIFIED",
+        "span_verification": "UNVERIFIED",
+        "index_presence": "MISSING",
+        "gold_independence": "PASS",
+        "allowed_scope": "ENTERPRISE_PROJECT_SCOPE",
+        "scope_allowed": true,
+        "source_resolution": "DETERMINISTIC_CHUNK_REFERENCE_ONLY",
+        "source_hash_exact": true,
+        "source_text_exact": true,
+        "runtime_expected_ids_seen": false
+      },
+      "readiness": {
+        "status": "GOLD_PARTIAL",
+        "group": "REPAIRABLE",
+        "reasons": [
+          "exact_source_chunk_resolved_deterministically",
+          "source_span_or_eval_manifest_binding_not_persisted",
+          "current_embedding_index_missing"
+        ],
+        "semantic_notes": [
+          "source_span_not_persisted_for_project"
+        ]
+      },
+      "execution": {
+        "status": "NOT_EXECUTED",
+        "top_k": [],
+        "embedding_calls": 0,
+        "runtime_expected_ids_seen": false
+      },
+      "safety": {
+        "evidence_fact_created": false,
+        "formal_mapping_created": false,
+        "claim_gate_state": "NOT_CREATED",
+        "db_write_performed": false
+      }
+    }
+  ]
+}

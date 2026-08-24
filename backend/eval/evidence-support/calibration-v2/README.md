@@ -72,6 +72,11 @@ legacy `backend/eval/sufficiency/live-calibration-set.js` fixture.
   never promoted to enterprise proof candidates.
 - `audit-context-recovery-v2.js` / `context-recovery-v2.json`: offline audit of
   missing-dimension recovery across all 36 active cases.
+- `qualify-targeted-retrieval-gold.js`: read-only A–I qualification of the 12
+  targeted Retrieval Gold cases; it uses independent `EVAL-RET-*` identities,
+  never calls Retrieval/Embedding/LLM/Dify and never writes production DB state.
+- `GPT_REVIEW_PACKET_GOLD_QUALIFICATION.md` / `.json`: complete 12-case
+  qualification packet and executable/repairable split.
 
 Run:
 
@@ -86,6 +91,7 @@ npm run build:evidence-support-v2-human-batch-01-v2 -w backend
 npm run audit:evidence-support-v2-semantics -w backend
 npm run audit:evidence-support-v2-context -w backend
 npm run build:evidence-support-v2-human-batch-01-final -w backend
+npm run qualify:evidence-bearing-gold -w backend
 ```
 
 The reconciliation command performs read-only SQL and deterministic local

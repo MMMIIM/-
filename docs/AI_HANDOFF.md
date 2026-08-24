@@ -65,8 +65,9 @@ cutover decision.
 - Public tender parse: 4/4 chunks, 144 candidates, 140 mandatory, 130 verified / 10 suggested / 4 unresolved.
 - Confirmed baseline: 140 requirements; synthetic enterprise materials indexed: 17.
 - Calibration V2 re-audit: 36 active cases; 3 ready, 32 insufficient, 1 no-relevant, 0 conflict; Human Gold 0.
-- Evidence-bearing audit: 7 legacy metadata false labels and 4 legacy topic false labels corrected offline; 12 targeted Gold mappings invalid, 0 executable.
+- Evidence-bearing audit: 7 legacy metadata false labels and 4 legacy topic false labels corrected offline; targeted Gold qualification is 7 ready, 5 repairable, 0 rejected, with no live calls.
 - Full case-level packet: all 12 cases persisted in `backend/eval/evidence-support/calibration-v2/GPT_REVIEW_PACKET.md` and `.json`; `GPT_REVIEW_STATUS=PENDING_REVIEW`, `EVAL_COMPLETE=NO`.
+- Gold qualification packet: `GPT_REVIEW_PACKET_GOLD_QUALIFICATION.md` and `.json` contain all 12 independent A–I checks; 7 `GOLD_READY_FOR_RETRIEVAL`, 5 `GOLD_PARTIAL`, current index verified 9/12.
 - Context recovery audit: 158 dimensions total (93 required, 65 not applicable),
   44 recovered, 49 required unresolved across 27 cases; required recovery rate 47.31%.
 
@@ -77,13 +78,12 @@ contracts. The former length-only Evidence-Bearing label was replaced by the
 Requirement-relative `evidence-bearing-classifier-v1`; offline audit shows 7/7
 legacy metadata and 4/4 legacy topic false labels, while the corrected labels
 produce 0 current false-evidence labels. Four canonical synthetic Retrieval
-samples reached qualified spans. The 12-case targeted Gold mapping is currently
-0/12 executable and the live runner safely stopped with `GOLD_INVALID` for all
-12, so no live calls were made for that set. Next step is to persist formal
-Requirement IDs and independently verified spans (or approve a separate
-synthetic evaluation project) before the single targeted live run; do not infer
-Gold from nearest Requirements or change ranking, chunking, topK, MMR, Provider,
-or retry architecture.
+samples reached qualified spans. The targeted Gold qualification found 7
+independently executable cases and 5 deterministic-but-repairable cases; no live
+call was made. Next step is a separate decision to repair the 5 partial
+manifest/span bindings or authorize one controlled live Retrieval run over the 7
+ready cases. Do not infer Gold from nearest Requirements or change ranking,
+chunking, topK, MMR, Provider, or retry architecture.
 
 ## Frozen boundaries
 
@@ -105,7 +105,8 @@ or retry architecture.
 - Shared assessment provider: provider-neutral unavailable/unknown by default;
   no external calls in this foundation.
 - Latest P0 targeted run: 4 diagnostic Embedding calls for canonical samples;
-  targeted 12-case runner made 0 calls because all mappings were `GOLD_INVALID`.
+  Gold qualification made 0 Embedding/LLM/Dify calls and 0 DB writes; expected
+  Gold IDs were evaluator-only and never passed to runtime retrieval.
   LLM calls 0, Dify calls 0, automatic retries 0.
 
 ## Git restrictions
