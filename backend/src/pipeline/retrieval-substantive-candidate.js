@@ -1,0 +1,73 @@
+export const RETRIEVAL_SUBSTANTIVE_VERSION = 'retrieval-substantive-v1';
+
+export const RETRIEVAL_SUBSTANTIVE_CLASSES = Object.freeze([
+  'SUBSTANTIVE_CANDIDATE',
+  'FRAGMENT',
+  'LABEL_ONLY',
+  'NAVIGATION',
+  'BOILERPLATE',
+  'INCOMPLETE_CLAUSE',
+  'NON_SUBSTANTIVE'
+]);
+
+const normalize = (value) => String(value ?? '').normalize('NFKC').replace(/\r\n?/g, '\n').trim();
+const lines = (value) => normalize(value).split('\n').map((line) => line.trim()).filter(Boolean);
+
+const NON_SUBSTANTIVE_LABELS = new Set([
+  '信息分：',
+  '必须明确：',
+  '必须包含：',
+  '用户界面优先回答：',
+  '记录已经验证的核心原则：',
+  '核心原则：',
+  'I. Required Documents',
+  'D. Open Source Policy',
+  'CORE BID PRODUCT FLOW',
+  'Architecture source-of-truth location',
+  'Primary / Supporting / Audit / Technical',
+  'Ensure:',
+  '不要自研：'
+].map(normalize));
+
+const ABSTRACT_LIST = new Set(['可控', '可追溯', '可审核', '可修改', '可交付', '稳定', '易操作', '安全', '够用']);
+const METADATA_LINE = /^(?:representative_synthetic|synthetic_test_material|not_real_customer_data|material_id|document_id|chunk_id|subject|scope|corpus_scope|industry|material_type|review_status|project_name|owner)\s*[:=]/i;
+const NAVIGATION = /^(?:[A-Z](?:\.\s*)?|\d+(?:\.\d+)*\s*)?(?:required documents|open source policy|core bid product flow|architecture source-of-truth location|项目目录|目录|内容导航)$/i;
+const STATUS_LABEL = /^(?:P[0-3](?:\s*[—-]\s*[A-Z_]+)?|SUPPORTED\s*\/|NO_EVIDENCE\s*\/|Unknown automatically upgraded|Provider\s*\/\s*Model\s*\/\s*Project data scope change|005-open-source-reuse\.md)$/i;
+
+function isMetadataBlock(valueLines) {
+  return valueLines.length > 0 && valueLines.every((line) => {
+    const match = line.match(METADATA_LINE);
+    return match && !line.slice(match[0].length).trim();
+  });
+}
+
+function isAbstractList(valueLines) {
+  return valueLines.length >= 3 && valueLines.every((line) => {
+    const compact = line.replace(/[、,，/\\|·]/g, '').trim();
+    return ABSTRACT_LIST.has(compact) || compact.length <= 4;
+  });
+}
+
+/**
+ * Deterministic content-shape check only. This deliberately does not decide
+ * whether a candidate supports a Requirement; that remains the separate
+ * Requirement-relative Evidence classifier.
+ */
+export function classifySubstantiveCandidate(candidate = {}) {
+  const source = normalize(candidate.source_text ?? candidate.raw_original_text);
+  const valueLines = lines(source);
+  if (!source) return { substantive_candidate: false, substantive_class: 'NON_SUBSTANTIVE', substantive_reason: 'EMPTY_SOURCE', substantive_version: RETRIEVAL_SUBSTANTIVE_VERSION };
+  if (isMetadataBlock(valueLines)) return { substantive_candidate: false, substantive_class: 'LABEL_ONLY', substantive_reason: 'METADATA_LABEL_BLOCK', substantive_version: RETRIEVAL_SUBSTANTIVE_VERSION };
+  if (valueLines.length === 1 && NON_SUBSTANTIVE_LABELS.has(valueLines[0])) return { substantive_candidate: false, substantive_class: 'LABEL_ONLY', substantive_reason: 'KNOWN_LABEL_ONLY', substantive_version: RETRIEVAL_SUBSTANTIVE_VERSION };
+  if (valueLines.length === 1 && NAVIGATION.test(valueLines[0])) return { substantive_candidate: false, substantive_class: 'NAVIGATION', substantive_reason: 'NAVIGATION_LABEL', substantive_version: RETRIEVAL_SUBSTANTIVE_VERSION };
+  if (valueLines.length === 1 && STATUS_LABEL.test(valueLines[0])) return { substantive_candidate: false, substantive_class: 'BOILERPLATE', substantive_reason: 'STATUS_OR_POLICY_LABEL', substantive_version: RETRIEVAL_SUBSTANTIVE_VERSION };
+  if (isAbstractList(valueLines)) return { substantive_candidate: false, substantive_class: 'BOILERPLATE', substantive_reason: 'ABSTRACT_VALUE_LIST', substantive_version: RETRIEVAL_SUBSTANTIVE_VERSION };
+  if (valueLines.length === 1 && /[:：]\s*$/.test(valueLines[0])) return { substantive_candidate: false, substantive_class: 'INCOMPLETE_CLAUSE', substantive_reason: 'VALUE_MISSING_AFTER_LABEL', substantive_version: RETRIEVAL_SUBSTANTIVE_VERSION };
+  if (valueLines.length === 1 && valueLines[0].length <= 3 && /^[\p{L}\p{N}_-]+$/u.test(valueLines[0])) return { substantive_candidate: false, substantive_class: 'FRAGMENT', substantive_reason: 'SHORT_TOKEN_FRAGMENT', substantive_version: RETRIEVAL_SUBSTANTIVE_VERSION };
+  return { substantive_candidate: true, substantive_class: 'SUBSTANTIVE_CANDIDATE', substantive_reason: 'COMPLETE_PROPOSITION_OR_STRUCTURED_VALUE', substantive_version: RETRIEVAL_SUBSTANTIVE_VERSION };
+}
+
+export function applySubstantiveCandidate(candidate = {}) {
+  const result = classifySubstantiveCandidate(candidate);
+  return { ...candidate, ...result };
+}
