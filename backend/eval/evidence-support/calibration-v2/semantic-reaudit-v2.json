@@ -163,14 +163,21 @@
   "semantic_only_changed_count": 24,
   "unchanged_count": 10,
   "context_recovery": {
-    "cases_requiring_expansion": 36,
-    "resolved_same_chunk": 20,
+    "cases_requiring_expansion": 35,
+    "resolved_same_chunk": 19,
     "resolved_adjacent_chunk": 0,
     "resolved_material_metadata": 25,
     "resolved_retrieval_expansion": 0,
-    "still_unresolved": 36,
-    "recovered_dimension_count": 45,
-    "unresolved_dimension_count": 113
+    "still_unresolved": 27,
+    "recovered_dimension_count": 44,
+    "unresolved_dimension_count": 49,
+    "total_dimensions": 158,
+    "required_dimension_count": 93,
+    "supporting_dimension_count": 0,
+    "not_applicable_dimension_count": 65,
+    "unresolved_required_dimension_count": 49,
+    "cases_with_unresolved_required_dimension": 27,
+    "context_recovery_rate": 0.4731182795698925
   },
   "cases": [
     {
@@ -284,14 +291,21 @@
       "conflict_observations": [],
       "context_recovery": [
         {
-          "required_dimensions": [
+          "dimension_roles": {
+            "validity_match": "NOT_APPLICABLE"
+          },
+          "required_dimensions": [],
+          "supporting_dimensions": [],
+          "not_applicable_dimensions": [
             "validity_match"
           ],
-          "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+          "recovery_state": "RESOLVED_BY_CONTEXT",
           "recovered_dimensions": {},
-          "unresolved_dimensions": [
-            "validity_match"
-          ],
+          "unresolved_dimensions": [],
+          "unresolved_required_dimensions": [],
+          "unresolved_supporting_dimensions": [],
+          "recovered_required_dimensions": [],
+          "context_recovery_rate": null,
           "context_origins": [
             "SECTION_HEADING",
             "MATERIAL_METADATA"
@@ -436,13 +450,22 @@
       "conflict_observations": [],
       "context_recovery": [
         {
+          "dimension_roles": {
+            "scope_match": "REQUIRED",
+            "status_match": "REQUIRED",
+            "entity_match": "REQUIRED",
+            "validity_match": "NOT_APPLICABLE"
+          },
           "required_dimensions": [
             "scope_match",
             "status_match",
-            "entity_match",
+            "entity_match"
+          ],
+          "supporting_dimensions": [],
+          "not_applicable_dimensions": [
             "validity_match"
           ],
-          "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+          "recovery_state": "RESOLVED_BY_CONTEXT",
           "recovered_dimensions": {
             "scope_match": {
               "status": "resolved",
@@ -466,9 +489,15 @@
               "chunk_id": "MCH-0FBD3599DAF932016F62EB9634B997AF"
             }
           },
-          "unresolved_dimensions": [
-            "validity_match"
+          "unresolved_dimensions": [],
+          "unresolved_required_dimensions": [],
+          "unresolved_supporting_dimensions": [],
+          "recovered_required_dimensions": [
+            "scope_match",
+            "status_match",
+            "entity_match"
           ],
+          "context_recovery_rate": 1,
           "context_origins": [
             "SECTION_HEADING",
             "MATERIAL_METADATA"
@@ -599,16 +628,28 @@
       "conflict_observations": [],
       "context_recovery": [
         {
+          "dimension_roles": {
+            "quantitative_match": "REQUIRED",
+            "validity_match": "NOT_APPLICABLE"
+          },
           "required_dimensions": [
-            "quantitative_match",
+            "quantitative_match"
+          ],
+          "supporting_dimensions": [],
+          "not_applicable_dimensions": [
             "validity_match"
           ],
           "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
           "recovered_dimensions": {},
           "unresolved_dimensions": [
-            "quantitative_match",
-            "validity_match"
+            "quantitative_match"
           ],
+          "unresolved_required_dimensions": [
+            "quantitative_match"
+          ],
+          "unresolved_supporting_dimensions": [],
+          "recovered_required_dimensions": [],
+          "context_recovery_rate": 0,
           "context_origins": [
             "SECTION_HEADING",
             "MATERIAL_METADATA"
@@ -753,10 +794,19 @@
       "conflict_observations": [],
       "context_recovery": [
         {
+          "dimension_roles": {
+            "scope_match": "REQUIRED",
+            "quantitative_match": "NOT_APPLICABLE",
+            "entity_match": "REQUIRED",
+            "validity_match": "NOT_APPLICABLE"
+          },
           "required_dimensions": [
             "scope_match",
+            "entity_match"
+          ],
+          "supporting_dimensions": [],
+          "not_applicable_dimensions": [
             "quantitative_match",
-            "entity_match",
             "validity_match"
           ],
           "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
@@ -770,10 +820,16 @@
             }
           },
           "unresolved_dimensions": [
-            "quantitative_match",
-            "entity_match",
-            "validity_match"
+            "entity_match"
           ],
+          "unresolved_required_dimensions": [
+            "entity_match"
+          ],
+          "unresolved_supporting_dimensions": [],
+          "recovered_required_dimensions": [
+            "scope_match"
+          ],
+          "context_recovery_rate": 0.5,
           "context_origins": [
             "SECTION_HEADING",
             "MATERIAL_METADATA"
@@ -904,14 +960,25 @@
       "conflict_observations": [],
       "context_recovery": [
         {
+          "dimension_roles": {
+            "quantitative_match": "REQUIRED"
+          },
           "required_dimensions": [
             "quantitative_match"
           ],
+          "supporting_dimensions": [],
+          "not_applicable_dimensions": [],
           "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
           "recovered_dimensions": {},
           "unresolved_dimensions": [
             "quantitative_match"
           ],
+          "unresolved_required_dimensions": [
+            "quantitative_match"
+          ],
+          "unresolved_supporting_dimensions": [],
+          "recovered_required_dimensions": [],
+          "context_recovery_rate": 0,
           "context_origins": [
             "SECTION_HEADING",
             "MATERIAL_METADATA"
@@ -1062,11 +1129,18 @@
       "conflict_observations": [],
       "context_recovery": [
         {
+          "dimension_roles": {
+            "status_match": "REQUIRED",
+            "quantitative_match": "REQUIRED",
+            "validity_match": "REQUIRED"
+          },
           "required_dimensions": [
             "status_match",
             "quantitative_match",
             "validity_match"
           ],
+          "supporting_dimensions": [],
+          "not_applicable_dimensions": [],
           "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
           "recovered_dimensions": {
             "status_match": {
@@ -1087,6 +1161,15 @@
           "unresolved_dimensions": [
             "quantitative_match"
           ],
+          "unresolved_required_dimensions": [
+            "quantitative_match"
+          ],
+          "unresolved_supporting_dimensions": [],
+          "recovered_required_dimensions": [
+            "status_match",
+            "validity_match"
+          ],
+          "context_recovery_rate": 0.6666666666666666,
           "context_origins": [
             "SECTION_HEADING",
             "MATERIAL_METADATA"
@@ -1231,13 +1314,22 @@
       "conflict_observations": [],
       "context_recovery": [
         {
+          "dimension_roles": {
+            "scope_match": "REQUIRED",
+            "quantitative_match": "NOT_APPLICABLE",
+            "entity_match": "REQUIRED",
+            "validity_match": "NOT_APPLICABLE"
+          },
           "required_dimensions": [
             "scope_match",
+            "entity_match"
+          ],
+          "supporting_dimensions": [],
+          "not_applicable_dimensions": [
             "quantitative_match",
-            "entity_match",
             "validity_match"
           ],
-          "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+          "recovery_state": "RESOLVED_BY_CONTEXT",
           "recovered_dimensions": {
             "scope_match": {
               "status": "resolved",
@@ -1254,10 +1346,14 @@
               "chunk_id": "MCH-C5D5EB33CB97F715074CC6F4E98EEF17"
             }
           },
-          "unresolved_dimensions": [
-            "quantitative_match",
-            "validity_match"
+          "unresolved_dimensions": [],
+          "unresolved_required_dimensions": [],
+          "unresolved_supporting_dimensions": [],
+          "recovered_required_dimensions": [
+            "scope_match",
+            "entity_match"
           ],
+          "context_recovery_rate": 1,
           "context_origins": [
             "SECTION_HEADING",
             "MATERIAL_METADATA"
@@ -1400,12 +1496,20 @@
       "conflict_observations": [],
       "context_recovery": [
         {
+          "dimension_roles": {
+            "status_match": "REQUIRED",
+            "quantitative_match": "NOT_APPLICABLE",
+            "validity_match": "NOT_APPLICABLE"
+          },
           "required_dimensions": [
-            "status_match",
+            "status_match"
+          ],
+          "supporting_dimensions": [],
+          "not_applicable_dimensions": [
             "quantitative_match",
             "validity_match"
           ],
-          "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+          "recovery_state": "RESOLVED_BY_CONTEXT",
           "recovered_dimensions": {
             "status_match": {
               "status": "resolved",
@@ -1413,18 +1517,15 @@
               "source_text": "名称：ISO/IEC 27001\n编号：CM-Q-27001-2024\n状态：active\n有效至：2027-11-30",
               "source_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
               "chunk_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84"
-            },
-            "validity_match": {
-              "status": "resolved",
-              "origin": "EXACT_SPAN",
-              "source_text": "名称：ISO/IEC 27001\n编号：CM-Q-27001-2024\n状态：active\n有效至：2027-11-30",
-              "source_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84",
-              "chunk_id": "MCH-A4C2632EF9126FADD349C3004E1C2D84"
             }
           },
-          "unresolved_dimensions": [
-            "quantitative_match"
+          "unresolved_dimensions": [],
+          "unresolved_required_dimensions": [],
+          "unresolved_supporting_dimensions": [],
+          "recovered_required_dimensions": [
+            "status_match"
           ],
+          "context_recovery_rate": 1,
           "context_origins": [
             "SECTION_HEADING",
             "MATERIAL_METADATA"
@@ -1571,11 +1672,21 @@
       "conflict_observations": [],
       "context_recovery": [
         {
+          "dimension_roles": {
+            "scope_match": "REQUIRED",
+            "status_match": "REQUIRED",
+            "quantitative_match": "NOT_APPLICABLE",
+            "entity_match": "REQUIRED",
+            "validity_match": "NOT_APPLICABLE"
+          },
           "required_dimensions": [
             "scope_match",
             "status_match",
+            "entity_match"
+          ],
+          "supporting_dimensions": [],
+          "not_applicable_dimensions": [
             "quantitative_match",
-            "entity_match",
             "validity_match"
           ],
           "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
@@ -1590,10 +1701,17 @@
           },
           "unresolved_dimensions": [
             "status_match",
-            "quantitative_match",
-            "entity_match",
-            "validity_match"
+            "entity_match"
           ],
+          "unresolved_required_dimensions": [
+            "status_match",
+            "entity_match"
+          ],
+          "unresolved_supporting_dimensions": [],
+          "recovered_required_dimensions": [
+            "scope_match"
+          ],
+          "context_recovery_rate": 0.3333333333333333,
           "context_origins": [
             "SECTION_HEADING",
             "MATERIAL_METADATA"
@@ -1738,11 +1856,21 @@
       "conflict_observations": [],
       "context_recovery": [
         {
+          "dimension_roles": {
+            "scope_match": "REQUIRED",
+            "status_match": "REQUIRED",
+            "quantitative_match": "NOT_APPLICABLE",
+            "entity_match": "REQUIRED",
+            "validity_match": "NOT_APPLICABLE"
+          },
           "required_dimensions": [
             "scope_match",
             "status_match",
+            "entity_match"
+          ],
+          "supporting_dimensions": [],
+          "not_applicable_dimensions": [
             "quantitative_match",
-            "entity_match",
             "validity_match"
           ],
           "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
@@ -1757,10 +1885,17 @@
           },
           "unresolved_dimensions": [
             "status_match",
-            "quantitative_match",
-            "entity_match",
-            "validity_match"
+            "entity_match"
           ],
+          "unresolved_required_dimensions": [
+            "status_match",
+            "entity_match"
+          ],
+          "unresolved_supporting_dimensions": [],
+          "recovered_required_dimensions": [
+            "scope_match"
+          ],
+          "context_recovery_rate": 0.3333333333333333,
           "context_origins": [
             "SECTION_HEADING",
             "MATERIAL_METADATA"
@@ -1905,11 +2040,21 @@
       "conflict_observations": [],
       "context_recovery": [
         {
+          "dimension_roles": {
+            "scope_match": "REQUIRED",
+            "status_match": "REQUIRED",
+            "quantitative_match": "NOT_APPLICABLE",
+            "entity_match": "REQUIRED",
+            "validity_match": "NOT_APPLICABLE"
+          },
           "required_dimensions": [
             "scope_match",
             "status_match",
+            "entity_match"
+          ],
+          "supporting_dimensions": [],
+          "not_applicable_dimensions": [
             "quantitative_match",
-            "entity_match",
             "validity_match"
           ],
           "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
@@ -1924,10 +2069,17 @@
           },
           "unresolved_dimensions": [
             "status_match",
-            "quantitative_match",
-            "entity_match",
-            "validity_match"
+            "entity_match"
           ],
+          "unresolved_required_dimensions": [
+            "status_match",
+            "entity_match"
+          ],
+          "unresolved_supporting_dimensions": [],
+          "recovered_required_dimensions": [
+            "scope_match"
+          ],
+          "context_recovery_rate": 0.3333333333333333,
           "context_origins": [
             "SECTION_HEADING",
             "MATERIAL_METADATA"
@@ -2068,11 +2220,21 @@
       "conflict_observations": [],
       "context_recovery": [
         {
+          "dimension_roles": {
+            "scope_match": "REQUIRED",
+            "status_match": "REQUIRED",
+            "quantitative_match": "NOT_APPLICABLE",
+            "entity_match": "REQUIRED",
+            "validity_match": "NOT_APPLICABLE"
+          },
           "required_dimensions": [
             "scope_match",
             "status_match",
+            "entity_match"
+          ],
+          "supporting_dimensions": [],
+          "not_applicable_dimensions": [
             "quantitative_match",
-            "entity_match",
             "validity_match"
           ],
           "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
@@ -2087,10 +2249,17 @@
           },
           "unresolved_dimensions": [
             "status_match",
-            "quantitative_match",
-            "entity_match",
-            "validity_match"
+            "entity_match"
           ],
+          "unresolved_required_dimensions": [
+            "status_match",
+            "entity_match"
+          ],
+          "unresolved_supporting_dimensions": [],
+          "recovered_required_dimensions": [
+            "scope_match"
+          ],
+          "context_recovery_rate": 0.3333333333333333,
           "context_origins": [
             "SECTION_HEADING",
             "MATERIAL_METADATA"
@@ -2235,11 +2404,21 @@
       "conflict_observations": [],
       "context_recovery": [
         {
+          "dimension_roles": {
+            "scope_match": "REQUIRED",
+            "status_match": "REQUIRED",
+            "quantitative_match": "NOT_APPLICABLE",
+            "entity_match": "REQUIRED",
+            "validity_match": "NOT_APPLICABLE"
+          },
           "required_dimensions": [
             "scope_match",
             "status_match",
+            "entity_match"
+          ],
+          "supporting_dimensions": [],
+          "not_applicable_dimensions": [
             "quantitative_match",
-            "entity_match",
             "validity_match"
           ],
           "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
@@ -2254,10 +2433,17 @@
           },
           "unresolved_dimensions": [
             "status_match",
-            "quantitative_match",
-            "entity_match",
-            "validity_match"
+            "entity_match"
           ],
+          "unresolved_required_dimensions": [
+            "status_match",
+            "entity_match"
+          ],
+          "unresolved_supporting_dimensions": [],
+          "recovered_required_dimensions": [
+            "scope_match"
+          ],
+          "context_recovery_rate": 0.3333333333333333,
           "context_origins": [
             "SECTION_HEADING",
             "MATERIAL_METADATA"
@@ -2404,18 +2590,30 @@
       "conflict_observations": [],
       "context_recovery": [
         {
+          "dimension_roles": {
+            "status_match": "REQUIRED",
+            "quantitative_match": "NOT_APPLICABLE",
+            "validity_match": "NOT_APPLICABLE"
+          },
           "required_dimensions": [
-            "status_match",
+            "status_match"
+          ],
+          "supporting_dimensions": [],
+          "not_applicable_dimensions": [
             "quantitative_match",
             "validity_match"
           ],
           "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
           "recovered_dimensions": {},
           "unresolved_dimensions": [
-            "status_match",
-            "quantitative_match",
-            "validity_match"
+            "status_match"
           ],
+          "unresolved_required_dimensions": [
+            "status_match"
+          ],
+          "unresolved_supporting_dimensions": [],
+          "recovered_required_dimensions": [],
+          "context_recovery_rate": 0,
           "context_origins": [
             "SECTION_HEADING",
             "MATERIAL_METADATA"
@@ -2560,11 +2758,21 @@
       "conflict_observations": [],
       "context_recovery": [
         {
+          "dimension_roles": {
+            "scope_match": "REQUIRED",
+            "status_match": "REQUIRED",
+            "quantitative_match": "NOT_APPLICABLE",
+            "entity_match": "REQUIRED",
+            "validity_match": "NOT_APPLICABLE"
+          },
           "required_dimensions": [
             "scope_match",
             "status_match",
+            "entity_match"
+          ],
+          "supporting_dimensions": [],
+          "not_applicable_dimensions": [
             "quantitative_match",
-            "entity_match",
             "validity_match"
           ],
           "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
@@ -2579,10 +2787,17 @@
           },
           "unresolved_dimensions": [
             "status_match",
-            "quantitative_match",
-            "entity_match",
-            "validity_match"
+            "entity_match"
           ],
+          "unresolved_required_dimensions": [
+            "status_match",
+            "entity_match"
+          ],
+          "unresolved_supporting_dimensions": [],
+          "recovered_required_dimensions": [
+            "scope_match"
+          ],
+          "context_recovery_rate": 0.3333333333333333,
           "context_origins": [
             "SECTION_HEADING",
             "MATERIAL_METADATA"
@@ -2724,11 +2939,21 @@
       "conflict_observations": [],
       "context_recovery": [
         {
+          "dimension_roles": {
+            "scope_match": "REQUIRED",
+            "status_match": "REQUIRED",
+            "quantitative_match": "NOT_APPLICABLE",
+            "entity_match": "REQUIRED",
+            "validity_match": "NOT_APPLICABLE"
+          },
           "required_dimensions": [
             "scope_match",
             "status_match",
+            "entity_match"
+          ],
+          "supporting_dimensions": [],
+          "not_applicable_dimensions": [
             "quantitative_match",
-            "entity_match",
             "validity_match"
           ],
           "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
@@ -2743,10 +2968,17 @@
           },
           "unresolved_dimensions": [
             "status_match",
-            "quantitative_match",
-            "entity_match",
-            "validity_match"
+            "entity_match"
           ],
+          "unresolved_required_dimensions": [
+            "status_match",
+            "entity_match"
+          ],
+          "unresolved_supporting_dimensions": [],
+          "recovered_required_dimensions": [
+            "scope_match"
+          ],
+          "context_recovery_rate": 0.3333333333333333,
           "context_origins": [
             "SECTION_HEADING",
             "MATERIAL_METADATA"
@@ -2891,11 +3123,21 @@
       "conflict_observations": [],
       "context_recovery": [
         {
+          "dimension_roles": {
+            "scope_match": "REQUIRED",
+            "status_match": "REQUIRED",
+            "quantitative_match": "NOT_APPLICABLE",
+            "entity_match": "REQUIRED",
+            "validity_match": "NOT_APPLICABLE"
+          },
           "required_dimensions": [
             "scope_match",
             "status_match",
+            "entity_match"
+          ],
+          "supporting_dimensions": [],
+          "not_applicable_dimensions": [
             "quantitative_match",
-            "entity_match",
             "validity_match"
           ],
           "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
@@ -2910,10 +3152,17 @@
           },
           "unresolved_dimensions": [
             "status_match",
-            "quantitative_match",
-            "entity_match",
-            "validity_match"
+            "entity_match"
           ],
+          "unresolved_required_dimensions": [
+            "status_match",
+            "entity_match"
+          ],
+          "unresolved_supporting_dimensions": [],
+          "recovered_required_dimensions": [
+            "scope_match"
+          ],
+          "context_recovery_rate": 0.3333333333333333,
           "context_origins": [
             "SECTION_HEADING",
             "MATERIAL_METADATA"
@@ -3059,11 +3308,21 @@
       "conflict_observations": [],
       "context_recovery": [
         {
+          "dimension_roles": {
+            "scope_match": "REQUIRED",
+            "status_match": "REQUIRED",
+            "quantitative_match": "NOT_APPLICABLE",
+            "entity_match": "REQUIRED",
+            "validity_match": "NOT_APPLICABLE"
+          },
           "required_dimensions": [
             "scope_match",
             "status_match",
+            "entity_match"
+          ],
+          "supporting_dimensions": [],
+          "not_applicable_dimensions": [
             "quantitative_match",
-            "entity_match",
             "validity_match"
           ],
           "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
@@ -3078,10 +3337,17 @@
           },
           "unresolved_dimensions": [
             "status_match",
-            "quantitative_match",
-            "entity_match",
-            "validity_match"
+            "entity_match"
           ],
+          "unresolved_required_dimensions": [
+            "status_match",
+            "entity_match"
+          ],
+          "unresolved_supporting_dimensions": [],
+          "recovered_required_dimensions": [
+            "scope_match"
+          ],
+          "context_recovery_rate": 0.3333333333333333,
           "context_origins": [
             "SECTION_HEADING",
             "MATERIAL_METADATA"
@@ -3226,11 +3492,21 @@
       "conflict_observations": [],
       "context_recovery": [
         {
+          "dimension_roles": {
+            "scope_match": "REQUIRED",
+            "status_match": "REQUIRED",
+            "quantitative_match": "NOT_APPLICABLE",
+            "entity_match": "REQUIRED",
+            "validity_match": "NOT_APPLICABLE"
+          },
           "required_dimensions": [
             "scope_match",
             "status_match",
+            "entity_match"
+          ],
+          "supporting_dimensions": [],
+          "not_applicable_dimensions": [
             "quantitative_match",
-            "entity_match",
             "validity_match"
           ],
           "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
@@ -3245,10 +3521,17 @@
           },
           "unresolved_dimensions": [
             "status_match",
-            "quantitative_match",
-            "entity_match",
-            "validity_match"
+            "entity_match"
           ],
+          "unresolved_required_dimensions": [
+            "status_match",
+            "entity_match"
+          ],
+          "unresolved_supporting_dimensions": [],
+          "recovered_required_dimensions": [
+            "scope_match"
+          ],
+          "context_recovery_rate": 0.3333333333333333,
           "context_origins": [
             "SECTION_HEADING",
             "MATERIAL_METADATA"
@@ -3389,11 +3672,21 @@
       "conflict_observations": [],
       "context_recovery": [
         {
+          "dimension_roles": {
+            "scope_match": "REQUIRED",
+            "status_match": "REQUIRED",
+            "quantitative_match": "NOT_APPLICABLE",
+            "entity_match": "REQUIRED",
+            "validity_match": "NOT_APPLICABLE"
+          },
           "required_dimensions": [
             "scope_match",
             "status_match",
+            "entity_match"
+          ],
+          "supporting_dimensions": [],
+          "not_applicable_dimensions": [
             "quantitative_match",
-            "entity_match",
             "validity_match"
           ],
           "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
@@ -3408,10 +3701,17 @@
           },
           "unresolved_dimensions": [
             "status_match",
-            "quantitative_match",
-            "entity_match",
-            "validity_match"
+            "entity_match"
           ],
+          "unresolved_required_dimensions": [
+            "status_match",
+            "entity_match"
+          ],
+          "unresolved_supporting_dimensions": [],
+          "recovered_required_dimensions": [
+            "scope_match"
+          ],
+          "context_recovery_rate": 0.3333333333333333,
           "context_origins": [
             "SECTION_HEADING",
             "MATERIAL_METADATA"
@@ -3556,11 +3856,21 @@
       "conflict_observations": [],
       "context_recovery": [
         {
+          "dimension_roles": {
+            "scope_match": "REQUIRED",
+            "status_match": "REQUIRED",
+            "quantitative_match": "NOT_APPLICABLE",
+            "entity_match": "REQUIRED",
+            "validity_match": "NOT_APPLICABLE"
+          },
           "required_dimensions": [
             "scope_match",
             "status_match",
+            "entity_match"
+          ],
+          "supporting_dimensions": [],
+          "not_applicable_dimensions": [
             "quantitative_match",
-            "entity_match",
             "validity_match"
           ],
           "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
@@ -3575,10 +3885,17 @@
           },
           "unresolved_dimensions": [
             "status_match",
-            "quantitative_match",
-            "entity_match",
-            "validity_match"
+            "entity_match"
           ],
+          "unresolved_required_dimensions": [
+            "status_match",
+            "entity_match"
+          ],
+          "unresolved_supporting_dimensions": [],
+          "recovered_required_dimensions": [
+            "scope_match"
+          ],
+          "context_recovery_rate": 0.3333333333333333,
           "context_origins": [
             "SECTION_HEADING",
             "MATERIAL_METADATA"
@@ -3723,11 +4040,21 @@
       "conflict_observations": [],
       "context_recovery": [
         {
+          "dimension_roles": {
+            "scope_match": "REQUIRED",
+            "status_match": "REQUIRED",
+            "quantitative_match": "NOT_APPLICABLE",
+            "entity_match": "REQUIRED",
+            "validity_match": "NOT_APPLICABLE"
+          },
           "required_dimensions": [
             "scope_match",
             "status_match",
+            "entity_match"
+          ],
+          "supporting_dimensions": [],
+          "not_applicable_dimensions": [
             "quantitative_match",
-            "entity_match",
             "validity_match"
           ],
           "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
@@ -3742,10 +4069,17 @@
           },
           "unresolved_dimensions": [
             "status_match",
-            "quantitative_match",
-            "entity_match",
-            "validity_match"
+            "entity_match"
           ],
+          "unresolved_required_dimensions": [
+            "status_match",
+            "entity_match"
+          ],
+          "unresolved_supporting_dimensions": [],
+          "recovered_required_dimensions": [
+            "scope_match"
+          ],
+          "context_recovery_rate": 0.3333333333333333,
           "context_origins": [
             "SECTION_HEADING",
             "MATERIAL_METADATA"
@@ -3888,14 +4222,24 @@
       "conflict_observations": [],
       "context_recovery": [
         {
+          "dimension_roles": {
+            "scope_match": "REQUIRED",
+            "status_match": "REQUIRED",
+            "quantitative_match": "NOT_APPLICABLE",
+            "entity_match": "REQUIRED",
+            "validity_match": "NOT_APPLICABLE"
+          },
           "required_dimensions": [
             "scope_match",
             "status_match",
+            "entity_match"
+          ],
+          "supporting_dimensions": [],
+          "not_applicable_dimensions": [
             "quantitative_match",
-            "entity_match",
             "validity_match"
           ],
-          "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+          "recovery_state": "RESOLVED_BY_CONTEXT",
           "recovered_dimensions": {
             "scope_match": {
               "status": "resolved",
@@ -3919,10 +4263,15 @@
               "chunk_id": "MCH-3FD884E9C86C84ADD445F70EC81FADD9"
             }
           },
-          "unresolved_dimensions": [
-            "quantitative_match",
-            "validity_match"
+          "unresolved_dimensions": [],
+          "unresolved_required_dimensions": [],
+          "unresolved_supporting_dimensions": [],
+          "recovered_required_dimensions": [
+            "scope_match",
+            "status_match",
+            "entity_match"
           ],
+          "context_recovery_rate": 1,
           "context_origins": [
             "SECTION_HEADING",
             "MATERIAL_METADATA"
@@ -4067,11 +4416,21 @@
       "conflict_observations": [],
       "context_recovery": [
         {
+          "dimension_roles": {
+            "scope_match": "REQUIRED",
+            "status_match": "REQUIRED",
+            "quantitative_match": "NOT_APPLICABLE",
+            "entity_match": "REQUIRED",
+            "validity_match": "NOT_APPLICABLE"
+          },
           "required_dimensions": [
             "scope_match",
             "status_match",
+            "entity_match"
+          ],
+          "supporting_dimensions": [],
+          "not_applicable_dimensions": [
             "quantitative_match",
-            "entity_match",
             "validity_match"
           ],
           "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
@@ -4086,10 +4445,17 @@
           },
           "unresolved_dimensions": [
             "status_match",
-            "quantitative_match",
-            "entity_match",
-            "validity_match"
+            "entity_match"
           ],
+          "unresolved_required_dimensions": [
+            "status_match",
+            "entity_match"
+          ],
+          "unresolved_supporting_dimensions": [],
+          "recovered_required_dimensions": [
+            "scope_match"
+          ],
+          "context_recovery_rate": 0.3333333333333333,
           "context_origins": [
             "SECTION_HEADING",
             "MATERIAL_METADATA"
@@ -4234,11 +4600,21 @@
       "conflict_observations": [],
       "context_recovery": [
         {
+          "dimension_roles": {
+            "scope_match": "REQUIRED",
+            "status_match": "REQUIRED",
+            "quantitative_match": "NOT_APPLICABLE",
+            "entity_match": "REQUIRED",
+            "validity_match": "NOT_APPLICABLE"
+          },
           "required_dimensions": [
             "scope_match",
             "status_match",
+            "entity_match"
+          ],
+          "supporting_dimensions": [],
+          "not_applicable_dimensions": [
             "quantitative_match",
-            "entity_match",
             "validity_match"
           ],
           "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
@@ -4253,10 +4629,17 @@
           },
           "unresolved_dimensions": [
             "status_match",
-            "quantitative_match",
-            "entity_match",
-            "validity_match"
+            "entity_match"
           ],
+          "unresolved_required_dimensions": [
+            "status_match",
+            "entity_match"
+          ],
+          "unresolved_supporting_dimensions": [],
+          "recovered_required_dimensions": [
+            "scope_match"
+          ],
+          "context_recovery_rate": 0.3333333333333333,
           "context_origins": [
             "SECTION_HEADING",
             "MATERIAL_METADATA"
@@ -4398,14 +4781,24 @@
       "conflict_observations": [],
       "context_recovery": [
         {
+          "dimension_roles": {
+            "scope_match": "REQUIRED",
+            "status_match": "REQUIRED",
+            "quantitative_match": "NOT_APPLICABLE",
+            "entity_match": "REQUIRED",
+            "validity_match": "NOT_APPLICABLE"
+          },
           "required_dimensions": [
             "scope_match",
             "status_match",
+            "entity_match"
+          ],
+          "supporting_dimensions": [],
+          "not_applicable_dimensions": [
             "quantitative_match",
-            "entity_match",
             "validity_match"
           ],
-          "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+          "recovery_state": "RESOLVED_BY_CONTEXT",
           "recovered_dimensions": {
             "scope_match": {
               "status": "resolved",
@@ -4429,10 +4822,15 @@
               "chunk_id": "MCH-3FD884E9C86C84ADD445F70EC81FADD9"
             }
           },
-          "unresolved_dimensions": [
-            "quantitative_match",
-            "validity_match"
+          "unresolved_dimensions": [],
+          "unresolved_required_dimensions": [],
+          "unresolved_supporting_dimensions": [],
+          "recovered_required_dimensions": [
+            "scope_match",
+            "status_match",
+            "entity_match"
           ],
+          "context_recovery_rate": 1,
           "context_origins": [
             "SECTION_HEADING",
             "MATERIAL_METADATA"
@@ -4578,11 +4976,21 @@
       "conflict_observations": [],
       "context_recovery": [
         {
+          "dimension_roles": {
+            "scope_match": "REQUIRED",
+            "status_match": "REQUIRED",
+            "quantitative_match": "NOT_APPLICABLE",
+            "entity_match": "REQUIRED",
+            "validity_match": "NOT_APPLICABLE"
+          },
           "required_dimensions": [
             "scope_match",
             "status_match",
+            "entity_match"
+          ],
+          "supporting_dimensions": [],
+          "not_applicable_dimensions": [
             "quantitative_match",
-            "entity_match",
             "validity_match"
           ],
           "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
@@ -4597,10 +5005,17 @@
           },
           "unresolved_dimensions": [
             "status_match",
-            "quantitative_match",
-            "entity_match",
-            "validity_match"
+            "entity_match"
           ],
+          "unresolved_required_dimensions": [
+            "status_match",
+            "entity_match"
+          ],
+          "unresolved_supporting_dimensions": [],
+          "recovered_required_dimensions": [
+            "scope_match"
+          ],
+          "context_recovery_rate": 0.3333333333333333,
           "context_origins": [
             "SECTION_HEADING",
             "MATERIAL_METADATA"
@@ -4745,11 +5160,21 @@
       "conflict_observations": [],
       "context_recovery": [
         {
+          "dimension_roles": {
+            "scope_match": "REQUIRED",
+            "status_match": "REQUIRED",
+            "quantitative_match": "NOT_APPLICABLE",
+            "entity_match": "REQUIRED",
+            "validity_match": "NOT_APPLICABLE"
+          },
           "required_dimensions": [
             "scope_match",
             "status_match",
+            "entity_match"
+          ],
+          "supporting_dimensions": [],
+          "not_applicable_dimensions": [
             "quantitative_match",
-            "entity_match",
             "validity_match"
           ],
           "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
@@ -4764,10 +5189,17 @@
           },
           "unresolved_dimensions": [
             "status_match",
-            "quantitative_match",
-            "entity_match",
-            "validity_match"
+            "entity_match"
           ],
+          "unresolved_required_dimensions": [
+            "status_match",
+            "entity_match"
+          ],
+          "unresolved_supporting_dimensions": [],
+          "recovered_required_dimensions": [
+            "scope_match"
+          ],
+          "context_recovery_rate": 0.3333333333333333,
           "context_origins": [
             "SECTION_HEADING",
             "MATERIAL_METADATA"
@@ -4909,14 +5341,24 @@
       "conflict_observations": [],
       "context_recovery": [
         {
+          "dimension_roles": {
+            "scope_match": "REQUIRED",
+            "status_match": "REQUIRED",
+            "quantitative_match": "NOT_APPLICABLE",
+            "entity_match": "REQUIRED",
+            "validity_match": "NOT_APPLICABLE"
+          },
           "required_dimensions": [
             "scope_match",
             "status_match",
+            "entity_match"
+          ],
+          "supporting_dimensions": [],
+          "not_applicable_dimensions": [
             "quantitative_match",
-            "entity_match",
             "validity_match"
           ],
-          "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+          "recovery_state": "RESOLVED_BY_CONTEXT",
           "recovered_dimensions": {
             "scope_match": {
               "status": "resolved",
@@ -4940,10 +5382,15 @@
               "chunk_id": "MCH-3FD884E9C86C84ADD445F70EC81FADD9"
             }
           },
-          "unresolved_dimensions": [
-            "quantitative_match",
-            "validity_match"
+          "unresolved_dimensions": [],
+          "unresolved_required_dimensions": [],
+          "unresolved_supporting_dimensions": [],
+          "recovered_required_dimensions": [
+            "scope_match",
+            "status_match",
+            "entity_match"
           ],
+          "context_recovery_rate": 1,
           "context_origins": [
             "SECTION_HEADING",
             "MATERIAL_METADATA"
@@ -5089,11 +5536,21 @@
       "conflict_observations": [],
       "context_recovery": [
         {
+          "dimension_roles": {
+            "scope_match": "REQUIRED",
+            "status_match": "REQUIRED",
+            "quantitative_match": "NOT_APPLICABLE",
+            "entity_match": "REQUIRED",
+            "validity_match": "NOT_APPLICABLE"
+          },
           "required_dimensions": [
             "scope_match",
             "status_match",
+            "entity_match"
+          ],
+          "supporting_dimensions": [],
+          "not_applicable_dimensions": [
             "quantitative_match",
-            "entity_match",
             "validity_match"
           ],
           "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
@@ -5108,10 +5565,17 @@
           },
           "unresolved_dimensions": [
             "status_match",
-            "quantitative_match",
-            "entity_match",
-            "validity_match"
+            "entity_match"
           ],
+          "unresolved_required_dimensions": [
+            "status_match",
+            "entity_match"
+          ],
+          "unresolved_supporting_dimensions": [],
+          "recovered_required_dimensions": [
+            "scope_match"
+          ],
+          "context_recovery_rate": 0.3333333333333333,
           "context_origins": [
             "SECTION_HEADING",
             "MATERIAL_METADATA"
@@ -5256,11 +5720,21 @@
       "conflict_observations": [],
       "context_recovery": [
         {
+          "dimension_roles": {
+            "scope_match": "REQUIRED",
+            "status_match": "REQUIRED",
+            "quantitative_match": "NOT_APPLICABLE",
+            "entity_match": "REQUIRED",
+            "validity_match": "NOT_APPLICABLE"
+          },
           "required_dimensions": [
             "scope_match",
             "status_match",
+            "entity_match"
+          ],
+          "supporting_dimensions": [],
+          "not_applicable_dimensions": [
             "quantitative_match",
-            "entity_match",
             "validity_match"
           ],
           "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
@@ -5275,10 +5749,17 @@
           },
           "unresolved_dimensions": [
             "status_match",
-            "quantitative_match",
-            "entity_match",
-            "validity_match"
+            "entity_match"
           ],
+          "unresolved_required_dimensions": [
+            "status_match",
+            "entity_match"
+          ],
+          "unresolved_supporting_dimensions": [],
+          "recovered_required_dimensions": [
+            "scope_match"
+          ],
+          "context_recovery_rate": 0.3333333333333333,
           "context_origins": [
             "SECTION_HEADING",
             "MATERIAL_METADATA"
@@ -5423,13 +5904,22 @@
       "conflict_observations": [],
       "context_recovery": [
         {
+          "dimension_roles": {
+            "scope_match": "REQUIRED",
+            "quantitative_match": "NOT_APPLICABLE",
+            "entity_match": "REQUIRED",
+            "validity_match": "NOT_APPLICABLE"
+          },
           "required_dimensions": [
             "scope_match",
+            "entity_match"
+          ],
+          "supporting_dimensions": [],
+          "not_applicable_dimensions": [
             "quantitative_match",
-            "entity_match",
             "validity_match"
           ],
-          "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+          "recovery_state": "RESOLVED_BY_CONTEXT",
           "recovered_dimensions": {
             "scope_match": {
               "status": "resolved",
@@ -5446,10 +5936,14 @@
               "chunk_id": "MCH-00AFC7A231D91C6A9FF01082FBFC0BDE"
             }
           },
-          "unresolved_dimensions": [
-            "quantitative_match",
-            "validity_match"
+          "unresolved_dimensions": [],
+          "unresolved_required_dimensions": [],
+          "unresolved_supporting_dimensions": [],
+          "recovered_required_dimensions": [
+            "scope_match",
+            "entity_match"
           ],
+          "context_recovery_rate": 1,
           "context_origins": [
             "SECTION_HEADING",
             "MATERIAL_METADATA"
@@ -5594,11 +6088,21 @@
       "conflict_observations": [],
       "context_recovery": [
         {
+          "dimension_roles": {
+            "scope_match": "REQUIRED",
+            "status_match": "REQUIRED",
+            "quantitative_match": "NOT_APPLICABLE",
+            "entity_match": "REQUIRED",
+            "validity_match": "NOT_APPLICABLE"
+          },
           "required_dimensions": [
             "scope_match",
             "status_match",
+            "entity_match"
+          ],
+          "supporting_dimensions": [],
+          "not_applicable_dimensions": [
             "quantitative_match",
-            "entity_match",
             "validity_match"
           ],
           "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
@@ -5613,10 +6117,17 @@
           },
           "unresolved_dimensions": [
             "status_match",
-            "quantitative_match",
-            "entity_match",
-            "validity_match"
+            "entity_match"
           ],
+          "unresolved_required_dimensions": [
+            "status_match",
+            "entity_match"
+          ],
+          "unresolved_supporting_dimensions": [],
+          "recovered_required_dimensions": [
+            "scope_match"
+          ],
+          "context_recovery_rate": 0.3333333333333333,
           "context_origins": [
             "SECTION_HEADING",
             "MATERIAL_METADATA"
@@ -5761,11 +6272,21 @@
       "conflict_observations": [],
       "context_recovery": [
         {
+          "dimension_roles": {
+            "scope_match": "REQUIRED",
+            "status_match": "REQUIRED",
+            "quantitative_match": "NOT_APPLICABLE",
+            "entity_match": "REQUIRED",
+            "validity_match": "NOT_APPLICABLE"
+          },
           "required_dimensions": [
             "scope_match",
             "status_match",
+            "entity_match"
+          ],
+          "supporting_dimensions": [],
+          "not_applicable_dimensions": [
             "quantitative_match",
-            "entity_match",
             "validity_match"
           ],
           "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
@@ -5780,10 +6301,17 @@
           },
           "unresolved_dimensions": [
             "status_match",
-            "quantitative_match",
-            "entity_match",
-            "validity_match"
+            "entity_match"
           ],
+          "unresolved_required_dimensions": [
+            "status_match",
+            "entity_match"
+          ],
+          "unresolved_supporting_dimensions": [],
+          "recovered_required_dimensions": [
+            "scope_match"
+          ],
+          "context_recovery_rate": 0.3333333333333333,
           "context_origins": [
             "SECTION_HEADING",
             "MATERIAL_METADATA"
@@ -5928,13 +6456,22 @@
       "conflict_observations": [],
       "context_recovery": [
         {
+          "dimension_roles": {
+            "scope_match": "REQUIRED",
+            "quantitative_match": "NOT_APPLICABLE",
+            "entity_match": "REQUIRED",
+            "validity_match": "NOT_APPLICABLE"
+          },
           "required_dimensions": [
             "scope_match",
+            "entity_match"
+          ],
+          "supporting_dimensions": [],
+          "not_applicable_dimensions": [
             "quantitative_match",
-            "entity_match",
             "validity_match"
           ],
-          "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
+          "recovery_state": "RESOLVED_BY_CONTEXT",
           "recovered_dimensions": {
             "scope_match": {
               "status": "resolved",
@@ -5951,10 +6488,14 @@
               "chunk_id": "MCH-00AFC7A231D91C6A9FF01082FBFC0BDE"
             }
           },
-          "unresolved_dimensions": [
-            "quantitative_match",
-            "validity_match"
+          "unresolved_dimensions": [],
+          "unresolved_required_dimensions": [],
+          "unresolved_supporting_dimensions": [],
+          "recovered_required_dimensions": [
+            "scope_match",
+            "entity_match"
           ],
+          "context_recovery_rate": 1,
           "context_origins": [
             "SECTION_HEADING",
             "MATERIAL_METADATA"
@@ -6100,11 +6641,21 @@
       "conflict_observations": [],
       "context_recovery": [
         {
+          "dimension_roles": {
+            "scope_match": "REQUIRED",
+            "status_match": "REQUIRED",
+            "quantitative_match": "NOT_APPLICABLE",
+            "entity_match": "REQUIRED",
+            "validity_match": "NOT_APPLICABLE"
+          },
           "required_dimensions": [
             "scope_match",
             "status_match",
+            "entity_match"
+          ],
+          "supporting_dimensions": [],
+          "not_applicable_dimensions": [
             "quantitative_match",
-            "entity_match",
             "validity_match"
           ],
           "recovery_state": "UNRESOLVED_AFTER_CONTEXT",
@@ -6119,10 +6670,17 @@
           },
           "unresolved_dimensions": [
             "status_match",
-            "quantitative_match",
-            "entity_match",
-            "validity_match"
+            "entity_match"
           ],
+          "unresolved_required_dimensions": [
+            "status_match",
+            "entity_match"
+          ],
+          "unresolved_supporting_dimensions": [],
+          "recovered_required_dimensions": [
+            "scope_match"
+          ],
+          "context_recovery_rate": 0.3333333333333333,
           "context_origins": [
             "SECTION_HEADING",
             "MATERIAL_METADATA"

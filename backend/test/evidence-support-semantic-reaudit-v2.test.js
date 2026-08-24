@@ -89,8 +89,8 @@ test('every valid case is aggregate-consistent and manual samples expose source 
 
 test('context recovery keeps exact span separate and reports unresolved dimensions', () => {
   const report = runSemanticReaudit({ pool });
-  assert.equal(report.context_recovery.cases_requiring_expansion, 36);
+  assert.equal(report.context_recovery.cases_requiring_expansion, 35);
   assert.equal(report.context_recovery.resolved_adjacent_chunk, 0);
-  assert.equal(report.context_recovery.still_unresolved, 36);
+  assert.equal(report.context_recovery.still_unresolved, 27);
   assert.ok(report.cases.every(item => item.context_recovery.every(entry => entry.exact_span_preserved)));
 });

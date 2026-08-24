@@ -1,6 +1,19 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { expandEvidenceContext } from '../src/pipeline/evidence-context-expansion.js';
+import { classifyRequiredEvidenceDimensions, expandEvidenceContext } from '../src/pipeline/evidence-context-expansion.js';
+
+test('required evidence dimensions are deterministic and do not require irrelevant validity or quantitative facts', () => {
+  const roles = classifyRequiredEvidenceDimensions({
+    requirement: { text: '企业应证明自身具备数据交换与兼容能力。', category: 'technical' },
+    dimensions: ['subject_match', 'entity_match', 'scope_match', 'status_match', 'validity_match', 'quantitative_match']
+  });
+  assert.equal(roles.subject_match, 'REQUIRED');
+  assert.equal(roles.entity_match, 'REQUIRED');
+  assert.equal(roles.scope_match, 'REQUIRED');
+  assert.equal(roles.status_match, 'REQUIRED');
+  assert.equal(roles.validity_match, 'NOT_APPLICABLE');
+  assert.equal(roles.quantitative_match, 'NOT_APPLICABLE');
+});
 
 const material = { id: 'MAT-1', original_name: 'performance.md', material_type: 'product_documentation', corpus_scope: 'ENTERPRISE_PRIVATE', owner: 'Synthetic Vendor' };
 

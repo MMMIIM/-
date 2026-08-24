@@ -219,6 +219,7 @@ function contextRecovery(item, source, assessment) {
     .filter(([name, value]) => value === 'unknown' && ['subject_match', 'scope_match', 'entity_match', 'status_match', 'validity_match', 'quantitative_match'].includes(name))
     .map(([name]) => name);
   const expansion = expandEvidenceContext({
+    requirement: item.requirement,
     exactSpan: {
       source_id: source.source_id,
       source_span_id: source.source_span_id,
@@ -243,10 +244,17 @@ function contextRecovery(item, source, assessment) {
     missingDimensions
   });
   return {
-    required_dimensions: missingDimensions,
+    dimension_roles: expansion.dimension_roles,
+    required_dimensions: expansion.required_dimensions,
+    supporting_dimensions: expansion.supporting_dimensions,
+    not_applicable_dimensions: expansion.not_applicable_dimensions,
     recovery_state: expansion.recovery_state,
     recovered_dimensions: expansion.recovered_dimensions,
     unresolved_dimensions: expansion.unresolved_dimensions,
+    unresolved_required_dimensions: expansion.unresolved_required_dimensions,
+    unresolved_supporting_dimensions: expansion.unresolved_supporting_dimensions,
+    recovered_required_dimensions: expansion.recovered_required_dimensions,
+    context_recovery_rate: expansion.context_recovery_rate,
     context_origins: expansion.context_window.map(item => item.origin),
     exact_span_preserved: expansion.exact_evidence_span.source_text === source.source_text
   };
@@ -366,15 +374,27 @@ export function runSemanticReaudit({ pool = JSON.parse(fs.readFileSync(INPUT_PAT
   const unchangedCount = auditedCases.filter(item => !item.semantic_changed && !item.status_changed).length;
   const contextEntries = auditedCases.flatMap(item => item.context_recovery || []);
   const recovered = contextEntries.flatMap(item => Object.values(item.recovered_dimensions || {}));
+  const recoveredRequired = contextEntries.flatMap(item => item.recovered_required_dimensions || []);
+  const requiredDimensions = contextEntries.flatMap(item => item.required_dimensions || []);
+  const supportingDimensions = contextEntries.flatMap(item => item.supporting_dimensions || []);
+  const notApplicableDimensions = contextEntries.flatMap(item => item.not_applicable_dimensions || []);
+  const unresolvedRequiredDimensions = contextEntries.flatMap(item => item.unresolved_required_dimensions || []);
   const contextRecoverySummary = {
     cases_requiring_expansion: auditedCases.filter(item => (item.context_recovery || []).some(entry => entry.required_dimensions.length > 0)).length,
     resolved_same_chunk: recovered.filter(item => ['EXACT_SPAN', 'SAME_SENTENCE', 'SAME_PARAGRAPH', 'TABLE_HEADER', 'SECTION_HEADING', 'SAME_CHUNK_CONTEXT'].includes(item.origin)).length,
     resolved_adjacent_chunk: recovered.filter(item => item.origin === 'ADJACENT_CHUNK').length,
     resolved_material_metadata: recovered.filter(item => item.origin === 'MATERIAL_METADATA').length,
     resolved_retrieval_expansion: recovered.filter(item => item.origin === 'ADJACENT_CHUNK').length,
-    still_unresolved: auditedCases.filter(item => (item.context_recovery || []).some(entry => entry.unresolved_dimensions.length > 0)).length,
+    still_unresolved: auditedCases.filter(item => (item.context_recovery || []).some(entry => entry.unresolved_required_dimensions.length > 0)).length,
     recovered_dimension_count: recovered.length,
-    unresolved_dimension_count: contextEntries.reduce((count, item) => count + item.unresolved_dimensions.length, 0)
+    unresolved_dimension_count: contextEntries.reduce((count, item) => count + item.unresolved_dimensions.length, 0),
+    total_dimensions: requiredDimensions.length + supportingDimensions.length + notApplicableDimensions.length,
+    required_dimension_count: requiredDimensions.length,
+    supporting_dimension_count: supportingDimensions.length,
+    not_applicable_dimension_count: notApplicableDimensions.length,
+    unresolved_required_dimension_count: unresolvedRequiredDimensions.length,
+    cases_with_unresolved_required_dimension: auditedCases.filter(item => (item.context_recovery || []).some(entry => entry.unresolved_required_dimensions.length > 0)).length,
+    context_recovery_rate: requiredDimensions.length ? recoveredRequired.length / requiredDimensions.length : null
   };
 
   return {
