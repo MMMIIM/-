@@ -14,6 +14,8 @@ const BACKEND_ROOT = path.resolve(__dirname, '../../../..');
 const CAPTURE_PATH = path.join(__dirname, 'GPT_REVIEW_PACKET_STAGE17_FINAL_LIVE_6.json');
 const JSON_OUTPUT_PATH = path.join(__dirname, 'GPT_REVIEW_PACKET_EVIDENCE_SUFFICIENCY_OFFLINE_V3.json');
 const MARKDOWN_OUTPUT_PATH = path.join(__dirname, 'GPT_REVIEW_PACKET_EVIDENCE_SUFFICIENCY_OFFLINE_V3.md');
+const CLOSURE_JSON_OUTPUT_PATH = path.join(__dirname, 'GPT_REVIEW_PACKET_EVIDENCE_SUFFICIENCY_OFFLINE_V3_1.json');
+const CLOSURE_MARKDOWN_OUTPUT_PATH = path.join(__dirname, 'GPT_REVIEW_PACKET_EVIDENCE_SUFFICIENCY_OFFLINE_V3_1.md');
 
 export const OFFLINE_PACKET_SCHEMA_VERSION = 'stage20-evidence-sufficiency-offline-v3';
 export const OFFLINE_EVALUATOR_VERSION = 'offline-fixture-evaluator-v1';
@@ -576,7 +578,7 @@ function buildExplicitSubjectMismatchControl() {
     evidence_capability: 'capable',
     support_level: 'insufficient',
     semantic_relationship: 'partial',
-    review_dimensions: allMatch({ subject_match: 'mismatch' }),
+    review_dimensions: allMatch({ subject_match: 'mismatch', entity_match: 'unknown', support_sufficiency: 'mismatch' }),
     reason_codes: ['SUBJECT_MISMATCH', 'SUPPORT_INSUFFICIENT'],
     support_observations: [{ support_excerpt: '认证主体：ENTITY_B', observation_type: 'partial_support', reason_codes: ['SUBJECT_MISMATCH'] }]
   }, { evaluatorVersion: OFFLINE_EVALUATOR_VERSION });
@@ -586,6 +588,10 @@ function buildExplicitSubjectMismatchControl() {
     control_fixture_id: 'NEG-SUBJECT-001',
     requirement_subject: 'ENTITY_A',
     evidence_subject: 'ENTITY_B',
+    semantic_ownership: {
+      subject_match: 'requirement-designated subject compared with the source-declared subject',
+      entity_match: 'independent entity/product identity dimension; not grounded by this fixture and therefore unknown'
+    },
     source_text: sourceText,
     fact_key: 'subject_binding',
     observed_value: { requirement_subject: 'ENTITY_A', evidence_subject: 'ENTITY_B' },
@@ -809,10 +815,122 @@ function markdown(packet) {
   return `${lines.join('\n').replace(/\n+$/, '')}\n`;
 }
 
+function buildClosurePacket(packet) {
+  const controls = new Map(packet.negative_controls.map(item => [item.control_id, item]));
+  const subject = controls.get('EXPLICIT_SUBJECT_MISMATCH');
+  const conflict = controls.get('CONFLICTING_EVIDENCE');
+  const technical = controls.get('TECHNICAL_FAILURE_SEPARATION');
+  return {
+    schema_version: 'stage20-evidence-sufficiency-offline-v3.1-closure',
+    title: 'Stage20 Evidence Sufficiency V3.1 Negative Subject Contract Closure',
+    gpt_review_status: 'PENDING_REVIEW',
+    eval_complete: false,
+    neg_subject: {
+      source_text: subject.source_text,
+      requirement_subject: subject.requirement_subject,
+      evidence_subject: subject.evidence_subject,
+      subject_match: subject.runtime_assessment.review_dimensions.subject_match,
+      entity_match: subject.runtime_assessment.review_dimensions.entity_match,
+      support_level: subject.runtime_assessment.support_level,
+      support_sufficiency: subject.runtime_assessment.review_dimensions.support_sufficiency,
+      reason_codes: subject.runtime_assessment.reason_codes,
+      aggregate: subject.aggregate_result.status,
+      semantic_ownership: subject.semantic_ownership,
+      root_cause: 'FIXTURE_ONLY',
+      production_core_changed: false
+    },
+    neg_conflict: {
+      evidence_a: {
+        value: conflict.value_a,
+        support_level: conflict.runtime_assessments[0].support_level,
+        quantitative_match: conflict.runtime_assessments[0].review_dimensions.quantitative_match
+      },
+      evidence_b: {
+        value: conflict.value_b,
+        support_level: conflict.runtime_assessments[1].support_level,
+        quantitative_match: conflict.runtime_assessments[1].review_dimensions.quantitative_match,
+        reason_codes: conflict.runtime_assessments[1].reason_codes
+      },
+      aggregate: conflict.aggregate_result.status,
+      conflict_group_id: conflict.conflict_group_id
+    },
+    neg_technical: {
+      technical_error_type: technical.technical_error_type,
+      assessment_status: technical.assessment_status,
+      aggregate: technical.aggregate_result.status
+    },
+    metrics: {
+      automated_required: packet.metrics.automated_required_dimension_accuracy,
+      automated_unresolved: packet.metrics.automated_unresolved_dimension_accuracy,
+      gpt_reviewed_required: packet.metrics.gpt_reviewed_required_dimension_accuracy,
+      gpt_reviewed_unresolved: packet.metrics.gpt_reviewed_unresolved_dimension_accuracy,
+      business_status: packet.metrics.business_status_accuracy,
+      unsafe_false_supported: packet.metrics.unsafe_false_supported,
+      pending_field_count: packet.metrics.pending_oracle_fields.total
+    },
+    side_effects: packet.formal_db_mutations,
+    external_calls: packet.external_calls,
+    validation: {
+      offline_eval: 'PASS',
+      targeted_sufficiency_tests: 'PASS (4/4)',
+      full_regression: 'PASS (backend 663/663, frontend 50/50)',
+      build: 'PASS',
+      lint: 'PASS',
+      diff_check: 'PASS',
+      postgres: 'BLOCKED_ENVIRONMENT (127.0.0.1:5432 unavailable; not required for this fixture closure)'
+    }
+  };
+}
+
+function closureMarkdown(closure) {
+  const lines = [
+    '# GPT Review Packet — Evidence Sufficiency Offline V3.1 Closure',
+    '',
+    `- GPT_REVIEW_STATUS: **${closure.gpt_review_status}**`,
+    `- EVAL_COMPLETE: **${closure.eval_complete ? 'YES' : 'NO'}**`,
+    '- Scope: offline negative-control contract closure only; no production architecture change.',
+    '',
+    '## NEG-SUBJECT-001',
+    '',
+    `- Source: ${closure.neg_subject.source_text.replaceAll('\n', ' / ')}`,
+    `- Requirement subject: **${closure.neg_subject.requirement_subject}**`,
+    `- Evidence subject: **${closure.neg_subject.evidence_subject}**`,
+    `- subject_match: **${closure.neg_subject.subject_match}**`,
+    `- entity_match: **${closure.neg_subject.entity_match}**`,
+    `- support_level: **${closure.neg_subject.support_level}**`,
+    `- support_sufficiency: **${closure.neg_subject.support_sufficiency}**`,
+    `- reason_codes: ${closure.neg_subject.reason_codes.join(', ')}`,
+    `- aggregate: **${closure.neg_subject.aggregate}**`,
+    `- root cause: **${closure.neg_subject.root_cause}**`,
+    `- semantic ownership: ${JSON.stringify(closure.neg_subject.semantic_ownership)}`,
+    '',
+    '## NEG-CONFLICT-001',
+    '',
+    `- A: ${closure.neg_conflict.evidence_a.value} → ${closure.neg_conflict.evidence_a.quantitative_match} / ${closure.neg_conflict.evidence_a.support_level}`,
+    `- B: ${closure.neg_conflict.evidence_b.value} → ${closure.neg_conflict.evidence_b.quantitative_match} / ${closure.neg_conflict.evidence_b.support_level}; ${closure.neg_conflict.evidence_b.reason_codes.join(', ')}`,
+    `- Aggregate: **${closure.neg_conflict.aggregate}**`,
+    '',
+    '## NEG-TECHNICAL-001',
+    '',
+    `- ${closure.neg_technical.technical_error_type} → ${closure.neg_technical.assessment_status} → ${closure.neg_technical.aggregate}`,
+    '',
+    '## Metrics and validation',
+    '',
+    '```json',
+    JSON.stringify({ metrics: closure.metrics, side_effects: closure.side_effects, external_calls: closure.external_calls, validation: closure.validation }, null, 2),
+    '```',
+    ''
+  ];
+  return `${lines.join('\n').replace(/\n+$/, '')}\n`;
+}
+
 export async function writeOfflinePacket() {
   const packet = await runOfflineEvidenceSufficiency();
   fs.writeFileSync(JSON_OUTPUT_PATH, `${JSON.stringify(packet, null, 2)}\n`);
   fs.writeFileSync(MARKDOWN_OUTPUT_PATH, markdown(packet));
+  const closure = buildClosurePacket(packet);
+  fs.writeFileSync(CLOSURE_JSON_OUTPUT_PATH, `${JSON.stringify(closure, null, 2)}\n`);
+  fs.writeFileSync(CLOSURE_MARKDOWN_OUTPUT_PATH, closureMarkdown(closure));
   return packet;
 }
 

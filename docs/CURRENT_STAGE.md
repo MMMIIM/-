@@ -17,7 +17,12 @@ Status: **IN PROGRESS — OFFLINE BASELINE / GPT REVIEW PENDING**
 V3 在保留上述修正的基础上分离自动指标与 GPT-reviewed 指标，纠正 V2R-003
 子字段 provenance，重建 source-grounded 主体不匹配与带有各自需求相对语义的
 冲突控制。自动必需维度准确率为 25/25、自动未决维度为 6/6；GPT-reviewed
-分母只包含明确标记的字段，仍待独立复核。
+分母只包含明确标记的字段，仍待独立复核。V3.1 closure packet 进一步固定
+NEG-SUBJECT 的 `support_sufficiency=mismatch` 与 `entity_match=unknown`，根因
+归类为 `FIXTURE_ONLY`。
+
+Closure packet：
+`backend/eval/evidence-support/calibration-v2/GPT_REVIEW_PACKET_EVIDENCE_SUFFICIENCY_OFFLINE_V3_1.md/.json`。
 
 下一步：等待独立 GPT / 人工复核离线包；在新的明确授权前不调用外部模型，
 不修改 Retrieval、排名、MMR、topK、Source Eligibility 或 Stage17 冻结规则。

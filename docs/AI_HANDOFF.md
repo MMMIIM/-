@@ -42,6 +42,9 @@ Embedding, LLM or Dify call is allowed. Packet:
 V3 separates automated 25/25 and 6/6 dimension metrics from field-level
 GPT-reviewed metrics, keeps V2R-003 child fields pending, and source-grounds the
 subject-mismatch and conflict controls. Independent review is still pending.
+V3.1 closure fixes the NEG-SUBJECT support-sufficiency contradiction and keeps
+its independently ungrounded entity dimension unknown. Closure packet:
+`backend/eval/evidence-support/calibration-v2/GPT_REVIEW_PACKET_EVIDENCE_SUFFICIENCY_OFFLINE_V3_1.md/.json`.
 Stage 20 overall remains **PARTIAL / BLOCKED** until independent review and
 formal evidence-sufficiency acceptance. Stage 20 — P0 Real Evidence Retrieval
 Revalidation remains the parent track.

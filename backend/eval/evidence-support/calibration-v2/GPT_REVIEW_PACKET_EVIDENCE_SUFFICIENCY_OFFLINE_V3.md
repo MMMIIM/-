@@ -215,6 +215,10 @@ Adverse evidence: NO
     "control_fixture_id": "NEG-SUBJECT-001",
     "requirement_subject": "ENTITY_A",
     "evidence_subject": "ENTITY_B",
+    "semantic_ownership": {
+      "subject_match": "requirement-designated subject compared with the source-declared subject",
+      "entity_match": "independent entity/product identity dimension; not grounded by this fixture and therefore unknown"
+    },
     "source_text": "认证主体：ENTITY_B\n名称：ISO/IEC 27001\n状态：active\n有效至：2027-11-30",
     "fact_key": "subject_binding",
     "observed_value": {
@@ -253,10 +257,10 @@ Adverse evidence: NO
         "scope_match": "match",
         "status_match": "match",
         "quantitative_match": "match",
-        "entity_match": "match",
+        "entity_match": "unknown",
         "validity_match": "match",
         "source_authority": "match",
-        "support_sufficiency": "match"
+        "support_sufficiency": "mismatch"
       },
       "reason_codes": [
         "SUBJECT_MISMATCH",

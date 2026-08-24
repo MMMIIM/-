@@ -62,6 +62,9 @@ test('offline negative controls distinguish adverse, conflict and technical unav
   assert.equal(controls.get('WRONG_SCOPE_BOUNDARY').passed, true);
   assert.equal(controls.get('EXPLICIT_SUBJECT_MISMATCH').passed, true);
   assert.equal(controls.get('EXPLICIT_SUBJECT_MISMATCH').runtime_assessment.review_dimensions.subject_match, 'mismatch');
+  assert.equal(controls.get('EXPLICIT_SUBJECT_MISMATCH').runtime_assessment.review_dimensions.entity_match, 'unknown');
+  assert.equal(controls.get('EXPLICIT_SUBJECT_MISMATCH').runtime_assessment.review_dimensions.support_sufficiency, 'mismatch');
+  assert.equal(controls.get('EXPLICIT_SUBJECT_MISMATCH').runtime_assessment.support_level, 'insufficient');
   assert.equal(controls.get('EXPLICIT_SUBJECT_MISMATCH').aggregate_result.status, 'INSUFFICIENT_EVIDENCE');
   assert.equal(controls.get('EXPLICIT_SUBJECT_MISMATCH').requirement_subject, 'ENTITY_A');
   assert.equal(controls.get('EXPLICIT_SUBJECT_MISMATCH').evidence_subject, 'ENTITY_B');
