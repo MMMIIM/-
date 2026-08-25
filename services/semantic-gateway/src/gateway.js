@@ -143,7 +143,15 @@ function safeProbeDiagnostics({ providerAudit = null, validationErrors = [], env
     generation_config: audit.generation_config && typeof audit.generation_config === 'object'
       ? {
         response_format: audit.generation_config.response_format?.type === 'json_object'
-          ? { type: 'json_object' } : null,
+          ? { type: 'json_object' }
+          : audit.generation_config.response_format?.type === 'json_schema'
+            ? {
+              type: 'json_schema',
+              name: typeof audit.generation_config.response_format.json_schema?.name === 'string'
+                ? audit.generation_config.response_format.json_schema.name : null,
+              strict: audit.generation_config.response_format.json_schema?.strict === true
+            }
+            : null,
         max_tokens: Number.isInteger(audit.generation_config.max_tokens) ? audit.generation_config.max_tokens : null,
         temperature: Number.isFinite(audit.generation_config.temperature) ? audit.generation_config.temperature : null,
         top_p: Number.isFinite(audit.generation_config.top_p) ? audit.generation_config.top_p : null,

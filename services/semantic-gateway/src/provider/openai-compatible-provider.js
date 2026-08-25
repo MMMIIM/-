@@ -120,6 +120,23 @@ function safeCause(error) {
   };
 }
 
+function normalizedResponseFormat(value) {
+  if (value && typeof value === 'object' && value.type === 'json_schema'
+    && value.json_schema && typeof value.json_schema === 'object'
+    && typeof value.json_schema.name === 'string'
+    && value.json_schema.schema && typeof value.json_schema.schema === 'object') {
+    return {
+      type: 'json_schema',
+      json_schema: {
+        name: value.json_schema.name.slice(0, 80),
+        strict: value.json_schema.strict !== false,
+        schema: structuredClone(value.json_schema.schema)
+      }
+    };
+  }
+  return { type: 'json_object' };
+}
+
 function createAudit(model, started, generationConfig, promptDiagnostics) {
   return {
     provider: 'openai_compatible',
@@ -195,7 +212,7 @@ export class OpenAICompatibleProvider {
     this.fetchImpl = fetchImpl;
     this.logger = logger;
     this.generationConfig = Object.freeze({
-      response_format: { type: 'json_object' },
+      response_format: normalizedResponseFormat(generationConfig.response_format),
       max_tokens: Number.isInteger(Number(generationConfig.max_tokens)) && Number(generationConfig.max_tokens) > 0
         ? Number(generationConfig.max_tokens) : DEFAULT_GENERATION_CONFIG.max_tokens,
       temperature: Number.isFinite(Number(generationConfig.temperature))

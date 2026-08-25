@@ -5,6 +5,7 @@ import { getSemanticTaskContract, SEMANTIC_TASK_TYPES, validateTaskData } from '
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { EVIDENCE_SUPPORT_PROVIDER_JSON_SCHEMA } from '../../../backend/src/pipeline/evidence-support-assessment-gateway-contract-v1.js';
 
 test('shared task registry exposes one canonical contract set', () => {
   assert.deepEqual(SEMANTIC_TASK_TYPES.filter(task => task !== 'draft_sections'), [
@@ -54,6 +55,29 @@ test('OpenAI-compatible adapter posts the canonical request exactly once', async
   assert.equal(result.provider_audit.model_content_length_chars, 11);
   assert.equal(result.provider_audit.generation_config.max_tokens, 3200);
   assert.equal(result.provider_audit.outbound_prompt_diagnostics.contamination, false);
+});
+
+test('eval-only json_schema override is forwarded while default remains json_object', async () => {
+  let request;
+  const provider = new OpenAICompatibleProvider({
+    baseUrl: 'https://provider.invalid/v1', apiKey: 'secret-test-key', model: 'mock-model',
+    generationConfig: {
+      response_format: {
+        type: 'json_schema',
+        json_schema: { name: 'evidence_support_assessment_v1', strict: true, schema: EVIDENCE_SUPPORT_PROVIDER_JSON_SCHEMA }
+      }
+    },
+    fetchImpl: async (_url, options) => {
+      request = JSON.parse(options.body);
+      return new Response(JSON.stringify({ choices: [{ finish_reason: 'stop', message: { content: '{"ok":true}' } }] }), { status: 200 });
+    }
+  });
+  await provider.invoke({ instruction: 'instruction', payload: {} });
+  assert.equal(request.response_format.type, 'json_schema');
+  assert.equal(request.response_format.json_schema.name, 'evidence_support_assessment_v1');
+  assert.equal(request.response_format.json_schema.strict, true);
+  assert.deepEqual(request.response_format.json_schema.schema, EVIDENCE_SUPPORT_PROVIDER_JSON_SCHEMA);
+  assert.equal(request.stream, false);
 });
 
 test('OpenAI-compatible adapter preserves HTTP 400/401 status after one request', async () => {

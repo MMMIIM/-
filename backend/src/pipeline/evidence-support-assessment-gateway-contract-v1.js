@@ -221,6 +221,85 @@ function validateAssessment(value, input, index, audit) {
 const conflictKeys = ['conflict_group_id', 'dimension', 'sources', 'reason_codes'];
 const conflictSourceKeys = ['source_id', 'source_span_id', 'observed_value', 'support_excerpt'];
 
+/**
+ * Canonical provider-facing JSON Schema for the Evidence Support task.
+ *
+ * This is derived from the same enums and field lists used by the strict
+ * Gateway validator below.  It is intentionally a transport schema only:
+ * the Task Router remains authoritative and still validates every response.
+ */
+export function deriveEvidenceSupportProviderSchema() {
+  const stringEnum = values => ({ type: 'string', enum: [...values] });
+  const supportObservation = {
+    type: 'object',
+    additionalProperties: false,
+    required: ['source_id', 'source_span_id', 'support_excerpt', 'observation_type', 'reason_codes'],
+    properties: {
+      source_id: { type: 'string' },
+      source_span_id: { type: 'string' },
+      support_excerpt: { type: 'string' },
+      observation_type: stringEnum(EVIDENCE_SUPPORT_OBSERVATION_TYPES),
+      reason_codes: { type: 'array', items: stringEnum(EVIDENCE_SUPPORT_REASON_CODES) }
+    }
+  };
+  const assessment = {
+    type: 'object',
+    additionalProperties: false,
+    required: assessmentKeys,
+    properties: {
+      source_id: { type: 'string' },
+      source_span_id: { type: 'string' },
+      semantic_relevance: stringEnum(SEMANTIC_RELEVANCE),
+      evidence_capability: stringEnum(EVIDENCE_CAPABILITY),
+      support_level: stringEnum(EVIDENCE_SUPPORT_LEVEL),
+      semantic_relationship: stringEnum(MAPPING_RELATIONSHIPS),
+      review_dimensions: {
+        type: 'object',
+        additionalProperties: false,
+        required: [...REVIEW_DIMENSIONS],
+        properties: Object.fromEntries(REVIEW_DIMENSIONS.map(name => [name, stringEnum(REVIEW_DIMENSION_VALUES)]))
+      },
+      reason_codes: { type: 'array', items: stringEnum(EVIDENCE_SUPPORT_REASON_CODES) },
+      support_observations: { type: 'array', items: supportObservation }
+    }
+  };
+  const conflictSource = {
+    type: 'object',
+    additionalProperties: false,
+    required: conflictSourceKeys,
+    properties: {
+      source_id: { type: 'string' },
+      source_span_id: { type: 'string' },
+      observed_value: {},
+      support_excerpt: { type: 'string' }
+    }
+  };
+  return {
+    type: 'object',
+    additionalProperties: false,
+    required: ['assessments', 'conflict_observations'],
+    properties: {
+      assessments: { type: 'array', items: assessment },
+      conflict_observations: {
+        type: 'array',
+        items: {
+          type: 'object',
+          additionalProperties: false,
+          required: conflictKeys,
+          properties: {
+            conflict_group_id: { type: 'string' },
+            dimension: { type: 'string' },
+            sources: { type: 'array', minItems: 2, items: conflictSource },
+            reason_codes: { type: 'array', items: stringEnum(EVIDENCE_SUPPORT_REASON_CODES) }
+          }
+        }
+      }
+    }
+  };
+}
+
+export const EVIDENCE_SUPPORT_PROVIDER_JSON_SCHEMA = deriveEvidenceSupportProviderSchema();
+
 function validateConflict(value, input, index, audit) {
   const name = `data.conflict_observations[${index}]`;
   exactKeys(value, conflictKeys, name, audit);
