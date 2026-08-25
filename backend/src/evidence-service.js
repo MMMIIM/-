@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { AppError } from './errors.js';
 import { createEvidenceIdentifier } from './company-material-service.js';
 import { EvidenceSourceContextResolver } from './pipeline/evidence-source-context-resolver.js';
+import { PRE_REVIEW_STAGING_ROLE, assertFormalEvidenceEligible, isPreReviewStagingEvidence } from './evidence-lifecycle.js';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 function assertUuid(value, code, message) { if (!UUID_PATTERN.test(String(value || ''))) throw new AppError(code, message, 400); }
@@ -15,15 +16,16 @@ function object(value){return value&&typeof value==='object'&&!Array.isArray(val
 function metadata(value){const input=object(value);const result=Object.fromEntries(['issuer','valid_from','valid_until','customer','product','version'].filter((key)=>input[key]!=null&&String(input[key]).trim()).map((key)=>[key,String(input[key]).trim()]));for(const key of ['valid_from','valid_until'])if(result[key]&&!/^\d{4}-\d{2}-\d{2}$/.test(result[key]))throw new AppError('EVIDENCE_METADATA_INVALID',`${key} 必须是 YYYY-MM-DD。`,422);return result;}
 
 export class EvidenceService {
-  constructor({ repository, contextResolver=new EvidenceSourceContextResolver() }) { this.repository = repository;this.contextResolver=contextResolver; }
+  constructor({ repository, contextResolver=new EvidenceSourceContextResolver(), evidenceReviewService=null, requireReviewTransition=false }) { this.repository = repository;this.contextResolver=contextResolver;this.evidenceReviewService=evidenceReviewService;this.requireReviewTransition=requireReviewTransition; }
 
   async list(projectId) {
     assertUuid(projectId, 'INVALID_PROJECT_ID', '项目 ID 格式无效。');
     if (!await this.repository.getProject(projectId)) throw new AppError('PROJECT_NOT_FOUND', '项目不存在。', 404);
-    return this.repository.listEvidenceCatalog(projectId);
+    const catalog = await this.repository.listEvidenceCatalog(projectId);
+    return { ...catalog, evidences:(catalog.evidences || []).map((evidence) => isPreReviewStagingEvidence(evidence) ? { ...evidence, usable_for_claims:false } : evidence) };
   }
 
-  async create(projectId, input = {}, {trustedSpan=false}={}) {
+  async create(projectId, input = {}, {trustedSpan=false, lifecycleRole=null}={}) {
     assertUuid(projectId, 'INVALID_PROJECT_ID', '项目 ID 格式无效。');
     assertUuid(input.material_id, 'INVALID_MATERIAL_ID', '企业材料 ID 格式无效。');
     const material = await this.repository.getCompanyMaterial(input.material_id);
@@ -52,10 +54,15 @@ export class EvidenceService {
     if (!sourceText && (sourcePage !== null || sourceParagraph !== null)) throw new AppError('EVIDENCE_SOURCE_INVALID', '没有来源原文时，来源页码和段落必须留空。', 422);
     const validityStatus='unknown';
     if(input.validity_status!=null&&String(input.validity_status)!=='unknown')throw new AppError('EVIDENCE_VALIDITY_REVIEW_REQUIRED','Evidence 有效性必须通过独立审核接口设置。',422);
+    const normalizedMetadata = metadata(input.metadata);
+    if (lifecycleRole === PRE_REVIEW_STAGING_ROLE) {
+      normalizedMetadata.lifecycle_role = PRE_REVIEW_STAGING_ROLE;
+      normalizedMetadata.canonical_review_required = true;
+    }
     return this.repository.createEvidenceRecord({ evidenceId:createEvidenceIdentifier(), projectId, materialId:material.id, sourceChunkId:chunk?.chunk_id||null,
       evidenceType:text(input.evidence_type || material.material_type, 'Evidence 类型'), title:text(input.title, 'Evidence 标题'), content,
       sourceText, sourcePage, sourceParagraph, sourceHash:resolvedSpan?.source_hash??chunk?.chunk_hash??(sourceText ? createHash('sha256').update(sourceText).digest('hex') : null),sourceLocation,
-      evidenceScope:ids(input.evidence_scope), capabilityTags:ids(input.capability_tags), metadata:metadata(input.metadata), validityStatus,
+      evidenceScope:ids(input.evidence_scope), capabilityTags:ids(input.capability_tags), metadata:normalizedMetadata, validityStatus,
       applicableRequirementIds:requirementIds, usageScope:String(input.usage_scope || '').trim() || null, riskNotes:String(input.risk_notes || '').trim() || null });
   }
 
@@ -68,8 +75,14 @@ export class EvidenceService {
     for(const key of ['source_text','source_hash','source_page','source_paragraph','material_id','source_chunk_id','content','approval_status','validity_status','usable_for_claims','usage_scope','risk_notes'])if(Object.hasOwn(input,key))throw new AppError('EVIDENCE_RETRIEVAL_FIELD_FORBIDDEN',`客户端不得提供 ${key}。`,422);
     const source=await this.repository.getRetrievalEvidenceSource({projectId,requirementId:req,retrievalRunId:runId,chunkId});if(!source)throw new AppError('EVIDENCE_RETRIEVAL_RESULT_INVALID','Retrieval Result 不存在、跨项目或与 Requirement 不一致。',422);if(source.status!=='succeeded')throw new AppError('EVIDENCE_RETRIEVAL_RUN_NOT_READY','Retrieval Run 尚未成功完成。',409);
     const material=await this.repository.getCompanyMaterial(source.material_id);const chunks=await this.repository.listMaterialChunks(source.material_id);const span=this.contextResolver.resolve({material,chunks,anchorChunkId:source.chunk_id,strategy:String(input.resolution_strategy||'auto')});
-    const existing=await this.repository.findEvidenceBySourceSpan(projectId,source.material_id,span.source_location.char_start,span.source_location.char_end,span.source_hash);if(existing)return{evidence:existing,created:false};
-    const evidence=await this.create(projectId,{material_id:source.material_id,source_chunk_id:source.chunk_id,resolved_source_span:span,evidence_type:input.evidence_type||source.material_type,title:input.title||`${source.original_name} 来源证据`,content:span.source_text,evidence_scope:input.evidence_scope,capability_tags:input.capability_tags,metadata:input.metadata},{trustedSpan:true});return{evidence,created:true};
+    if (this.requireReviewTransition && (!this.evidenceReviewService || typeof this.evidenceReviewService.propose !== 'function')) throw new AppError('EVIDENCE_REVIEW_REQUIRED','Retrieval 候选必须先进入 Evidence Review。',409);
+    const existing=await this.repository.findEvidenceBySourceSpan(projectId,source.material_id,span.source_location.char_start,span.source_location.char_end,span.source_hash);
+    const staging = this.requireReviewTransition && this.evidenceReviewService;
+    const evidence = existing || await this.create(projectId,{material_id:source.material_id,source_chunk_id:source.chunk_id,resolved_source_span:span,evidence_type:input.evidence_type||source.material_type,title:input.title||`${source.original_name} 来源证据`,content:span.source_text,evidence_scope:input.evidence_scope,capability_tags:input.capability_tags,metadata:input.metadata},{trustedSpan:true,lifecycleRole:staging ? PRE_REVIEW_STAGING_ROLE : null});
+    if (!staging) return { evidence, created: !existing };
+    if (typeof this.repository.upsertEvidenceSourceSpan === 'function') await this.repository.upsertEvidenceSourceSpan(span);
+    const review = await this.evidenceReviewService.propose({projectId,requirementId:req,retrievalRunId:runId,retrievalCandidateId:source.chunk_id,sourceSpanId:span.span_id});
+    return { evidence, created: !existing, review, transition:{lifecycle_role:PRE_REVIEW_STAGING_ROLE, review_id:review.review_id} };
   }
 
   async decide(evidenceId, decision, input = {}) {
@@ -77,6 +90,8 @@ export class EvidenceService {
     if (!['approved','rejected'].includes(decision)) throw new AppError('EVIDENCE_DECISION_INVALID', 'Evidence 审批结论无效。', 422);
     const decidedBy = String(input.decided_by || '').trim();
     if (!decidedBy) throw new AppError('EVIDENCE_DECIDED_BY_REQUIRED', '审批人不能为空。', 422);
+    const current = typeof this.repository.getEvidenceRecord === 'function' ? await this.repository.getEvidenceRecord(evidenceId) : null;
+    if (current && decision === 'approved') assertFormalEvidenceEligible(current);
     const result = await this.repository.decideEvidence({ id:evidenceId, decision, decidedBy, riskNotes:String(input.risk_notes || '').trim() || null });
     if (!result) throw new AppError('EVIDENCE_NOT_FOUND', 'Evidence 不存在。', 404);
     return result;
@@ -96,7 +111,7 @@ export class EvidenceService {
     if(source==='retrieval'){assertUuid(retrievalRunId,'INVALID_RETRIEVAL_RUN_ID','Retrieval Run ID 格式无效。');if(!retrievalChunkId)throw new AppError('EVIDENCE_RETRIEVAL_PROVENANCE_REQUIRED','Retrieval Mapping 必须提供 Retrieval Result 来源。',422);}else if(retrievalRunId||retrievalChunkId)throw new AppError('EVIDENCE_RETRIEVAL_PROVENANCE_NOT_ALLOWED','manual Mapping 不得携带 Retrieval provenance。',422);
     const invalid=await this.repository.findInvalidConfirmedRequirementIds(projectId,[String(input.requirement_id||'').trim()]);
     if(invalid.length)throw new AppError('EVIDENCE_REQUIREMENT_INVALID','Mapping 必须关联已确认 Requirement。',422);
-    const eligibility=await this.repository.validateEvidenceForMapping(projectId,input.evidence_id);if(!eligibility)throw new AppError('EVIDENCE_NOT_FOUND','Enterprise Evidence 不存在或不属于当前项目。',404);if(eligibility.approval_status!=='approved')throw new AppError('EVIDENCE_NOT_APPROVED','只有已批准 Enterprise Evidence 才能建立 Mapping。',409);if(eligibility.source_lineage_verified!==true)throw new AppError('EVIDENCE_SOURCE_LINEAGE_REQUIRED','Enterprise Evidence 缺少可信 Material/Chunk 来源。',422);
+    const eligibility=await this.repository.validateEvidenceForMapping(projectId,input.evidence_id);if(!eligibility)throw new AppError('EVIDENCE_NOT_FOUND','Enterprise Evidence 不存在或不属于当前项目。',404);assertFormalEvidenceEligible(eligibility);if(eligibility.approval_status!=='approved')throw new AppError('EVIDENCE_NOT_APPROVED','只有已批准 Enterprise Evidence 才能建立 Mapping。',409);if(eligibility.source_lineage_verified!==true)throw new AppError('EVIDENCE_SOURCE_LINEAGE_REQUIRED','Enterprise Evidence 缺少可信 Material/Chunk 来源。',422);
     if(source==='retrieval'&&!await this.repository.validateRetrievalMappingProvenance({projectId,requirementId:String(input.requirement_id).trim(),evidenceId:input.evidence_id,retrievalRunId,retrievalChunkId}))throw new AppError('EVIDENCE_RETRIEVAL_PROVENANCE_INVALID','Retrieval Result 不存在、跨项目或与 Requirement/Evidence 来源不一致。',422);
     const mapping=await this.repository.createRequirementEvidenceMapping({projectId,requirementId:String(input.requirement_id).trim(),evidenceId:input.evidence_id,mappingSource:source,supportLevel,reviewNotes,retrievalRunId,retrievalChunkId,createdBy});
     if(!mapping)throw new AppError('EVIDENCE_NOT_FOUND','Enterprise Evidence 不存在或不属于当前项目。',404); return mapping;
@@ -113,6 +128,6 @@ export class EvidenceService {
 
   async listApprovedForRequirement(projectId,requirementId){
     assertUuid(projectId,'INVALID_PROJECT_ID','项目 ID 格式无效。'); const invalid=await this.repository.findInvalidConfirmedRequirementIds(projectId,[String(requirementId||'').trim()]);
-    if(invalid.length)throw new AppError('EVIDENCE_REQUIREMENT_INVALID','Requirement 不存在或未确认。',404); return {evidences:await this.repository.listApprovedEnterpriseEvidenceForRequirement(projectId,requirementId)};
+    if(invalid.length)throw new AppError('EVIDENCE_REQUIREMENT_INVALID','Requirement 不存在或未确认。',404); return {evidences:(await this.repository.listApprovedEnterpriseEvidenceForRequirement(projectId,requirementId)).filter((evidence)=>!isPreReviewStagingEvidence(evidence))};
   }
 }

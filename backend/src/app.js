@@ -255,6 +255,18 @@ export function createApp({ repository, storage, generationService, requirementP
   app.post('/api/projects/:projectId/requirements/:requirementId/evidence-candidates/from-retrieval',async(req,res,next)=>{
     try{const result=await evidenceService.createFromRetrieval(req.params.projectId,req.params.requirementId,req.body||{});sendData(res,result,result.created?201:200);}catch(error){next(error);}
   });
+  app.post('/api/projects/:projectId/requirements/:requirementId/evidence-reviews',async(req,res,next)=>{
+    try {
+      const review = await evidenceReviewService.propose({
+        projectId:req.params.projectId,
+        requirementId:req.params.requirementId,
+        retrievalRunId:req.body?.retrieval_run_id,
+        retrievalCandidateId:req.body?.retrieval_candidate_id || req.body?.chunk_id,
+        sourceSpanId:req.body?.source_span_id
+      });
+      sendData(res,{review},201);
+    } catch(error) { next(error); }
+  });
   app.get('/api/projects/:projectId/requirements/:requirementId/enterprise-evidence',async(req,res,next)=>{
     try{sendData(res,await evidenceService.listApprovedForRequirement(req.params.projectId,req.params.requirementId));}catch(error){next(error);}
   });

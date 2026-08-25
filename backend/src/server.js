@@ -59,7 +59,8 @@ const requirementParseService = new RequirementParseService({
 const productionBetaService = new ProductionBetaService({ repository, ordinaryUncoveredSeverity:runtimeEnv.V43_ORDINARY_UNCOVERED_SEVERITY });
 const requirementSourceService = new RequirementSourceService({ repository, storage, textExtractor: extractTenderText });
 const companyMaterialService = new CompanyMaterialService({ repository, storage, textExtractor: extractTenderText });
-const evidenceService = new EvidenceService({ repository });
+const evidenceReviewService = new EvidenceReviewService({ repository });
+const evidenceService = new EvidenceService({ repository, evidenceReviewService, requireReviewTransition:true });
 const evidenceFactService = new EvidenceFactService({ repository });
 const embeddingTransport = createEmbeddingFetchFromEnv({ env: runtimeEnv });
 const embeddingClient = createEmbeddingClientFromEnv({ env: runtimeEnv, fetchImpl: embeddingTransport.fetchImpl });
@@ -70,7 +71,6 @@ const connectivityPreflight = new ConnectivityPreflight({
   logger: (event) => console.info('[runtime-connectivity]', JSON.stringify(event))
 });
 const documentGenerationService = new DocumentGenerationService({ repository, provider:createWriterProvider({env:runtimeEnv}), concurrency:runtimeEnv.V43_WRITER_CONCURRENCY || 2 });
-const evidenceReviewService = new EvidenceReviewService({ repository });
 const evidenceSourceFactService = new EvidenceSourceFactService({ repository });
 const projectFactControlService = new ProjectFactControlService({ repository });
 const reviewCenterService = new ReviewCenterService({ repository });
