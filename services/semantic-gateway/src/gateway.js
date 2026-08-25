@@ -90,11 +90,43 @@ function writeJson(response, status, value) {
   response.end(JSON.stringify(value));
 }
 
+function probeDiagnosticsRequested(request) {
+  return String(request.headers['x-semantic-gateway-diagnostic'] || '') === 'probe-v1';
+}
+
+function legacySchemaDetected(value) {
+  const assessments = Array.isArray(value?.data?.assessments)
+    ? value.data.assessments
+    : Array.isArray(value?.assessments) ? value.assessments : [];
+  return assessments.length > 0 && assessments.some(item => (
+    item && typeof item === 'object'
+    && ['confidence', 'evidence_type', 'notes'].some(key => Object.prototype.hasOwnProperty.call(item, key))
+    && !['semantic_relevance', 'evidence_capability', 'semantic_relationship', 'review_dimensions', 'reason_codes', 'support_observations']
+      .some(key => Object.prototype.hasOwnProperty.call(item, key))
+  ));
+}
+
+function safeProbeDiagnostics({ providerAudit = null, validationErrors = [], envelopeErrors = [], parsedJson = null } = {}) {
+  const audit = providerAudit && typeof providerAudit === 'object' ? providerAudit : {};
+  const modelContent = typeof audit.model_content === 'string' ? audit.model_content : null;
+  return {
+    model_content: modelContent && modelContent.length <= 200000 ? modelContent : modelContent ? `${modelContent.slice(0, 200000)}…` : null,
+    parsed_json: audit.parsed_json ?? parsedJson,
+    json_parse_success: typeof audit.json_parse_success === 'boolean' ? audit.json_parse_success : null,
+    markdown_fence_present: typeof audit.markdown_fence_present === 'boolean' ? audit.markdown_fence_present : null,
+    provider_http_status: Number.isInteger(audit.http_status) ? audit.http_status : null,
+    schema_validation_errors: Array.isArray(validationErrors) ? validationErrors : [],
+    envelope_validation_errors: Array.isArray(envelopeErrors) ? envelopeErrors : [],
+    legacy_schema_detected: legacySchemaDetected(audit.parsed_json ?? parsedJson)
+  };
+}
+
 export function createStandaloneGatewayHandler({ env = process.env, config = configFromEnv(env), logger = console } = {}) {
   const router = config.taskRouter || createSemanticTaskRouter({ provider: config.provider });
   return async function handle(request, response) {
     const requestId = randomUUID();
     const started = Date.now();
+    const diagnosticsRequested = probeDiagnosticsRequested(request);
     if (request.method === 'GET' && request.url === '/health') {
       writeJson(response, 200, { status: 'ok', service: 'semantic-gateway', request_id: requestId });
       return;
@@ -145,7 +177,11 @@ export function createStandaloneGatewayHandler({ env = process.env, config = con
         input_bytes: Buffer.byteLength(inputs.task_payload_json),
         output_bytes: Buffer.byteLength(JSON.stringify(envelope))
       });
-      writeJson(response, 200, { data: { outputs: { response_payload_json: JSON.stringify(envelope) } } });
+      const result = { data: { outputs: { response_payload_json: JSON.stringify(envelope) } } };
+      if (diagnosticsRequested) {
+        result.probe_diagnostics = safeProbeDiagnostics({ providerAudit: routed.provider_audit });
+      }
+      writeJson(response, 200, result);
     } catch (error) {
       const code = errorCode(error);
       const elapsed = Date.now() - started;
@@ -156,7 +192,15 @@ export function createStandaloneGatewayHandler({ env = process.env, config = con
         latency_ms: elapsed,
         error_classification: code
       });
-      writeJson(response, statusFor(code), { error_code: code, message: safeMessage(code), request_id: requestId });
+      const result = { error_code: code, message: safeMessage(code), request_id: requestId };
+      if (diagnosticsRequested) {
+        result.probe_diagnostics = safeProbeDiagnostics({
+          providerAudit: error?.provider_audit,
+          validationErrors: error?.validation_diagnostics,
+          envelopeErrors: error?.envelope_validation_diagnostics
+        });
+      }
+      writeJson(response, statusFor(code), result);
     }
   };
 }

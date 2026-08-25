@@ -66,6 +66,14 @@ function createProbeResult({ startedAt, resultPath }) {
     canonical_schema_valid: false,
     normalization_status: 'NOT_REACHED',
     technical_error_class: null,
+    model_content: null,
+    parsed_json: null,
+    json_parse_success: null,
+    markdown_fence_present: null,
+    legacy_schema_detected: null,
+    schema_validation_errors: [],
+    envelope_validation_errors: [],
+    failure_classifications: [],
     legacy_fallback_used: false,
     dify_call_count: 0,
     embedding_call_count: 0,
@@ -89,10 +97,20 @@ function providerStatusFromError(error) {
 
 function observedFetch(fetchImpl, result) {
   return async (url, options) => {
-    const response = await fetchImpl(url, options);
+    const headers = new Headers(options?.headers || {});
+    headers.set('x-semantic-gateway-diagnostic', 'probe-v1');
+    const response = await fetchImpl(url, { ...options, headers });
     result.gateway_reached = true;
     result.gateway_http_status = response.status;
     result.gateway_service_auth_status = response.status === 401 ? 'FAIL' : 'PASS';
+    try {
+      const body = await response.clone().json();
+      if (body?.probe_diagnostics && typeof body.probe_diagnostics === 'object') {
+        result._diagnostics = body.probe_diagnostics;
+      }
+    } catch (_error) {
+      // The canonical client remains responsible for the actual response parse.
+    }
     return response;
   };
 }
@@ -122,14 +140,59 @@ function markProviderCall(result, errorCode = null) {
   if (!providerError && !gatewayReturnedSuccess) return;
   result.provider_call_count = 1;
   result.provider_reached = true;
-  result.provider_http_status = providerStatusFromError(result._error) ?? (gatewayReturnedSuccess ? 200 : null);
+  result.provider_http_status = providerStatusFromError(result._error) ?? result.provider_http_status ?? (gatewayReturnedSuccess ? 200 : null);
   result.provider_authentication_status = result.provider_http_status === 401 || result.provider_http_status === 403
     ? 'FAIL'
     : gatewayReturnedSuccess ? 'PASS' : 'NOT_VERIFIED';
   result.model_response_reached = gatewayReturnedSuccess || MODEL_RESPONSE_ERROR_CODES.has(errorCode);
 }
 
+function redactDiagnosticText(value) {
+  return String(value)
+    .replace(/Bearer\s+[^\s"']+/gi, 'Bearer [REDACTED]')
+    .replace(/(authorization|semantic_gateway_(?:provider_)?api_key)\s*[:=]\s*[^\s,;}]+/gi, '$1: [REDACTED]');
+}
+
+function safeDiagnosticValue(value) {
+  if (typeof value === 'string') return redactDiagnosticText(value).slice(0, 200000);
+  if (Array.isArray(value)) return value.map(item => safeDiagnosticValue(item));
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, safeDiagnosticValue(item)]));
+  }
+  return value ?? null;
+}
+
+function applyDiagnostics(result, diagnostics) {
+  if (!diagnostics || typeof diagnostics !== 'object') return;
+  result.model_content = safeDiagnosticValue(diagnostics.model_content);
+  result.parsed_json = safeDiagnosticValue(diagnostics.parsed_json);
+  result.json_parse_success = diagnostics.json_parse_success === true
+    ? true
+    : diagnostics.json_parse_success === false ? false : result.json_parse_success;
+  if (typeof diagnostics.markdown_fence_present === 'boolean') {
+    result.markdown_fence_present = diagnostics.markdown_fence_present;
+  }
+  if (typeof diagnostics.legacy_schema_detected === 'boolean') {
+    result.legacy_schema_detected = diagnostics.legacy_schema_detected;
+  }
+  result.schema_validation_errors = Array.isArray(diagnostics.schema_validation_errors)
+    ? safeDiagnosticValue(diagnostics.schema_validation_errors) : [];
+  result.envelope_validation_errors = Array.isArray(diagnostics.envelope_validation_errors)
+    ? safeDiagnosticValue(diagnostics.envelope_validation_errors) : [];
+  const providerStatus = Number(diagnostics.provider_http_status);
+  if (Number.isInteger(providerStatus) && providerStatus >= 100 && providerStatus <= 599) {
+    result.provider_http_status = providerStatus;
+  }
+  const classifications = [];
+  if (result.json_parse_success === false) classifications.push('SYNTACTIC_JSON_PRESENTATION_ERROR');
+  if (result.legacy_schema_detected) classifications.push('LEGACY_SCHEMA_OUTPUT');
+  if (result.envelope_validation_errors.length) classifications.push('ENVELOPE_ERROR');
+  if (result.schema_validation_errors.length) classifications.push('CANONICAL_FIELD_ERROR');
+  result.failure_classifications = [...new Set(classifications)];
+}
+
 function applyFailure(result, error) {
+  applyDiagnostics(result, result._diagnostics);
   const code = technicalCode(error);
   result._error = error;
   result.technical_error_class = code;
@@ -147,7 +210,9 @@ function applyFailure(result, error) {
 }
 
 function stripInternal(result) {
-  const { _error: ignored, ...safe } = result;
+  const safe = { ...result };
+  delete safe._error;
+  delete safe._diagnostics;
   return safe;
 }
 
@@ -197,6 +262,7 @@ export async function runEvidenceSupportProbe({
     result.case_id = caseId;
     const evaluator = evaluatorFactory({ env: gatewayEnv, fetchImpl: observedFetch(fetchImpl, result) });
     const evaluation = await evaluator.assess({ requirement, adapters });
+    applyDiagnostics(result, result._diagnostics);
     const aggregate = aggregateEvidenceSufficiency(evaluation.assessments);
     markProviderCall(result);
     result.gateway_service_auth_status = result.gateway_reached ? 'PASS' : 'NOT_REACHED';

@@ -82,6 +82,7 @@ test('Provider failure still emits a safe result and accounts one Provider call'
   assert.equal(persisted.provider_call_count, 1);
   assert.equal(persisted.provider_reached, true);
   assert.equal(persisted.canonical_schema_valid, false);
+  assert.equal(persisted.failure_classifications.includes('SYNTACTIC_JSON_PRESENTATION_ERROR'), false);
 });
 
 test('canonical schema failure is captured after a successful Gateway response', async () => {
@@ -94,6 +95,48 @@ test('canonical schema failure is captured after a successful Gateway response',
   assert.equal(persisted.model_response_reached, true);
   assert.equal(persisted.canonical_envelope_valid, true);
   assert.equal(persisted.canonical_schema_valid, false);
+});
+
+test('model content and exact schema diagnostics are persisted for a failed probe', async () => {
+  const diagnostic = {
+    model_content: '{"data":{"assessments":[{"confidence":"high"}]}}',
+    parsed_json: { data: { assessments: [{ confidence: 'high' }] } },
+    json_parse_success: true,
+    markdown_fence_present: false,
+    provider_http_status: 200,
+    schema_validation_errors: [{
+      path: 'provider.data',
+      expected: 'canonical task data',
+      observed_category: 'gateway_envelope',
+      validator_code: 'ENVELOPE_ERROR',
+      message: 'Provider returned a Gateway envelope where task data was required.'
+    }],
+    envelope_validation_errors: [],
+    legacy_schema_detected: true
+  };
+  const error = new SemanticGatewayError('ASSESSMENT_UNAVAILABLE', 'schema failure', { technical_error_code: 'OUTPUT_SCHEMA_INVALID' });
+  const temp = tempResult();
+  const output = [];
+  const persistedResult = await runEvidenceSupportProbe({
+    env: baseEnv,
+    envFile: temp.envFile,
+    resultPath: temp.resultPath,
+    fetchImpl: async () => new Response(JSON.stringify({ error_code: 'OUTPUT_SCHEMA_INVALID', probe_diagnostics: diagnostic }), {
+      status: 422,
+      headers: { 'content-type': 'application/json' }
+    }),
+    evaluatorFactory: evaluatorThat({ error }),
+    stdout: value => output.push(JSON.parse(value))
+  });
+  const persisted = JSON.parse(fs.readFileSync(temp.resultPath, 'utf8'));
+  fs.rmSync(temp.directory, { recursive: true, force: true });
+  assert.equal(persistedResult.final_probe_status, 'FAILED');
+  assert.equal(persisted.json_parse_success, true);
+  assert.equal(persisted.legacy_schema_detected, true);
+  assert.equal(persisted.provider_http_status, 200);
+  assert.equal(persisted.schema_validation_errors[0].path, 'provider.data');
+  assert.equal(persisted.failure_classifications.includes('LEGACY_SCHEMA_OUTPUT'), true);
+  assert.equal(JSON.stringify(output).includes('Authorization'), false);
 });
 
 test('persisted and printed probe results contain no credentials or Authorization header', async () => {

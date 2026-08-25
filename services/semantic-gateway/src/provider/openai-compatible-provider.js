@@ -34,14 +34,42 @@ export class OpenAICompatibleProvider {
         }),
         signal: controller.signal
       });
-      if (!response.ok) throw Object.assign(new Error('Provider returned a non-success status'), { code: 'PROVIDER_HTTP_FAILURE', httpStatus: response.status });
+      const providerAudit = {
+        provider: 'openai_compatible',
+        model: this.model,
+        http_status: response.status,
+        latency_ms: Date.now() - started
+      };
+      if (!response.ok) throw Object.assign(new Error('Provider returned a non-success status'), { code: 'PROVIDER_HTTP_FAILURE', httpStatus: response.status, provider_audit: providerAudit });
       const body = await response.json();
       const content = body?.choices?.[0]?.message?.content;
-      if (typeof content !== 'string') throw Object.assign(new Error('Provider output is not text'), { code: 'PROVIDER_OUTPUT_INVALID' });
+      if (typeof content !== 'string') throw Object.assign(new Error('Provider output is not text'), {
+        code: 'PROVIDER_OUTPUT_INVALID',
+        provider_audit: { ...providerAudit, json_parse_success: false, model_content: null }
+      });
       try {
-        return { data: JSON.parse(content), provider_audit: { model: this.model, http_status: response.status, latency_ms: Date.now() - started } };
+        const data = JSON.parse(content);
+        return {
+          data,
+          provider_audit: {
+            ...providerAudit,
+            json_parse_success: true,
+            markdown_fence_present: /^```(?:json)?(?:\s|$)/i.test(content.trim()),
+            model_content: content,
+            parsed_json: data
+          }
+        };
       } catch (_error) {
-        throw Object.assign(new Error('Provider output is not valid JSON'), { code: 'PROVIDER_OUTPUT_INVALID' });
+        throw Object.assign(new Error('Provider output is not valid JSON'), {
+          code: 'PROVIDER_OUTPUT_INVALID',
+          provider_audit: {
+            ...providerAudit,
+            json_parse_success: false,
+            markdown_fence_present: /^```(?:json)?(?:\s|$)/i.test(content.trim()),
+            model_content: content,
+            parsed_json: null
+          }
+        });
       }
     } catch (error) {
       if (error?.name === 'AbortError') throw Object.assign(new Error('Provider request timed out'), { code: 'PROVIDER_TIMEOUT' });

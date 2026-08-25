@@ -196,6 +196,45 @@ test('provider schema violations are classified as OUTPUT_SCHEMA_INVALID', async
   }
 });
 
+test('probe-only diagnostics expose model content and validator details without changing canonical response reads', async () => {
+  const key = 'gateway-diagnostic-key';
+  const provider = {
+    model: 'fixture-invalid',
+    async invoke() {
+      const parsed = { schema_version: '4.3-evidence-support-assessment-v1', data: { assessments: [] }, warnings: [] };
+      return {
+        data: parsed,
+        provider_audit: {
+          model: 'fixture-invalid',
+          http_status: 200,
+          json_parse_success: true,
+          markdown_fence_present: false,
+          model_content: JSON.stringify(parsed),
+          parsed_json: parsed
+        }
+      };
+    }
+  };
+  const server = createStandaloneGatewayServer({ config: { apiKey: key, providerName: 'mock', provider } });
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  try {
+    const response = await fetch(`http://127.0.0.1:${server.address().port}/workflows/run`, {
+      method: 'POST',
+      headers: { authorization: `Bearer ${key}`, 'content-type': 'application/json', 'x-semantic-gateway-diagnostic': 'probe-v1' },
+      body: JSON.stringify({ inputs: { task_type: 'requirement_extraction', task_instruction: 'x', task_payload_json: '{}' } })
+    });
+    assert.equal(response.status, 422);
+    const body = await response.json();
+    assert.equal(body.error_code, 'OUTPUT_SCHEMA_INVALID');
+    assert.equal(body.probe_diagnostics.json_parse_success, true);
+    assert.equal(typeof body.probe_diagnostics.model_content, 'string');
+    assert.equal(body.probe_diagnostics.schema_validation_errors.length, 1);
+    assert.equal(body.probe_diagnostics.schema_validation_errors[0].validator_code, 'OUTPUT_SCHEMA_INVALID');
+  } finally {
+    await new Promise(resolve => server.close(resolve));
+  }
+});
+
 test('provider technical errors keep the controlled Gateway error code', async () => {
   const cases = [
     ['PROVIDER_UNAVAILABLE', 502],
