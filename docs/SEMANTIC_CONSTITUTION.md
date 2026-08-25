@@ -1,6 +1,6 @@
 # Semantic Constitution
 
-Status: **repository governance baseline — Stage20 semantic consolidation**  
+Status: **repository governance baseline — Stage20 semantic consolidation**
 Effective scope: Requirement, Retrieval, Evidence, Claim, Writer, Document, Eval,
 Actor and compatibility boundaries.
 
@@ -131,7 +131,7 @@ Readiness or Writer state. The Provider-neutral evaluator returns unavailable
 when no trusted semantic evaluator is available. A provider error remains
 `ASSESSMENT_UNAVAILABLE` with its technical code.
 
-`EvidenceReviewProposal` is a system-prepared candidate.  
+`EvidenceReviewProposal` is a system-prepared candidate.
 `EvidenceReviewDecision` is a human formal decision. They must not share a
 status field or be treated as the same action.
 

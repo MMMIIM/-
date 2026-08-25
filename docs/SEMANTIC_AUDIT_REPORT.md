@@ -1,8 +1,8 @@
 # Semantic Audit Report
 
-Audit type: repository-wide semantic consistency and contract governance  
-Baseline: `feat/v4.3-semantic-boundary-routing` at `7b4721b`  
-External calls: Embedding 0, LLM 0, Dify 0, Provider 0, Live Retrieval 0  
+Audit type: repository-wide semantic consistency and contract governance
+Baseline: `feat/v4.3-semantic-boundary-routing` at `7b4721b`
+External calls: Embedding 0, LLM 0, Dify 0, Provider 0, Live Retrieval 0
 Database mutations: 0
 
 ## Summary
@@ -75,6 +75,6 @@ the decision endpoint itself is service-owned and actor-protected.
 ## Remediation classification
 
 Allowed and completed in this task: documentation-only constitution, registry,
-matrix and legacy map.  
+matrix and legacy map.
 Deferred: production API design, remote task publication, migrations, behavior
 changes and semantic state consolidation. Those require a later GPT Decision.
