@@ -76,6 +76,19 @@ describe('Evidence Review UI v1', () => {
     expect(mapped).not.toContain('mapping-internal-id');
   });
 
+  it('新检索候选只显示 Evidence Review 入口，不再暴露旧 Evidence approve', () => {
+    const html = render(review({
+      evidence_id: 'staging-evidence', review_id: 'review-internal-id', review_status: 'needs_review',
+      review_support_level: 'full_support', approval_status: 'draft'
+    }));
+    expect(html).toContain('证据复核');
+    expect(html).toContain('通过证据复核');
+    expect(html).toContain('拒绝证据复核');
+    expect(html).not.toContain('确认可作为企业证明');
+    expect(html).not.toContain('确认不能作为证明');
+    expect(html).not.toContain('review-internal-id');
+  });
+
   it('对 historical_bid 给出双重警示且不把 rejected 当作 support level', () => {
     const html = render(review({ material_type: 'historical_bid' }));
     expect((html.match(/历史标书，仅供参考/g) || [])).toHaveLength(2);
