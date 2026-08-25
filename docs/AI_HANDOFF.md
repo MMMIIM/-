@@ -18,6 +18,10 @@
 
 Authoritative detail: `ARCHITECTURE.md`, `docs/CURRENT_STAGE.md`, `docs/ROADMAP.md`, and relevant ADRs.
 
+Semantic governance detail: `docs/SEMANTIC_CONSTITUTION.md`,
+`docs/CONCEPT_REGISTRY.md`, `docs/SEMANTIC_INVARIANT_MATRIX.md`,
+`docs/SEMANTIC_AUDIT_REPORT.md` and `docs/SEMANTIC_LEGACY_MAP.md`.
+
 ## Repository state
 
 - Branch: `feat/v4.3-semantic-boundary-routing`
@@ -47,7 +51,8 @@ its independently ungrounded entity dimension unknown. Closure packet:
 `backend/eval/evidence-support/calibration-v2/GPT_REVIEW_PACKET_EVIDENCE_SUFFICIENCY_OFFLINE_V3_1.md/.json`.
 `GPT_REVIEW_STATUS=PASS` and `EVAL_COMPLETE=YES` apply only to the V3.1 offline
 baseline, not to Stage20 as a whole. Stage 20 remains **PARTIAL / BLOCKED**;
-PostgreSQL integration is the next prerequisite before final freeze review.
+PostgreSQL integration is **PASS (41/41)**, while the remaining production/E2E
+gates are still open.
 Stage 20 — P0 Real Evidence Retrieval Revalidation remains the parent track.
 Stage 21-A Runtime Connectivity Foundation remains **PASS / FROZEN**. One managed
 SSH session provides the gateway forward and SOCKS egress; Gateway, SOCKS HTTPS,
