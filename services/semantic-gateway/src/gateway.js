@@ -9,30 +9,42 @@ import {
 import { createMockProvider } from './provider/mock-provider.js';
 import { OpenAICompatibleProvider } from './provider/openai-compatible-provider.js';
 import { createSemanticTaskRouter } from './task-router.js';
+import {
+  readSemanticGatewayRuntimeConfig,
+  safeSemanticGatewayRuntimeSummary,
+  validateSemanticGatewayRuntimeConfig
+} from '../../../packages/semantic-contracts/runtime-config.js';
 
 const safeErrorCodes = new Set(SEMANTIC_GATEWAY_ERROR_CODES);
 
 function configFromEnv(env = process.env) {
-  const providerName = String(env.SEMANTIC_GATEWAY_PROVIDER || 'mock').trim();
-  const timeoutMs = Number(env.SEMANTIC_GATEWAY_TIMEOUT_MS || 120000);
+  const runtime = readSemanticGatewayRuntimeConfig(env);
+  const providerName = runtime.provider;
+  const timeoutMs = runtime.timeoutMs;
+  const runtimeValidation = validateSemanticGatewayRuntimeConfig(env, {
+    requireProvider: providerName === 'openai_compatible'
+  });
   return {
     providerName,
-    apiKey: String(env.SEMANTIC_GATEWAY_API_KEY || '').trim(),
+    apiKey: runtime.serviceApiKey,
     provider: providerName === 'mock'
-      ? createMockProvider({ model: env.SEMANTIC_GATEWAY_MODEL || 'mock-semantic-v1' })
+      ? createMockProvider({ model: runtime.model })
       : new OpenAICompatibleProvider({
-        baseUrl: env.SEMANTIC_GATEWAY_PROVIDER_API_BASE,
-        apiKey: env.SEMANTIC_GATEWAY_PROVIDER_API_KEY,
-        model: env.SEMANTIC_GATEWAY_MODEL,
+        baseUrl: runtime.providerApiBase,
+        apiKey: runtime.providerApiKey,
+        model: runtime.model,
         timeoutMs,
         logger: console
       }),
-    timeoutMs
+    timeoutMs,
+    runtimeValidation,
+    runtimeSummary: safeSemanticGatewayRuntimeSummary(runtime)
   };
 }
 
 function providerReady(config) {
-  return Boolean(config.apiKey) && (config.providerName === 'mock' || Boolean(config.provider?.configured));
+  return Boolean(config.apiKey)
+    && (config.providerName === 'mock' || Boolean(config.provider?.configured));
 }
 
 function errorCode(error) {
@@ -155,4 +167,12 @@ export function createStandaloneGatewayServer(options = {}) {
 
 export function gatewayConfigFromEnv(env = process.env) {
   return configFromEnv(env);
+}
+
+export function validateGatewayRuntimeConfig(env = process.env) {
+  const config = configFromEnv(env);
+  return {
+    ...config.runtimeValidation,
+    summary: config.runtimeSummary
+  };
 }

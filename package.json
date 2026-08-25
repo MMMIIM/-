@@ -13,6 +13,8 @@
     "dev": "concurrently -n backend,frontend -c blue,green \"npm run dev -w backend\" \"npm run dev -w frontend\"",
     "backend:dev": "npm run dev -w backend",
     "frontend:dev": "npm run dev -w frontend",
+    "semantic-gateway:start": "powershell -ExecutionPolicy Bypass -File services/semantic-gateway/scripts/start.ps1",
+    "check:semantic-gateway": "npm run check:semantic-gateway -w backend",
     "build": "npm run build -w frontend",
     "start": "npm run start -w backend",
     "db:migrate": "npm run db:migrate -w backend",

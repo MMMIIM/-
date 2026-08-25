@@ -1,5 +1,6 @@
 import { getSemanticGatewayTask } from './semantic-gateway-task-registry.js';
 import { SEMANTIC_GATEWAY_ERROR_CODES } from '../../../packages/semantic-contracts/index.js';
+import { readSemanticGatewayRuntimeConfig } from '../../../packages/semantic-contracts/runtime-config.js';
 
 const VALID_GATEWAY_STATUSES = new Set(['success', 'failed']);
 const CONTROLLED_GATEWAY_ERROR_CODES = new Set(SEMANTIC_GATEWAY_ERROR_CODES);
@@ -15,6 +16,7 @@ function positiveTimeout(value, fallback) {
 
 export function parseSemanticGatewayConfig(env = {}, { taskType = null } = {}) {
   const canonicalEvidenceSupport = taskType === 'evidence_support_assessment';
+  const canonicalRuntime = readSemanticGatewayRuntimeConfig(env);
   const timeoutMs = positiveTimeout(
     canonicalEvidenceSupport
       ? (env.SEMANTIC_GATEWAY_EVIDENCE_SUPPORT_TIMEOUT_MS || env.SEMANTIC_GATEWAY_TIMEOUT_MS)
@@ -22,8 +24,8 @@ export function parseSemanticGatewayConfig(env = {}, { taskType = null } = {}) {
     canonicalEvidenceSupport ? 120_000 : 30_000
   );
   return Object.freeze({
-    apiBase: normalizeBaseUrl(canonicalEvidenceSupport ? env.SEMANTIC_GATEWAY_API_BASE : env.V43_GATEWAY_API_BASE),
-    apiKey: String(canonicalEvidenceSupport ? env.SEMANTIC_GATEWAY_API_KEY : env.V43_GATEWAY_API_KEY || '').trim(),
+    apiBase: normalizeBaseUrl(canonicalEvidenceSupport ? canonicalRuntime.gatewayApiBase : env.V43_GATEWAY_API_BASE),
+    apiKey: String(canonicalEvidenceSupport ? canonicalRuntime.serviceApiKey : env.V43_GATEWAY_API_KEY || '').trim(),
     user: String(canonicalEvidenceSupport ? (env.SEMANTIC_GATEWAY_USER || env.V43_GATEWAY_USER) : env.V43_GATEWAY_USER || '').trim(),
     timeoutMs,
     configuredTaskType: canonicalEvidenceSupport ? taskType : null,

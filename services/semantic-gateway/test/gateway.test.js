@@ -42,6 +42,52 @@ test('standalone gateway health/readiness/auth are explicit', async () => {
   });
 });
 
+test('Gateway service auth is independent from Provider auth', async () => {
+  const server = createStandaloneGatewayServer({
+    env: {
+      SEMANTIC_GATEWAY_PROVIDER: 'openai_compatible',
+      SEMANTIC_GATEWAY_API_KEY: 'service-key',
+      SEMANTIC_GATEWAY_PROVIDER_API_BASE: 'https://provider.invalid/v1',
+      SEMANTIC_GATEWAY_PROVIDER_API_KEY: 'provider-key',
+      SEMANTIC_GATEWAY_MODEL: 'Qwen/Qwen2.5-7B-Instruct'
+    }
+  });
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  try {
+    const base = `http://127.0.0.1:${server.address().port}`;
+    const body = JSON.stringify({ inputs: { task_type: '__preflight__', task_instruction: 'preflight', task_payload_json: '{}' } });
+    const headers = { 'content-type': 'application/json' };
+    const missing = await fetch(`${base}/workflows/run`, { method: 'POST', headers, body });
+    assert.equal(missing.status, 401);
+    const wrong = await fetch(`${base}/workflows/run`, { method: 'POST', headers: { ...headers, authorization: 'Bearer provider-key' }, body });
+    assert.equal(wrong.status, 401);
+    const correct = await fetch(`${base}/workflows/run`, { method: 'POST', headers: { ...headers, authorization: 'Bearer service-key' }, body });
+    assert.equal(correct.status, 422);
+    assert.equal((await correct.json()).error_code, 'TASK_UNSUPPORTED');
+  } finally {
+    await new Promise(resolve => server.close(resolve));
+  }
+});
+
+test('OpenAI-compatible readiness fails closed when Provider key is missing', async () => {
+  const server = createStandaloneGatewayServer({
+    env: {
+      SEMANTIC_GATEWAY_PROVIDER: 'openai_compatible',
+      SEMANTIC_GATEWAY_API_KEY: 'service-key',
+      SEMANTIC_GATEWAY_PROVIDER_API_BASE: 'https://provider.invalid/v1',
+      SEMANTIC_GATEWAY_MODEL: 'Qwen/Qwen2.5-7B-Instruct'
+    }
+  });
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  try {
+    const ready = await fetch(`http://127.0.0.1:${server.address().port}/ready`);
+    assert.equal(ready.status, 503);
+    assert.equal((await ready.json()).provider_configured, false);
+  } finally {
+    await new Promise(resolve => server.close(resolve));
+  }
+});
+
 test('backend SemanticGatewayClient uses the same /workflows/run transport contract', async () => {
   await withGateway(async ({ port, key }) => {
     const result = await client(port, key).run({ task_type: 'requirement_extraction', task_instruction: 'backend instruction', task_payload_json: '{}' });

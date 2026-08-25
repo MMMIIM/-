@@ -9,6 +9,7 @@
     "db:migrate": "node src/migrate.js",
     "project:grant-owner": "node scripts/project-grant-owner.js",
     "check:gateway": "node scripts/gateway-check.js",
+    "check:semantic-gateway": "node scripts/semantic-gateway-preflight.js",
     "smoke:gateway": "node scripts/gateway-smoke.js",
     "smoke:embedding": "node scripts/smoke-embedding.js",
     "probe:evidence-support-provider": "node scripts/evidence-support-provider-probe.js",
