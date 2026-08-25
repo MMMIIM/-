@@ -64,4 +64,3 @@ No `backend/src` production code, migration, or lifecycle contract changed.
 - `SEM-P1-004`: **PASS / CLOSED** for the accepted Option B transition.
 - Stage20: **PARTIAL / BLOCKED** pending the remaining lifecycle and legacy
   authority decisions.
-
