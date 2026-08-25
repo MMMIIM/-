@@ -114,7 +114,19 @@ test('model content and exact schema diagnostics are persisted for a failed prob
       message: 'Provider returned a Gateway envelope where task data was required.'
     }],
     envelope_validation_errors: [],
-    legacy_schema_detected: true
+    legacy_schema_detected: true,
+    legacy_schema_tokens_observed: ['confidence'],
+    finish_reason: 'stop',
+    prompt_tokens: 100,
+    completion_tokens: 200,
+    total_tokens: 300,
+    response_model: 'mock-model',
+    response_id: 'response-1',
+    provider_trace_id: 'trace-1',
+    model_content_length_chars: 42,
+    output_truncated: false,
+    generation_config: { response_format: { type: 'json_object' }, max_tokens: 3200, temperature: 0.1, top_p: 0.9, top_k: 20, frequency_penalty: 0, stream: false },
+    outbound_prompt_diagnostics: { instruction_sha256: 'hash', instruction_char_count: 12, payload_sha256: 'hash2', payload_char_count: 10, contamination: false }
   };
   const error = new SemanticGatewayError('ASSESSMENT_UNAVAILABLE', 'schema failure', { technical_error_code: 'OUTPUT_SCHEMA_INVALID' });
   const temp = tempResult();
@@ -139,7 +151,52 @@ test('model content and exact schema diagnostics are persisted for a failed prob
   assert.equal(persisted.provider_http_reached, false);
   assert.equal(persisted.schema_validation_errors[0].path, 'provider.data');
   assert.equal(persisted.failure_classifications.includes('LEGACY_SCHEMA_OUTPUT'), true);
+  assert.deepEqual(persisted.legacy_schema_tokens_observed, ['confidence']);
+  assert.equal(persisted.finish_reason, 'stop');
+  assert.equal(persisted.completion_tokens, 200);
+  assert.equal(persisted.generation_config.max_tokens, 3200);
+  assert.equal(persisted.outbound_prompt_legacy_contamination, 'NO');
   assert.equal(JSON.stringify(output).includes('Authorization'), false);
+});
+
+test('truncation diagnostics are retained and never repaired into a canonical result', async () => {
+  const diagnostic = {
+    provider_adapter_invoked: true,
+    fetch_invoked: true,
+    provider_http_reached: true,
+    provider_http_status: 200,
+    finish_reason: 'length',
+    prompt_tokens: 20,
+    completion_tokens: 3200,
+    total_tokens: 3220,
+    model_content_length_chars: 14000,
+    output_truncated: true,
+    json_parse_success: false,
+    legacy_schema_tokens_observed: ['evidence_bearing']
+  };
+  const error = new SemanticGatewayError('ASSESSMENT_UNAVAILABLE', 'provider output unavailable', {
+    technical_error_code: 'PROVIDER_OUTPUT_INVALID'
+  });
+  const temp = tempResult();
+  const result = await runEvidenceSupportProbe({
+    env: baseEnv,
+    envFile: temp.envFile,
+    resultPath: temp.resultPath,
+    fetchImpl: async () => new Response(JSON.stringify({ error_code: 'PROVIDER_OUTPUT_INVALID', probe_diagnostics: diagnostic }), {
+      status: 502,
+      headers: { 'content-type': 'application/json' }
+    }),
+    evaluatorFactory: evaluatorThat({ error }),
+    stdout: () => {}
+  });
+  const persisted = JSON.parse(fs.readFileSync(temp.resultPath, 'utf8'));
+  fs.rmSync(temp.directory, { recursive: true, force: true });
+  assert.equal(result.final_probe_status, 'FAILED');
+  assert.equal(persisted.output_truncated, true);
+  assert.equal(persisted.failure_classifications.includes('OUTPUT_TRUNCATED'), true);
+  assert.equal(persisted.failure_classifications.includes('MODEL_OUTPUT_INTEGRITY'), true);
+  assert.equal(persisted.canonical_schema_valid, false);
+  assert.equal(persisted.normalized_assessment, null);
 });
 
 test('persisted and printed probe results contain no credentials or Authorization header', async () => {

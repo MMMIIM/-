@@ -40,10 +40,20 @@ test('OpenAI-compatible adapter posts the canonical request exactly once', async
     { role: 'user', content: '{"value":1}' }
   ]);
   assert.equal(body.response_format.type, 'json_object');
+  assert.equal(body.max_tokens, 3200);
+  assert.equal(body.temperature, 0.1);
+  assert.equal(body.top_p, 0.9);
+  assert.equal(body.top_k, 20);
+  assert.equal(body.frequency_penalty, 0);
+  assert.equal(body.stream, false);
   assert.equal(result.provider_audit.provider_adapter_invoked, true);
   assert.equal(result.provider_audit.fetch_invoked, true);
   assert.equal(result.provider_audit.provider_http_reached, true);
   assert.equal(result.provider_audit.current_stage, 'MODEL_CONTENT_EXTRACTED');
+  assert.equal(result.provider_audit.finish_reason, null);
+  assert.equal(result.provider_audit.model_content_length_chars, 11);
+  assert.equal(result.provider_audit.generation_config.max_tokens, 3200);
+  assert.equal(result.provider_audit.outbound_prompt_diagnostics.contamination, false);
 });
 
 test('OpenAI-compatible adapter preserves HTTP 400/401 status after one request', async () => {
@@ -127,6 +137,62 @@ test('OpenAI-compatible adapter classifies invalid provider JSON', async () => {
     fetchImpl: async () => new Response(JSON.stringify({ choices: [{ message: { content: '{' } }] }), { status: 200 })
   });
   await assert.rejects(() => provider.invoke({ instruction: 'instruction', payload: {} }), error => error.code === 'PROVIDER_OUTPUT_INVALID');
+});
+
+test('provider metadata captures finish reason, usage, response identity and truncation without repairing output', async () => {
+  const provider = new OpenAICompatibleProvider({
+    baseUrl: 'https://provider.invalid/v1', apiKey: 'secret-test-key', model: 'mock-model',
+    fetchImpl: async () => new Response(JSON.stringify({
+      id: 'response-1', model: 'mock-model',
+      choices: [{ finish_reason: 'length', message: { content: '{"status":"ok"' } }],
+      usage: { prompt_tokens: 10, completion_tokens: 3200, total_tokens: 3210 }
+    }), { status: 200, headers: { 'x-siliconcloud-trace-id': 'trace-1' } })
+  });
+  await assert.rejects(
+    () => provider.invoke({ instruction: 'instruction', payload: {} }),
+    error => error.code === 'PROVIDER_OUTPUT_INVALID'
+      && error.provider_audit.finish_reason === 'length'
+      && error.provider_audit.prompt_tokens === 10
+      && error.provider_audit.completion_tokens === 3200
+      && error.provider_audit.total_tokens === 3210
+      && error.provider_audit.response_model === 'mock-model'
+      && error.provider_audit.response_id === 'response-1'
+      && error.provider_audit.provider_trace_id === 'trace-1'
+      && error.provider_audit.model_content_length_chars === 14
+      && error.provider_audit.output_truncated === true
+      && error.provider_audit.safe_error_code === 'OUTPUT_TRUNCATED'
+  );
+});
+
+test('malformed model content gets token diagnostics without JSON repair', async () => {
+  const provider = new OpenAICompatibleProvider({
+    baseUrl: 'https://provider.invalid/v1', apiKey: 'secret-test-key', model: 'mock-model',
+    fetchImpl: async () => new Response(JSON.stringify({
+      choices: [{ finish_reason: 'stop', message: { content: '{"support_level":"full_support","evidence_bearing":true,"support__observations":[' } }]
+    }), { status: 200 })
+  });
+  await assert.rejects(
+    () => provider.invoke({ instruction: 'instruction', payload: {} }),
+    error => error.code === 'PROVIDER_OUTPUT_INVALID'
+      && error.provider_audit.json_parse_success === false
+      && error.provider_audit.legacy_schema_tokens_observed.includes('evidence_bearing')
+      && error.provider_audit.legacy_schema_tokens_observed.includes('support__observations')
+      && error.provider_audit.model_content.endsWith('[')
+  );
+});
+
+test('outbound prompt diagnostics are metadata-only and do not flag forbidden-token mentions as contamination', async () => {
+  const provider = new OpenAICompatibleProvider({
+    baseUrl: 'https://provider.invalid/v1', apiKey: 'secret-test-key', model: 'mock-model',
+    fetchImpl: async (_url, options) => {
+      assert.equal(options.body.includes('secret-test-key'), false);
+      return new Response(JSON.stringify({ choices: [{ finish_reason: 'stop', message: { content: '{"ok":true}' } }] }), { status: 200 });
+    }
+  });
+  const result = await provider.invoke({ instruction: '禁止输出 confidence、evidence_type、notes。', payload: { source_text: 'private source' } });
+  assert.equal(result.provider_audit.outbound_prompt_diagnostics.contamination, false);
+  assert.equal(typeof result.provider_audit.outbound_prompt_diagnostics.instruction_sha256, 'string');
+  assert.equal(Object.hasOwn(result.provider_audit.outbound_prompt_diagnostics, 'instruction'), false);
 });
 
 test('shared schema validator rejects extra fields', () => {

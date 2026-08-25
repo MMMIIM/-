@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+
 const PUBLIC_PROVIDER_ERROR_CODES = new Set([
   'PROVIDER_UNAVAILABLE',
   'PROVIDER_TIMEOUT',
@@ -15,6 +17,86 @@ const PROVIDER_STAGES = Object.freeze({
   RESPONSE_BODY_READ: 'RESPONSE_BODY_READ',
   MODEL_CONTENT_EXTRACTED: 'MODEL_CONTENT_EXTRACTED'
 });
+
+// Keep the transport generation controls explicit.  The canonical semantic
+// contract remains the source of truth for the response shape; these values
+// only bound and stabilize the provider request.
+export const DEFAULT_GENERATION_CONFIG = Object.freeze({
+  response_format: Object.freeze({ type: 'json_object' }),
+  max_tokens: 3200,
+  temperature: 0.1,
+  top_p: 0.9,
+  top_k: 20,
+  frequency_penalty: 0,
+  stream: false
+});
+
+const LEGACY_SCHEMA_DIAGNOSTIC_TOKENS = Object.freeze([
+  'confidence',
+  'evidence_type',
+  'notes',
+  'evidence_bearing',
+  'reason_code',
+  'support__observations'
+]);
+
+function boundedString(value, max = 160) {
+  return typeof value === 'string' && value.length > 0 ? value.slice(0, max) : null;
+}
+
+function boundedInteger(value) {
+  return Number.isInteger(value) && value >= 0 ? value : null;
+}
+
+function safeFinishReason(value) {
+  return typeof value === 'string' && /^[a-z0-9_-]{1,40}$/i.test(value) ? value : null;
+}
+
+function tokenOccurrences(text) {
+  const source = typeof text === 'string' ? text : '';
+  return LEGACY_SCHEMA_DIAGNOSTIC_TOKENS.filter(token => {
+    const pattern = new RegExp(`(?:^|[^a-z0-9_])${token.replace('_', '[ _]')}(?:$|[^a-z0-9_])`, 'i');
+    return pattern.test(source);
+  });
+}
+
+function hashText(value) {
+  return createHash('sha256').update(String(value || '')).digest('hex');
+}
+
+function outboundPromptDiagnostics(instruction, payload) {
+  const instructionText = typeof instruction === 'string' ? instruction : '';
+  let payloadText;
+  try {
+    payloadText = JSON.stringify(payload);
+  } catch (_error) {
+    payloadText = '[UNSERIALIZABLE_PAYLOAD]';
+  }
+  const observedTokens = tokenOccurrences(instructionText);
+  const positiveSchemaTokens = observedTokens.filter(token => !new RegExp(
+    `(?:不得|禁止|不要|旧版|cannot|must\\s+not|do\\s+not|legacy)[^。；\\n]{0,80}${token.replace('_', '[ _]')}`,
+    'i'
+  ).test(instructionText));
+  // These are metadata only.  The actual instruction and source text are
+  // deliberately never placed in the provider audit.
+  return {
+    instruction_sha256: hashText(instructionText),
+    instruction_char_count: instructionText.length,
+    payload_sha256: hashText(payloadText),
+    payload_char_count: payloadText.length,
+    legacy_schema_tokens_observed: observedTokens,
+    // The frozen contract intentionally mentions its compatibility
+    // `support_level` field.  It is not classified as a legacy token here.
+    legacy_schema_tokens_in_instruction: observedTokens,
+    legacy_schema_positive_schema_context: positiveSchemaTokens.length > 0,
+    contamination: positiveSchemaTokens.length > 0
+  };
+}
+
+function parseErrorOffset(error) {
+  const match = String(error?.message || '').match(/(?:position|at position)\s+(\d+)/i);
+  return match ? Number(match[1]) : null;
+}
 
 function safeCode(value) {
   const candidate = String(value || '').trim();
@@ -38,7 +120,7 @@ function safeCause(error) {
   };
 }
 
-function createAudit(model, started) {
+function createAudit(model, started, generationConfig, promptDiagnostics) {
   return {
     provider: 'openai_compatible',
     model,
@@ -55,6 +137,19 @@ function createAudit(model, started) {
     cause_name: null,
     cause_code: null,
     cause_message: null,
+    finish_reason: null,
+    prompt_tokens: null,
+    completion_tokens: null,
+    total_tokens: null,
+    response_model: null,
+    response_id: null,
+    provider_trace_id: null,
+    model_content_length_chars: null,
+    output_truncated: false,
+    json_parse_error_offset: null,
+    legacy_schema_tokens_observed: [],
+    generation_config: generationConfig,
+    outbound_prompt_diagnostics: promptDiagnostics,
     started_at_ms: started
   };
 }
@@ -84,13 +179,35 @@ function attachAudit(error, audit, started, {
 }
 
 export class OpenAICompatibleProvider {
-  constructor({ baseUrl, apiKey, model, timeoutMs = 120000, fetchImpl = fetch, logger = console } = {}) {
+  constructor({
+    baseUrl,
+    apiKey,
+    model,
+    timeoutMs = 120000,
+    fetchImpl = fetch,
+    logger = console,
+    generationConfig = {}
+  } = {}) {
     this.baseUrl = String(baseUrl || '').trim().replace(/\/+$/, '');
     this.apiKey = String(apiKey || '').trim();
     this.model = String(model || '').trim();
     this.timeoutMs = Number.isInteger(Number(timeoutMs)) && Number(timeoutMs) > 0 ? Number(timeoutMs) : 120000;
     this.fetchImpl = fetchImpl;
     this.logger = logger;
+    this.generationConfig = Object.freeze({
+      response_format: { type: 'json_object' },
+      max_tokens: Number.isInteger(Number(generationConfig.max_tokens)) && Number(generationConfig.max_tokens) > 0
+        ? Number(generationConfig.max_tokens) : DEFAULT_GENERATION_CONFIG.max_tokens,
+      temperature: Number.isFinite(Number(generationConfig.temperature))
+        ? Number(generationConfig.temperature) : DEFAULT_GENERATION_CONFIG.temperature,
+      top_p: Number.isFinite(Number(generationConfig.top_p))
+        ? Number(generationConfig.top_p) : DEFAULT_GENERATION_CONFIG.top_p,
+      top_k: Number.isInteger(Number(generationConfig.top_k)) && Number(generationConfig.top_k) > 0
+        ? Number(generationConfig.top_k) : DEFAULT_GENERATION_CONFIG.top_k,
+      frequency_penalty: Number.isFinite(Number(generationConfig.frequency_penalty))
+        ? Number(generationConfig.frequency_penalty) : DEFAULT_GENERATION_CONFIG.frequency_penalty,
+      stream: generationConfig.stream === true
+    });
   }
 
   get configured() {
@@ -99,7 +216,7 @@ export class OpenAICompatibleProvider {
 
   async invoke({ instruction, payload }) {
     const started = Date.now();
-    const audit = createAudit(this.model, started);
+    const audit = createAudit(this.model, started, this.generationConfig, outboundPromptDiagnostics(instruction, payload));
     if (!this.configured) {
       audit.current_stage = PROVIDER_STAGES.CONFIG_RESOLVED;
       throw attachAudit(
@@ -136,7 +253,13 @@ export class OpenAICompatibleProvider {
             { role: 'system', content: instruction },
             { role: 'user', content: JSON.stringify(payload) }
           ],
-          response_format: { type: 'json_object' }
+          response_format: this.generationConfig.response_format,
+          max_tokens: this.generationConfig.max_tokens,
+          temperature: this.generationConfig.temperature,
+          top_p: this.generationConfig.top_p,
+          top_k: this.generationConfig.top_k,
+          frequency_penalty: this.generationConfig.frequency_penalty,
+          stream: this.generationConfig.stream
         };
         audit.current_stage = PROVIDER_STAGES.REQUEST_BODY_BUILT;
       } catch (error) {
@@ -201,7 +324,18 @@ export class OpenAICompatibleProvider {
           { safeErrorCode: 'RESPONSE_READ_FAILED', safeErrorMessage: 'Provider response body could not be read.', failureStage: PROVIDER_STAGES.RESPONSE_BODY_READ, cause: error }
         );
       }
-      const content = body?.choices?.[0]?.message?.content;
+      const choice = body?.choices?.[0];
+      const usage = body?.usage;
+      const responseTraceId = response.headers?.get?.('x-siliconcloud-trace-id')
+        || response.headers?.get?.('x-request-id');
+      audit.finish_reason = safeFinishReason(choice?.finish_reason);
+      audit.prompt_tokens = boundedInteger(usage?.prompt_tokens);
+      audit.completion_tokens = boundedInteger(usage?.completion_tokens);
+      audit.total_tokens = boundedInteger(usage?.total_tokens);
+      audit.response_model = boundedString(body?.model);
+      audit.response_id = boundedString(body?.id);
+      audit.provider_trace_id = boundedString(responseTraceId);
+      const content = choice?.message?.content;
       audit.current_stage = PROVIDER_STAGES.MODEL_CONTENT_EXTRACTED;
       if (typeof content !== 'string') {
         throw attachAudit(
@@ -209,6 +343,17 @@ export class OpenAICompatibleProvider {
           { ...audit, http_status: response.status, json_parse_success: false, model_content: null },
           started,
           { safeErrorCode: 'PROVIDER_OUTPUT_INVALID', safeErrorMessage: 'Provider response did not contain text content.', failureStage: PROVIDER_STAGES.MODEL_CONTENT_EXTRACTED }
+        );
+      }
+      audit.model_content_length_chars = content.length;
+      audit.legacy_schema_tokens_observed = tokenOccurrences(content);
+      audit.output_truncated = audit.finish_reason === 'length';
+      if (audit.output_truncated) {
+        throw attachAudit(
+          Object.assign(new Error('Provider output reached the configured token limit'), { code: 'PROVIDER_OUTPUT_INVALID' }),
+          { ...audit, http_status: response.status, json_parse_success: false },
+          started,
+          { safeErrorCode: 'OUTPUT_TRUNCATED', safeErrorMessage: 'Provider output reached the configured token limit.', failureStage: PROVIDER_STAGES.MODEL_CONTENT_EXTRACTED }
         );
       }
       try {
@@ -220,6 +365,7 @@ export class OpenAICompatibleProvider {
             json_parse_success: true,
             markdown_fence_present: /^```(?:json)?(?:\s|$)/i.test(content.trim()),
             model_content: content,
+            model_content_length_chars: content.length,
             parsed_json: data
           }
         };
@@ -232,6 +378,8 @@ export class OpenAICompatibleProvider {
             json_parse_success: false,
             markdown_fence_present: /^```(?:json)?(?:\s|$)/i.test(content.trim()),
             model_content: content,
+            model_content_length_chars: content.length,
+            json_parse_error_offset: parseErrorOffset(_error),
             parsed_json: null
           },
           started,

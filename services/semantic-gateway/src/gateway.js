@@ -94,7 +94,8 @@ function probeDiagnosticsRequested(request) {
   return String(request.headers['x-semantic-gateway-diagnostic'] || '') === 'probe-v1';
 }
 
-function legacySchemaDetected(value) {
+function legacySchemaDetected(value, observedTokens = []) {
+  if (Array.isArray(observedTokens) && observedTokens.length > 0) return true;
   const assessments = Array.isArray(value?.data?.assessments)
     ? value.data.assessments
     : Array.isArray(value?.assessments) ? value.assessments : [];
@@ -126,9 +127,47 @@ function safeProbeDiagnostics({ providerAudit = null, validationErrors = [], env
     cause_name: typeof audit.cause_name === 'string' ? audit.cause_name : null,
     cause_code: typeof audit.cause_code === 'string' ? audit.cause_code : null,
     cause_message: typeof audit.cause_message === 'string' ? audit.cause_message : null,
+    finish_reason: typeof audit.finish_reason === 'string' ? audit.finish_reason : null,
+    prompt_tokens: Number.isInteger(audit.prompt_tokens) ? audit.prompt_tokens : null,
+    completion_tokens: Number.isInteger(audit.completion_tokens) ? audit.completion_tokens : null,
+    total_tokens: Number.isInteger(audit.total_tokens) ? audit.total_tokens : null,
+    response_model: typeof audit.response_model === 'string' ? audit.response_model : null,
+    response_id: typeof audit.response_id === 'string' ? audit.response_id : null,
+    provider_trace_id: typeof audit.provider_trace_id === 'string' ? audit.provider_trace_id : null,
+    model_content_length_chars: Number.isInteger(audit.model_content_length_chars) ? audit.model_content_length_chars : null,
+    output_truncated: audit.output_truncated === true,
+    json_parse_error_offset: Number.isInteger(audit.json_parse_error_offset) ? audit.json_parse_error_offset : null,
+    legacy_schema_tokens_observed: Array.isArray(audit.legacy_schema_tokens_observed)
+      ? audit.legacy_schema_tokens_observed.filter(token => typeof token === 'string').slice(0, 20)
+      : [],
+    generation_config: audit.generation_config && typeof audit.generation_config === 'object'
+      ? {
+        response_format: audit.generation_config.response_format?.type === 'json_object'
+          ? { type: 'json_object' } : null,
+        max_tokens: Number.isInteger(audit.generation_config.max_tokens) ? audit.generation_config.max_tokens : null,
+        temperature: Number.isFinite(audit.generation_config.temperature) ? audit.generation_config.temperature : null,
+        top_p: Number.isFinite(audit.generation_config.top_p) ? audit.generation_config.top_p : null,
+        top_k: Number.isInteger(audit.generation_config.top_k) ? audit.generation_config.top_k : null,
+        frequency_penalty: Number.isFinite(audit.generation_config.frequency_penalty) ? audit.generation_config.frequency_penalty : null,
+        stream: audit.generation_config.stream === true
+      }
+      : null,
+    outbound_prompt_diagnostics: audit.outbound_prompt_diagnostics && typeof audit.outbound_prompt_diagnostics === 'object'
+      ? {
+        instruction_sha256: typeof audit.outbound_prompt_diagnostics.instruction_sha256 === 'string' ? audit.outbound_prompt_diagnostics.instruction_sha256 : null,
+        instruction_char_count: Number.isInteger(audit.outbound_prompt_diagnostics.instruction_char_count) ? audit.outbound_prompt_diagnostics.instruction_char_count : null,
+        payload_sha256: typeof audit.outbound_prompt_diagnostics.payload_sha256 === 'string' ? audit.outbound_prompt_diagnostics.payload_sha256 : null,
+        payload_char_count: Number.isInteger(audit.outbound_prompt_diagnostics.payload_char_count) ? audit.outbound_prompt_diagnostics.payload_char_count : null,
+        legacy_schema_tokens_observed: Array.isArray(audit.outbound_prompt_diagnostics.legacy_schema_tokens_observed)
+          ? audit.outbound_prompt_diagnostics.legacy_schema_tokens_observed.filter(token => typeof token === 'string').slice(0, 20)
+          : [],
+        legacy_schema_positive_schema_context: audit.outbound_prompt_diagnostics.legacy_schema_positive_schema_context === true,
+        contamination: audit.outbound_prompt_diagnostics.contamination === true
+      }
+      : null,
     schema_validation_errors: Array.isArray(validationErrors) ? validationErrors : [],
     envelope_validation_errors: Array.isArray(envelopeErrors) ? envelopeErrors : [],
-    legacy_schema_detected: legacySchemaDetected(audit.parsed_json ?? parsedJson)
+    legacy_schema_detected: legacySchemaDetected(audit.parsed_json ?? parsedJson, audit.legacy_schema_tokens_observed)
   };
 }
 

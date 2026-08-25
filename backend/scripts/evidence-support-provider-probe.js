@@ -70,6 +70,20 @@ function createProbeResult({ startedAt, resultPath }) {
     provider_cause_name: null,
     provider_cause_code: null,
     provider_cause_message: null,
+    finish_reason: null,
+    prompt_tokens: null,
+    completion_tokens: null,
+    total_tokens: null,
+    response_model: null,
+    provider_response_id: null,
+    provider_trace_id: null,
+    model_content_length_chars: null,
+    output_truncated: false,
+    json_parse_error_offset: null,
+    generation_config: null,
+    outbound_prompt_legacy_contamination: null,
+    outbound_prompt_diagnostics: null,
+    legacy_schema_tokens_observed: [],
     provider_authentication_status: 'NOT_REACHED',
     model_response_reached: false,
     canonical_envelope_valid: false,
@@ -192,6 +206,28 @@ function applyDiagnostics(result, diagnostics) {
   result.provider_cause_name = typeof diagnostics.cause_name === 'string' ? diagnostics.cause_name : result.provider_cause_name;
   result.provider_cause_code = typeof diagnostics.cause_code === 'string' ? diagnostics.cause_code : result.provider_cause_code;
   result.provider_cause_message = typeof diagnostics.cause_message === 'string' ? diagnostics.cause_message : result.provider_cause_message;
+  result.finish_reason = typeof diagnostics.finish_reason === 'string' ? diagnostics.finish_reason : result.finish_reason;
+  result.prompt_tokens = Number.isInteger(diagnostics.prompt_tokens) ? diagnostics.prompt_tokens : result.prompt_tokens;
+  result.completion_tokens = Number.isInteger(diagnostics.completion_tokens) ? diagnostics.completion_tokens : result.completion_tokens;
+  result.total_tokens = Number.isInteger(diagnostics.total_tokens) ? diagnostics.total_tokens : result.total_tokens;
+  result.response_model = typeof diagnostics.response_model === 'string' ? diagnostics.response_model : result.response_model;
+  result.provider_response_id = typeof diagnostics.response_id === 'string' ? diagnostics.response_id : result.provider_response_id;
+  result.provider_trace_id = typeof diagnostics.provider_trace_id === 'string' ? diagnostics.provider_trace_id : result.provider_trace_id;
+  result.model_content_length_chars = Number.isInteger(diagnostics.model_content_length_chars)
+    ? diagnostics.model_content_length_chars : result.model_content_length_chars;
+  result.output_truncated = diagnostics.output_truncated === true;
+  result.json_parse_error_offset = Number.isInteger(diagnostics.json_parse_error_offset)
+    ? diagnostics.json_parse_error_offset : result.json_parse_error_offset;
+  result.generation_config = diagnostics.generation_config && typeof diagnostics.generation_config === 'object'
+    ? safeDiagnosticValue(diagnostics.generation_config) : result.generation_config;
+  const promptDiagnostics = diagnostics.outbound_prompt_diagnostics;
+  if (promptDiagnostics && typeof promptDiagnostics === 'object') {
+    result.outbound_prompt_legacy_contamination = promptDiagnostics.contamination === true ? 'YES' : 'NO';
+    result.outbound_prompt_diagnostics = safeDiagnosticValue(promptDiagnostics);
+  }
+  result.legacy_schema_tokens_observed = Array.isArray(diagnostics.legacy_schema_tokens_observed)
+    ? diagnostics.legacy_schema_tokens_observed.filter(token => typeof token === 'string').slice(0, 20)
+    : result.legacy_schema_tokens_observed;
   result.model_content = safeDiagnosticValue(diagnostics.model_content);
   result.parsed_json = safeDiagnosticValue(diagnostics.parsed_json);
   result.json_parse_success = diagnostics.json_parse_success === true
@@ -214,7 +250,9 @@ function applyDiagnostics(result, diagnostics) {
   result.provider_reached = result.provider_http_reached === true;
   const classifications = [];
   if (result.json_parse_success === false) classifications.push('SYNTACTIC_JSON_PRESENTATION_ERROR');
-  if (result.legacy_schema_detected) classifications.push('LEGACY_SCHEMA_OUTPUT');
+  if (result.output_truncated) classifications.push('OUTPUT_TRUNCATED');
+  if (result.legacy_schema_detected || result.legacy_schema_tokens_observed.length > 0) classifications.push('LEGACY_SCHEMA_OUTPUT');
+  if (result.legacy_schema_tokens_observed.length > 0 || result.output_truncated) classifications.push('MODEL_OUTPUT_INTEGRITY');
   if (result.envelope_validation_errors.length) classifications.push('ENVELOPE_ERROR');
   if (result.schema_validation_errors.length) classifications.push('CANONICAL_FIELD_ERROR');
   result.failure_classifications = [...new Set(classifications)];
