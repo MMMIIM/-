@@ -66,11 +66,11 @@ managed development transport needed for the Stage20 re-entry; manual SSH tunnel
 remains a development access method, not a product operating requirement. Full Stage
 21 is not authorized by the current stage and is not being implemented now.
 
-## P2 — PLANNED: Users, organizations, and permissions
+## P2 — PLANNED: Enterprise Identity & Authorization
 
-Provide secure, sufficient enterprise identity and RBAC by reusing mature
-solutions when needed. Do not self-build password, session, RBAC, or SSO
-protocols.
+Provide secure enterprise identity, project authorization and knowledge/material
+permissions by reusing mature solutions when needed. Do not self-build
+password, session, RBAC, or SSO protocols.
 
 ## P2 — PLANNED: Bid Copilot / Agent V1
 
@@ -89,10 +89,17 @@ roadmap as available runtime capabilities:
 2. **Async job / queue / worker architecture** — provide bounded concurrency,
    retry and recovery for parsing, embedding, retrieval, assessment,
    generation and Word rendering.
-3. **Tenant / RBAC / project / knowledge isolation** — establish formal Tenant,
-   Organization, User, Role, Project, Knowledge, Evidence and Audit permission
-   boundaries. The current P0 Review→Fact finding demonstrates that this
-   authorization model is required before external production use.
+3A. **Minimal Project Authorization Kernel (P0 current)** — establish the
+    smallest trusted Actor → Project Membership → ProjectAuthorizationService
+    boundary required by the private deployment core flow. The current P0
+    Review→Fact finding demonstrates that this kernel is required before
+    external production use.
+3B. **Enterprise Identity & Authorization before formal enterprise usage** —
+    extend the kernel to enterprise RBAC, Project, Knowledge, Material,
+    Evidence and Audit permissions.
+3C. **True Multi-Tenant SaaS (optional future extension)** — add Tenant and
+    Organization isolation only if a future SaaS product decision requires it;
+    it is not the current deployment model.
 4. **Document version / Word / chapter regeneration lifecycle** — separate
    Generation, DocumentVersion and Export, with chapter regeneration, version
    comparison, rollback and formal confirmation.
