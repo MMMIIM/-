@@ -11,6 +11,7 @@
     "check:gateway": "node scripts/gateway-check.js",
     "smoke:gateway": "node scripts/gateway-smoke.js",
     "smoke:embedding": "node scripts/smoke-embedding.js",
+    "probe:evidence-support-provider": "node scripts/evidence-support-provider-probe.js",
     "reconcile:sources": "node scripts/reconcile-requirement-sources.js",
     "eval:requirements": "node scripts/eval-requirements.js",
     "eval:enterprise-retrieval": "node scripts/eval-enterprise-retrieval.js",

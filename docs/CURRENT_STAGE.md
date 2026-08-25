@@ -103,6 +103,24 @@ observations 和 cross-source conflict observations，最终业务状态继续�
 变更；Stage20 仍为 `BLOCKED`（等待正式 live evidence sufficiency validation），
 Corpus L3 仍为 `IN_PROGRESS`。
 
+### Stage20 canonical direct-provider cutover (2026-08-25)
+
+`DIFY_FORMAL_DEPENDENCY_4_3 = NO`。Evidence Support 的正式运行边界改为：
+
+```text
+Backend → Standalone Semantic Gateway → Task Router → Provider Adapter → Model
+```
+
+本地已完成 canonical task-specific 配置绑定与 Gateway Task Router：
+`evidence_support_assessment` 只读取 `SEMANTIC_GATEWAY_API_BASE`、
+`SEMANTIC_GATEWAY_API_KEY` 和 `SEMANTIC_GATEWAY_USER`，不会回退到
+`V43_GATEWAY_*` 或 `DIFY_*`。Gateway 使用已有 OpenAI-compatible Provider
+Adapter，严格校验 `4.3-evidence-support-assessment-v1`，失败保持技术失败。
+旧 Dify 需求提取 Workflow 继续作为兼容路径，但不是 Evidence Support 的运行时。
+
+当前状态：**LOCAL IMPLEMENTED / LIVE SCHEMA PROBE PENDING**。在唯一一次
+Provider schema probe 完成并通过前，不执行 Stage20 全量 live validation。
+
 ### P0 Evidence Context / Real Retrieval revalidation (2026-08-24)
 
 Bounded context recovery and enterprise-proof source routing are implemented and

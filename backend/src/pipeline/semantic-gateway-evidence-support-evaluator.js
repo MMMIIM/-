@@ -189,7 +189,13 @@ export function createSemanticGatewayEvidenceSupportEvaluatorFromEnv({
   timeoutMs
 } = {}) {
   return new SemanticGatewayEvidenceSupportEvaluator({
-    client: createSemanticGatewayClientFromEnv({ env, fetchImpl, logger, timeoutMs }),
+    client: createSemanticGatewayClientFromEnv({
+      env,
+      fetchImpl,
+      logger,
+      timeoutMs,
+      taskType: EVIDENCE_SUPPORT_GATEWAY_TASK_TYPE
+    }),
     evaluatorVersion: EVIDENCE_SUPPORT_GATEWAY_CONTRACT_VERSION
   });
 }

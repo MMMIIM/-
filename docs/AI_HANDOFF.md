@@ -16,7 +16,7 @@
   negative control, and persistence assertions when state mutates. The invariant
   matrix tracks SERVICE_TESTED, ENTRY_POINT_TESTED, PERSISTENCE_TESTED, and
   NEGATIVE_CONTROL_PRESENT; service-only coverage cannot mark an invariant ENFORCED.
-- Semantic execution target is Backend Control Plane → standalone semantic gateway → Provider Adapter → model; the current Dify path remains a legacy compatibility shim.
+- Semantic execution target is Backend Control Plane → standalone semantic gateway → Task Router → Provider Adapter → model; `DIFY_FORMAL_DEPENDENCY_4_3=NO` and the current Dify path remains a legacy compatibility shim.
 - No `result`/`text`/`answer` fallback and no JSON repair by bracket guessing.
 
 Authoritative detail: `ARCHITECTURE.md`, `docs/CURRENT_STAGE.md`, `docs/ROADMAP.md`, and relevant ADRs.
@@ -67,9 +67,11 @@ evidence-bearing and downstream E2E acceptance remain open. Do not start Stage21
 
 The standalone semantic gateway foundation is implemented locally under
 `services/semantic-gateway`, with single-source contracts in
-`packages/semantic-contracts`. It uses only the mock provider in this stage;
-Backend still points at the legacy Dify-compatible endpoint until a separate
-cutover decision.
+`packages/semantic-contracts`. The canonical `evidence_support_assessment`
+factory now binds only `SEMANTIC_GATEWAY_*` configuration and routes through the
+existing OpenAI-compatible Provider Adapter; it never falls back to Dify. The
+single live Provider schema probe is still pending; no full Stage20 live set is
+authorized.
 
 ## Acceptance tracks
 
@@ -81,7 +83,9 @@ cutover decision.
 - Stage20-S Evidence Support Assessment shared core and local
   `evidence_support_assessment` Gateway Contract: implemented offline;
   no remote publish or live model call authorized.
-- Standalone Semantic Gateway runtime foundation: local tests PASS; remote deploy and Backend cutover are not authorized.
+- Standalone Semantic Gateway runtime foundation: local tests PASS; canonical
+  Evidence Support direct-provider cutover is implemented locally, with one
+  schema probe pending. No remote deploy, Dify publication or full live set.
 
 ## Critical metrics
 
@@ -142,8 +146,8 @@ topK, MMR, Provider, or retry architecture.
 
 ## Provider/runtime
 
-- Current runtime: Backend Control Plane → `SemanticGatewayClient` → legacy Dify-compatible endpoint.
-- Target runtime: Backend Control Plane → standalone semantic gateway → OpenAI-compatible Provider Adapter.
+- Current historical runtime: Backend Control Plane → `SemanticGatewayClient` → legacy Dify-compatible endpoint for compatibility tasks.
+- Canonical Stage20 runtime: Backend Evidence Support evaluator → standalone semantic gateway → Task Router → OpenAI-compatible Provider Adapter.
 - Gateway health check: PASS; requirement extraction used 4 successful calls.
 - Embedding runtime: existing `V43_EMBEDDING_*` configuration; SiliconFlow
   Qwen/Qwen3-Embedding-0.6B, dimension 1024. Managed SOCKS `127.0.0.1:18081`

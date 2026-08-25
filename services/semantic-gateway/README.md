@@ -25,5 +25,11 @@ Set `SEMANTIC_GATEWAY_PROVIDER=openai_compatible` and provide
 `SEMANTIC_GATEWAY_MODEL` and `SEMANTIC_GATEWAY_TIMEOUT_MS`. The key is read
 only from the environment and is never written to logs or source control.
 
-The current foundation deliberately uses the mock provider only. Backend
-cutover and any real-provider call require a separate decision.
+The canonical `evidence_support_assessment` path uses this standalone Gateway
+and never routes to Dify. Configure the Backend with
+`SEMANTIC_GATEWAY_API_BASE`, `SEMANTIC_GATEWAY_API_KEY` and
+`SEMANTIC_GATEWAY_USER`; configure the Gateway's Provider Adapter with the
+`SEMANTIC_GATEWAY_PROVIDER_*` variables above. The Gateway wraps the strict
+Provider `data` into the single `response_payload_json` envelope and validates
+the canonical contract before returning it. Other historical V43 tasks may
+continue to use their compatibility configuration until separately cut over.

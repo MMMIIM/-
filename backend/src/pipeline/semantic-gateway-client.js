@@ -13,17 +13,30 @@ function positiveTimeout(value, fallback) {
   return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
 }
 
-export function parseSemanticGatewayConfig(env = {}) {
-  const timeoutMs = positiveTimeout(env.V43_GATEWAY_TIMEOUT_MS, 30_000);
+export function parseSemanticGatewayConfig(env = {}, { taskType = null } = {}) {
+  const canonicalEvidenceSupport = taskType === 'evidence_support_assessment';
+  const timeoutMs = positiveTimeout(
+    canonicalEvidenceSupport
+      ? (env.SEMANTIC_GATEWAY_EVIDENCE_SUPPORT_TIMEOUT_MS || env.SEMANTIC_GATEWAY_TIMEOUT_MS)
+      : env.V43_GATEWAY_TIMEOUT_MS,
+    canonicalEvidenceSupport ? 120_000 : 30_000
+  );
   return Object.freeze({
-    apiBase: normalizeBaseUrl(env.V43_GATEWAY_API_BASE),
-    apiKey: String(env.V43_GATEWAY_API_KEY || '').trim(),
-    user: String(env.V43_GATEWAY_USER || '').trim(),
+    apiBase: normalizeBaseUrl(canonicalEvidenceSupport ? env.SEMANTIC_GATEWAY_API_BASE : env.V43_GATEWAY_API_BASE),
+    apiKey: String(canonicalEvidenceSupport ? env.SEMANTIC_GATEWAY_API_KEY : env.V43_GATEWAY_API_KEY || '').trim(),
+    user: String(canonicalEvidenceSupport ? (env.SEMANTIC_GATEWAY_USER || env.V43_GATEWAY_USER) : env.V43_GATEWAY_USER || '').trim(),
     timeoutMs,
+    configuredTaskType: canonicalEvidenceSupport ? taskType : null,
+    config_source: canonicalEvidenceSupport ? 'canonical_semantic_gateway' : 'legacy_v43_gateway',
     taskTimeouts: Object.freeze({
-      healthcheck: positiveTimeout(env.V43_GATEWAY_HEALTHCHECK_TIMEOUT_MS, 15_000),
+      healthcheck: positiveTimeout(
+        canonicalEvidenceSupport ? env.SEMANTIC_GATEWAY_HEALTHCHECK_TIMEOUT_MS : env.V43_GATEWAY_HEALTHCHECK_TIMEOUT_MS,
+        15_000
+      ),
       requirement_extraction: positiveTimeout(
-        env.V43_GATEWAY_REQUIREMENT_EXTRACTION_TIMEOUT_MS,
+        canonicalEvidenceSupport
+          ? env.SEMANTIC_GATEWAY_REQUIREMENT_EXTRACTION_TIMEOUT_MS
+          : env.V43_GATEWAY_REQUIREMENT_EXTRACTION_TIMEOUT_MS,
         300_000
       )
     })
@@ -169,7 +182,9 @@ export class SemanticGatewayClient {
     fetchImpl = fetch,
     timeoutMs = 30000,
     taskTimeouts = {},
-    logger = null
+    logger = null,
+    configuredTaskType = null,
+    configSource = null
   }) {
     this.apiBase = normalizeBaseUrl(apiBase);
     this.apiKey = String(apiKey || '').trim();
@@ -177,6 +192,8 @@ export class SemanticGatewayClient {
     this.fetchImpl = fetchImpl;
     this.timeoutMs = timeoutMs;
     this.taskTimeouts = { ...taskTimeouts };
+    this.configuredTaskType = configuredTaskType;
+    this.configSource = configSource;
     this.logger = logger;
     this.gatewayTarget = safeGatewayTarget(this.apiBase);
   }
@@ -190,6 +207,14 @@ export class SemanticGatewayClient {
   }
 
   async run({ task_type: taskType, task_instruction: taskInstruction, task_payload_json: taskPayloadJson } = {}) {
+    if (this.configuredTaskType && taskType !== this.configuredTaskType) {
+      throw new SemanticGatewayError(
+        'TASK_UNSUPPORTED',
+        '该 Semantic Gateway Client 仅允许访问其绑定的 canonical task_type。',
+        auditFor(taskType, { configured_task_type: this.configuredTaskType, config_source: this.configSource }),
+        422
+      );
+    }
     if (!this.apiBase || !this.apiKey || !this.user) {
       throw new SemanticGatewayError(
         'GATEWAY_NOT_CONFIGURED',
@@ -347,13 +372,16 @@ export function createSemanticGatewayClientFromEnv({
   env = process.env,
   fetchImpl = fetch,
   timeoutMs,
-  logger
+  logger,
+  taskType = null
 } = {}) {
-  const config = parseSemanticGatewayConfig(env);
+  const config = parseSemanticGatewayConfig(env, { taskType });
   return new SemanticGatewayClient({
     ...config,
     fetchImpl,
     timeoutMs: timeoutMs ?? config.timeoutMs,
+    configuredTaskType: config.configuredTaskType,
+    configSource: config.config_source,
     logger
   });
 }

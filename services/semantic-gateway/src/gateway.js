@@ -4,12 +4,11 @@ import {
   SEMANTIC_TASK_TYPES,
   SEMANTIC_GATEWAY_ERROR_CODES,
   getSemanticTaskContract,
-  resolveSemanticTaskInstruction,
-  createGatewayEnvelope,
-  validateTaskData
+  createGatewayEnvelope
 } from '../../../packages/semantic-contracts/index.js';
 import { createMockProvider } from './provider/mock-provider.js';
 import { OpenAICompatibleProvider } from './provider/openai-compatible-provider.js';
+import { createSemanticTaskRouter } from './task-router.js';
 
 const safeErrorCodes = new Set(SEMANTIC_GATEWAY_ERROR_CODES);
 
@@ -80,6 +79,7 @@ function writeJson(response, status, value) {
 }
 
 export function createStandaloneGatewayHandler({ env = process.env, config = configFromEnv(env), logger = console } = {}) {
+  const router = config.taskRouter || createSemanticTaskRouter({ provider: config.provider });
   return async function handle(request, response) {
     const requestId = randomUUID();
     const started = Date.now();
@@ -118,18 +118,8 @@ export function createStandaloneGatewayHandler({ env = process.env, config = con
       }
       let payload;
       try { payload = JSON.parse(inputs.task_payload_json); } catch (_error) { throw Object.assign(new Error('task_payload_json invalid'), { code: 'INPUT_SCHEMA_INVALID' }); }
-      const instruction = resolveSemanticTaskInstruction(taskType);
-      if (!instruction) throw Object.assign(new Error('task instruction missing'), { code: 'TASK_UNSUPPORTED' });
-      const providerResult = await config.provider.invoke({ taskType, instruction, payload });
-      let data;
-      try {
-        data = validateTaskData(taskType, providerResult?.data, payload);
-      } catch (validationError) {
-        if (!validationError.code) validationError.code = validationError.message.includes('source-bound')
-          ? 'SUPPORT_SPAN_INVALID'
-          : 'OUTPUT_SCHEMA_INVALID';
-        throw validationError;
-      }
+      const routed = await router.dispatch({ taskType, payload });
+      const { data } = routed;
       const envelope = createGatewayEnvelope({ taskType, data, warnings: [] });
       const elapsed = Date.now() - started;
       logger?.info?.('Semantic gateway request', {

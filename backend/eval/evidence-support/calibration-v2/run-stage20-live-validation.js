@@ -273,7 +273,13 @@ async function main() {
   const packet = JSON.parse(fs.readFileSync(PACKET_PATH, 'utf8'));
   const runtime = createBackendRuntime();
   const evaluator = createSemanticGatewayEvidenceSupportEvaluatorFromEnv({ env: runtime.env });
-  const target = new URL(runtime.env.V43_GATEWAY_API_BASE);
+  const canonicalGatewayBase = String(runtime.env.SEMANTIC_GATEWAY_API_BASE || '').trim();
+  if (!canonicalGatewayBase) {
+    throw Object.assign(new Error('Canonical Semantic Gateway is not configured for evidence_support_assessment.'), {
+      code: 'CANONICAL_GATEWAY_NOT_CONFIGURED'
+    });
+  }
+  const target = new URL(canonicalGatewayBase);
   const cases = buildCases(packet);
   const technicalControl = technicalControlEvidence(packet);
   const report = {

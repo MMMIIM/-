@@ -169,3 +169,23 @@ Provider and model choices remain adapter concerns. Dify is a
 does not make Dify a core runtime dependency. No semantic task may bypass the
 Backend Control Plane or create Evidence, Fact, Mapping, Claim, Readiness or
 Writer state directly.
+
+### Stage20 canonical runtime
+
+`DIFY_FORMAL_DEPENDENCY_4_3 = NO`. The canonical
+`evidence_support_assessment` path is:
+
+```text
+Backend EvidenceSupport evaluator
+→ Standalone Semantic Gateway task router
+→ OpenAI-compatible Provider Adapter
+→ configured model
+→ strict canonical contract validation
+```
+
+The Task Router owns task registration, versioned system instructions, provider
+dispatch and technical error normalization. The Provider Adapter owns only
+OpenAI-compatible transport and strict JSON parsing. Dify remains a legacy
+compatibility adapter for historical tasks; the old `v4.3.1-需求提取` workflow
+is not the canonical Evidence Support runtime and must never be a fallback for
+`evidence_support_assessment`.
