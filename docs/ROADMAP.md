@@ -77,3 +77,22 @@ protocols.
 An assistant may call formal backend tools to reduce navigation and repetition.
 It must never become a second business Control Plane. Agent V2 remains later
 and evidence-driven.
+
+## Planned architecture tracks (not implementation authorization)
+
+The following tracks are recorded for future sequencing only. They are not
+implemented by the current Stage20 work and must not be inferred from the
+roadmap as available runtime capabilities:
+
+1. **Legacy authority convergence** — move legacy Evidence/Mapping write paths
+   toward canonical-only writes while preserving historical read compatibility.
+2. **Async job / queue / worker architecture** — provide bounded concurrency,
+   retry and recovery for parsing, embedding, retrieval, assessment,
+   generation and Word rendering.
+3. **Tenant / RBAC / project / knowledge isolation** — establish formal Tenant,
+   Organization, User, Role, Project, Knowledge, Evidence and Audit permission
+   boundaries. The current P0 Review→Fact finding demonstrates that this
+   authorization model is required before external production use.
+4. **Document version / Word / chapter regeneration lifecycle** — separate
+   Generation, DocumentVersion and Export, with chapter regeneration, version
+   comparison, rollback and formal confirmation.
