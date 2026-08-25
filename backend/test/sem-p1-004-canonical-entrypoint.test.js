@@ -43,6 +43,7 @@ function baseRepository(overrides = {}) {
     validateEvidenceForMapping: async () => ({ approval_status: 'approved', metadata: marker, source_lineage_verified: true }),
     createRequirementEvidenceMapping: async () => { throw new Error('legacy mapping must not be called'); },
     getProject: async (id) => ({ id, name: 'synthetic project' }),
+    getEvidenceReviewProject: async () => ({ project_id: PROJECT }),
     listEvidenceCatalog: async () => ({ evidences: [{ evidence_id: 'HIST-1', approval_status: 'approved', metadata: {} }], counts: { approved: 1 } }),
     getDocumentGenerationInput: async () => ({ project: { id: PROJECT }, baseline: { id: 'baseline' }, requirements: [], plans: [], claims: [], evidence: [{ evidence_id: EVIDENCE, approval_status: 'approved', metadata: marker }], coverage: [] }),
     ...overrides
@@ -129,7 +130,7 @@ test('NC6 canonical Review proposal can continue through human review, Fact and 
     decideEvidenceCandidateReview: async ({ reviewId, status, reviewer }) => { reviewDecision = { reviewId, status, reviewer }; lifecycle.push('review_decided'); return { ...proposed, review_status: status, reviewer }; }
   });
   const evidenceReviewService = new EvidenceReviewService({ repository, semanticReviewer: { review: async () => ({ semantic_relevance: 'relevant', evidence_capability: 'capable', support_level: 'full_support', review_dimensions: {}, reason_codes: [], requires_human_review: true }) } });
-  const evidenceSourceFactService = { extract: async (reviewId) => { lifecycle.push('fact_proposed'); return { facts: [{ fact_id: 'FACT-1', evidence_review_id: reviewId, review_status: 'draft' }] }; } };
+  const evidenceSourceFactService = { extract: async ({ reviewId }) => { lifecycle.push('fact_proposed'); return { facts: [{ fact_id: 'FACT-1', evidence_review_id: reviewId, review_status: 'draft' }] }; } };
   const requirementEvidenceFactMappingService = { propose: async (input) => { lifecycle.push('mapping_proposed'); return { mapping_id: 'MAP-1', ...input, review_status: 'proposed' }; }, decide: async (mappingId, decision) => { lifecycle.push('mapping_decided'); return { mapping_id: mappingId, review_status: decision === 'approve' ? 'approved' : 'rejected' }; } };
   const app = appFor(repository, { evidenceReviewService, evidenceSourceFactService, requirementEvidenceFactMappingService });
   await withServer(app, async (base) => {

@@ -9,8 +9,8 @@ evidence that an unchanged route is protected.
 | `POST /api/projects` → project creation + OWNER membership | YES | YES | YES | YES | ENFORCED |
 | Historical project owner bootstrap CLI | YES | YES (operational only) | YES | YES | ENFORCED |
 | Retrieval → Review proposal | YES | NO | YES | NO | NOT_ADOPTED |
-| Review → Fact canonical project route | YES | NO | YES | NO | BLOCKED |
-| Legacy `POST /api/evidence-reviews/:reviewId/facts` | YES | NO | YES | NO | UNSAFE / BLOCKED |
+| Review → Fact canonical project route | YES | YES | YES | YES | ENFORCED |
+| Legacy `POST /api/evidence-reviews/:reviewId/facts` | YES | YES (delegates to canonical service) | YES | YES | ENFORCED |
 | Fact → Mapping | YES | NO | YES | NO | NOT_ADOPTED |
 | Mapping → Claim | YES | NO | PARTIAL | NO | PARTIAL |
 | Claim Gate → Writer | YES | NO | YES | NO | NOT_ADOPTED |
@@ -31,8 +31,9 @@ separate adoption decision authorizes each entry point.
 
 ## Current security status
 
-- `Review → Fact` remains **BLOCKED**. The known approved Review ID cross-project
-  exploit is not fixed by merely adding the kernel.
+- `Review → Fact` is **ENFORCED**: both the canonical project-scoped route and
+  the legacy compatibility route resolve through the same owning service and
+  ProjectAuthorizationService. Cross-project Fact creation is denied.
 - `Mapping → Claim` remains **PARTIAL**.
 - `I19` remains **PARTIAL**.
 - Historical projects without membership remain

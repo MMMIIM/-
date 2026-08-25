@@ -46,8 +46,8 @@ export function createStage13AcceptanceFixture() {
     source_evidence: [],
   };
   const repository = {
-    async getApprovedReviewForFact() {
-      return { ...review, source_text: state.source, source_text_hash: sha(state.source) };
+    async getEvidenceReviewForFact() {
+      return { ...review, source_text: state.source, source_text_hash: review.source_text_hash, current_source_text_hash: sha(state.source) };
     },
     async upsertEvidenceSourceFact(fact) {
       state.facts.set(fact.fact_id, fact);
@@ -147,11 +147,17 @@ export function createStage13AcceptanceFixture() {
       }));
     },
   };
+  const projectAuthorizationService = {
+    async assertProjectAccess() { return { membership: { role: 'OWNER', status: 'ACTIVE' } }; },
+  };
   return {
     state,
+    projectId: f.projectId,
+    requirementId: f.requirementId,
     review,
     requirement,
     repository,
+    projectAuthorizationService,
     extractor: {
       version: 'stage13-acceptance-fixture-v1',
       async extract() {

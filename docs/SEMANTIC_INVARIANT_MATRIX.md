@@ -18,7 +18,7 @@ downstream formal owner.
 | I10 | Pending GPT review excluded from reviewed denominator | Eval owner | Eval runner | YES | YES | Eval packet | YES | N/A | ENFORCED |
 | I11 | Parent review does not promote child provenance | Eval/oracle owner | Review packet loader | YES | YES | Eval packet | YES | N/A | ENFORCED |
 | I12 | Raw Candidate cannot create Approved Fact directly | Evidence Review / Fact | Fact extraction route | YES | YES | Fact lifecycle | YES | PARTIAL | ENFORCED |
-| I13 | Fact requires valid Review lineage | Evidence Fact service | Fact extraction/decision routes | YES | YES | Fact tables | YES | PARTIAL | ENFORCED |
+| I13 | Fact requires valid Review lineage | Evidence Fact service | Fact extraction/decision routes | YES | YES | Fact tables | YES | YES | ENFORCED |
 | I14 | Formal Mapping requires Approved Fact | Mapping service | Mapping proposal route | YES | YES | Mapping table | YES | PARTIAL | ENFORCED |
 | I15 | Safe Claim requires approved Mapping and Claim Gate | Claim Gate | Claim routes | YES | YES | Claim/coverage tables | YES | PARTIAL | ENFORCED |
 | I16 | Writer Authorization cannot bypass Claim Gate | Writer service | Generation routes | YES | YES | Generation/version tables | YES | PARTIAL | ENFORCED |
@@ -39,6 +39,9 @@ downstream formal owner.
 - Formal HTTP routes: `backend/src/app.js:255-300` and `backend/src/app.js:305-350`.
 - Trusted actor boundary: `backend/src/request-actor.js` and
   `backend/test/p0-framework-remediation.test.js:74-151`.
+- Review→Fact authorization boundary: `backend/src/evidence-source-fact-service.js`,
+  `backend/src/project-authorization-service.js`, and
+  `backend/integration/sem-p1-004-entry-matrix.integration.js` (NC1–NC15).
 - Eval provenance: `backend/test/evidence-sufficiency-offline.test.js:93-109`.
 
 I01/I02/I06/I07 remain `PARTIAL` at the production-entry dimension because the

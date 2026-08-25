@@ -33,6 +33,7 @@ import { BidCopilotOrchestrator } from './pipeline/bid-copilot-orchestrator.js';
 import { AgentActionService } from './pipeline/agent-action-service.js';
 import { AgentActionExecutor } from './pipeline/agent-action-executor.js';
 import { createServerActorResolver } from './request-actor.js';
+import { ProjectAuthorizationService } from './project-authorization-service.js';
 
 const directory = dirname(fileURLToPath(import.meta.url));
 const runtime = createBackendRuntime();
@@ -60,6 +61,7 @@ const productionBetaService = new ProductionBetaService({ repository, ordinaryUn
 const requirementSourceService = new RequirementSourceService({ repository, storage, textExtractor: extractTenderText });
 const companyMaterialService = new CompanyMaterialService({ repository, storage, textExtractor: extractTenderText });
 const evidenceReviewService = new EvidenceReviewService({ repository });
+const projectAuthorizationService = new ProjectAuthorizationService({ repository });
 const evidenceService = new EvidenceService({ repository, evidenceReviewService, requireReviewTransition:true });
 const evidenceFactService = new EvidenceFactService({ repository });
 const embeddingTransport = createEmbeddingFetchFromEnv({ env: runtimeEnv });
@@ -71,7 +73,7 @@ const connectivityPreflight = new ConnectivityPreflight({
   logger: (event) => console.info('[runtime-connectivity]', JSON.stringify(event))
 });
 const documentGenerationService = new DocumentGenerationService({ repository, provider:createWriterProvider({env:runtimeEnv}), concurrency:runtimeEnv.V43_WRITER_CONCURRENCY || 2 });
-const evidenceSourceFactService = new EvidenceSourceFactService({ repository });
+const evidenceSourceFactService = new EvidenceSourceFactService({ repository, projectAuthorizationService });
 const projectFactControlService = new ProjectFactControlService({ repository });
 const reviewCenterService = new ReviewCenterService({ repository });
 const evidenceReadinessService = new EvidenceReadinessService({ repository });
@@ -110,6 +112,7 @@ const app = createApp({
   requirementEvidenceFactMappingService,
   evidenceReviewService,
   evidenceSourceFactService,
+  projectAuthorizationService,
   projectFactControlService,
   documentDeliveryService,
   agentContextResolver,

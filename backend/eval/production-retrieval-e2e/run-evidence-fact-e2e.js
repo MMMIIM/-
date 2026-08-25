@@ -3,6 +3,7 @@ import { resolve } from 'node:path';
 import { createPool, PgRepository } from '../../src/db.js';
 import { EvidenceReviewService } from '../../src/evidence-review-service.js';
 import { EvidenceSourceFactService } from '../../src/evidence-source-fact-service.js';
+import { ProjectAuthorizationService } from '../../src/project-authorization-service.js';
 
 dotenv.config({path:resolve(process.cwd(),'backend/.env'),quiet:true});
 const PROJECT_ID='ac1a1037-5e62-44ee-8c28-7b09d48d93e6';
@@ -32,9 +33,11 @@ try{
   const reviewService=new EvidenceReviewService({repository});
   for(const review of reviews)if(['proposed','needs_review'].includes(review.review_status))await reviewService.decide(review.review_id,'approve',{reviewer:'task-8c-e2e-human',note:'Synthetic E2E Source Span 逐字核验'});
   const extractor=new DeterministicFixtureExtractor();
-  const service=new EvidenceSourceFactService({repository,extractor});
+  const actor={actor_id:'task-8c-e2e-human',actor_type:'maintenance',source:'maintenance_cli'};
+  await repository.upsertProjectMembership({projectId:PROJECT_ID,actorId:actor.actor_id,role:'OWNER',status:'ACTIVE',createdBy:actor.actor_id});
+  const service=new EvidenceSourceFactService({repository,projectAuthorizationService:new ProjectAuthorizationService({repository}),extractor});
   const cases=[];
-  for(const review of reviews){const result=await service.extract(review.review_id);if(!result.facts.length)throw Object.assign(new Error(`${review.req_id} 未产生 Fact Candidate。`),{code:'EVIDENCE_FACT_E2E_EMPTY'});cases.push({requirement_id:review.req_id,review_id:review.review_id,fact_count:result.facts.length,facts:result.facts.map((fact)=>({fact_id:fact.fact_id,status:fact.fact_status,review_status:fact.review_status,version:fact.version,subject:fact.subject,entities:fact.entities,scopes:fact.scopes,quantities:fact.quantities,validity:fact.validity,source_span_id:fact.source_span_id,source_hash:fact.source?.source_text_hash}))});}
+  for(const review of reviews){const result=await service.extract({projectId:PROJECT_ID,reviewId:review.review_id,actor});if(!result.facts.length)throw Object.assign(new Error(`${review.req_id} 未产生 Fact Candidate。`),{code:'EVIDENCE_FACT_E2E_EMPTY'});cases.push({requirement_id:review.req_id,review_id:review.review_id,fact_count:result.facts.length,facts:result.facts.map((fact)=>({fact_id:fact.fact_id,status:fact.fact_status,review_status:fact.review_status,version:fact.version,subject:fact.subject,entities:fact.entities,scopes:fact.scopes,quantities:fact.quantities,validity:fact.validity,source_span_id:fact.source_span_id,source_hash:fact.source?.source_text_hash}))});}
   const facts=await repository.listEvidenceSourceFacts(PROJECT_ID);
   const selected=facts.filter((fact)=>reviews.some((review)=>review.review_id===fact.evidence_review_id));
   const after=await boundaries();

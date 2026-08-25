@@ -12,6 +12,7 @@ import { EvidenceReviewService } from '../../src/evidence-review-service.js';
 import { EvidenceSourceFactService } from '../../src/evidence-source-fact-service.js';
 import { RequirementEvidenceFactMappingService } from '../../src/requirement-evidence-fact-mapping-service.js';
 import { EvidenceReadinessService } from '../../src/evidence-readiness-service.js';
+import { ProjectAuthorizationService } from '../../src/project-authorization-service.js';
 
 const here=dirname(fileURLToPath(import.meta.url)),backendRoot=resolve(here,'../..'),workspaceRoot=resolve(backendRoot,'..');
 dotenv.config({path:resolve(backendRoot,'.env'),quiet:true});
@@ -31,6 +32,8 @@ class FixtureMappingEvaluator{constructor(){this.version='stage12-deterministic-
 
 try{
   const project=await repository.createProject({name:PROJECT_NAME});
+  const actor={actor_id:'stage12-human-reviewer',actor_type:'maintenance',source:'maintenance_cli'};
+  await repository.createProjectMembership({projectId:project.id,actorId:actor.actor_id,role:'OWNER',status:'ACTIVE',createdBy:actor.actor_id});
   const tenderBuffer=Buffer.from(`REPRESENTATIVE_SYNTHETIC\n${requirementText}`),storage=new LocalFileStorage(resolve(workspaceRoot,'uploads'));
   const storageKey=await storage.save({projectId:project.id,originalName:'stage12-requirement.txt',buffer:tenderBuffer});
   const tender=await repository.addTenderFile({projectId:project.id,originalName:'stage12-requirement.txt',storageKey,mimeType:'text/plain',sizeBytes:tenderBuffer.length});
@@ -51,7 +54,7 @@ try{
   const review=await reviewService.propose({projectId:project.id,requirementId:REQUIREMENT_ID,retrievalRunId:retrieval.run.retrieval_run_id,retrievalCandidateId:anchor.chunk_id,sourceSpanId:span.span_id});
   const pending=snapshot(await readiness.get(project.id),REQUIREMENT_ID);if(pending.readiness_status!=='NEEDS_REVIEW')throw Object.assign(new Error('Review candidate must remain pending'),{code:'STAGE12_PENDING_STATE_INVALID'});
   await reviewService.decide(review.review_id,'approve',{reviewer:'stage12-human-reviewer',note:'Synthetic source lineage verified'});
-  const factService=new EvidenceSourceFactService({repository,extractor:new FixtureExtractor()}),fact=(await factService.extract(review.review_id)).facts[0];
+  const factService=new EvidenceSourceFactService({repository,projectAuthorizationService:new ProjectAuthorizationService({repository}),extractor:new FixtureExtractor()}),fact=(await factService.extract({projectId:project.id,reviewId:review.review_id,actor})).facts[0];
   await factService.decide(fact.fact_id,'approve',{reviewer:'stage12-human-reviewer',note:'Synthetic atomic fact verified'});
   const mappingService=new RequirementEvidenceFactMappingService({repository,evaluator:new FixtureMappingEvaluator()}),mapping=await mappingService.propose({projectId:project.id,requirementId:REQUIREMENT_ID,factId:fact.fact_id});
   await mappingService.decide(mapping.mapping_id,'approve',{reviewer:'stage12-human-reviewer',note:'Synthetic Requirement-Fact support verified'});

@@ -8,11 +8,11 @@ import { createStage13AcceptanceFixture } from './fixtures/stage13-material-acce
 test('Stage 13 acceptance fixture closes the stale-proof → re-confirm → readiness loop', async () => {
   const fixture = createStage13AcceptanceFixture();
   const oldFact = fixture.makeOldFact();
-  const factService = new EvidenceSourceFactService({ repository: fixture.repository, extractor: fixture.extractor });
+  const factService = new EvidenceSourceFactService({ repository: fixture.repository, projectAuthorizationService: fixture.projectAuthorizationService, extractor: fixture.extractor });
   await assert.rejects(() => factService.decide(oldFact.fact_id, 'approve', { reviewer: 'acceptance-user' }), error => error.code === 'EVIDENCE_FACT_INVALIDATED');
   assert.equal(fixture.state.facts.get(oldFact.fact_id).review_status, 'invalidated');
 
-  const extracted = await factService.extract(fixture.review.review_id);
+  const extracted = await factService.extract({ projectId: fixture.projectId, reviewId: fixture.review.review_id, actor: { actor_id: 'acceptance-user', actor_type: 'test', source: 'test' } });
   assert.equal(extracted.facts.length, 1);
   assert.equal(extracted.facts[0].review_status, 'draft');
   assert.equal(extracted.facts[0].quantities[0].value, '50');
