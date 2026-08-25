@@ -209,6 +209,11 @@ test('probe-only diagnostics expose model content and validator details without 
           http_status: 200,
           json_parse_success: true,
           markdown_fence_present: false,
+          provider_adapter_invoked: true,
+          fetch_invoked: true,
+          provider_http_reached: false,
+          failure_stage: 'FETCH_INVOKED',
+          safe_error_code: 'FETCH_FAILED',
           model_content: JSON.stringify(parsed),
           parsed_json: parsed
         }
@@ -230,6 +235,11 @@ test('probe-only diagnostics expose model content and validator details without 
     assert.equal(typeof body.probe_diagnostics.model_content, 'string');
     assert.equal(body.probe_diagnostics.schema_validation_errors.length, 1);
     assert.equal(body.probe_diagnostics.schema_validation_errors[0].validator_code, 'OUTPUT_SCHEMA_INVALID');
+    assert.equal(body.probe_diagnostics.provider_adapter_invoked, true);
+    assert.equal(body.probe_diagnostics.fetch_invoked, true);
+    assert.equal(body.probe_diagnostics.provider_http_reached, false);
+    assert.equal(body.probe_diagnostics.failure_stage, 'FETCH_INVOKED');
+    assert.equal(body.probe_diagnostics.safe_error_code, 'FETCH_FAILED');
   } finally {
     await new Promise(resolve => server.close(resolve));
   }

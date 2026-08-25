@@ -56,10 +56,20 @@ function createProbeResult({ startedAt, resultPath }) {
     gateway_http_status: null,
     gateway_service_auth_status: 'NOT_REACHED',
     provider_call_count: 0,
+    provider_adapter_invoked: false,
+    fetch_invoked: false,
+    provider_http_reached: false,
     provider_reached: false,
     provider_name: null,
     provider_model: null,
     provider_http_status: null,
+    provider_failure_stage: null,
+    provider_error_name: null,
+    provider_safe_error_code: null,
+    provider_safe_error_message: null,
+    provider_cause_name: null,
+    provider_cause_code: null,
+    provider_cause_message: null,
     provider_authentication_status: 'NOT_REACHED',
     model_response_reached: false,
     canonical_envelope_valid: false,
@@ -139,11 +149,13 @@ function markProviderCall(result, errorCode = null) {
   const gatewayReturnedSuccess = result.gateway_http_status === 200;
   if (!providerError && !gatewayReturnedSuccess) return;
   result.provider_call_count = 1;
-  result.provider_reached = true;
+  if (providerError && !result.provider_adapter_invoked) result.provider_adapter_invoked = true;
+  if (gatewayReturnedSuccess && !result.provider_adapter_invoked) result.provider_adapter_invoked = true;
+  result.provider_reached = result.provider_http_reached === true;
   result.provider_http_status = providerStatusFromError(result._error) ?? result.provider_http_status ?? (gatewayReturnedSuccess ? 200 : null);
   result.provider_authentication_status = result.provider_http_status === 401 || result.provider_http_status === 403
     ? 'FAIL'
-    : gatewayReturnedSuccess ? 'PASS' : 'NOT_VERIFIED';
+    : result.provider_http_reached ? 'PASS' : 'NOT_VERIFIED';
   result.model_response_reached = gatewayReturnedSuccess || MODEL_RESPONSE_ERROR_CODES.has(errorCode);
 }
 
@@ -164,6 +176,22 @@ function safeDiagnosticValue(value) {
 
 function applyDiagnostics(result, diagnostics) {
   if (!diagnostics || typeof diagnostics !== 'object') return;
+  if (typeof diagnostics.provider_adapter_invoked === 'boolean') {
+    result.provider_adapter_invoked = diagnostics.provider_adapter_invoked;
+  }
+  if (typeof diagnostics.fetch_invoked === 'boolean') {
+    result.fetch_invoked = diagnostics.fetch_invoked;
+  }
+  if (typeof diagnostics.provider_http_reached === 'boolean') {
+    result.provider_http_reached = diagnostics.provider_http_reached;
+  }
+  result.provider_failure_stage = typeof diagnostics.failure_stage === 'string' ? diagnostics.failure_stage : result.provider_failure_stage;
+  result.provider_error_name = typeof diagnostics.error_name === 'string' ? diagnostics.error_name : result.provider_error_name;
+  result.provider_safe_error_code = typeof diagnostics.safe_error_code === 'string' ? diagnostics.safe_error_code : result.provider_safe_error_code;
+  result.provider_safe_error_message = typeof diagnostics.safe_error_message === 'string' ? diagnostics.safe_error_message : result.provider_safe_error_message;
+  result.provider_cause_name = typeof diagnostics.cause_name === 'string' ? diagnostics.cause_name : result.provider_cause_name;
+  result.provider_cause_code = typeof diagnostics.cause_code === 'string' ? diagnostics.cause_code : result.provider_cause_code;
+  result.provider_cause_message = typeof diagnostics.cause_message === 'string' ? diagnostics.cause_message : result.provider_cause_message;
   result.model_content = safeDiagnosticValue(diagnostics.model_content);
   result.parsed_json = safeDiagnosticValue(diagnostics.parsed_json);
   result.json_parse_success = diagnostics.json_parse_success === true
@@ -183,6 +211,7 @@ function applyDiagnostics(result, diagnostics) {
   if (Number.isInteger(providerStatus) && providerStatus >= 100 && providerStatus <= 599) {
     result.provider_http_status = providerStatus;
   }
+  result.provider_reached = result.provider_http_reached === true;
   const classifications = [];
   if (result.json_parse_success === false) classifications.push('SYNTACTIC_JSON_PRESENTATION_ERROR');
   if (result.legacy_schema_detected) classifications.push('LEGACY_SCHEMA_OUTPUT');

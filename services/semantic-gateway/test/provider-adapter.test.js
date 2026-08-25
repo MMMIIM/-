@@ -15,19 +15,99 @@ test('shared task registry exposes one canonical contract set', () => {
   assert.equal(getSemanticTaskContract('evidence_support_assessment').contract_version, '4.3-evidence-support-assessment-v1');
 });
 
-test('OpenAI-compatible adapter parses strict JSON without repair', async () => {
+test('OpenAI-compatible adapter posts the canonical request exactly once', async () => {
   let request;
+  let fetchCount = 0;
   const provider = new OpenAICompatibleProvider({
     baseUrl: 'https://provider.invalid/v1', apiKey: 'secret-test-key', model: 'mock-model',
     fetchImpl: async (url, options) => {
+      fetchCount += 1;
       request = { url, options };
       return new Response(JSON.stringify({ choices: [{ message: { content: '{"ok":true}' } }] }), { status: 200 });
-    }
+    },
+    logger: { warn() {} }
   });
   const result = await provider.invoke({ instruction: 'instruction', payload: { value: 1 } });
   assert.deepEqual(result.data, { ok: true });
+  assert.equal(fetchCount, 1);
   assert.equal(request.url, 'https://provider.invalid/v1/chat/completions');
-  assert.equal(JSON.parse(request.options.body).response_format.type, 'json_object');
+  assert.equal(request.options.method, 'POST');
+  assert.equal(request.options.headers.Authorization, 'Bearer secret-test-key');
+  const body = JSON.parse(request.options.body);
+  assert.equal(body.model, 'mock-model');
+  assert.deepEqual(body.messages, [
+    { role: 'system', content: 'instruction' },
+    { role: 'user', content: '{"value":1}' }
+  ]);
+  assert.equal(body.response_format.type, 'json_object');
+  assert.equal(result.provider_audit.provider_adapter_invoked, true);
+  assert.equal(result.provider_audit.fetch_invoked, true);
+  assert.equal(result.provider_audit.provider_http_reached, true);
+  assert.equal(result.provider_audit.current_stage, 'MODEL_CONTENT_EXTRACTED');
+});
+
+test('OpenAI-compatible adapter preserves HTTP 400/401 status after one request', async () => {
+  for (const status of [400, 401]) {
+    let fetchCount = 0;
+    const provider = new OpenAICompatibleProvider({
+      baseUrl: 'https://provider.invalid/v1', apiKey: 'secret-test-key', model: 'mock-model',
+      fetchImpl: async () => {
+        fetchCount += 1;
+        return new Response('{}', { status });
+      },
+      logger: { warn() {} }
+    });
+    await assert.rejects(
+      () => provider.invoke({ instruction: 'instruction', payload: {} }),
+      error => error.code === 'PROVIDER_HTTP_FAILURE'
+        && error.httpStatus === status
+        && error.provider_audit.provider_http_reached === true
+        && error.provider_audit.http_status === status
+        && error.provider_audit.safe_error_code === 'PROVIDER_HTTP_ERROR'
+    );
+    assert.equal(fetchCount, 1);
+  }
+});
+
+test('request serialization failure is captured before fetch without changing public error code', async () => {
+  let fetchCount = 0;
+  const provider = new OpenAICompatibleProvider({
+    baseUrl: 'https://provider.invalid/v1', apiKey: 'secret-test-key', model: 'mock-model',
+    fetchImpl: async () => {
+      fetchCount += 1;
+      return new Response('{}', { status: 200 });
+    },
+    logger: { warn() {} }
+  });
+  await assert.rejects(
+    () => provider.invoke({ instruction: 1n, payload: {} }),
+    error => error.code === 'PROVIDER_UNAVAILABLE'
+      && error.provider_audit.failure_stage === 'REQUEST_BODY_SERIALIZED'
+      && error.provider_audit.safe_error_code === 'REQUEST_SERIALIZATION_FAILED'
+      && error.provider_audit.fetch_invoked === false
+  );
+  assert.equal(fetchCount, 0);
+});
+
+test('fetch rejection preserves a safe low-level cause and distinguishes HTTP reachability', async () => {
+  const cause = Object.assign(new Error('socket reset while connecting'), { code: 'ECONNRESET' });
+  const provider = new OpenAICompatibleProvider({
+    baseUrl: 'https://provider.invalid/v1', apiKey: 'secret-test-key', model: 'mock-model',
+    fetchImpl: async () => {
+      throw Object.assign(new TypeError('fetch failed'), { cause });
+    },
+    logger: { warn() {} }
+  });
+  await assert.rejects(
+    () => provider.invoke({ instruction: 'instruction', payload: {} }),
+    error => error.code === 'PROVIDER_UNAVAILABLE'
+      && error.provider_audit.provider_adapter_invoked === true
+      && error.provider_audit.fetch_invoked === true
+      && error.provider_audit.provider_http_reached === false
+      && error.provider_audit.failure_stage === 'FETCH_INVOKED'
+      && error.provider_audit.safe_error_code === 'FETCH_FAILED'
+      && error.provider_audit.cause_code === 'ECONNRESET'
+  );
 });
 
 test('OpenAI-compatible adapter preserves safe model-content diagnostics', async () => {

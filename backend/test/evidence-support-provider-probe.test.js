@@ -80,7 +80,9 @@ test('Provider failure still emits a safe result and accounts one Provider call'
   });
   assert.equal(persisted.technical_error_class, 'PROVIDER_TIMEOUT');
   assert.equal(persisted.provider_call_count, 1);
-  assert.equal(persisted.provider_reached, true);
+  assert.equal(persisted.provider_reached, false);
+  assert.equal(persisted.provider_adapter_invoked, true);
+  assert.equal(persisted.provider_http_reached, false);
   assert.equal(persisted.canonical_schema_valid, false);
   assert.equal(persisted.failure_classifications.includes('SYNTACTIC_JSON_PRESENTATION_ERROR'), false);
 });
@@ -134,6 +136,7 @@ test('model content and exact schema diagnostics are persisted for a failed prob
   assert.equal(persisted.json_parse_success, true);
   assert.equal(persisted.legacy_schema_detected, true);
   assert.equal(persisted.provider_http_status, 200);
+  assert.equal(persisted.provider_http_reached, false);
   assert.equal(persisted.schema_validation_errors[0].path, 'provider.data');
   assert.equal(persisted.failure_classifications.includes('LEGACY_SCHEMA_OUTPUT'), true);
   assert.equal(JSON.stringify(output).includes('Authorization'), false);
