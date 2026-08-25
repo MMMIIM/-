@@ -39,6 +39,9 @@ ownership is deliberately preserved; the registry unifies names, not services.
 | GoldContext | Contextual evaluation aid | SOURCE / eval artifact | never exact hit by itself | Eval → diagnostics | Gold Evidence | eval fixtures |
 | OracleProvenance | Field-level expectation authority | SOURCE / eval artifact | AUTO/GPT/HUMAN/PENDING | Oracle → metric | Runtime observation | eval packets |
 | ActorProvenance | Trusted actor identity and source | EXTERNAL_OBSERVATION / persisted | authenticated/dev adapter | Request → formal service | client body actor | `request-actor.js` |
+| ActorIdentity | Trusted request actor resolved by an authentication or development identity adapter | EXTERNAL_OBSERVATION / request-scoped | non-empty actor_id and trusted source | Request → ProjectAuthorizationService | client-supplied actor fields | `request-actor.js` |
+| ProjectMembership | Explicit actor membership in one Project | FORMAL_AUTHORIZATION / persisted | OWNER/EDITOR/VIEWER × ACTIVE/REVOKED | Trusted Actor → project access | Project ID, UUID secrecy, Trusted Actor alone | `project_memberships`, migration 047 |
+| ProjectAuthorization | Deterministic permission decision for an Actor and Project action | DERIVED_AUTHORIZATION / transient | READ/WRITE/MANAGE; fail closed | Membership → project-scoped service | ObjectProjectScope, lifecycle status | `project-authorization-service.js` |
 | TechnicalStatus | Transport/provider execution state | EXTERNAL_OBSERVATION | success/timeout/network/schema failure | Provider → audit | business status | gateway/error audit |
 | AssessmentUnavailable | Technical assessment boundary | DERIVED from technical failure | unavailable + reason | Gateway → Review human gate | insufficient evidence | assessment contract |
 | ConflictObservation | Two unequal observations of same fact dimension | SOURCE observation | conflict group with ≥2 values | Sources → aggregate | adverse evidence | gateway/assessment contract |

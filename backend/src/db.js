@@ -28,6 +28,75 @@ export class PgRepository {
     return rows[0];
   }
 
+  async createProjectWithOwner({ name, deadline, owner }) {
+    const actorId = String(owner?.actor_id || '').trim();
+    if (!actorId || actorId === 'current_user') throw new Error('A trusted owner actor is required');
+    const client = await this.pool.connect();
+    try {
+      await client.query('BEGIN');
+      const project = (await client.query(
+        `INSERT INTO projects (name, deadline) VALUES ($1, $2) RETURNING *`,
+        [name, deadline || null]
+      )).rows[0];
+      await client.query(
+        `INSERT INTO project_memberships (project_id, actor_id, role, status, created_by)
+         VALUES ($1, $2, 'OWNER', 'ACTIVE', $2)`,
+        [project.id, actorId]
+      );
+      await client.query('COMMIT');
+      return project;
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  async getProjectMembership({ projectId, actorId }) {
+    const { rows } = await this.pool.query(
+      `SELECT * FROM project_memberships WHERE project_id=$1 AND actor_id=$2`,
+      [projectId, actorId]
+    );
+    return rows[0] || null;
+  }
+
+  async createProjectMembership({ projectId, actorId, role = 'OWNER', status = 'ACTIVE', createdBy }) {
+    const { rows } = await this.pool.query(
+      `INSERT INTO project_memberships(project_id,actor_id,role,status,created_by)
+       VALUES($1,$2,$3,$4,$5) RETURNING *`,
+      [projectId, actorId, role, status, createdBy]
+    );
+    return rows[0];
+  }
+
+  async upsertProjectMembership({ projectId, actorId, role = 'OWNER', status = 'ACTIVE', createdBy }) {
+    const { rows } = await this.pool.query(
+      `INSERT INTO project_memberships(project_id,actor_id,role,status,created_by)
+       VALUES($1,$2,$3,$4,$5)
+       ON CONFLICT(project_id,actor_id) DO UPDATE SET role=EXCLUDED.role,status=EXCLUDED.status,updated_at=now()
+       RETURNING *`,
+      [projectId, actorId, role, status, createdBy]
+    );
+    return rows[0];
+  }
+
+  async revokeProjectMembership({ projectId, actorId }) {
+    const { rows } = await this.pool.query(
+      `UPDATE project_memberships SET status='REVOKED',updated_at=now()
+       WHERE project_id=$1 AND actor_id=$2 RETURNING *`,
+      [projectId, actorId]
+    );
+    return rows[0] || null;
+  }
+
+  async listProjectMemberships(projectId) {
+    const { rows } = await this.pool.query(
+      `SELECT * FROM project_memberships WHERE project_id=$1 ORDER BY actor_id`, [projectId]
+    );
+    return rows;
+  }
+
   async listProjects() {
     const { rows } = await this.pool.query(`
       SELECT p.*, dv.version_number AS current_version, dv.risk_status

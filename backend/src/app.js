@@ -4,6 +4,7 @@ import multer from 'multer';
 import { AppError, ERROR_MESSAGES } from './errors.js';
 import { normalizeUtf8FileName } from './file-name.js';
 import { createServerActorResolver, requireTrustedActor, withTrustedActor } from './request-actor.js';
+import { ProjectAuthorizationService } from './project-authorization-service.js';
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024, files: 1 } });
 
@@ -17,11 +18,12 @@ function sendData(res, data, status = 200) {
   return res.status(status).json({ ok: true, data });
 }
 
-export function createApp({ repository, storage, generationService, requirementParseService, requirementSourceService, productionBetaService, companyMaterialService, evidenceService, evidenceFactService, enterpriseRetrievalService, documentGenerationService, reviewCenterService, evidenceReadinessService, materialProcessingCenterService, evidenceReviewService, evidenceSourceFactService, requirementEvidenceFactMappingService, projectFactControlService, documentDeliveryService, agentContextResolver, agentOrchestrator, agentActionExecutor, connectivityPreflight, actorResolver = createServerActorResolver({ actorId: process.env.BACKEND_DEV_ACTOR_ID, actorType: 'development' }), legacyGenerationCompat = false, corsOrigin }) {
+export function createApp({ repository, storage, generationService, requirementParseService, requirementSourceService, productionBetaService, companyMaterialService, evidenceService, evidenceFactService, enterpriseRetrievalService, documentGenerationService, reviewCenterService, evidenceReadinessService, materialProcessingCenterService, evidenceReviewService, evidenceSourceFactService, requirementEvidenceFactMappingService, projectFactControlService, documentDeliveryService, agentContextResolver, agentOrchestrator, agentActionExecutor, connectivityPreflight, projectAuthorizationService: projectAuthorizationServiceInput, actorResolver = createServerActorResolver({ actorId: process.env.BACKEND_DEV_ACTOR_ID, actorType: 'development' }), legacyGenerationCompat = false, corsOrigin }) {
   const app = express();
   app.use(cors({ origin: corsOrigin || 'http://localhost:5173' }));
   app.use(express.json({ limit: '2mb' }));
   const trustedActor = (req) => requireTrustedActor(actorResolver, req);
+  const projectAuthorizationService = projectAuthorizationServiceInput || (repository ? new ProjectAuthorizationService({ repository }) : null);
 
   app.get('/api/health', async (_req, res, next) => {
     try {
@@ -34,8 +36,11 @@ export function createApp({ repository, storage, generationService, requirementP
 
   app.post('/api/projects', upload.single('tender_file'), async (req, res, next) => {
     try {
-      const project = await repository.createProject({
-        name: requireText(req.body?.name, '项目名称'), deadline: req.body?.deadline || null
+      const actor = projectAuthorizationService
+        ? projectAuthorizationService.assertTrustedActor(trustedActor(req))
+        : trustedActor(req);
+      const project = await repository.createProjectWithOwner({
+        name: requireText(req.body?.name, '项目名称'), deadline: req.body?.deadline || null, owner: actor
       });
       let tenderFile = null;
       if (req.file) {
