@@ -1,0 +1,149 @@
+{
+  "schema_version": "stage20-evidence-sufficiency-live-v1",
+  "generated_at": "2026-08-25T10:49:26.656Z",
+  "source_packet": "GPT_REVIEW_PACKET_EVIDENCE_SUFFICIENCY_OFFLINE_V3.json",
+  "remote": {
+    "provider": "semantic_gateway",
+    "gateway_host": "127.0.0.1",
+    "gateway_port": "18080",
+    "task_type": "evidence_support_assessment",
+    "contract_version": "4.3-evidence-support-assessment-v1",
+    "app_name": null,
+    "published_version": null,
+    "model": null,
+    "prompt_version": null,
+    "contract_parity": "REMOTE_CONTRACT_DRIFT"
+  },
+  "execution": {
+    "automatic_retry": 0,
+    "concurrency": 1,
+    "provider_workflow_calls": 1,
+    "stopped_after_failure": true,
+    "no_formal_db_mutation": true,
+    "not_executed_case_ids": [
+      "V2R-002-PERF-PARTIAL",
+      "V2R-003-COMP-DIRECT",
+      "V2R-004-COMP-PARTIAL",
+      "V2R-005-ISO-DIRECT",
+      "V2R-006-ISO-SCOPE",
+      "NEG-SUBJECT-001",
+      "NEG-CONFLICT-001"
+    ]
+  },
+  "case_results": [
+    {
+      "case_id": "V2R-001-PERF-DIRECT",
+      "kind": "canonical_v3.1_case",
+      "canonical_input": {
+        "requirement_id": "V2R-001-PERF-DIRECT",
+        "requirement_text": "企业应提供可核验的数据交换平台性能测试记录。",
+        "source_count": 4,
+        "source_ids": [
+          "MCH-770B6FE8E57173DCC72914CFFB7376F8",
+          "MCH-0FBD3599DAF932016F62EB9634B997AF",
+          "MCH-3A8FB2B6257892D70EAFEF97417EEB23",
+          "MCH-268A148B9BD7EA6BF0B470DDE0EA8425"
+        ],
+        "source_hashes": [
+          "2ded84bc0d6960c9a09c74c40d06690ff022688f668592eba9db5ac677fcf43b",
+          "5a54f61d10c64f26414f8dcfb93f3c1eb25076f1063d97f8200f42cad981843c",
+          "b6887075859d89855f682be6c01c0dbe6a4dcb7e2469d4bbc23bc6045f2e0a8b",
+          "71ae1d9a780c6a56708acb2d8a90692bf6f7ba873464ab78b4a5b41d8506ac78"
+        ]
+      },
+      "source_excerpt": "结果：平均 1.4 秒，P95 1.9 秒。",
+      "expected": {
+        "status": "EVIDENCE_REVIEW_READY",
+        "reason_codes": [],
+        "required_dimensions": {
+          "subject_match": {
+            "classification": "REQUIRED_DIMENSION",
+            "expected": "match"
+          },
+          "entity_match": {
+            "classification": "REQUIRED_DIMENSION",
+            "expected": "match"
+          },
+          "scope_match": {
+            "classification": "REQUIRED_DIMENSION",
+            "expected": "match"
+          },
+          "status_match": {
+            "classification": "REQUIRED_DIMENSION",
+            "expected": "match"
+          },
+          "validity_match": {
+            "classification": "SUPPORTING_DIMENSION",
+            "expected": "match"
+          },
+          "quantitative_match": {
+            "classification": "REQUIRED_DIMENSION",
+            "expected": "match"
+          }
+        },
+        "unresolved_required_dimensions": [],
+        "adverse_evidence": false,
+        "technical_status": "NOT_APPLICABLE",
+        "oracle_provenance": {
+          "runtime_assessment": "AUTO_DRAFT",
+          "human_gold": "NONE",
+          "promotion": "NOT_PERMITTED",
+          "case_status_expectation_provenance": "GPT_REVIEWED_EXPECTATION",
+          "dimension_expectation_provenance": {
+            "subject_match": "PENDING_GPT_REVIEW",
+            "entity_match": "PENDING_GPT_REVIEW",
+            "scope_match": "PENDING_GPT_REVIEW",
+            "status_match": "PENDING_GPT_REVIEW",
+            "validity_match": "PENDING_GPT_REVIEW",
+            "quantitative_match": "PENDING_GPT_REVIEW"
+          },
+          "reason_code_expectation_provenance": {},
+          "unresolved_dimension_expectation_provenance": {},
+          "adverse_evidence_expectation_provenance": "PENDING_GPT_REVIEW"
+        }
+      },
+      "actual": null,
+      "provider_audit": {
+        "provider": "semantic_gateway",
+        "task_type": "evidence_support_assessment",
+        "error_code": "SCHEMA_INVALID",
+        "raw_response_payload_json": "{\"schema_version\":\"4.3-evidence-support-assessment-v1\",\"task_type\":\"evidence_support_assessment\",\"status\":\"success\",\"data\":{\"assessments\":[{\"requirement_id\":\"V2R-001-PERF-DIRECT\",\"source_id\":\"MCH-770B6FE8E57173DCC72914CFFB7376F8\",\"support_level\":\"reference_only\",\"confidence\":\"high\",\"evidence_type\":\"product_capability\",\"notes\":\"Source mentions product capabilities but no performance test record.\"},{\"requirement_id\":\"V2R-001-PERF-DIRECT\",\"source_id\":\"MCH-0FBD3599DAF932016F62EB9634B997AF\",\"support_level\":\"full_support\",\"confidence\":\"high\",\"evidence_type\":\"performance_test_record\",\"notes\":\"Source provides a performance test record with metrics, environment, and date.\"},{\"requirement_id\":\"V2R-001-PERF-DIRECT\",\"source_id\":\"MCH-3A8FB2B6257892D70EAFEF97417EEB23\",\"support_level\":\"unrelated\",\"confidence\":\"high\",\"evidence_type\":\"contract_scope\",\"notes\":\"Source is a contract scope, no performance test record.\"},{\"requirement_id\":\"V2R-001-PERF-DIRECT\",\"source_id\":\"MCH-268A148B9BD7EA6BF0B470DDE0EA8425\",\"support_level\":\"unrelated\",\"confidence\":\"high\",\"evidence_type\":\"acceptance_record\",\"notes\":\"Source is an acceptance record, no performance test record.\"}],\"conflict_observations\":[]},\"warnings\":[]}",
+        "raw_response_sha256": "7251f658192d91d5eca31194bb9605261b089694f547a13d0cb930ee8049d3b4",
+        "raw_response_char_count": 1202
+      },
+      "pass": false,
+      "technical_error": {
+        "error_code": "SCHEMA_INVALID",
+        "error_class": "SCHEMA_INVALID",
+        "safe_message": "data.assessments[0] 字段不符合严格契约。"
+      },
+      "latency_ms": 3339,
+      "retry_count": 0
+    }
+  ],
+  "technical_control": {
+    "case_id": "NEG-TECHNICAL-001",
+    "kind": "negative_control",
+    "execution": "NOT_EXECUTED",
+    "expected_status": "ASSESSMENT_UNAVAILABLE",
+    "technical_error_type": "PROVIDER_TIMEOUT",
+    "reason": "不会通过改变 endpoint 或注入失败来制造技术故障；本轮不增加非业务调用。"
+  },
+  "metrics": {
+    "executed_case_count": 1,
+    "accepted_case_count": 8,
+    "pass_count": 0,
+    "fail_count": 1,
+    "case_pass_rate": 0,
+    "contract_failures": 1,
+    "unsafe_false_supported": 0,
+    "technical_negative_control": "NOT_EXECUTED"
+  },
+  "external_calls": {
+    "embedding": 0,
+    "llm": 0,
+    "dify": 0,
+    "provider": 1
+  },
+  "final_status": "BLOCKED"
+}

@@ -44,6 +44,7 @@
     "eval:evidence-bearing-gold-live": "node eval/evidence-support/calibration-v2/run-targeted-gold-live-retrieval.js",
     "build:evidence-support-v2-human-batch-01-final": "node eval/evidence-support/calibration-v2/build-human-review-batch-01-final.js",
     "eval:sufficiency-live": "node eval/sufficiency/live-validation.js",
+    "eval:sufficiency-live-v3": "node eval/evidence-support/calibration-v2/run-stage20-live-validation.js",
     "eval:corpus-l3": "node eval/corpus/l3-eval.js",
     "ingest:corpus-l3": "node scripts/ingest-corpus-l3.js",
     "prepare:l3-enterprise": "node scripts/prepare-l3-enterprise-path.js",
