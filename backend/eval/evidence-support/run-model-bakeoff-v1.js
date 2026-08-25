@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { loadSemanticGatewayEnvironment, readSemanticGatewayRuntimeConfig, validateSemanticGatewayLiveConfig } from '../../../packages/semantic-contracts/runtime-config.js';
 import { OpenAICompatibleProvider } from '../../../services/semantic-gateway/src/provider/openai-compatible-provider.js';
@@ -7,7 +8,11 @@ import { createStandaloneGatewayServer } from '../../../services/semantic-gatewa
 import { SemanticGatewayClient } from '../../src/pipeline/semantic-gateway-client.js';
 import { SemanticGatewayEvidenceSupportEvaluator } from '../../src/pipeline/semantic-gateway-evidence-support-evaluator.js';
 import { adaptRetrievalCandidate, aggregateEvidenceSufficiency } from '../../src/pipeline/evidence-support-assessment-contract-v1.js';
-import { EVIDENCE_SUPPORT_PROVIDER_JSON_SCHEMA } from '../../src/pipeline/evidence-support-assessment-gateway-contract-v1.js';
+import {
+  EVIDENCE_SUPPORT_GATEWAY_CONTRACT_VERSION,
+  EVIDENCE_SUPPORT_GATEWAY_INSTRUCTION,
+  EVIDENCE_SUPPORT_PROVIDER_JSON_SCHEMA
+} from '../../src/pipeline/evidence-support-assessment-gateway-contract-v1.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(HERE, '../../..');
@@ -24,6 +29,7 @@ const MODELS = Object.freeze([
 const TASK_TYPE = 'evidence_support_assessment';
 const CAPABILITY_TIMEOUT_MS = 30_000;
 const CASE_TIMEOUT_MS = 120_000;
+const BAKEOFF_INSTRUCTION_SHA256 = createHash('sha256').update(EVIDENCE_SUPPORT_GATEWAY_INSTRUCTION).digest('hex');
 
 function safeErrorCode(error) {
   const value = String(error?.code || error?.audit?.technical_error_code || error?.audit?.gateway_error_code || '').trim();
@@ -170,6 +176,19 @@ function observedDiagnostics(diagnostics) {
     completion_tokens: Number.isInteger(value.completion_tokens) ? value.completion_tokens : null,
     total_tokens: Number.isInteger(value.total_tokens) ? value.total_tokens : null,
     response_model: typeof value.response_model === 'string' ? value.response_model : null,
+    outbound_prompt_diagnostics: value.outbound_prompt_diagnostics && typeof value.outbound_prompt_diagnostics === 'object'
+      ? {
+        instruction_sha256: typeof value.outbound_prompt_diagnostics.instruction_sha256 === 'string'
+          ? value.outbound_prompt_diagnostics.instruction_sha256 : null,
+        instruction_char_count: Number.isInteger(value.outbound_prompt_diagnostics.instruction_char_count)
+          ? value.outbound_prompt_diagnostics.instruction_char_count : null,
+        payload_sha256: typeof value.outbound_prompt_diagnostics.payload_sha256 === 'string'
+          ? value.outbound_prompt_diagnostics.payload_sha256 : null,
+        payload_char_count: Number.isInteger(value.outbound_prompt_diagnostics.payload_char_count)
+          ? value.outbound_prompt_diagnostics.payload_char_count : null,
+        contamination: value.outbound_prompt_diagnostics.contamination === true
+      }
+      : null,
     output_truncated: value.output_truncated === true,
     json_parse_success: value.json_parse_success === true,
     legacy_schema_detected: value.legacy_schema_detected === true,
@@ -312,10 +331,21 @@ async function runModel({ model, structuredOutputMode, runtime, cases, env, fetc
       const latency = Date.now() - started;
       const diagnostics = providerDiagnostics || {};
       const metrics = caseMetrics({ caseData, assessments: assessments || [], aggregate, diagnostics, error });
+      const observedInstructionSha256 = diagnostics.outbound_prompt_diagnostics?.instruction_sha256 || null;
       casesOutput.push({
         ...metrics,
         model,
         provider: 'SiliconFlow',
+        task_type: TASK_TYPE,
+        contract_version: EVIDENCE_SUPPORT_GATEWAY_CONTRACT_VERSION,
+        // The canonical hash is always present for every case.  The separately
+        // captured observed hash proves what the provider adapter sent when a
+        // response-level diagnostic was available; it is never synthesized
+        // from provider output.
+        instruction_sha256: BAKEOFF_INSTRUCTION_SHA256,
+        observed_instruction_sha256: observedInstructionSha256,
+        instruction_hash_match: observedInstructionSha256 === null
+          ? null : observedInstructionSha256 === BAKEOFF_INSTRUCTION_SHA256,
         structured_output_mode: structuredOutputMode,
         latency_ms: latency,
         provider_call_count: diagnostics.provider_adapter_invoked ? 1 : 0,
@@ -402,6 +432,7 @@ function summarizeModel(result, capability) {
 }
 
 export { buildCase, caseMetrics };
+export { BAKEOFF_INSTRUCTION_SHA256 };
 
 export async function runModelBakeoff({ env: providedEnv, fetchImpl = fetch } = {}) {
   const env = loadSemanticGatewayEnvironment({ env: providedEnv || process.env, envFile: SERVICE_ENV_PATH });

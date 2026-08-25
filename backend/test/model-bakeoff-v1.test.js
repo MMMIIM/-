@@ -3,8 +3,13 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { buildCase, caseMetrics } from '../eval/evidence-support/run-model-bakeoff-v1.js';
-import { EVIDENCE_SUPPORT_PROVIDER_JSON_SCHEMA } from '../src/pipeline/evidence-support-assessment-gateway-contract-v1.js';
+import { buildCase, caseMetrics, BAKEOFF_INSTRUCTION_SHA256 } from '../eval/evidence-support/run-model-bakeoff-v1.js';
+import {
+  EVIDENCE_SUPPORT_GATEWAY_CONTRACT_VERSION,
+  EVIDENCE_SUPPORT_GATEWAY_INSTRUCTION,
+  EVIDENCE_SUPPORT_PROVIDER_JSON_SCHEMA
+} from '../src/pipeline/evidence-support-assessment-gateway-contract-v1.js';
+import { createHash } from 'node:crypto';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const PACKET = JSON.parse(fs.readFileSync(path.resolve(HERE, '../eval/evidence-support/calibration-v2/GPT_REVIEW_PACKET_EVIDENCE_SUFFICIENCY_OFFLINE_V3.json'), 'utf8'));
@@ -39,4 +44,11 @@ test('canonical provider schema is strict and derived for both assessment arrays
   assert.deepEqual(EVIDENCE_SUPPORT_PROVIDER_JSON_SCHEMA.required, ['assessments', 'conflict_observations']);
   assert.equal(EVIDENCE_SUPPORT_PROVIDER_JSON_SCHEMA.properties.assessments.items.additionalProperties, false);
   assert.equal(EVIDENCE_SUPPORT_PROVIDER_JSON_SCHEMA.properties.conflict_observations.items.additionalProperties, false);
+});
+
+test('every bake-off case records one canonical semantic instruction hash', () => {
+  const expected = createHash('sha256').update(EVIDENCE_SUPPORT_GATEWAY_INSTRUCTION).digest('hex');
+  assert.equal(BAKEOFF_INSTRUCTION_SHA256, expected);
+  assert.match(BAKEOFF_INSTRUCTION_SHA256, /^[0-9a-f]{64}$/);
+  assert.equal(EVIDENCE_SUPPORT_GATEWAY_CONTRACT_VERSION, '4.3-evidence-support-assessment-v1');
 });
