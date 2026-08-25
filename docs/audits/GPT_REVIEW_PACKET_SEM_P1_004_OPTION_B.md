@@ -1,9 +1,9 @@
 # GPT Review Packet — SEM-P1-004 Option B
 
-GPT_REVIEW_STATUS=PENDING_REVIEW  
+GPT_REVIEW_STATUS=PENDING_REVIEW
 SEM_P1_004_STATUS=PENDING_REVIEW
 
-审查范围：代码级证据，不改变生产行为、不新增迁移、不调用外部模型。  
+审查范围：代码级证据，不改变生产行为、不新增迁移、不调用外部模型。
 审查基线：branch `feat/v4.3-semantic-boundary-routing`，起始 HEAD `ef5bb89`。
 
 ## 1. Staging marker ownership
@@ -63,7 +63,7 @@ return { evidence, review, transition: { lifecycle_role: PRE_REVIEW_STAGING_ROLE
 | `POST /api/projects/:projectId/evidences` | `EvidenceService.create` | MANUAL / MATERIAL EVIDENCE | 不接受 lifecycleRole；不是 retrieval-derived contract |
 | internal repository/test fixtures | `createEvidenceRecord` | TEST/INTEGRATION ONLY | 不构成生产 HTTP 入口 |
 
-`server.js` 是唯一正式 EvidenceService wiring，生产 retrieval route 不存在一个未开启 transition 的第二实例。  
+`server.js` 是唯一正式 EvidenceService wiring，生产 retrieval route 不存在一个未开启 transition 的第二实例。
 历史 approved legacy row 通过 marker 缺失保持 READ_COMPATIBILITY；新 retrieval entry 不依赖“marker 缺失即新记录”的推断，而由新写入路径强制 marker。
 
 `NEW_UNMARKED_RETRIEVAL_EVIDENCE_REACHABLE = NO`
@@ -102,7 +102,7 @@ Repository `getEvidenceReviewCandidate()` 的 SQL 同时约束：
 - Source Span 属于项目且 `anchor_chunk_id = retrieval_candidate_id`；
 - Material 属于项目。
 
-`createEvidenceReviewContract()` 以 Requirement ID、Source Span ID、contract/reviewer version、Requirement hash、Source hash 生成稳定 Review ID；`upsertEvidenceCandidateReview()` 使用 `ON CONFLICT(review_id)`，保证相同输入幂等。  
+`createEvidenceReviewContract()` 以 Requirement ID、Source Span ID、contract/reviewer version、Requirement hash、Source hash 生成稳定 Review ID；`upsertEvidenceCandidateReview()` 使用 `ON CONFLICT(review_id)`，保证相同输入幂等。
 `EvidenceReviewService.decide()` 比较 contract、Requirement hash、current source hash；过期时写入 `invalidated` 并拒绝旧决定。
 
 ## 5. Proposal entry negative controls
@@ -169,7 +169,7 @@ POST /api/projects/:projectId/requirements/:requirementId/evidence-reviews
   → evidence_source_facts
 ```
 
-`EvidenceSourceFactService.extract()` 只有 `getApprovedReviewForFact()` 返回 approved review 才继续；reference-only / historical bid 也会被拒绝。  
+`EvidenceSourceFactService.extract()` 只有 `getApprovedReviewForFact()` 返回 approved review 才继续；reference-only / historical bid 也会被拒绝。
 当前 `sem-p1-004-canonical-entrypoint.test.js` 的 **NC6** 验证了 HTTP Proposal → trusted human approve → Fact route；**NC2** 验证 staging legacy Fact entry 被拒绝。
 
 未在本次 patch 中单独覆盖：未批准 Review、错误项目 Review、stale Review 的完整生产入口负向测试。因此：
@@ -190,7 +190,7 @@ POST /api/projects/:projectId/requirement-evidence-fact-mappings
   → RequirementEvidenceFactMappingService.decide
 ```
 
-Mapping context 使用同项目 Requirement、confirmed baseline、Fact；`isStale()` 检查 Fact approved、Requirement valid、hash/contract version 和 mapping evaluator version。  
+Mapping context 使用同项目 Requirement、confirmed baseline、Fact；`isStale()` 检查 Fact approved、Requirement valid、hash/contract version 和 mapping evaluator version。
 NC6 验证了规范入口正向链路；NC3 验证 legacy staging Mapping 被拒绝。
 
 当前没有独立 production-entry negative controls 覆盖 draft/rejected/invalidated/cross-project Fact 的四种情况：
@@ -211,7 +211,7 @@ POST /api/projects/:projectId/claims/generate
   → claims + coverage persistence
 ```
 
-Canonical `requirement_evidence_fact_mappings` 已有独立 service/contract，但本次没有把它接成 `ProductionBetaService.generateClaims` 的唯一 authority。  
+Canonical `requirement_evidence_fact_mappings` 已有独立 service/contract，但本次没有把它接成 `ProductionBetaService.generateClaims` 的唯一 authority。
 因此：
 
 - 新 staging Evidence 不能通过 legacy approved mapping 进入当前 filtered input；
@@ -238,7 +238,7 @@ POST /api/projects/:projectId/document-generations
 - 只保留 `decision='approved'` Claims；
 - mandatory Requirement 必须被 approved Claim 覆盖。
 
-NC5 是真实 HTTP negative-control，断言返回 `EVIDENCE_REVIEW_REQUIRED` 且 `createDocumentGeneration` 未被调用。  
+NC5 是真实 HTTP negative-control，断言返回 `EVIDENCE_REVIEW_REQUIRED` 且 `createDocumentGeneration` 未被调用。
 由于 Claim 仍可能来自 legacy binding，canonical support lineage 尚未成为 Writer 唯一来源：
 
 `CLAIM_TO_WRITER = PARTIAL`
