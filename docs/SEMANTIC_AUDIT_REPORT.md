@@ -20,12 +20,23 @@ The audit found no new evidence of an unsafe false allow, client actor spoof,
 Unknown→Match/Mismatch upgrade, or eval oracle contamination in the accepted
 paths. Findings below are documented, not silently repaired.
 
+## V1 consistency closure
+
+- `ExactEvidenceSpan` is Source Evidence.
+- `EvidenceFact` is `DERIVED_FROM_SOURCE / FORMAL_FACT`.
+- `ApprovedEvidenceFact` is `HUMAN_APPROVED_FORMAL_FACT`.
+- Neither formal Fact class may re-enter the source-evidence pipeline.
+- `support_sufficiency` remains the existing compatibility/composite field; the
+  future dimension-vs-aggregate split is documented only.
+- I19 is `PARTIAL`, not `ENFORCED`, because reachable write-capable legacy and
+  parallel paths remain unresolved.
+
 ## Findings
 
 | ID | Severity | Concept | Code evidence | Current behavior / canonical semantics | Remediation | Blocks Stage20? | Implemented? |
 |---|---|---|---|---|---|---|---|
 | SEM-P1-001 | P1 | Evidence Review proposal vs decision | `backend/src/evidence-review-service.js:9-10`; `backend/src/app.js:296-297` | `propose()` persists a review proposal, while HTTP exposes decision/fact routes only. Canonical proposal and human decision must remain separate. | CONTRACT_ONLY / future production entry decision | YES, before full E2E | NO |
-| SEM-P1-002 | P1 | `support_level` vs `support_sufficiency` | `backend/src/pipeline/evidence-support-assessment-contract-v1.js:381-428`; `backend/src/pipeline/enterprise-claim-gate-v2.js:47-51` | Assessment aggregate derives business status; legacy Claim Gate derives a sufficiency dimension from mapping `support_level`. These are related but not identical owners. | DOC_ONLY now; later validator/consolidation decision | Potentially, not current offline gate | NO |
+| SEM-P1-002 | P1 | `support_level` vs `support_sufficiency` | `backend/src/pipeline/evidence-support-assessment-contract-v1.js:381-428`; `backend/src/pipeline/enterprise-claim-gate-v2.js:47-51` | `support_sufficiency` is a compatibility/composite field spanning aggregate sufficiency and blocking mismatch semantics; it is not a pure truth dimension. These are related but not identical owners. | DOC_ONLY now; future conceptual split deferred | Potentially, not current offline gate | NO |
 | SEM-P1-003 | P1 | Subject/entity diagnostic reason alias | `backend/src/pipeline/evidence-fact-claim-evaluator.js:31-32`; `enterprise-evidence-source-router.js:97-111` | Dimensions are independently assigned, but subject mismatch can emit `ENTITY_MISMATCH` reason text. Reason code and dimension can be semantically misleading. | TEST_ONLY / CONTRACT_ONLY; do not rename public reason yet | NO evidence of unsafe state upgrade | NO |
 | SEM-P1-004 | P1 | Parallel retrieval Evidence path | `backend/src/app.js:255-256`; `backend/src/evidence-service.js:66-72` | `/from-retrieval` creates draft Evidence through EvidenceService; formal Review proposal is a separate path. Both are reachable and write-capable. | CONTRACT_ONLY; future lifecycle consolidation decision | Yes, E2E path selection | NO |
 | SEM-P2-001 | P2 | Generic `status`/`result` field names | Multiple DTOs and legacy routes | Domain-specific statuses coexist correctly but generic names increase ambiguity. | DOC_ONLY; rename only with API/DB migration decision | NO | NO |

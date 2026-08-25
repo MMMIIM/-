@@ -29,10 +29,12 @@ The following distinctions are permanent:
 14. Technical failure is not business insufficiency.
 15. `AUTO_DRAFT_EXPECTATION`, `GPT_REVIEWED_EXPECTATION` and `HUMAN_GOLD` are separate provenance classes.
 16. Parent review does not promote child fields to reviewed provenance.
-17. A system-derived decision must not become source evidence in the same evidence chain.
-18. A Raw Retrieval Candidate must never silently become Evidence, Evidence Fact, Mapping, Claim or Writer Authorization.
-19. AI may discover or assess uncertainty; the Control Plane owns deterministic state, authorization, persistence and lifecycle transitions.
-20. No stage may silently write another stage's formal truth.
+17. An Approved Evidence Fact is a formal fact input to Mapping and Claim Gate,
+    but it is not Source Evidence and must not re-enter source-evidence retrieval.
+18. A system-derived decision must not become source evidence in the same evidence chain.
+19. A Raw Retrieval Candidate must never silently become Evidence, Evidence Fact, Mapping, Claim or Writer Authorization.
+20. AI may discover or assess uncertainty; the Control Plane owns deterministic state, authorization, persistence and lifecycle transitions.
+21. No stage may silently write another stage's formal truth.
 
 ## 2. Canonical truth vocabulary
 
@@ -50,9 +52,17 @@ are not blindly renamed:
 | `conflict` | Domain conflict state | Requires two unequal observed values for the same dimension. |
 | `ASSESSMENT_UNAVAILABLE` | Technical/business-boundary state | Technical reason is preserved; it is not `INSUFFICIENT_EVIDENCE`. |
 
-Business statuses such as `EVIDENCE_REVIEW_READY`, `NO_RELEVANT_EVIDENCE`,
+`support_sufficiency` is currently a compatibility/composite domain field. Its
+existing values span aggregate sufficiency semantics and blocking mismatch
+semantics; it is not a pure `MATCH`/`MISMATCH` truth dimension. Business statuses
+such as `EVIDENCE_REVIEW_READY`, `NO_RELEVANT_EVIDENCE`,
 `INSUFFICIENT_EVIDENCE` and `CONFLICTING_EVIDENCE` are derived aggregate states,
 not replacements for dimension observations.
+
+Future conceptual direction (not implemented in V1): dimension comparisons use
+`MATCH / MISMATCH / UNKNOWN / NOT_APPLICABLE`, while aggregate sufficiency uses
+`SUFFICIENT / PARTIAL / INSUFFICIENT`. The current compatibility enum and
+Stage20-S V3.1 behavior remain unchanged.
 
 ## 3. Subject, entity and scope
 
@@ -130,6 +140,12 @@ conflict observations. It does not create Evidence, Fact, Mapping, Claim,
 Readiness or Writer state. The Provider-neutral evaluator returns unavailable
 when no trusted semantic evaluator is available. A provider error remains
 `ASSESSMENT_UNAVAILABLE` with its technical code.
+
+`ExactEvidenceSpan` is Source Evidence: it is an exact, hashed slice of an
+authorized material source. `EvidenceFact` is `DERIVED_FROM_SOURCE /
+FORMAL_FACT`, and `ApprovedEvidenceFact` is a
+`HUMAN_APPROVED_FORMAL_FACT`; neither is generic Source Evidence. Approved Fact
+is consumed by Mapping and Claim Gate only.
 
 `EvidenceReviewProposal` is a system-prepared candidate.
 `EvidenceReviewDecision` is a human formal decision. They must not share a

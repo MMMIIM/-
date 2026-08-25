@@ -19,13 +19,13 @@ ownership is deliberately preserved; the registry unifies names, not services.
 | `status_match` | Requirement status vs observed status | SOURCE observation | match/mismatch/unknown | Assessment → review/fact | technical status | same |
 | `validity_match` | Validity/date condition | SOURCE observation | match/mismatch/unknown | Assessment → fact/claim | freshness metadata | same |
 | `quantitative_match` | Numeric/threshold comparison | SOURCE observation | match/mismatch/unknown | Assessment → risk gate | support level | same |
-| `support_sufficiency` | Deterministic sufficiency conclusion | DERIVED | sufficient/partial/insufficient/unknown/mismatch | Dimensions → aggregate | `support_level` | `aggregateEvidenceSufficiency` |
+| `support_sufficiency` | Compatibility/composite sufficiency field spanning aggregate and blocking mismatch semantics | DERIVED | current compatibility values; not a pure truth dimension | Dimensions → aggregate | Dimension comparison, `support_level` | `aggregateEvidenceSufficiency` |
 | `support_level` | Source support degree recorded by contract | SOURCE/DERIVED domain field | full/partial/conflict/reference/unknown | Review/Mapping → Claim Gate | sufficiency | Review/mapping contracts |
 | `business_status` | Aggregate business outcome | DERIVED | review-ready/no-relevant/insufficient/conflicting | Aggregator → Review/readiness | technical status | assessment contract |
 | EvidenceReviewProposal | System-prepared review candidate | DERIVED / persisted | proposed/needs_review | Assessment → human review | Decision | `EvidenceReviewService.propose` |
 | EvidenceReviewDecision | Human approval/rejection | EXTERNAL_OBSERVATION / persisted | approved/rejected | Review → Fact | Proposal | `EvidenceReviewService.decide` |
-| EvidenceFact | Bounded reviewed statement candidate | SOURCE+DERIVED / persisted | draft/approved/rejected/invalidated | Review → Mapping | Assessment | `evidence-fact-contract-v1.js` |
-| ApprovedEvidenceFact | Human-approved bounded fact | SOURCE / persisted | approved and lineage-valid | Fact → Mapping/Claim | Draft Fact | Fact service |
+| EvidenceFact | Bounded formal fact derived from a verified source span | DERIVED_FROM_SOURCE / FORMAL_FACT / persisted | draft/approved/rejected/invalidated | Review → Mapping | Source Evidence, Assessment | `evidence-fact-contract-v1.js` |
+| ApprovedEvidenceFact | Human-approved formal fact with preserved source lineage | HUMAN_APPROVED_FORMAL_FACT / persisted | approved and lineage-valid | Fact → Mapping/Claim Gate | Source Evidence, Draft Fact | Fact service |
 | RequirementEvidenceFactMapping | Requirement-to-approved-Fact relationship | DERIVED / persisted | proposed/approved/rejected | Fact+Requirement → Claim Gate | Retrieval result | mapping contract/service |
 | Claim | Proposed bid assertion | DERIVED / persisted | candidate/approved/rejected | Mapping/Plan → Claim Gate | Fact/Writer output | claim contracts |
 | ClaimGateEvaluation | Safety authorization decision | DERIVED / persisted/audit | allow/deny/needs_review | Claims → Writer | Mapping approval | `claim-gate-v2-contract.js` |
@@ -50,7 +50,14 @@ ownership is deliberately preserved; the registry unifies names, not services.
 are not interchangeable in storage. The first is a truth dimension; the latter
 may be operational/source-resolution states. `partial`, `unsupported` and
 `insufficient` are domain states and must not be silently rewritten as
-`MISMATCH` or technical failure.
+`MISMATCH` or technical failure. `support_sufficiency` remains a compatibility
+composite whose current values span aggregate sufficiency and blocking mismatch;
+it is not a pure truth dimension. The future conceptual split is documented in
+the Constitution but is intentionally not implemented.
+
+`ExactEvidenceSpan` is Source Evidence. `EvidenceFact` and
+`ApprovedEvidenceFact` are formal fact projections derived from that source;
+they must not re-enter the source-evidence pipeline.
 
 ## Registry governance
 

@@ -24,7 +24,7 @@ downstream formal owner.
 | I16 | Writer Authorization cannot bypass Claim Gate | Writer service | Generation routes | YES | YES | Generation/version tables | YES | ENFORCED |
 | I17 | DocumentVersion confirmation uses owning service | Generation/Version service | Version confirmation route | YES | YES | Review decision/version | YES | ENFORCED |
 | I18 | Client actor cannot become formal audit actor | Actor resolver / services | All formal mutation routes | YES | YES | Actor columns | YES | ENFORCED |
-| I19 | Legacy compatibility cannot weaken canonical contract | Compatibility boundary | Legacy routes | YES | YES for covered routes | Formal state as applicable | YES | ENFORCED |
+| I19 | Legacy compatibility cannot weaken canonical contract | Compatibility boundary | Legacy routes | YES | PARTIAL for reachable write-capable paths | Formal state as applicable | YES for covered routes | PARTIAL |
 | I20 | Eval/test fixture cannot mutate production truth | Eval boundary | Eval/test runners | YES | YES | N/A or eval artifacts | YES | ENFORCED |
 
 ## Code-level evidence
@@ -45,3 +45,8 @@ I01/I02/I06/I07 remain `PARTIAL` at the production-entry dimension because the
 assessment is intentionally transient, the proposal HTTP entry is absent, and
 the remote semantic task is not published. This is an explicit ownership and
 runtime readiness gap, not a reason to create an assessment table.
+
+I19 is also `PARTIAL`: the canonical routes have negative controls, but the
+reachable parallel Retrieval→Evidence path and legacy write-capable Mapping path
+have not yet been proven equivalent to the canonical lifecycle. This does not
+weaken or invalidate the already-tested canonical routes.
