@@ -36,6 +36,13 @@ downstream formal owner.
   `backend/src/pipeline/evidence-fact-contract-v1.js`.
 - Mapping lifecycle: `backend/src/requirement-evidence-fact-mapping-service.js:3-6` and
   `backend/src/pipeline/requirement-evidence-mapping-contract-v1.js`.
+- New Claim support authority: `backend/src/pipeline/production-beta-service.js` reads
+  only `PgRepository.getApprovedRequirementFactSupport`, which joins the current
+  approved Evidence Review, Evidence Fact, source span and approved Fact Mapping.
+  `backend/test/mapping-to-claim-canonical.test.js`,
+  `backend/test/mapping-to-claim-entrypoint.test.js`, and
+  `backend/integration/mapping-claim-authority.integration.js` prove canonical
+  positive, legacy-only negative, invalid-lineage negative, and persistence paths.
 - Formal HTTP routes: `backend/src/app.js:255-300` and `backend/src/app.js:305-350`.
 - Trusted actor boundary: `backend/src/request-actor.js` and
   `backend/test/p0-framework-remediation.test.js:74-151`.
@@ -53,6 +60,14 @@ I19 is also `PARTIAL`: the canonical routes have negative controls, but the
 reachable parallel Retrieval→Evidence path and legacy write-capable Mapping path
 have not yet been proven equivalent to the canonical lifecycle. This does not
 weaken or invalidate the already-tested canonical routes.
+
+For `Mapping → Claim`, the lifecycle authority is now **ENFORCED** for new
+Claim generation: only current approved Fact Mappings can produce an
+`evidence_support` Claim, while the legacy `requirement_evidence_mappings`
+table remains readable for compatibility and is not a fallback authority. This
+does not imply project-authorization adoption for the Claim route; that
+separate security dimension remains tracked in
+`docs/audits/PROJECT_AUTHORIZATION_ADOPTION_MATRIX.md`.
 
 `Authorization` is a supplemental coverage dimension introduced by the Project
 Authorization Kernel. It does not overwrite the historical meanings of

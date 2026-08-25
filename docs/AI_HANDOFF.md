@@ -8,6 +8,9 @@
 
 - Backend is the formal Control Plane; models discover, backend finalizes.
 - Requirement → Evidence → Fact → Mapping → Claim → Writer is a strict lineage chain.
+- New Claim support is authorized only by a current approved Requirement ↔
+  Evidence Fact Mapping; legacy Mapping rows remain read-compatible but are not
+  a fallback authority for new Claims.
 - Unknown stays unknown; retrieval only produces candidates and never grants formal permission.
 - Formal invariants require service positive/negative tests, a real production-entry
   negative control, and persistence assertions when state mutates. The invariant

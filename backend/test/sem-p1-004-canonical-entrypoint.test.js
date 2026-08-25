@@ -111,6 +111,7 @@ test('NC4 Claim Gate receives no authorized support from staging evidence', asyn
     listResponsePlans: async () => ({ plans: [] }),
     listApprovedEvidence: async () => [{ evidence_id: EVIDENCE, approval_status: 'approved', metadata: marker }],
     listEnterpriseEvidenceBindings: async () => [{ evidence_id: EVIDENCE, metadata: marker, requirement_id: 'REQ-001' }],
+    getApprovedRequirementFactSupport: async () => [],
     listApprovedCurrentEvidenceFacts: async () => [],
     replaceClaimsAndCoverage: async (_projectId, value) => { persisted = value; },
     listClaims: async () => []

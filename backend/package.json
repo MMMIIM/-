@@ -87,7 +87,7 @@
     "smoke:writer-gateway": "node scripts/live-gateway-smoke.js section_drafting",
     "smoke:revision-gateway": "node scripts/live-gateway-smoke.js targeted_revision",
     "test": "node --test",
-    "test:postgres": "node --test --test-concurrency=1 integration/postgres.integration.js integration/deterministic.integration.js integration/document-delivery.integration.js integration/agent-actions.integration.js integration/corpus-l3.integration.js integration/sem-p1-004-entry-matrix.integration.js integration/project-authorization.integration.js"
+    "test:postgres": "node --test --test-concurrency=1 integration/postgres.integration.js integration/deterministic.integration.js integration/document-delivery.integration.js integration/agent-actions.integration.js integration/corpus-l3.integration.js integration/sem-p1-004-entry-matrix.integration.js integration/project-authorization.integration.js integration/mapping-claim-authority.integration.js"
   },
   "dependencies": {
     "@bid/semantic-contracts": "*",

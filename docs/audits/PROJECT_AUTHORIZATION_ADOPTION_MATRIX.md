@@ -12,7 +12,7 @@ evidence that an unchanged route is protected.
 | Review → Fact canonical project route | YES | YES | YES | YES | ENFORCED |
 | Legacy `POST /api/evidence-reviews/:reviewId/facts` | YES | YES (delegates to canonical service) | YES | YES | ENFORCED |
 | Fact → Mapping | YES | NO | YES | NO | NOT_ADOPTED |
-| Mapping → Claim | YES | NO | PARTIAL | NO | PARTIAL |
+| Mapping → Claim | YES | NO | YES | NO | PARTIAL |
 | Claim Gate → Writer | YES | NO | YES | NO | NOT_ADOPTED |
 | DocumentVersion confirmation | YES | NO | YES | NO | NOT_ADOPTED |
 | Project-scoped material/evidence/retrieval reads and writes | YES | NO | PARTIAL | NO | NOT_ADOPTED |
@@ -34,7 +34,10 @@ separate adoption decision authorizes each entry point.
 - `Review → Fact` is **ENFORCED**: both the canonical project-scoped route and
   the legacy compatibility route resolve through the same owning service and
   ProjectAuthorizationService. Cross-project Fact creation is denied.
-- `Mapping → Claim` remains **PARTIAL**.
+- `Mapping → Claim` remains **PARTIAL** in this matrix because the Claim route
+  has not adopted project authorization. Its separate lifecycle authority is
+  enforced: new Claims read only current approved Fact Mappings and never fall
+  back to the legacy Mapping table.
 - `I19` remains **PARTIAL**.
 - Historical projects without membership remain
   `UNASSIGNED_FOR_WRITE`; no automatic backfill is performed.
