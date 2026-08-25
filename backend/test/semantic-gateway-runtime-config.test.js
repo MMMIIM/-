@@ -3,9 +3,11 @@ import assert from 'node:assert/strict';
 import {
   readSemanticGatewayRuntimeConfig,
   safeSemanticGatewayRuntimeSummary,
-  validateSemanticGatewayRuntimeConfig
+  validateSemanticGatewayRuntimeConfig,
+  validateSemanticGatewayLiveConfig
 } from '../../packages/semantic-contracts/runtime-config.js';
 import { runSemanticGatewayPreflight } from '../scripts/semantic-gateway-preflight.js';
+import { runRuntimeConfigStaticCheck } from '../scripts/runtime-config-static-check.js';
 
 const providerEnv = {
   SEMANTIC_GATEWAY_PROVIDER: 'openai_compatible',
@@ -61,6 +63,30 @@ test('Provider key cannot satisfy Gateway service auth and service key cannot sa
     SEMANTIC_GATEWAY_MODEL: 'Qwen/Qwen2.5-7B-Instruct'
   });
   assert.deepEqual(missingService.errors, ['MISSING_SERVICE_KEY']);
+});
+
+test('canonical live config rejects mock and missing gateway base before any Provider call', () => {
+  const mock = validateSemanticGatewayLiveConfig({
+    ...providerEnv,
+    SEMANTIC_GATEWAY_PROVIDER: 'mock'
+  });
+  assert.equal(mock.valid, false);
+  assert.ok(mock.errors.includes('LIVE_PROVIDER_MOCK_FORBIDDEN'));
+
+  const missingBase = validateSemanticGatewayLiveConfig({
+    ...providerEnv,
+    SEMANTIC_GATEWAY_API_BASE: ''
+  });
+  assert.equal(missingBase.valid, false);
+  assert.deepEqual(missingBase.errors, ['MISSING_GATEWAY_BASE']);
+});
+
+test('static runtime config guard covers canonical names, roles, secrets and legacy isolation', () => {
+  const result = runRuntimeConfigStaticCheck();
+  assert.equal(result.status, 'PASS');
+  assert.deepEqual(result.issues, []);
+  assert.equal(result.checks.live_mock_rejected, true);
+  assert.equal(result.checks.legacy_isolated, true);
 });
 
 test('preflight verifies health, readiness and service-auth negative controls without model calls', async () => {

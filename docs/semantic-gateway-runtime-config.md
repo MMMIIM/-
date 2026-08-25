@@ -30,3 +30,24 @@ npm run check:semantic-gateway
 The preflight performs no model call. It validates health, readiness, task
 registration, Provider configuration, and correct/wrong/missing Gateway
 service-key behavior.
+
+## Runtime Guardrails V1
+
+The canonical live probe validates configuration before any Provider request:
+
+- Config before Live: missing Gateway/Provider base, service key, Provider key,
+  or model fails deterministically.
+- Fail Fast: live `openai_compatible` execution never starts with incomplete
+  configuration.
+- No Silent Fallback: the live probe rejects `mock` explicitly; the mock
+  provider remains available only for tests and developer fixtures.
+- Secret Boundary: Gateway service authentication and Provider authentication
+  are separate variables and roles.
+- No Legacy Fallback: `DIFY_*`, `V43_GATEWAY_*`, and `EXTERNAL_WRITER_*` do
+  not activate the canonical evidence-support route.
+
+The no-network static guard is:
+
+```powershell
+npm run check:runtime-config
+```

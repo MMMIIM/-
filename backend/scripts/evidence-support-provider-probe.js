@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { loadSemanticGatewayEnvironment } from '../../packages/semantic-contracts/runtime-config.js';
+import { loadSemanticGatewayEnvironment, validateSemanticGatewayLiveConfig } from '../../packages/semantic-contracts/runtime-config.js';
 import { adaptRetrievalCandidate, aggregateEvidenceSufficiency } from '../src/pipeline/evidence-support-assessment-contract-v1.js';
 import { createSemanticGatewayEvidenceSupportEvaluatorFromEnv } from '../src/pipeline/semantic-gateway-evidence-support-evaluator.js';
 import { EVIDENCE_SUPPORT_GATEWAY_CONTRACT_VERSION } from '../src/pipeline/evidence-support-assessment-gateway-contract-v1.js';
@@ -35,9 +35,15 @@ async function main() {
     env: process.env,
     envFile: path.resolve(directory, '../../services/semantic-gateway/.env')
   });
-  const target = new URL(String(gatewayEnv.SEMANTIC_GATEWAY_API_BASE || '').trim());
-  const model = String(gatewayEnv.SEMANTIC_GATEWAY_MODEL || '').trim();
-  if (!gatewayEnv.SEMANTIC_GATEWAY_API_KEY || !gatewayEnv.SEMANTIC_GATEWAY_PROVIDER_API_KEY || !model) throw new Error('CANONICAL_GATEWAY_RUNTIME_NOT_CONFIGURED');
+  const liveValidation = validateSemanticGatewayLiveConfig(gatewayEnv);
+  if (!liveValidation.valid) {
+    const error = new Error('LIVE_CONFIG_INVALID');
+    error.code = 'LIVE_CONFIG_INVALID';
+    error.validation_errors = liveValidation.errors;
+    throw error;
+  }
+  const target = new URL(liveValidation.config.gatewayApiBase);
+  const model = liveValidation.config.model;
   if (target.hostname !== '127.0.0.1' && target.hostname !== 'localhost') throw new Error('GATEWAY_TARGET_NOT_LOCAL');
   const { caseId, requirement, adapters } = buildCase();
   const started = Date.now();
@@ -71,7 +77,8 @@ try {
     probe: 'stage20-evidence-support-direct-provider',
     status: 'FAILED',
     error_code: error?.code || error?.name || 'PROBE_FAILED',
-    safe_message: error?.message || 'Provider probe failed.'
+    safe_message: error?.message || 'Provider probe failed.',
+    config_errors: Array.isArray(error?.validation_errors) ? error.validation_errors : undefined
   }));
   process.exitCode = 1;
 }

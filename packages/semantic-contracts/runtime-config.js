@@ -73,6 +73,31 @@ export function validateSemanticGatewayRuntimeConfig(env = {}, { requireProvider
   return Object.freeze({ valid: errors.length === 0, errors: Object.freeze(errors), config });
 }
 
+/**
+ * Validate the explicit configuration required by a live canonical probe.
+ * Developer/test mock configuration intentionally remains supported by
+ * validateSemanticGatewayRuntimeConfig; this guard is the fail-fast boundary
+ * for evidence_support_assessment live execution.
+ */
+export function validateSemanticGatewayLiveConfig(env = {}) {
+  const config = readSemanticGatewayRuntimeConfig(env);
+  const errors = [];
+  const provider = stringValue(env.SEMANTIC_GATEWAY_PROVIDER);
+  const model = stringValue(env.SEMANTIC_GATEWAY_MODEL);
+
+  if (!provider) errors.push('MISSING_PROVIDER');
+  else if (provider === 'mock') errors.push('LIVE_PROVIDER_MOCK_FORBIDDEN');
+  else if (provider !== 'openai_compatible') errors.push('UNSUPPORTED_PROVIDER');
+
+  if (!config.gatewayApiBase) errors.push('MISSING_GATEWAY_BASE');
+  if (!config.serviceApiKey) errors.push('MISSING_SERVICE_KEY');
+  if (!config.providerApiBase) errors.push('MISSING_PROVIDER_BASE');
+  if (!config.providerApiKey) errors.push('MISSING_PROVIDER_KEY');
+  if (!model) errors.push('MISSING_MODEL');
+
+  return Object.freeze({ valid: errors.length === 0, errors: Object.freeze(errors), config });
+}
+
 export function safeSemanticGatewayRuntimeSummary(configOrEnv = {}) {
   const config = configOrEnv.provider && Object.hasOwn(configOrEnv, 'serviceApiKey')
     ? configOrEnv
