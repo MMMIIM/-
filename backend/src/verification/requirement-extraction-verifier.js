@@ -1,0 +1,482 @@
+import { execFileSync, spawnSync } from 'node:child_process';
+import { createHash, randomUUID } from 'node:crypto';
+import { getSemanticTaskContract, resolveSemanticTaskInstruction, REQUIREMENT_CANDIDATE_SCHEMA } from '../../../packages/semantic-contracts/index.js';
+import {
+  buildRequirementExtractionPayload,
+  createRequirementExtractionGateway,
+  validateRequirementExtractionEnvelope
+} from '../pipeline/requirement-extraction.js';
+import {
+  createSemanticGatewayClientFromEnv,
+  parseSemanticGatewayConfig
+} from '../pipeline/semantic-gateway-client.js';
+import {
+  DEFAULT_REQUIREMENT_EXTRACTION_REPORT_PATH,
+  VERIFICATION_REPORT_SCHEMA_VERSION,
+  sanitizeVerificationReport,
+  writeVerificationReport
+} from './requirement-extraction-report.js';
+
+export const FROZEN_REQUIREMENT_EXTRACTION_PROMPT_VERSION = '4.3-requirement-extraction-v1.1';
+export const FROZEN_REQUIREMENT_EXTRACTION_PROMPT_HASH = '4589cfd6f1c7385b313d4de2e1d37a363f48aca1389a51f637f57391fa7d7c81';
+export const FROZEN_REQUIREMENT_CANDIDATE_SCHEMA_VERSION = '4.3-requirement-candidate-v1';
+export const FROZEN_REQUIREMENT_CANDIDATE_SCHEMA_HASH = '8d1ee2445763c544f4167f66b6c4216bb7ef7e6572b22b56446ecf15ddfac90b';
+
+export const REQUIREMENT_EXTRACTION_BLOCKERS = Object.freeze([
+  'CONTRACT_DRIFT',
+  'PROMPT_HASH_MISMATCH',
+  'CANDIDATE_SCHEMA_MISMATCH',
+  'PAYLOAD_CONTRACT_DRIFT',
+  'BACKEND_UNREACHABLE',
+  'GATEWAY_UNREACHABLE',
+  'GATEWAY_NOT_READY',
+  'REVISION_MISMATCH',
+  'ROUTING_DRIFT',
+  'PROVIDER_NOT_CONFIGURED',
+  'TEST_FAILURE',
+  'BUILD_FAILURE',
+  'LINT_FAILURE',
+  'PROVIDER_UNAVAILABLE',
+  'PROVIDER_TIMEOUT',
+  'PROVIDER_HTTP_FAILURE',
+  'PROVIDER_OUTPUT_INVALID',
+  'OUTPUT_SCHEMA_INVALID',
+  'BACKEND_INGESTION_FAILED',
+  'DIAGNOSTIC_INSUFFICIENT',
+  'LIVE_CONFIRMATION_REQUIRED',
+  'LIVE_PAYLOAD_REQUIRED'
+]);
+
+const EXPECTED_PAYLOAD_KEYS = Object.freeze([
+  'project_name',
+  'section_name',
+  'chunk_index',
+  'chunk_count',
+  'chunk_text'
+]);
+const EXPECTED_CANDIDATE_KEYS = Object.freeze([...REQUIREMENT_CANDIDATE_SCHEMA.required]);
+const DEFAULT_BACKEND_URL = 'http://127.0.0.1:3001';
+const DEFAULT_GATEWAY_URL = 'http://127.0.0.1:18082';
+
+function nowValue(now) {
+  return typeof now === 'function' ? now() : Date.now();
+}
+
+function hash(value) {
+  return createHash('sha256').update(String(value), 'utf8').digest('hex');
+}
+
+function unique(values) {
+  return [...new Set(values.filter(Boolean))];
+}
+
+function gateName(name) {
+  return String(name || '').replace(/[^a-zA-Z0-9_.-]/g, '_').slice(0, 120);
+}
+
+function safeError(error) {
+  return {
+    code: typeof error?.code === 'string' ? error.code.slice(0, 80) : 'UNKNOWN',
+    status: Number.isInteger(error?.status) ? error.status : null
+  };
+}
+
+function safeUrl(value) {
+  try {
+    const target = new URL(value);
+    return {
+      url: `${target.protocol}//${target.hostname}${target.port ? `:${target.port}` : ''}`,
+      host: target.hostname,
+      port: target.port || (target.protocol === 'https:' ? '443' : '80')
+    };
+  } catch (_error) {
+    return { url: null, host: null, port: null };
+  }
+}
+
+function compareShaPrefix(expected, actual) {
+  const left = String(expected || '').trim().toLowerCase();
+  const right = String(actual || '').trim().toLowerCase();
+  return Boolean(left && right && (left.startsWith(right) || right.startsWith(left)));
+}
+
+function isAllowedBenchmarkUntracked(line) {
+  const normalized = String(line || '').replace(/\\/g, '/');
+  return normalized.startsWith('?? backend/eval/tender-benchmark-v1/');
+}
+
+function defaultGitInfo(repoRoot = process.cwd()) {
+  const read = (args) => execFileSync('git', args, { cwd: repoRoot, encoding: 'utf8' }).trim();
+  try {
+    const status = read(['status', '--short']);
+    const lines = status ? status.split(/\r?\n/).filter(Boolean) : [];
+    const trackedLines = lines.filter((line) => !isAllowedBenchmarkUntracked(line));
+    return {
+      branch: read(['branch', '--show-current']),
+      revision: read(['rev-parse', '--short', 'HEAD']),
+      tracked_clean: trackedLines.length === 0,
+      allowed_untracked_benchmark: lines.some(isAllowedBenchmarkUntracked)
+    };
+  } catch (_error) {
+    return { branch: null, revision: null, tracked_clean: false, allowed_untracked_benchmark: false };
+  }
+}
+
+function defaultCommandRunner({ command, args, cwd = process.cwd() }) {
+  const started = Date.now();
+  const executable = process.platform === 'win32' && command === 'npm' ? 'npm.cmd' : command;
+  const windowsNpm = process.platform === 'win32' && command === 'npm';
+  const spawnExecutable = windowsNpm ? (process.env.ComSpec || 'cmd.exe') : executable;
+  const spawnArgs = windowsNpm
+    ? ['/d', '/c', [executable, ...args].map((value) => {
+      const text = String(value);
+      return /[\s\"]/.test(text) ? `"${text.replaceAll('"', '\\"')}"` : text;
+    }).join(' ')]
+    : args;
+  const result = spawnSync(spawnExecutable, spawnArgs, {
+    cwd,
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+    timeout: 15 * 60 * 1000,
+    windowsHide: true
+  });
+  return {
+    command: [command, ...args].join(' '),
+    exit_code: Number.isInteger(result.status) ? result.status : 1,
+    duration_ms: Math.max(0, Date.now() - started),
+    timed_out: result.error?.code === 'ETIMEDOUT'
+  };
+}
+
+async function fetchJson(fetchImpl, url, { timeoutMs = 3000 } = {}) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetchImpl(url, {
+      method: 'GET',
+      headers: { accept: 'application/json' },
+      signal: controller.signal
+    });
+    let body = null;
+    try { body = await response.json(); } catch (_error) { body = null; }
+    return { ok: response.ok, status: response.status, body };
+  } catch (error) {
+    return { ok: false, status: null, body: null, error: safeError(error) };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function baseReport(mode, startedAt, gitInfo) {
+  return {
+    schema_version: VERIFICATION_REPORT_SCHEMA_VERSION,
+    run_id: randomUUID(),
+    mode,
+    started_at: new Date(startedAt).toISOString(),
+    completed_at: null,
+    duration_ms: null,
+    git: {
+      branch: gitInfo?.branch || null,
+      revision: gitInfo?.revision || null,
+      tracked_clean: gitInfo?.tracked_clean === true
+    },
+    contract: {
+      prompt_version: null,
+      prompt_hash: null,
+      candidate_schema_version: null,
+      candidate_schema_hash: null,
+      payload_keys: []
+    },
+    runtime: {
+      backend: null,
+      gateway: null,
+      gateway_build_revision: null,
+      routing: null,
+      provider_configured: null
+    },
+    gates: [],
+    tests: [],
+    live: {
+      executed: false,
+      request_count: 0,
+      retry_count: 0,
+      fallback_count: 0,
+      gateway_http_status: null,
+      provider_http_status: null,
+      candidate_count: null,
+      schema_pass: null,
+      backend_ingestion_pass: null,
+      diagnostics: null
+    },
+    verdict: null,
+    blockers: []
+  };
+}
+
+function finishReport(report, startedAt, now = Date.now) {
+  const endedAt = nowValue(now);
+  report.completed_at = new Date(endedAt).toISOString();
+  report.duration_ms = Math.max(0, endedAt - startedAt);
+  report.blockers = unique(report.blockers);
+  return sanitizeVerificationReport(report);
+}
+
+function addGate(report, name, passed, blockerCode = null, reason = null, details = {}) {
+  const gate = {
+    name: gateName(name),
+    status: passed ? 'PASS' : 'FAIL',
+    blocker_code: passed ? null : blockerCode,
+    reason: reason ? String(reason).slice(0, 240) : null,
+    ...details
+  };
+  report.gates.push(gate);
+  if (!passed && blockerCode) report.blockers.push(blockerCode);
+  return passed;
+}
+
+function contractChecks(report) {
+  const contract = getSemanticTaskContract('requirement_extraction');
+  const instruction = resolveSemanticTaskInstruction('requirement_extraction');
+  const promptVersionPass = contract?.contract_version === FROZEN_REQUIREMENT_EXTRACTION_PROMPT_VERSION;
+  const promptHashPass = contract?.instruction_hash === FROZEN_REQUIREMENT_EXTRACTION_PROMPT_HASH
+    && hash(instruction) === FROZEN_REQUIREMENT_EXTRACTION_PROMPT_HASH;
+  const candidateVersion = contract?.candidate_schema_version || FROZEN_REQUIREMENT_CANDIDATE_SCHEMA_VERSION;
+  const candidateHash = contract?.candidate_schema_sha256 || hash(JSON.stringify(REQUIREMENT_CANDIDATE_SCHEMA));
+  report.contract = {
+    prompt_version: contract?.contract_version || null,
+    prompt_hash: contract?.instruction_hash || null,
+    candidate_schema_version: candidateVersion,
+    candidate_schema_hash: candidateHash,
+    payload_keys: []
+  };
+  addGate(report, 'contract.prompt_version', promptVersionPass, 'CONTRACT_DRIFT', 'Prompt contract version differs from the frozen contract.');
+  addGate(report, 'contract.prompt_hash', promptHashPass, 'PROMPT_HASH_MISMATCH', 'Prompt hash differs from the frozen contract.');
+
+  const required = Array.isArray(REQUIREMENT_CANDIDATE_SCHEMA.required)
+    && [...REQUIREMENT_CANDIDATE_SCHEMA.required].sort().join('|') === [...EXPECTED_CANDIDATE_KEYS].sort().join('|');
+  const properties = Object.keys(REQUIREMENT_CANDIDATE_SCHEMA.properties || {}).sort().join('|')
+    === [...EXPECTED_CANDIDATE_KEYS].sort().join('|');
+  const strict = REQUIREMENT_CANDIDATE_SCHEMA.additionalProperties === false;
+  const candidatePass = candidateVersion === FROZEN_REQUIREMENT_CANDIDATE_SCHEMA_VERSION
+    && candidateHash === FROZEN_REQUIREMENT_CANDIDATE_SCHEMA_HASH
+    && required && properties && strict;
+  addGate(report, 'contract.candidate_schema', candidatePass, 'CANDIDATE_SCHEMA_MISMATCH', 'Candidate schema/version/hash or strictness differs from the frozen contract.');
+
+  const payload = buildRequirementExtractionPayload({
+    projectName: 'verification-project',
+    sectionName: 'verification-section',
+    chunkIndex: 1,
+    chunkCount: 1,
+    chunkText: 'verification-only synthetic text'
+  });
+  report.contract.payload_keys = Object.keys(payload);
+  const payloadPass = [...Object.keys(payload)].sort().join('|') === [...EXPECTED_PAYLOAD_KEYS].sort().join('|');
+  addGate(report, 'contract.model_payload', payloadPass, 'PAYLOAD_CONTRACT_DRIFT', 'Model-facing payload keys differ from the canonical builder.');
+  return { contract, payload };
+}
+
+function routeChecks(report, env, gatewayUrl) {
+  const config = parseSemanticGatewayConfig(env, { taskType: 'requirement_extraction' });
+  const configured = safeUrl(config.apiBase || gatewayUrl);
+  const routePass = Boolean(config.apiBase)
+    && config.config_source === 'canonical_semantic_gateway'
+    && configured.host === '127.0.0.1'
+    && String(configured.port) === '18082';
+  report.runtime.routing = {
+    requirement_extraction_target: configured.url,
+    config_source: config.config_source,
+    legacy_18080_fallback: 'NONE'
+  };
+  addGate(report, 'routing.requirement_extraction', routePass, 'ROUTING_DRIFT', 'Requirement Extraction must use the standalone :18082 Gateway.');
+  return config;
+}
+
+async function doctorInternal({
+  env = process.env,
+  fetchImpl = fetch,
+  gitInfo = null,
+  expectedRevision = null,
+  backendUrl = DEFAULT_BACKEND_URL,
+  gatewayUrl = DEFAULT_GATEWAY_URL,
+  now = Date.now,
+  repoRoot = process.cwd()
+} = {}) {
+  const startedAt = nowValue(now);
+  const resolvedGit = gitInfo || defaultGitInfo(repoRoot);
+  const report = baseReport('doctor', startedAt, resolvedGit);
+  const { payload } = contractChecks(report);
+  const config = routeChecks(report, env, gatewayUrl);
+
+  const backend = await fetchJson(fetchImpl, `${String(backendUrl).replace(/\/+$/, '')}/api/health`);
+  report.runtime.backend = { url: safeUrl(backendUrl).url, http_status: backend.status, reachable: backend.ok };
+  addGate(report, 'runtime.backend', backend.ok, 'BACKEND_UNREACHABLE', 'Backend health endpoint is not reachable.', { http_status: backend.status });
+
+  const gatewayBase = String(config.apiBase || gatewayUrl).replace(/\/+$/, '');
+  const health = await fetchJson(fetchImpl, `${gatewayBase}/health`);
+  if (!health.ok) addGate(report, 'runtime.gateway.health', false, 'GATEWAY_UNREACHABLE', 'Gateway health endpoint is not reachable.', { http_status: health.status });
+  else addGate(report, 'runtime.gateway.health', health.body?.service === 'semantic-gateway', 'GATEWAY_UNREACHABLE', 'Gateway health response is not the expected service.');
+
+  const ready = await fetchJson(fetchImpl, `${gatewayBase}/ready`);
+  const readyPass = ready.ok && ready.body?.status === 'ready';
+  report.runtime.provider_configured = ready.body?.provider_configured === true;
+  addGate(report, 'runtime.gateway.ready', readyPass, 'GATEWAY_NOT_READY', 'Gateway is not ready.', { http_status: ready.status });
+  addGate(report, 'runtime.provider_configured', report.runtime.provider_configured, 'PROVIDER_NOT_CONFIGURED', 'Gateway does not report a configured provider.');
+
+  const info = await fetchJson(fetchImpl, `${gatewayBase}/info`);
+  const body = info.body || {};
+  report.runtime.gateway = { url: safeUrl(gatewayBase).url, http_status: info.status, reachable: info.ok };
+  report.runtime.gateway_build_revision = typeof body.build_revision === 'string' ? body.build_revision : null;
+  const infoReachable = info.ok && body.service === 'semantic-gateway';
+  addGate(report, 'runtime.gateway.info', infoReachable, 'GATEWAY_UNREACHABLE', 'Gateway info endpoint is not reachable or identifies another service.', { http_status: info.status });
+  addGate(report, 'runtime.gateway.task_registry', body.task_registry_loaded === true
+    && Array.isArray(body.task_types) && body.task_types.includes('requirement_extraction'), 'CONTRACT_DRIFT', 'Requirement Extraction is not present in the loaded task registry.');
+  addGate(report, 'runtime.gateway.contract_version', body.requirement_extraction_contract_version === FROZEN_REQUIREMENT_EXTRACTION_PROMPT_VERSION, 'CONTRACT_DRIFT', 'Running Gateway reports a different Requirement Extraction contract version.');
+  addGate(report, 'runtime.gateway.prompt_hash', body.requirement_extraction_prompt_hash === FROZEN_REQUIREMENT_EXTRACTION_PROMPT_HASH
+    || body.requirement_extraction_instruction_hash === FROZEN_REQUIREMENT_EXTRACTION_PROMPT_HASH, 'PROMPT_HASH_MISMATCH', 'Running Gateway reports a different Requirement Extraction instruction hash.');
+  addGate(report, 'runtime.gateway.candidate_schema', body.candidate_schema_contract_version === FROZEN_REQUIREMENT_CANDIDATE_SCHEMA_VERSION
+    && body.candidate_schema_sha256 === FROZEN_REQUIREMENT_CANDIDATE_SCHEMA_HASH, 'CANDIDATE_SCHEMA_MISMATCH', 'Running Gateway reports a different Candidate Schema.');
+
+  if (expectedRevision) {
+    addGate(report, 'runtime.gateway.revision', compareShaPrefix(expectedRevision, report.runtime.gateway_build_revision), 'REVISION_MISMATCH', 'Gateway build revision does not match the requested revision.');
+  }
+  report.verdict = report.blockers.length ? 'BLOCKED' : 'READY_FOR_ACCEPTANCE';
+  return finishReport(report, startedAt, now);
+}
+
+export async function runRequirementExtractionDoctor(options = {}) {
+  const report = await doctorInternal(options);
+  if (options.writeReport !== false) await writeVerificationReport(report, options.reportPath || DEFAULT_REQUIREMENT_EXTRACTION_REPORT_PATH);
+  return { ok: report.verdict === 'READY_FOR_ACCEPTANCE', report };
+}
+
+const ACCEPT_COMMANDS = Object.freeze([
+  { label: 'backend', command: 'npm', args: ['test', '-w', 'backend'] },
+  { label: 'frontend', command: 'npm', args: ['test', '-w', 'frontend'] },
+  { label: 'postgresql', command: 'npm', args: ['run', 'test:postgres', '-w', 'backend'] },
+  { label: 'semantic_gateway', command: 'npm', args: ['test', '-w', 'semantic-gateway'] },
+  { label: 'requirement_extraction_targeted', command: 'node', args: ['--test', 'backend/test/tender-parse.test.js', 'backend/test/semantic-gateway-client.test.js'] },
+  { label: 'build', command: 'npm', args: ['run', 'build'] },
+  { label: 'lint', command: 'npm', args: ['run', 'lint'] },
+  { label: 'git_diff_check', command: 'git', args: ['diff', '--check'] }
+]);
+
+export async function runRequirementExtractionAccept({
+  commandRunner = defaultCommandRunner,
+  now = Date.now,
+  reportPath = DEFAULT_REQUIREMENT_EXTRACTION_REPORT_PATH,
+  ...doctorOptions
+} = {}) {
+  const doctor = await doctorInternal({ ...doctorOptions, now, writeReport: false });
+  const startedAt = Date.parse(doctor.started_at);
+  const report = { ...doctor, mode: 'accept', tests: [], live: { ...doctor.live } };
+  const commandCwd = doctorOptions.repoRoot || process.cwd();
+  if (report.verdict === 'READY_FOR_ACCEPTANCE') {
+    for (const item of ACCEPT_COMMANDS) {
+      let result;
+      try {
+        result = commandRunner({ ...item, cwd: commandCwd });
+      } catch (_error) {
+        result = { exit_code: 1, duration_ms: null };
+      }
+      const passed = Number(result?.exit_code) === 0;
+      report.tests.push({
+        name: item.label,
+        command: item.command,
+        exit_code: Number.isInteger(result?.exit_code) ? result.exit_code : 1,
+        duration_ms: Number.isInteger(result?.duration_ms) ? result.duration_ms : null,
+        status: passed ? 'PASS' : 'FAIL'
+      });
+      if (!passed) {
+        const blocker = item.label === 'build' ? 'BUILD_FAILURE' : item.label === 'lint' ? 'LINT_FAILURE' : 'TEST_FAILURE';
+        report.blockers.push(blocker);
+      }
+    }
+  }
+  report.verdict = report.blockers.length ? 'BLOCKED' : 'READY_FOR_LIVE';
+  const finished = finishReport(report, startedAt, now);
+  if (doctorOptions.writeReport !== false) await writeVerificationReport(finished, reportPath);
+  return { ok: finished.verdict === 'READY_FOR_LIVE', report: finished };
+}
+
+function safeLiveResult(value = {}) {
+  return sanitizeVerificationReport({
+    executed: value.executed === true,
+    request_count: Number.isInteger(value.request_count) ? value.request_count : 0,
+    retry_count: Number.isInteger(value.retry_count) ? value.retry_count : 0,
+    fallback_count: Number.isInteger(value.fallback_count) ? value.fallback_count : 0,
+    gateway_http_status: Number.isInteger(value.gateway_http_status) ? value.gateway_http_status : null,
+    provider_http_status: Number.isInteger(value.provider_http_status) ? value.provider_http_status : null,
+    candidate_count: Number.isInteger(value.candidate_count) ? value.candidate_count : null,
+    schema_pass: typeof value.schema_pass === 'boolean' ? value.schema_pass : null,
+    backend_ingestion_pass: typeof value.backend_ingestion_pass === 'boolean' ? value.backend_ingestion_pass : null,
+    diagnostics: value.diagnostics || null,
+    technical_error_code: typeof value.technical_error_code === 'string' ? value.technical_error_code : null
+  });
+}
+
+async function defaultLiveExecutor({ env, liveRequest }) {
+  const client = createSemanticGatewayClientFromEnv({ env, taskType: 'requirement_extraction' });
+  const gateway = createRequirementExtractionGateway(client);
+  try {
+    const result = await gateway.extract({ ...liveRequest, diagnosticMode: 'probe-v1' });
+    return safeLiveResult({
+      executed: true,
+      request_count: 1,
+      gateway_http_status: 200,
+      provider_http_status: result.audit?.probe_diagnostics?.provider_http_status || null,
+      candidate_count: result.candidates.length,
+      schema_pass: true,
+      backend_ingestion_pass: true,
+      diagnostics: result.audit?.probe_diagnostics || null
+    });
+  } catch (error) {
+    return safeLiveResult({
+      executed: true,
+      request_count: 1,
+      technical_error_code: error?.code || 'PROVIDER_OUTPUT_INVALID',
+      diagnostics: error?.audit?.probe_diagnostics || null,
+      schema_pass: false,
+      backend_ingestion_pass: false
+    });
+  }
+}
+
+export async function runRequirementExtractionLive({
+  confirmOneLiveCall = false,
+  liveRequest = null,
+  liveExecutor = defaultLiveExecutor,
+  env = process.env,
+  now = Date.now,
+  reportPath = DEFAULT_REQUIREMENT_EXTRACTION_REPORT_PATH,
+  ...doctorOptions
+} = {}) {
+  const doctor = await doctorInternal({ ...doctorOptions, env, now, writeReport: false });
+  const startedAt = Date.parse(doctor.started_at);
+  const report = { ...doctor, mode: 'live', live: { ...doctor.live } };
+  if (!confirmOneLiveCall) report.blockers.push('LIVE_CONFIRMATION_REQUIRED');
+  else if (report.blockers.length === 0 && !liveRequest) report.blockers.push('LIVE_PAYLOAD_REQUIRED');
+  else if (report.blockers.length === 0) {
+    let live;
+    try {
+      live = safeLiveResult(await liveExecutor({ env, liveRequest }));
+    } catch (error) {
+      live = safeLiveResult({
+        executed: true,
+        request_count: 0,
+        technical_error_code: error?.code || 'PROVIDER_OUTPUT_INVALID',
+        schema_pass: false,
+        backend_ingestion_pass: false
+      });
+    }
+    report.live = live;
+    if (live.request_count > 1 || live.retry_count !== 0 || live.fallback_count !== 0) report.blockers.push('DIAGNOSTIC_INSUFFICIENT');
+    if (!live.schema_pass) report.blockers.push(live.technical_error_code || 'PROVIDER_OUTPUT_INVALID');
+    if (live.backend_ingestion_pass === false) report.blockers.push('BACKEND_INGESTION_FAILED');
+  }
+  report.verdict = report.blockers.length ? 'BLOCKED' : 'READY_FOR_ACCEPTANCE';
+  const finished = finishReport(report, startedAt, now);
+  if (doctorOptions.writeReport !== false) await writeVerificationReport(finished, reportPath);
+  return { ok: finished.verdict === 'READY_FOR_ACCEPTANCE', report: finished };
+}
+
+export { ACCEPT_COMMANDS, EXPECTED_PAYLOAD_KEYS, EXPECTED_CANDIDATE_KEYS, defaultCommandRunner };

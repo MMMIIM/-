@@ -106,7 +106,8 @@ export function createRequirementExtractionGateway(client) {
       chunk,
       projectName,
       sectionName,
-      chunkCount
+      chunkCount,
+      diagnosticMode = null
     }) {
       const gatewayResponse = await client.run({
         task_type: REQUIREMENT_EXTRACTION_TASK_TYPE,
@@ -120,7 +121,7 @@ export function createRequirementExtractionGateway(client) {
           chunkCount,
           chunkText: text
         }))
-      });
+      }, { diagnosticMode });
       return validateRequirementExtractionEnvelope(gatewayResponse);
     }
   };
