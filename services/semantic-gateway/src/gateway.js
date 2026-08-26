@@ -202,6 +202,20 @@ export function createStandaloneGatewayHandler({ env = process.env, config = con
       });
       return;
     }
+    if (request.method === 'GET' && request.url === '/info') {
+      const requirementContract = getSemanticTaskContract('requirement_extraction');
+      writeJson(response, 200, {
+        service: 'semantic-gateway',
+        version: String(env.SEMANTIC_GATEWAY_BUILD_VERSION || env.SEMANTIC_GATEWAY_VERSION || '0.1.0'),
+        commit: String(env.SEMANTIC_GATEWAY_COMMIT || env.GIT_COMMIT || 'unknown'),
+        gateway_schema_version: 'semantic-gateway-envelope-v1',
+        task_registry_loaded: SEMANTIC_TASK_TYPES.length > 0,
+        task_types: SEMANTIC_TASK_TYPES,
+        requirement_extraction_contract_version: requirementContract?.contract_version || null,
+        requirement_extraction_instruction_hash: requirementContract?.instruction_hash || null
+      });
+      return;
+    }
     if (request.method !== 'POST' || request.url !== '/workflows/run') {
       writeJson(response, 404, { error_code: 'NOT_FOUND', message: 'Not found.' });
       return;

@@ -82,10 +82,10 @@ export class RequirementParseService {
 
     const job = await this.repository.createParseJob({ projectId, tenderFileId });
     const runningJob = await this.repository.updateParseJob(job.id, 'running', { phase: 'text_extraction' });
-    if (waitForCompletion) return this.processJob({ job: runningJob || job, tenderFile });
+    if (waitForCompletion) return this.processJob({ job: runningJob || job, tenderFile, project });
 
     this.scheduler(() => {
-      this.processJob({ job: runningJob || job, tenderFile }).catch((error) => {
+      this.processJob({ job: runningJob || job, tenderFile, project }).catch((error) => {
         this.logger.error('Tender parse background task failed', {
           parseJobId: job.id,
           errorCode: error?.code || 'TENDER_PARSE_FAILED'
@@ -98,7 +98,7 @@ export class RequirementParseService {
     };
   }
 
-  async processJob({ job, tenderFile }) {
+  async processJob({ job, tenderFile, project = null }) {
     if (typeof this.repository.claimParseJob === 'function') {
       const claimed = await this.repository.claimParseJob(job.id);
       if (!claimed) return this.repository.getParseJob(job.id);
@@ -191,7 +191,10 @@ export class RequirementParseService {
         try {
           const gatewayResult = await this.extractionGateway.extract({
             fileName: tenderFile.original_name, text: chunk.text,
-            paragraphs: chunk.segments, chunk
+            paragraphs: chunk.segments, chunk,
+            projectName: project?.name || project?.project_name || project?.title || tenderFile.original_name,
+            sectionName: extractionScope.title,
+            chunkCount: chunks.length
           });
           const resolvedCandidates = gatewayResult.candidates.map((candidate) => ({
             candidate,

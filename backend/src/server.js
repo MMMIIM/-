@@ -55,7 +55,7 @@ const requirementParseService = new RequirementParseService({
   repository,
   storage,
   textExtractor: extractTenderText,
-  extractionGateway: createRequirementExtractionGateway(runtime.createSemanticGatewayClient()),
+  extractionGateway: createRequirementExtractionGateway(runtime.createSemanticGatewayClient({ taskType: 'requirement_extraction' })),
   env: runtimeEnv
 });
 const productionBetaService = new ProductionBetaService({ repository, ordinaryUncoveredSeverity:runtimeEnv.V43_ORDINARY_UNCOVERED_SEVERITY });

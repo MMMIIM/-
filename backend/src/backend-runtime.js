@@ -31,12 +31,13 @@ export function createBackendRuntime({
   return {
     env: runtimeEnv,
     envPath,
-    createSemanticGatewayClient({ fetchImpl = fetch, timeoutMs, logger = console } = {}) {
+    createSemanticGatewayClient({ fetchImpl = fetch, timeoutMs, logger = console, taskType = null } = {}) {
       return createSemanticGatewayClientFromEnv({
         env: runtimeEnv,
         fetchImpl,
         timeoutMs,
-        logger
+        logger,
+        taskType
       });
     }
   };

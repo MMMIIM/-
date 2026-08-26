@@ -178,13 +178,18 @@ export const SEMANTIC_TASK_INSTRUCTIONS = Object.freeze({
 
 const instructionHash = taskType => sha256(SEMANTIC_TASK_INSTRUCTIONS[taskType] || '');
 
+export const REQUIREMENT_CANDIDATE_CATEGORIES = Object.freeze([
+  'functional', 'technical', 'performance', 'security', 'data',
+  'implementation', 'delivery', 'acceptance', 'service', 'constraint', 'other'
+]);
+
 const requirementCandidateSchema = Object.freeze({
   type: 'object',
   required: Object.freeze(['text', 'category', 'source_text', 'source_clause', 'mandatory_observed', 'requires_confirmation']),
   additionalProperties: false,
   properties: Object.freeze({
     text: Object.freeze({ type: 'string', minLength: 1 }),
-    category: Object.freeze({ type: 'string', minLength: 1 }),
+    category: Object.freeze({ type: 'string', enum: REQUIREMENT_CANDIDATE_CATEGORIES }),
     source_text: Object.freeze({ type: 'string', minLength: 1 }),
     source_clause: Object.freeze({ type: ['string', 'null'] }),
     mandatory_observed: Object.freeze({ type: 'boolean' }),
@@ -312,6 +317,44 @@ function assertExactKeys(value, allowed, label) {
   if (unknown.length) throw new Error(`${label} contains unsupported fields`);
 }
 
+function validateRequirementExtractionData(data) {
+  assertObject(data, 'data');
+  assertExactKeys(data, ['requirements'], 'data');
+  assertArray(data.requirements, 'data.requirements');
+  for (const [index, candidate] of data.requirements.entries()) {
+    const label = `data.requirements[${index}]`;
+    assertObject(candidate, label);
+    assertExactKeys(candidate, [
+      'text', 'category', 'source_text', 'source_clause',
+      'mandatory_observed', 'requires_confirmation'
+    ], label);
+    for (const key of [
+      'text', 'category', 'source_text', 'source_clause',
+      'mandatory_observed', 'requires_confirmation'
+    ]) {
+      if (!Object.prototype.hasOwnProperty.call(candidate, key)) {
+        throw new Error(`missing ${label}.${key}`);
+      }
+    }
+    assertText(candidate.text, `${label}.text`);
+    assertText(candidate.source_text, `${label}.source_text`);
+    if (typeof candidate.category !== 'string'
+      || !REQUIREMENT_CANDIDATE_CATEGORIES.includes(candidate.category)) {
+      throw new Error(`${label}.category must be one of the canonical categories`);
+    }
+    if (candidate.source_clause !== null && typeof candidate.source_clause !== 'string') {
+      throw new Error(`${label}.source_clause must be a string or null`);
+    }
+    if (typeof candidate.mandatory_observed !== 'boolean') {
+      throw new Error(`${label}.mandatory_observed must be boolean`);
+    }
+    if (typeof candidate.requires_confirmation !== 'boolean') {
+      throw new Error(`${label}.requires_confirmation must be boolean`);
+    }
+  }
+  return data;
+}
+
 const relevance = new Set(['relevant', 'weakly_relevant', 'irrelevant', 'unknown']);
 const capability = new Set(['capable', 'reference_only', 'not_capable', 'unknown']);
 const support = new Set(['full_support', 'partial_support', 'conflict', 'insufficient', 'reference_only', 'unknown']);
@@ -376,6 +419,7 @@ function validateEvidenceData(data, payload) {
 export function validateTaskData(taskType, data, payload = {}) {
   const contract = getSemanticTaskContract(taskType);
   if (!contract) throw new Error('TASK_UNSUPPORTED');
+  if (taskType === 'requirement_extraction') return validateRequirementExtractionData(data);
   assertObject(data, 'data');
   assertExactKeys(data, contract.data_allowed, 'data');
   for (const key of contract.data_required) {
