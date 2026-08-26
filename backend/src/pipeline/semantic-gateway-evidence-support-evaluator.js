@@ -1,6 +1,3 @@
-import {
-  createEvidenceSupportAssessment
-} from './evidence-support-assessment-contract-v1.js';
 import { AppError } from '../errors.js';
 import {
   EVIDENCE_SUPPORT_GATEWAY_CONTRACT_VERSION,
@@ -14,6 +11,10 @@ import {
   SemanticGatewayError,
   createSemanticGatewayClientFromEnv
 } from './semantic-gateway-client.js';
+import {
+  assembleEvidenceSupportAssessment,
+  routeEvidenceSupport
+} from './evidence-support-responsibility.js';
 
 function auditFor(extra = {}) {
   return {
@@ -132,6 +133,29 @@ export class SemanticGatewayEvidenceSupportEvaluator {
     } catch (error) {
       throw mapGatewayError(error);
     }
+
+    // Deterministic checks own objective exclusions and contradictions.  Only
+    // unresolved semantic relationships are allowed to cross the provider
+    // boundary; this keeps ranking and source eligibility from becoming an
+    // implicit support decision.
+    const routing = routeEvidenceSupport({
+      requirement,
+      adapters,
+      evaluatorVersion: this.version
+    });
+    if (routing.decision === 'DETERMINISTIC_RESOLUTION') {
+      return {
+        assessments: routing.assessments,
+        warnings: [],
+        audit: auditFor({
+          routing_version: routing.routing_version,
+          routing_decision: routing.decision,
+          routing_metrics: routing.metrics,
+          llm_call_count: 0
+        }),
+        aggregate: routing.aggregate
+      };
+    }
     let gatewayResponse;
     try {
       gatewayResponse = await this.client.run({
@@ -150,27 +174,40 @@ export class SemanticGatewayEvidenceSupportEvaluator {
     }
     const bySource = sourceAdapterMap(adapters || sources || []);
     try {
+      const checksBySource = new Map(routing.checks.map(check => [check.source_id, check]));
       const assessments = validated.assessments.map(item => {
         const adapter = bySource.get(item.source_id);
         if (!adapter) {
           throw new SemanticGatewayError('SCHEMA_INVALID', 'Gateway 返回了未请求的 Source。', gatewayResponse.audit, 422);
         }
-        return createEvidenceSupportAssessment(adapter, {
-          assessment_status: 'available',
-          semantic_relevance: item.semantic_relevance,
-          evidence_capability: item.evidence_capability,
-          support_level: item.support_level,
-          semantic_relationship: item.semantic_relationship,
-          review_dimensions: item.review_dimensions,
-          reason_codes: item.reason_codes,
-          support_observations: item.support_observations,
-          conflict_observations: conflictObservationsForSource(validated.conflict_observations, item.source_id)
-        }, { evaluatorVersion: this.version });
+        return assembleEvidenceSupportAssessment({
+          adapter,
+          deterministicCheck: checksBySource.get(item.source_id),
+          semanticObservation: {
+            assessment_status: 'available',
+            semantic_relevance: item.semantic_relevance,
+            evidence_capability: item.evidence_capability,
+            support_level: item.support_level,
+            semantic_relationship: item.semantic_relationship,
+            review_dimensions: item.review_dimensions,
+            reason_codes: item.reason_codes,
+            support_observations: item.support_observations,
+            conflict_observations: conflictObservationsForSource(validated.conflict_observations, item.source_id)
+          },
+          evaluatorVersion: this.version
+        });
       });
       return {
         assessments,
         warnings: validated.warnings,
-        audit: validated.audit
+        audit: {
+          ...validated.audit,
+          routing_version: routing.routing_version,
+          routing_decision: routing.decision,
+          routing_metrics: routing.metrics,
+          llm_call_count: 1
+        },
+        aggregate: null
       };
     } catch (error) {
       throw mapGatewayError(error);

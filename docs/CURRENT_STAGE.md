@@ -121,6 +121,17 @@ Adapter，严格校验 `4.3-evidence-support-assessment-v1`，失败保持技术
 当前状态：**LOCAL IMPLEMENTED / LIVE SCHEMA PROBE PENDING**。在唯一一次
 Provider schema probe 完成并通过前，不执行 Stage20 全量 live validation。
 
+### Stage20 responsibility shrink / field-owner freeze (2026-08-26)
+
+Stage17 retrieval/rerank remains the frozen candidate-ordering boundary. The
+additive `evidence-support-responsibility` router now applies deterministic
+source and mismatch checks first, calls semantic adjudication only for an
+unresolved relationship, and assembles the existing assessment contract
+without writing formal lifecycle state. Field ownership and the future narrow
+adjudication prompt are documented in
+`docs/STAGE20_RESPONSIBILITY_SHRINK.md`; Stage17 semantics and Stage20-S V3.1
+oracle are unchanged. No external provider/model call was made.
+
 ### P0 Evidence Context / Real Retrieval revalidation (2026-08-24)
 
 Bounded context recovery and enterprise-proof source routing are implemented and

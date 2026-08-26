@@ -73,6 +73,12 @@ existing OpenAI-compatible Provider Adapter; it never falls back to Dify. The
 single live Provider schema probe is still pending; no full Stage20 live set is
 authorized.
 
+Stage20 responsibility shrink is additive and local: Stage17 owns retrieval and
+rerank ordering; deterministic source/mismatch checks run before the ambiguity
+router; only unresolved semantic relationships may reach adjudication. The
+assembler protects rule-owned fields and cannot write formal Evidence/Fact/
+Mapping/Claim/Writer state. See `docs/STAGE20_RESPONSIBILITY_SHRINK.md`.
+
 ## Acceptance tracks
 
 - Stage20 Corpus L3: IN_PROGRESS.
