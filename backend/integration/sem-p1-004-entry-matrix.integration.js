@@ -12,6 +12,7 @@ import { RequirementEvidenceFactMappingService } from '../src/requirement-eviden
 import { EvidenceSourceSpanService } from '../src/evidence-source-span-service.js';
 import { chunkEnterpriseMaterial } from '../src/pipeline/enterprise-material-chunker.js';
 import { ProjectAuthorizationService } from '../src/project-authorization-service.js';
+import { EvidenceSupportReviewEvaluator } from '../src/pipeline/evidence-support-review-evaluator.js';
 
 dotenv.config({ path: resolve(dirname(fileURLToPath(import.meta.url)), '../.env') });
 
@@ -179,8 +180,9 @@ test('SEM-P1-004 Proposal HTTP entry matrix P1-P6 with PostgreSQL persistence', 
     await withServer(app, async (base) => {
       for (const [label,path,body] of invalidCases) {
         const result = await request(base,path,'POST',body);
-        assert.equal(result.response.status,422,label);
-        assert.equal(result.body.error.code,'EVIDENCE_REVIEW_SOURCE_INVALID',label);
+        const unauthorized = label === 'P1 wrong project candidate';
+        assert.equal(result.response.status, unauthorized ? 403 : 422, label);
+        assert.equal(result.body.error.code, unauthorized ? 'PROJECT_ACCESS_DENIED' : 'EVIDENCE_REVIEW_SOURCE_INVALID', label);
       }
       assert.equal((await fixture.pool.query(`SELECT count(*)::int AS count FROM evidence_candidate_reviews WHERE project_id=$1`, [fixture.project.id])).rows[0].count,0);
 
@@ -243,8 +245,8 @@ test('SEM-P1-004 Review-to-Fact HTTP routes enforce approval and persist only ap
       assert.equal(await factCount(),1);
 
       const crossProjectProposal = await request(base,`/api/projects/${fixture.otherProject.id}/requirements/REQ-001/evidence-reviews`,'POST',{ retrieval_run_id:fixture.runs['REQ-001'].retrieval_run_id, retrieval_candidate_id:fixture.anchors['REQ-001'].chunk_id, source_span_id:fixture.spans['REQ-001'].span_id });
-      assert.equal(crossProjectProposal.response.status,422);
-      assert.equal(crossProjectProposal.body.error.code,'EVIDENCE_REVIEW_SOURCE_INVALID');
+      assert.equal(crossProjectProposal.response.status,403);
+      assert.equal(crossProjectProposal.body.error.code,'PROJECT_ACCESS_DENIED');
       assert.equal((await fixture.pool.query(`SELECT count(*)::int AS count FROM evidence_source_facts WHERE project_id=$1`, [fixture.otherProject.id])).rows[0].count,0);
     });
   } finally { await cleanup(fixture); }
@@ -276,15 +278,16 @@ test('P0 Review-to-Fact authorization NC1-NC15 and original cross-project exploi
 
       await fixture.repository.upsertProjectMembership({ projectId:fixture.project.id, actorId:TRUSTED_ACTOR_ID, role:'VIEWER', status:'ACTIVE', createdBy:TRUSTED_ACTOR_ID });
       const viewerReview = await propose(fixture.project.id,'REQ-003',fixture.runs['REQ-003'],fixture.anchors['REQ-003'],fixture.spans['REQ-003']);
-      await approve(viewerReview.body.data.review.review_id);
+      assert.equal(viewerReview.response.status,403,'NC3 VIEWER proposal');
+      assert.equal(viewerReview.body.error.code,'PROJECT_ACCESS_DENIED');
       const countBeforeViewer = await factCount(fixture.project.id);
-      const viewerFact = await extract(fixture.project.id,viewerReview.body.data.review.review_id);
-      assert.equal(viewerFact.response.status,403,'NC3 VIEWER');
       assert.equal(await factCount(fixture.project.id),countBeforeViewer);
 
       await fixture.repository.upsertProjectMembership({ projectId:fixture.project.id, actorId:TRUSTED_ACTOR_ID, role:'OWNER', status:'ACTIVE', createdBy:TRUSTED_ACTOR_ID });
+      await fixture.repository.upsertProjectMembership({ projectId:fixture.otherProject.id, actorId:TRUSTED_ACTOR_ID, role:'OWNER', status:'ACTIVE', createdBy:TRUSTED_ACTOR_ID });
       const otherReview = await propose(fixture.otherProject.id,'REQ-001',fixture.otherRun,fixture.otherAnchor,fixture.otherSpan);
       await approve(otherReview.body.data.review.review_id);
+      await fixture.repository.revokeProjectMembership({ projectId:fixture.otherProject.id, actorId:TRUSTED_ACTOR_ID });
       const otherBefore = await factCount(fixture.otherProject.id);
       const legacyCrossProject = await request(base,`/api/evidence-reviews/${otherReview.body.data.review.review_id}/facts`,'POST',{});
       assert.equal(legacyCrossProject.response.status,403,'NC4 legacy cross-project exploit');
@@ -402,6 +405,70 @@ test('SEM-P1-004 Fact-to-Mapping HTTP routes reject non-approved or cross-projec
       assert.equal(wrongRequirement.response.status,404);
       assert.equal(wrongRequirement.body.error.code,'MAPPING_TARGET_NOT_FOUND');
       assert.equal(await mappingCount(),1);
+    });
+  } finally { await cleanup(fixture); }
+});
+
+test('Stage20 Evidence Support routing is enforced at the real HTTP entry and persists only canonical reviews', async () => {
+  const fixture = await seedFixture({ requirementIds:['REQ-001','REQ-002','REQ-003'] });
+  let semanticCalls = 0;
+  const adjudicator = {
+    async adjudicate({ requirement, evidence }) {
+      semanticCalls += 1;
+      if (requirement.requirement_id === 'REQ-003') {
+        throw Object.assign(new Error('semantic adjudication unavailable'), { code:'ASSESSMENT_UNAVAILABLE', status:503 });
+      }
+      return {
+        semantic_relevance:'relevant',
+        evidence_capability:'capable',
+        support_level:'partial_support',
+        semantic_relationship:'partial',
+        review_dimensions:{
+          subject_match:'match', scope_match:'unknown', status_match:'unknown',
+          quantitative_match:'unknown', entity_match:'match', validity_match:'unknown',
+          source_authority:'unknown', support_sufficiency:'unknown'
+        },
+        reason_codes:[],
+        support_observations:[{
+          source_id:evidence.source_id,
+          source_span_id:evidence.source_span_id,
+          support_excerpt:evidence.source_text.slice(0, 8),
+          observation_type:'partial_support',
+          reason_codes:[]
+        }]
+      };
+    }
+  };
+  const evaluator = new EvidenceSupportReviewEvaluator({ semanticAdjudicator:adjudicator });
+  const evidenceReviewService = new EvidenceReviewService({ repository:fixture.repository, evidenceSupportEvaluator:evaluator });
+  const app = appFor({ repository:fixture.repository, evidenceReviewService });
+  const reviewCount = async projectId => (await fixture.pool.query(`SELECT count(*)::int AS count FROM evidence_candidate_reviews WHERE project_id=$1`, [projectId])).rows[0].count;
+  try {
+    await fixture.pool.query(`UPDATE enterprise_retrieval_results SET candidate_eligibility='OUT_OF_SCOPE' WHERE retrieval_run_id=$1 AND chunk_id=$2`, [fixture.runs['REQ-001'].retrieval_run_id, fixture.anchors['REQ-001'].chunk_id]);
+    await withServer(app, async (base) => {
+      const deterministic = await request(base,`/api/projects/${fixture.project.id}/requirements/REQ-001/evidence-reviews`,'POST',{ retrieval_run_id:fixture.runs['REQ-001'].retrieval_run_id, retrieval_candidate_id:fixture.anchors['REQ-001'].chunk_id, source_span_id:fixture.spans['REQ-001'].span_id });
+      assert.equal(deterministic.response.status,201,JSON.stringify(deterministic.body));
+      assert.equal(deterministic.body.data.review.semantic_relevance,'irrelevant');
+      assert.equal(deterministic.body.data.review.support_level,'insufficient');
+      assert.equal(semanticCalls,0);
+      assert.equal(await reviewCount(fixture.project.id),1);
+
+      const ambiguous = await request(base,`/api/projects/${fixture.project.id}/requirements/REQ-002/evidence-reviews`,'POST',{ retrieval_run_id:fixture.runs['REQ-002'].retrieval_run_id, retrieval_candidate_id:fixture.anchors['REQ-002'].chunk_id, source_span_id:fixture.spans['REQ-002'].span_id });
+      assert.equal(ambiguous.response.status,201,JSON.stringify(ambiguous.body));
+      assert.equal(ambiguous.body.data.review.support_level,'partial_support');
+      assert.equal(semanticCalls,1);
+      assert.equal(await reviewCount(fixture.project.id),2);
+
+      const technical = await request(base,`/api/projects/${fixture.project.id}/requirements/REQ-003/evidence-reviews`,'POST',{ retrieval_run_id:fixture.runs['REQ-003'].retrieval_run_id, retrieval_candidate_id:fixture.anchors['REQ-003'].chunk_id, source_span_id:fixture.spans['REQ-003'].span_id });
+      assert.equal(technical.response.status,503,JSON.stringify(technical.body));
+      assert.equal(technical.body.error.code,'ASSESSMENT_UNAVAILABLE');
+      assert.equal(semanticCalls,2);
+      assert.equal(await reviewCount(fixture.project.id),2);
+
+      const unauthorized = await request(base,`/api/projects/${fixture.otherProject.id}/requirements/REQ-001/evidence-reviews`,'POST',{ retrieval_run_id:fixture.otherRun.retrieval_run_id, retrieval_candidate_id:fixture.otherAnchor.chunk_id, source_span_id:fixture.otherSpan.span_id });
+      assert.equal(unauthorized.response.status,403,JSON.stringify(unauthorized.body));
+      assert.equal(unauthorized.body.error.code,'PROJECT_ACCESS_DENIED');
+      assert.equal(await reviewCount(fixture.otherProject.id),0);
     });
   } finally { await cleanup(fixture); }
 });

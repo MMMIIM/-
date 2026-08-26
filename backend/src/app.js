@@ -262,6 +262,13 @@ export function createApp({ repository, storage, generationService, requirementP
   });
   app.post('/api/projects/:projectId/requirements/:requirementId/evidence-reviews',async(req,res,next)=>{
     try {
+      if (projectAuthorizationService) {
+        await projectAuthorizationService.assertProjectAccess({
+          actor: trustedActor(req),
+          projectId: req.params.projectId,
+          action: 'WRITE'
+        });
+      }
       const review = await evidenceReviewService.propose({
         projectId:req.params.projectId,
         requirementId:req.params.requirementId,

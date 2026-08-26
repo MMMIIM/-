@@ -43,6 +43,7 @@ function baseRepository(overrides = {}) {
     validateEvidenceForMapping: async () => ({ approval_status: 'approved', metadata: marker, source_lineage_verified: true }),
     createRequirementEvidenceMapping: async () => { throw new Error('legacy mapping must not be called'); },
     getProject: async (id) => ({ id, name: 'synthetic project' }),
+    getProjectMembership: async () => ({ role: 'OWNER', status: 'ACTIVE' }),
     getEvidenceReviewProject: async () => ({ project_id: PROJECT }),
     listEvidenceCatalog: async () => ({ evidences: [{ evidence_id: 'HIST-1', approval_status: 'approved', metadata: {} }], counts: { approved: 1 } }),
     getDocumentGenerationInput: async () => ({ project: { id: PROJECT }, baseline: { id: 'baseline' }, requirements: [], plans: [], claims: [], evidence: [{ evidence_id: EVIDENCE, approval_status: 'approved', metadata: marker }], coverage: [] }),

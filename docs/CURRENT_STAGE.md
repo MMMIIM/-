@@ -132,6 +132,18 @@ adjudication prompt are documented in
 `docs/STAGE20_RESPONSIBILITY_SHRINK.md`; Stage17 semantics and Stage20-S V3.1
 oracle are unchanged. No external provider/model call was made.
 
+### Stage20 entry-point adoption (2026-08-26)
+
+The production HTTP Evidence Review proposal route now injects the existing
+`EvidenceSupportReviewEvaluator` into `EvidenceReviewService`. Project WRITE
+authorization runs before proposal evaluation; deterministic source and
+mismatch checks resolve without semantic calls, while ambiguous proposals fail
+closed until a separately published `semantic_adjudication_v1` port exists.
+The evaluator assembles the existing canonical assessment before the Review
+contract is persisted. Real HTTP and PostgreSQL negative-control coverage
+asserts unauthorized, deterministic, ambiguous and technical-failure paths;
+no external provider, embedding, LLM or Dify call was made.
+
 ### P0 Evidence Context / Real Retrieval revalidation (2026-08-24)
 
 Bounded context recovery and enterprise-proof source routing are implemented and

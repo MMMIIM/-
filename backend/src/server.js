@@ -20,6 +20,7 @@ import { createEmbeddingClientFromEnv, createEmbeddingFetchFromEnv } from './pip
 import { EnterpriseRetrievalService } from './pipeline/enterprise-retrieval-service.js';
 import { ConnectivityPreflight } from './runtime/connectivity-preflight.js';
 import { EvidenceReviewService } from './evidence-review-service.js';
+import { EvidenceSupportReviewEvaluator } from './pipeline/evidence-support-review-evaluator.js';
 import { EvidenceSourceFactService } from './evidence-source-fact-service.js';
 import { ProjectFactControlService } from './project-fact-control-service.js';
 import { ReviewCenterService } from './review-center-service.js';
@@ -60,7 +61,11 @@ const requirementParseService = new RequirementParseService({
 const productionBetaService = new ProductionBetaService({ repository, ordinaryUncoveredSeverity:runtimeEnv.V43_ORDINARY_UNCOVERED_SEVERITY });
 const requirementSourceService = new RequirementSourceService({ repository, storage, textExtractor: extractTenderText });
 const companyMaterialService = new CompanyMaterialService({ repository, storage, textExtractor: extractTenderText });
-const evidenceReviewService = new EvidenceReviewService({ repository });
+// Production Evidence Review proposals must cross the deterministic
+// Evidence Support boundary.  No semantic adjudicator is configured until
+// semantic_adjudication_v1 is formally published; ambiguous cases fail closed.
+const evidenceSupportReviewEvaluator = new EvidenceSupportReviewEvaluator();
+const evidenceReviewService = new EvidenceReviewService({ repository, evidenceSupportEvaluator:evidenceSupportReviewEvaluator });
 const projectAuthorizationService = new ProjectAuthorizationService({ repository });
 const evidenceService = new EvidenceService({ repository, evidenceReviewService, requireReviewTransition:true });
 const evidenceFactService = new EvidenceFactService({ repository });

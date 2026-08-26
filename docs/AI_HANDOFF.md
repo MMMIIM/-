@@ -143,6 +143,12 @@ evidence-sufficiency validation and Corpus L3 completion. Do not infer Gold from
 runtime heuristics or nearest Requirements, and do not change ranking, chunking,
 topK, MMR, Provider, or retry architecture.
 
+The real HTTP Evidence Review proposal entry now uses the production
+`EvidenceSupportReviewEvaluator` after project authorization. Deterministic
+cases do not call a semantic provider; ambiguous cases fail closed until the
+narrow `semantic_adjudication_v1` task is formally published. Entry-point and
+PostgreSQL negative controls are covered; no external calls were made.
+
 ## Frozen boundaries
 
 - No Dify Workflow restoration or v4.2 contract changes.
