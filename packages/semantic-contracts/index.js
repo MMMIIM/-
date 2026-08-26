@@ -183,7 +183,7 @@ export const REQUIREMENT_CANDIDATE_CATEGORIES = Object.freeze([
   'implementation', 'delivery', 'acceptance', 'service', 'constraint', 'other'
 ]);
 
-const requirementCandidateSchema = Object.freeze({
+export const REQUIREMENT_CANDIDATE_SCHEMA = Object.freeze({
   type: 'object',
   required: Object.freeze(['text', 'category', 'source_text', 'source_clause', 'mandatory_observed', 'requires_confirmation']),
   additionalProperties: false,
@@ -197,6 +197,11 @@ const requirementCandidateSchema = Object.freeze({
   })
 });
 
+// Diagnostics are derived from this exact shared schema object so the Gateway
+// cannot report an independently maintained Candidate contract fingerprint.
+export const REQUIREMENT_CANDIDATE_SCHEMA_VERSION = '4.3-requirement-candidate-v1';
+export const REQUIREMENT_CANDIDATE_SCHEMA_SHA256 = sha256(JSON.stringify(REQUIREMENT_CANDIDATE_SCHEMA));
+
 export const SEMANTIC_TASK_CONTRACTS = Object.freeze({
   requirement_extraction: Object.freeze({
     task_type: 'requirement_extraction',
@@ -208,7 +213,7 @@ export const SEMANTIC_TASK_CONTRACTS = Object.freeze({
       type: 'object',
       required: Object.freeze(['requirements']),
       additionalProperties: false,
-      properties: Object.freeze({ requirements: Object.freeze({ type: 'array', items: requirementCandidateSchema }) })
+      properties: Object.freeze({ requirements: Object.freeze({ type: 'array', items: REQUIREMENT_CANDIDATE_SCHEMA }) })
     }),
     parser: 'semantic-gateway-envelope-v1'
   }),

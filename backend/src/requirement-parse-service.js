@@ -196,8 +196,9 @@ export class RequirementParseService {
             sectionName: extractionScope.title,
             chunkCount: chunks.length
           });
-          const resolvedCandidates = gatewayResult.candidates.map((candidate) => ({
+          const resolvedCandidates = gatewayResult.candidates.map((candidate, index) => ({
             candidate,
+            candidateIndex: index + 1,
             resolution: this.sourceLocationResolver.resolve(candidate, chunk)
           }));
           const candidates = resolvedCandidates.map(({ candidate, resolution }) => ({
@@ -212,9 +213,9 @@ export class RequirementParseService {
           warnings.push(...gatewayResult.warnings.map((warning) => ({
             ...warning, chunk_number: chunk.chunk_number
           })));
-          warnings.push(...resolvedCandidates.filter(({ resolution }) => resolution.warning).map(({ candidate, resolution }) => ({
+          warnings.push(...resolvedCandidates.filter(({ resolution }) => resolution.warning).map(({ candidateIndex, resolution }) => ({
             ...resolution.warning, chunk_number: chunk.chunk_number,
-            candidate_index: candidate.candidate_index
+            candidate_index: candidateIndex
           })));
           chunkResults.push({ chunk_number: chunk.chunk_number, candidates });
         } catch (caught) {

@@ -145,8 +145,11 @@ test('requirement_extraction 通过 think transport 且模型候选不包含 REQ
     'chunk_count', 'chunk_index', 'chunk_text', 'project_name', 'section_name'
   ]);
   assert.equal(modelPayload.chunk_text, '支持标准 API 接入。\n系统应提供审计日志。');
-  assert.deepEqual(result.candidates.map(({ content }) => content), [
+  assert.deepEqual(result.candidates.map(({ text }) => text), [
     '提供审计日志。', '支持标准接口。'
+  ]);
+  assert.deepEqual(Object.keys(result.candidates[0]).sort(), [
+    'category', 'mandatory_observed', 'requires_confirmation', 'source_clause', 'source_text', 'text'
   ]);
   assert.equal(result.candidates.some((candidate) => 'req_id' in candidate), false);
   assert.equal(result.audit.raw_response_payload_json, raw);

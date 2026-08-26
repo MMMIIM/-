@@ -4,6 +4,7 @@ import { createStandaloneGatewayServer } from '../src/gateway.js';
 import { SemanticGatewayClient } from '../../../backend/src/pipeline/semantic-gateway-client.js';
 import { adaptRetrievalCandidate, aggregateEvidenceSufficiency } from '../../../backend/src/pipeline/evidence-support-assessment-contract-v1.js';
 import { SemanticGatewayEvidenceSupportEvaluator } from '../../../backend/src/pipeline/semantic-gateway-evidence-support-evaluator.js';
+import { REQUIREMENT_CANDIDATE_SCHEMA_SHA256, REQUIREMENT_CANDIDATE_SCHEMA_VERSION } from '../../../packages/semantic-contracts/index.js';
 
 async function withGateway(fn, { provider = 'mock', key = 'gateway-test-key' } = {}) {
   const server = createStandaloneGatewayServer({
@@ -50,11 +51,38 @@ test('standalone gateway /info exposes safe runtime and contract diagnostics', a
     assert.equal(info.service, 'semantic-gateway');
     assert.equal(info.gateway_schema_version, 'semantic-gateway-envelope-v1');
     assert.equal(info.requirement_extraction_contract_version, '4.3-requirement-extraction-v1.1');
+    assert.equal(info.requirement_extraction_prompt_version, '4.3-requirement-extraction-v1.1');
     assert.match(info.requirement_extraction_instruction_hash, /^[a-f0-9]{64}$/);
+    assert.equal(info.requirement_extraction_prompt_hash, info.requirement_extraction_instruction_hash);
+    assert.equal(info.candidate_schema_contract_version, REQUIREMENT_CANDIDATE_SCHEMA_VERSION);
+    assert.equal(info.candidate_schema_sha256, REQUIREMENT_CANDIDATE_SCHEMA_SHA256);
+    assert.equal(info.service_version, '0.1.0');
+    assert.equal(info.build_revision, 'unknown');
     assert.ok(Array.isArray(info.task_types));
     assert.equal(Object.hasOwn(info, 'api_key'), false);
     assert.equal(Object.hasOwn(info, 'provider_api_key'), false);
   });
+});
+
+test('standalone gateway /info exposes injected build revision without secrets', async () => {
+  const server = createStandaloneGatewayServer({
+    env: {
+      SEMANTIC_GATEWAY_PROVIDER: 'mock',
+      SEMANTIC_GATEWAY_API_KEY: 'service-only',
+      SEMANTIC_GATEWAY_BUILD_VERSION: '0.1.0-test',
+      SEMANTIC_GATEWAY_COMMIT: 'fixture-revision-123'
+    }
+  });
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  try {
+    const info = await (await fetch(`http://127.0.0.1:${server.address().port}/info`)).json();
+    assert.equal(info.service_version, '0.1.0-test');
+    assert.equal(info.build_revision, 'fixture-revision-123');
+    assert.equal(Object.hasOwn(info, 'api_key'), false);
+    assert.equal(Object.hasOwn(info, 'provider_api_key'), false);
+  } finally {
+    await new Promise(resolve => server.close(resolve));
+  }
 });
 
 test('Gateway service auth is independent from Provider auth', async () => {
@@ -144,6 +172,7 @@ test('evidence support Top5 integrates through standalone gateway and determinis
       requirement,
       candidate: { candidate_id: `C-${index + 1}` },
       sourceSpan: { source_span_id: `SPAN-${index + 1}`, source_text: sourceText },
+      material: { material_type: 'technical_solution', source_origin: 'enterprise_private' },
       lineage: { material_id: `MAT-${index + 1}`, chunk_id: `CHUNK-${index + 1}` }
     }));
     const evaluator = new SemanticGatewayEvidenceSupportEvaluator({ client: client(port, key) });
@@ -165,7 +194,8 @@ test('unknown semantic observation remains unknown and does not become a busines
     const adapter = adaptRetrievalCandidate({
       requirement,
       candidate: { candidate_id: 'C-UNKNOWN' },
-      sourceSpan: { source_span_id: 'SPAN-UNKNOWN', source_text: '无法判断。[[unknown]]' }
+      sourceSpan: { source_span_id: 'SPAN-UNKNOWN', source_text: '无法判断。[[unknown]]' },
+      material: { material_type: 'technical_solution', source_origin: 'enterprise_private' }
     });
     const result = await new SemanticGatewayEvidenceSupportEvaluator({ client: client(port, key) }).assess({ requirement, adapters: [adapter] });
     assert.equal(result.assessments[0].semantic_relationship, 'unknown');
@@ -245,6 +275,40 @@ test('requirement candidate schema is strict at the Gateway boundary', async () 
     } finally {
       await new Promise(resolve => server.close(resolve));
     }
+  }
+});
+
+test('Gateway preserves only the six canonical Requirement Candidate fields', async () => {
+  const key = 'gateway-canonical-candidate-key';
+  const candidate = {
+    text: '系统应提供审计日志。',
+    category: 'technical',
+    source_text: '系统应提供审计日志。',
+    source_clause: null,
+    mandatory_observed: true,
+    requires_confirmation: false
+  };
+  const server = createStandaloneGatewayServer({
+    config: {
+      apiKey: key,
+      providerName: 'mock',
+      provider: { model: 'fixture', async invoke() { return { data: { requirements: [candidate] } }; } }
+    }
+  });
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  try {
+    const response = await fetch(`http://127.0.0.1:${server.address().port}/workflows/run`, {
+      method: 'POST',
+      headers: { authorization: `Bearer ${key}`, 'content-type': 'application/json' },
+      body: JSON.stringify({ inputs: { task_type: 'requirement_extraction', task_instruction: 'ignored', task_payload_json: '{}' } })
+    });
+    assert.equal(response.status, 200);
+    const envelope = JSON.parse((await response.json()).data.outputs.response_payload_json);
+    assert.deepEqual(Object.keys(envelope.data.requirements[0]).sort(), [
+      'category', 'mandatory_observed', 'requires_confirmation', 'source_clause', 'source_text', 'text'
+    ]);
+  } finally {
+    await new Promise(resolve => server.close(resolve));
   }
 });
 

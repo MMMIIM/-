@@ -59,10 +59,6 @@ function choose(matches, candidate) {
     const filtered = selected.filter((item) => hasClause(item, String(candidate.source_clause).trim()));
     if (filtered.length) selected = filtered;
   }
-  if (selected.length > 1 && Number.isInteger(candidate.source_hint)) {
-    const filtered = selected.filter((item) => candidate.source_hint >= item.segments[0].paragraph && candidate.source_hint <= item.segments.at(-1).paragraph);
-    if (filtered.length) selected = filtered;
-  }
   return selected;
 }
 
@@ -107,7 +103,7 @@ export class SourceLocationResolver {
   }
 
   resolve(candidate, chunk) {
-    const sourceText = String(candidate.source_text ?? candidate.source_excerpt ?? '').trim();
+    const sourceText = String(candidate.source_text || '').trim();
     if (!sourceText) throw Object.assign(new Error('候选需求必须提供 source_text。'), { code: 'GATEWAY_REQUIREMENTS_INVALID' });
     const segments = (chunk.segments || []).filter((item) => raw(item.text));
     const spans = [];

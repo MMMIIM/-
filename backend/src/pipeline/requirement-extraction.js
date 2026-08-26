@@ -61,17 +61,16 @@ export function validateRequirementExtractionEnvelope(gatewayResponse) {
     throw contractError(audit, `data 不符合 Candidate 契约：${error.message}`);
   }
 
-  const candidates = envelope.data.requirements.map((candidate, originalIndex) => {
+  const candidates = envelope.data.requirements.map((candidate) => {
     const text = candidate.text.trim();
     const sourceText = candidate.source_text.trim();
     return {
-      content: text.trim(), text: text.trim(),
-      source_excerpt: sourceText.trim(), source_text: sourceText.trim(),
+      text: text.trim(),
+      source_text: sourceText.trim(),
       category: candidate.category,
       source_clause: candidate.source_clause === null ? null : candidate.source_clause.trim() || null,
       mandatory_observed: candidate.mandatory_observed,
-      requires_confirmation: candidate.requires_confirmation,
-      candidate_index: originalIndex + 1
+      requires_confirmation: candidate.requires_confirmation
     };
   });
 

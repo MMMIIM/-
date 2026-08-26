@@ -17,6 +17,21 @@ foreach ($line in Get-Content -LiteralPath $envFile) {
   }
 }
 
+# Inject the deployed source revision when the runtime did not provide one.
+# This is diagnostic metadata only; no secret or request data is persisted.
+if ([string]::IsNullOrWhiteSpace($env:SEMANTIC_GATEWAY_COMMIT)) {
+  try {
+    $repositoryRoot = Resolve-Path (Join-Path $serviceRoot '..\..')
+    $revision = (& git -C $repositoryRoot.Path rev-parse --short HEAD 2>$null).Trim()
+    if (-not [string]::IsNullOrWhiteSpace($revision)) {
+      Set-Item -Path 'Env:SEMANTIC_GATEWAY_COMMIT' -Value $revision
+    }
+  } catch {
+    # A packaged deployment may not contain a .git directory. In that case
+    # the externally injected revision remains the authoritative value.
+  }
+}
+
 if ([string]::IsNullOrWhiteSpace($env:SEMANTIC_GATEWAY_PROVIDER_API_KEY)) {
   throw 'SEMANTIC_GATEWAY_PROVIDER_API_KEY is required but will not be printed.'
 }

@@ -482,9 +482,12 @@ test('PostgreSQL 确认 Requirement 基线后禁止增删改合并', async () =>
     extractionGateway: {
       extract: async () => ({
         candidates: [{
-          content: '系统应支持标准接口并提供安全审计。',
-          source_excerpt: '★系统应支持标准接口并提供安全审计，详见第 3.2 条。', source_page: null,
-          source_paragraph: 1
+          text: '系统应支持标准接口并提供安全审计。',
+          category: 'security',
+          source_text: '★系统应支持标准接口并提供安全审计，详见第 3.2 条。',
+          source_clause: '3.2',
+          mandatory_observed: true,
+          requires_confirmation: false
         }],
         warnings: [],
         audit: { provider: 'semantic_gateway', task_type: 'requirement_extraction' }
@@ -650,12 +653,14 @@ test('PostgreSQL 持久化章节、succeeded_empty 与章节级 mandatory scope'
         const mandatory = chunk.segments.find((segment) => segment.source_clause_id === '5.2.1');
         const exception = chunk.segments.find((segment) => segment.source_clause_id === '5.2.6');
         if (mandatory) requirements.push({
-          content: '提供审计能力。', source_excerpt: '5.2.1 审计要求。',
-          source_page: mandatory.page, source_paragraph: mandatory.paragraph
+          text: '提供审计能力。', category: 'security',
+          source_text: '5.2.1 审计要求。', source_clause: '5.2.1',
+          mandatory_observed: true, requires_confirmation: false
         });
         if (exception) requirements.push({
-          content: '提供例外能力。', source_excerpt: '5.2.6 例外要求。',
-          source_page: exception.page, source_paragraph: exception.paragraph
+          text: '提供例外能力。', category: 'technical',
+          source_text: '5.2.6 例外要求。', source_clause: '5.2.6',
+          mandatory_observed: false, requires_confirmation: false
         });
         return { candidates: requirements, warnings: [], audit: { provider: 'semantic_gateway' } };
       }
