@@ -6,6 +6,7 @@ import {
   FROZEN_REQUIREMENT_EXTRACTION_PROMPT_VERSION,
   FROZEN_REQUIREMENT_CANDIDATE_SCHEMA_HASH,
   FROZEN_REQUIREMENT_CANDIDATE_SCHEMA_VERSION,
+  mapValidatedCandidatesToCanonicalInput,
   runRequirementExtractionAccept,
   runRequirementExtractionDoctor,
   runRequirementExtractionLive
@@ -66,6 +67,9 @@ test('doctor passes all offline-injected checks and uses the shared contracts', 
   assert.equal(result.report.verdict, 'READY_FOR_ACCEPTANCE');
   assert.deepEqual(result.report.contract.payload_keys, ['project_name', 'section_name', 'chunk_index', 'chunk_count', 'chunk_text']);
   assert.deepEqual(result.report.blockers, []);
+  assert.equal(result.report.runtime.routing.legacy_18080_fallback, 'ABSENT');
+  assert.equal(result.report.runtime.routing.legacy_only_resolved_target, null);
+  assert.equal(result.report.runtime.routing.legacy_only_client_target, null);
   assert.doesNotMatch(JSON.stringify(result.report), /service-test-key|provider-test-key|chunk_text.*verification-only/);
 });
 
@@ -89,6 +93,21 @@ test('doctor reports contract, revision, provider and routing blockers without c
     writeReport: false
   });
   assert.equal(unavailable.report.live.request_count, 0);
+});
+
+test('missing observed Candidate schema identity cannot fall back to the expected value', async () => {
+  const result = await runRequirementExtractionDoctor({
+    env,
+    fetchImpl: healthyFetch(),
+    gitInfo: gitInfo(),
+    candidateSchemaVersion: null,
+    candidateSchemaHash: null,
+    writeReport: false
+  });
+  assert.equal(result.ok, false);
+  assert.ok(result.report.blockers.includes('CANDIDATE_SCHEMA_MISMATCH'));
+  assert.equal(result.report.contract.candidate_schema_version, null);
+  assert.equal(result.report.contract.candidate_schema_hash, null);
 });
 
 test('doctor classifies backend/gateway reachability and readiness failures', async () => {
@@ -188,7 +207,20 @@ test('mock live pass and failures preserve one-call/no-retry/fallback invariants
     gitInfo: gitInfo(),
     confirmOneLiveCall: true,
     liveRequest,
-    liveExecutor: async () => { calls += 1; return { executed: true, request_count: 1, schema_pass: true, backend_ingestion_pass: true }; },
+    liveExecutor: async () => {
+      calls += 1;
+      return {
+        executed: true,
+        request_count: 1,
+        provider_adapter_invoked: true,
+        fetch_invoked: true,
+        provider_http_reached: true,
+        provider_http_status: 200,
+        provider_chain_verified: true,
+        schema_pass: true,
+        backend_ingestion_pass: true
+      };
+    },
     writeReport: false
   });
   assert.equal(pass.ok, true);
@@ -209,6 +241,62 @@ test('mock live pass and failures preserve one-call/no-retry/fallback invariants
   assert.equal(calls, 2);
   assert.equal(network.report.live.request_count, 1);
   assert.ok(network.report.blockers.includes('PROVIDER_UNAVAILABLE'));
+});
+
+test('live success requires provider-chain diagnostics and uses the production canonical mapper', async () => {
+  const mapped = mapValidatedCandidatesToCanonicalInput([{
+    text: '系统应提供审计日志。',
+    category: 'technical',
+    source_text: '系统应提供审计日志。',
+    source_clause: null,
+    mandatory_observed: true,
+    requires_confirmation: false
+  }]);
+  assert.equal(mapped[0].content, '系统应提供审计日志。');
+  assert.equal(mapped[0].source_excerpt, '系统应提供审计日志。');
+  assert.throws(
+    () => mapValidatedCandidatesToCanonicalInput([{
+      content: 'legacy',
+      source_excerpt: 'legacy'
+    }]),
+    error => error.code === 'BACKEND_INGESTION_FAILED'
+  );
+
+  let calls = 0;
+  const withoutDiagnostics = await runRequirementExtractionLive({
+    env,
+    fetchImpl: healthyFetch(),
+    gitInfo: gitInfo(),
+    confirmOneLiveCall: true,
+    liveRequest: { text: 'synthetic' },
+    liveExecutor: async () => {
+      calls += 1;
+      return { executed: true, request_count: 1, schema_pass: true, backend_ingestion_pass: true };
+    },
+    writeReport: false
+  });
+  assert.equal(calls, 1);
+  assert.equal(withoutDiagnostics.ok, false);
+  assert.ok(withoutDiagnostics.report.blockers.includes('DIAGNOSTIC_INSUFFICIENT'));
+
+  const ingestionFailure = await runRequirementExtractionLive({
+    env,
+    fetchImpl: healthyFetch(),
+    gitInfo: gitInfo(),
+    confirmOneLiveCall: true,
+    liveRequest: { text: 'synthetic' },
+    liveExecutor: async () => ({
+      executed: true,
+      request_count: 1,
+      provider_chain_verified: true,
+      schema_pass: true,
+      backend_ingestion_pass: false,
+      technical_error_code: 'BACKEND_INGESTION_FAILED'
+    }),
+    writeReport: false
+  });
+  assert.equal(ingestionFailure.ok, false);
+  assert.ok(ingestionFailure.report.blockers.includes('BACKEND_INGESTION_FAILED'));
 });
 
 test('422 probe diagnostics are retained only as safe structural metadata', async () => {
@@ -268,6 +356,9 @@ test('verification and consolidated development commands are registered', () => 
   const backendPackage = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
   assert.match(rootPackage.scripts['dev:full'], /concurrently/);
   assert.match(rootPackage.scripts['dev:full'], /semantic-gateway:start/);
+  assert.equal(rootPackage.scripts['reqx:doctor'], 'npm run reqx:doctor -w backend');
+  assert.equal(rootPackage.scripts['reqx:accept'], 'npm run reqx:accept -w backend');
+  assert.equal(rootPackage.scripts['reqx:live'], 'npm run reqx:live -w backend --');
   assert.equal(backendPackage.scripts['reqx:doctor'], 'node scripts/requirement-extraction-verify.js doctor');
   assert.equal(backendPackage.scripts['reqx:accept'], 'node scripts/requirement-extraction-verify.js accept');
   assert.equal(backendPackage.scripts['reqx:live'], 'node scripts/requirement-extraction-verify.js live');

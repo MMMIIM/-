@@ -1,11 +1,19 @@
 import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
-import { getSemanticTaskContract, resolveSemanticTaskInstruction, REQUIREMENT_CANDIDATE_SCHEMA } from '../../../packages/semantic-contracts/index.js';
+import {
+  getSemanticTaskContract,
+  resolveSemanticTaskInstruction,
+  REQUIREMENT_CANDIDATE_SCHEMA,
+  REQUIREMENT_CANDIDATE_SCHEMA_VERSION,
+  REQUIREMENT_CANDIDATE_SCHEMA_SHA256
+} from '../../../packages/semantic-contracts/index.js';
+import { SEMANTIC_GATEWAY_RUNTIME_ENV_NAMES } from '../../../packages/semantic-contracts/runtime-config.js';
 import {
   buildRequirementExtractionPayload,
   createRequirementExtractionGateway,
   validateRequirementExtractionEnvelope
 } from '../pipeline/requirement-extraction.js';
+import { mapRequirementCandidateToCanonicalInput } from '../pipeline/requirement-chunker.js';
 import {
   createSemanticGatewayClientFromEnv,
   parseSemanticGatewayConfig
@@ -234,14 +242,20 @@ function addGate(report, name, passed, blockerCode = null, reason = null, detail
   return passed;
 }
 
-function contractChecks(report) {
+function contractChecks(
+  report,
+  {
+    candidateSchemaVersion = REQUIREMENT_CANDIDATE_SCHEMA_VERSION,
+    candidateSchemaHash = REQUIREMENT_CANDIDATE_SCHEMA_SHA256
+  } = {}
+) {
   const contract = getSemanticTaskContract('requirement_extraction');
   const instruction = resolveSemanticTaskInstruction('requirement_extraction');
   const promptVersionPass = contract?.contract_version === FROZEN_REQUIREMENT_EXTRACTION_PROMPT_VERSION;
   const promptHashPass = contract?.instruction_hash === FROZEN_REQUIREMENT_EXTRACTION_PROMPT_HASH
     && hash(instruction) === FROZEN_REQUIREMENT_EXTRACTION_PROMPT_HASH;
-  const candidateVersion = contract?.candidate_schema_version || FROZEN_REQUIREMENT_CANDIDATE_SCHEMA_VERSION;
-  const candidateHash = contract?.candidate_schema_sha256 || hash(JSON.stringify(REQUIREMENT_CANDIDATE_SCHEMA));
+  const candidateVersion = candidateSchemaVersion;
+  const candidateHash = candidateSchemaHash;
   report.contract = {
     prompt_version: contract?.contract_version || null,
     prompt_hash: contract?.instruction_hash || null,
@@ -277,15 +291,28 @@ function contractChecks(report) {
 
 function routeChecks(report, env, gatewayUrl) {
   const config = parseSemanticGatewayConfig(env, { taskType: 'requirement_extraction' });
-  const configured = safeUrl(config.apiBase || gatewayUrl);
+  const configured = safeUrl(config.apiBase);
+  const legacyOnlyEnv = { ...env };
+  for (const key of SEMANTIC_GATEWAY_RUNTIME_ENV_NAMES) delete legacyOnlyEnv[key];
+  legacyOnlyEnv.V43_GATEWAY_API_BASE = 'http://127.0.0.1:18080/v1';
+  legacyOnlyEnv.V43_GATEWAY_API_KEY = 'verification-only-legacy-key';
+  legacyOnlyEnv.V43_GATEWAY_USER = 'verification-only';
+  const legacyOnlyConfig = parseSemanticGatewayConfig(legacyOnlyEnv, { taskType: 'requirement_extraction' });
+  const legacyOnlyClient = createSemanticGatewayClientFromEnv({ env: legacyOnlyEnv, taskType: 'requirement_extraction' });
+  const legacyFallbackAbsent = !legacyOnlyConfig.apiBase
+    && !legacyOnlyClient.apiBase
+    && legacyOnlyConfig.config_source === 'canonical_semantic_gateway';
   const routePass = Boolean(config.apiBase)
     && config.config_source === 'canonical_semantic_gateway'
     && configured.host === '127.0.0.1'
-    && String(configured.port) === '18082';
+    && String(configured.port) === '18082'
+    && legacyFallbackAbsent;
   report.runtime.routing = {
     requirement_extraction_target: configured.url,
     config_source: config.config_source,
-    legacy_18080_fallback: 'NONE'
+    legacy_18080_fallback: legacyFallbackAbsent ? 'ABSENT' : legacyOnlyConfig.apiBase ? 'PRESENT' : 'UNPROVEN',
+    legacy_only_resolved_target: safeUrl(legacyOnlyConfig.apiBase).url,
+    legacy_only_client_target: safeUrl(legacyOnlyClient.apiBase).url
   };
   addGate(report, 'routing.requirement_extraction', routePass, 'ROUTING_DRIFT', 'Requirement Extraction must use the standalone :18082 Gateway.');
   return config;
@@ -296,6 +323,8 @@ async function doctorInternal({
   fetchImpl = fetch,
   gitInfo = null,
   expectedRevision = null,
+  candidateSchemaVersion = REQUIREMENT_CANDIDATE_SCHEMA_VERSION,
+  candidateSchemaHash = REQUIREMENT_CANDIDATE_SCHEMA_SHA256,
   backendUrl = DEFAULT_BACKEND_URL,
   gatewayUrl = DEFAULT_GATEWAY_URL,
   now = Date.now,
@@ -304,7 +333,7 @@ async function doctorInternal({
   const startedAt = nowValue(now);
   const resolvedGit = gitInfo || defaultGitInfo(repoRoot);
   const report = baseReport('doctor', startedAt, resolvedGit);
-  const { payload } = contractChecks(report);
+  const { payload } = contractChecks(report, { candidateSchemaVersion, candidateSchemaHash });
   const config = routeChecks(report, env, gatewayUrl);
 
   const backend = await fetchJson(fetchImpl, `${String(backendUrl).replace(/\/+$/, '')}/api/health`);
@@ -406,6 +435,10 @@ function safeLiveResult(value = {}) {
     fallback_count: Number.isInteger(value.fallback_count) ? value.fallback_count : 0,
     gateway_http_status: Number.isInteger(value.gateway_http_status) ? value.gateway_http_status : null,
     provider_http_status: Number.isInteger(value.provider_http_status) ? value.provider_http_status : null,
+    provider_adapter_invoked: value.provider_adapter_invoked === true,
+    fetch_invoked: value.fetch_invoked === true,
+    provider_http_reached: value.provider_http_reached === true,
+    provider_chain_verified: value.provider_chain_verified === true,
     candidate_count: Number.isInteger(value.candidate_count) ? value.candidate_count : null,
     schema_pass: typeof value.schema_pass === 'boolean' ? value.schema_pass : null,
     backend_ingestion_pass: typeof value.backend_ingestion_pass === 'boolean' ? value.backend_ingestion_pass : null,
@@ -414,20 +447,54 @@ function safeLiveResult(value = {}) {
   });
 }
 
+/**
+ * Reuse the production Candidate → Canonical projection for the live harness.
+ * The verifier only validates the in-memory projection; it never persists a
+ * Requirement or mutates formal business state.
+ */
+export function mapValidatedCandidatesToCanonicalInput(candidates) {
+  if (!Array.isArray(candidates)) {
+    throw Object.assign(new Error('Candidate list is invalid.'), { code: 'BACKEND_INGESTION_FAILED' });
+  }
+  return candidates.map((candidate, index) => {
+    const mapped = mapRequirementCandidateToCanonicalInput(candidate, index + 1);
+    const candidateText = typeof candidate?.text === 'string' ? candidate.text.trim() : null;
+    const candidateSourceText = typeof candidate?.source_text === 'string' ? candidate.source_text.trim() : null;
+    if (!mapped
+      || mapped.content !== candidateText
+      || mapped.source_excerpt !== candidateSourceText
+      || Object.hasOwn(candidate, 'content')
+      || Object.hasOwn(candidate, 'source_excerpt')) {
+      throw Object.assign(new Error('Candidate canonical mapping failed.'), { code: 'BACKEND_INGESTION_FAILED' });
+    }
+    return mapped;
+  });
+}
+
 async function defaultLiveExecutor({ env, liveRequest }) {
   const client = createSemanticGatewayClientFromEnv({ env, taskType: 'requirement_extraction' });
   const gateway = createRequirementExtractionGateway(client);
   try {
     const result = await gateway.extract({ ...liveRequest, diagnosticMode: 'probe-v1' });
+    const diagnostics = result.audit?.probe_diagnostics || null;
+    const mappedCandidates = mapValidatedCandidatesToCanonicalInput(result.candidates);
+    const providerChainVerified = diagnostics?.provider_adapter_invoked === true
+      && diagnostics?.fetch_invoked === true
+      && diagnostics?.provider_http_reached === true
+      && diagnostics?.provider_http_status === 200;
     return safeLiveResult({
       executed: true,
       request_count: 1,
       gateway_http_status: 200,
-      provider_http_status: result.audit?.probe_diagnostics?.provider_http_status || null,
-      candidate_count: result.candidates.length,
+      provider_http_status: diagnostics?.provider_http_status || null,
+      provider_adapter_invoked: diagnostics?.provider_adapter_invoked,
+      fetch_invoked: diagnostics?.fetch_invoked,
+      provider_http_reached: diagnostics?.provider_http_reached,
+      provider_chain_verified: providerChainVerified,
+      candidate_count: mappedCandidates.length,
       schema_pass: true,
       backend_ingestion_pass: true,
-      diagnostics: result.audit?.probe_diagnostics || null
+      diagnostics
     });
   } catch (error) {
     return safeLiveResult({
@@ -435,6 +502,11 @@ async function defaultLiveExecutor({ env, liveRequest }) {
       request_count: 1,
       technical_error_code: error?.code || 'PROVIDER_OUTPUT_INVALID',
       diagnostics: error?.audit?.probe_diagnostics || null,
+      provider_adapter_invoked: error?.audit?.probe_diagnostics?.provider_adapter_invoked,
+      fetch_invoked: error?.audit?.probe_diagnostics?.fetch_invoked,
+      provider_http_reached: error?.audit?.probe_diagnostics?.provider_http_reached,
+      provider_http_status: error?.audit?.probe_diagnostics?.provider_http_status,
+      provider_chain_verified: false,
       schema_pass: false,
       backend_ingestion_pass: false
     });
@@ -470,6 +542,7 @@ export async function runRequirementExtractionLive({
     }
     report.live = live;
     if (live.request_count > 1 || live.retry_count !== 0 || live.fallback_count !== 0) report.blockers.push('DIAGNOSTIC_INSUFFICIENT');
+    if (live.provider_chain_verified !== true) report.blockers.push('DIAGNOSTIC_INSUFFICIENT');
     if (!live.schema_pass) report.blockers.push(live.technical_error_code || 'PROVIDER_OUTPUT_INVALID');
     if (live.backend_ingestion_pass === false) report.blockers.push('BACKEND_INGESTION_FAILED');
   }
