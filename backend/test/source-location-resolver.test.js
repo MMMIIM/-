@@ -45,11 +45,12 @@ test('重复匹配无法唯一消歧时不伪造位置并产生 SOURCE_LOCATION_
   assert.equal(result.warning.code, 'SOURCE_LOCATION_AMBIGUOUS');
 });
 
-test('source_clause 或合法 hint 可辅助选择重复来源', () => {
+test('source_clause 可辅助选择重复来源，模型 source_hint 不参与正式定位', () => {
   const byClause = new SourceLocationResolver().resolve({ source_text: '重复来源条款。', source_clause: '5.3' }, chunk);
   const byHint = new SourceLocationResolver().resolve({ source_text: '重复来源条款。', source_hint: 8 }, chunk);
   assert.equal(byClause.location.source_paragraph, 12);
-  assert.equal(byHint.location.source_paragraph, 8);
+  assert.equal(byHint.location.source_paragraph, null);
+  assert.equal(byHint.warning.code, 'SOURCE_LOCATION_AMBIGUOUS');
 });
 
 test('无法匹配时保留 source_text/chunk_id，但不创建错误来源', () => {
@@ -62,6 +63,13 @@ test('无法匹配时保留 source_text/chunk_id，但不创建错误来源', ()
 
 test('source_text 为空仍为非法候选', () => {
   assert.throws(() => new SourceLocationResolver().resolve({ source_text: '' }, chunk), (error) => error.code === 'GATEWAY_REQUIREMENTS_INVALID');
+});
+
+test('来源定位不接受 source_excerpt 作为模型候选回退字段', () => {
+  assert.throws(
+    () => new SourceLocationResolver().resolve({ source_excerpt: '系统应记录审计日志。' }, chunk),
+    (error) => error.code === 'GATEWAY_REQUIREMENTS_INVALID'
+  );
 });
 
 test('Schema Adapter 拒绝历史位置字段，不把模型坐标带入来源定位', () => {

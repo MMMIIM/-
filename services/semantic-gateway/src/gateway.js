@@ -4,7 +4,9 @@ import {
   SEMANTIC_TASK_TYPES,
   SEMANTIC_GATEWAY_ERROR_CODES,
   getSemanticTaskContract,
-  createGatewayEnvelope
+  createGatewayEnvelope,
+  REQUIREMENT_CANDIDATE_SCHEMA_VERSION,
+  REQUIREMENT_CANDIDATE_SCHEMA_SHA256
 } from '../../../packages/semantic-contracts/index.js';
 import { createMockProvider } from './provider/mock-provider.js';
 import { OpenAICompatibleProvider } from './provider/openai-compatible-provider.js';
@@ -204,15 +206,27 @@ export function createStandaloneGatewayHandler({ env = process.env, config = con
     }
     if (request.method === 'GET' && request.url === '/info') {
       const requirementContract = getSemanticTaskContract('requirement_extraction');
+      const serviceVersion = String(env.SEMANTIC_GATEWAY_BUILD_VERSION || env.SEMANTIC_GATEWAY_VERSION || '0.1.0');
+      const buildRevision = String(env.SEMANTIC_GATEWAY_COMMIT || env.GIT_COMMIT || 'unknown');
+      const promptVersion = requirementContract?.contract_version || null;
+      const promptHash = requirementContract?.instruction_hash || null;
       writeJson(response, 200, {
         service: 'semantic-gateway',
-        version: String(env.SEMANTIC_GATEWAY_BUILD_VERSION || env.SEMANTIC_GATEWAY_VERSION || '0.1.0'),
-        commit: String(env.SEMANTIC_GATEWAY_COMMIT || env.GIT_COMMIT || 'unknown'),
+        service_version: serviceVersion,
+        build_revision: buildRevision,
+        // Keep the original aliases for existing diagnostic consumers.
+        version: serviceVersion,
+        commit: buildRevision,
         gateway_schema_version: 'semantic-gateway-envelope-v1',
         task_registry_loaded: SEMANTIC_TASK_TYPES.length > 0,
         task_types: SEMANTIC_TASK_TYPES,
         requirement_extraction_contract_version: requirementContract?.contract_version || null,
-        requirement_extraction_instruction_hash: requirementContract?.instruction_hash || null
+        requirement_extraction_prompt_version: promptVersion,
+        requirement_extraction_prompt_hash: promptHash,
+        // Historical field name retained as a read-only alias.
+        requirement_extraction_instruction_hash: promptHash,
+        candidate_schema_contract_version: REQUIREMENT_CANDIDATE_SCHEMA_VERSION,
+        candidate_schema_sha256: REQUIREMENT_CANDIDATE_SCHEMA_SHA256
       });
       return;
     }

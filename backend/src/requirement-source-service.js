@@ -78,7 +78,7 @@ export class RequirementSourceService {
         source_clause_id: analysis.technicalSection.paragraphs.find((value) => value.paragraph === item.paragraph)?.source_clause_id || null
       }));
       return sourceUpdate(candidate, this.resolver.resolve({
-        source_text: candidate.source_text, source_clause: candidate.source_clause_id, source_hint: null
+        source_text: candidate.source_text, source_clause: candidate.source_clause_id
       }, { id: candidate.source_chunk_id, segments }));
     });
     const stats = updates.reduce((result, item) => {

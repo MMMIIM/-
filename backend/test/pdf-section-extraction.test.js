@@ -76,13 +76,15 @@ test('章节级 mandatory scope 传播到第四章候选但排除5.2.6', () => {
   assert.deepEqual(rules[0].exception_clause_ids, ['5.2.6']);
   const candidates = aggregateRequirementCandidates([{ chunk_number: 1, candidates: [
     {
-      content: '提供审计能力。', source_excerpt: '5.2.1 应提供审计能力。',
-      source_text: '5.2.1 应提供审计能力。', source_section: '项目要求和有关说明',
+      text: '提供审计能力。', source_text: '5.2.1 应提供审计能力。',
+      category: 'technical', source_clause: '5.2.1', mandatory_observed: true,
+      requires_confirmation: false, source_section: '项目要求和有关说明',
       source_clause_id: '5.2.1', source_page: 10, source_paragraph: 20
     },
     {
-      content: '可选扩展能力。', source_excerpt: '5.2.6 可选扩展能力。',
-      source_text: '5.2.6 可选扩展能力。', source_section: '项目要求和有关说明',
+      text: '可选扩展能力。', source_text: '5.2.6 可选扩展能力。',
+      category: 'technical', source_clause: '5.2.6', mandatory_observed: false,
+      requires_confirmation: false, source_section: '项目要求和有关说明',
       source_clause_id: '5.2.6', source_page: 10, source_paragraph: 21
     }
   ] }], { mandatoryScopeRules: rules });
@@ -155,7 +157,9 @@ test('空分片继续成功处理；仅所有分片为空时整体 NO_REQUIREMEN
           if (allEmpty || call === 1) return { candidates: [], warnings: [], audit: {} };
           return {
             candidates: [{
-              content: '接口要求。', source_excerpt: '5.2.2 接口要求。',
+              text: '接口要求。', category: 'technical',
+              source_text: '5.2.2 接口要求。', source_clause: '5.2.2',
+              mandatory_observed: false, requires_confirmation: false,
               source_page: chunk.source_start_page, source_paragraph: chunk.source_start_paragraph
             }], warnings: [], audit: {}
           };

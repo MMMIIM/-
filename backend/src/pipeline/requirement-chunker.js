@@ -143,19 +143,22 @@ export function chunkExtractedText({
   return chunks;
 }
 
-export function aggregateRequirementCandidates(chunkResults, { mandatoryScopeRules = [], documentText = null } = {}) {
-  const candidates = [];
-  for (const chunkResult of chunkResults) {
-    for (const candidate of chunkResult.candidates || []) {
-      const content = String(candidate.content || '').trim();
-      if (!content) continue;
-      const source = {
-        source_excerpt: String(candidate.source_excerpt || '').trim(),
-        source_text: String(candidate.source_text || candidate.source_excerpt || '').trim(),
+/**
+ * Explicitly projects a validated model Candidate into the Canonical
+ * Requirement input shape.  `content` and `source_excerpt` are domain fields;
+ * they are never accepted as aliases on the model-facing Candidate object.
+ */
+export function mapRequirementCandidateToCanonicalInput(candidate, chunkNumber) {
+  const content = String(candidate?.text || '').trim();
+  const sourceText = String(candidate?.source_text || '').trim();
+  if (!content || !sourceText) return null;
+  const source = {
+        source_excerpt: sourceText,
+        source_text: sourceText,
         source_page: candidate.source_page ?? null,
         source_paragraph: candidate.source_paragraph ?? null,
         source_section: candidate.source_section ?? null,
-        source_clause_id: candidate.source_clause_id ?? null,
+        source_clause_id: candidate.source_clause_id ?? candidate.source_clause ?? null,
         source_hash: candidate.source_hash ?? null,
         source_chunk_id: candidate.source_chunk_id ?? null,
         source_context_text: candidate.source_context_text ?? null,
@@ -174,10 +177,17 @@ export function aggregateRequirementCandidates(chunkResults, { mandatoryScopeRul
         requires_confirmation: candidate.requires_confirmation === true,
         source_start_offset: candidate.source_start_offset ?? null,
         source_end_offset: candidate.source_end_offset ?? null,
-        chunk_number: chunkResult.chunk_number
+        chunk_number: chunkNumber
       };
-      if (!source.source_excerpt) continue;
-      candidates.push({ content, source });
+  return { content, ...source, sources: [source] };
+}
+
+export function aggregateRequirementCandidates(chunkResults, { mandatoryScopeRules = [], documentText = null } = {}) {
+  const candidates = [];
+  for (const chunkResult of chunkResults) {
+    for (const candidate of chunkResult.candidates || []) {
+      const mapped = mapRequirementCandidateToCanonicalInput(candidate, chunkResult.chunk_number);
+      if (mapped) candidates.push(mapped);
     }
   }
   if (!candidates.length) {
@@ -186,9 +196,5 @@ export function aggregateRequirementCandidates(chunkResults, { mandatoryScopeRul
       status: 422
     });
   }
-  return buildCanonicalRequirements(candidates.map((entry) => ({
-    content: entry.content,
-    ...entry.source,
-    sources: [entry.source]
-  })), { mandatoryScopeRules, documentText });
+  return buildCanonicalRequirements(candidates, { mandatoryScopeRules, documentText });
 }
