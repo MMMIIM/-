@@ -5,11 +5,22 @@ import {
   EVIDENCE_SUPPORT_ROUTING_VERSION,
   runDeterministicEvidenceChecks
 } from './evidence-support-responsibility.js';
-import { toEvidenceReviewAssessment } from './evidence-support-assessment-contract-v1.js';
+import {
+  EVIDENCE_SUPPORT_REASON_CODES,
+  toEvidenceReviewAssessment
+} from './evidence-support-assessment-contract-v1.js';
 import { EVIDENCE_SUPPORT_ADAPTER_VERSION } from './evidence-support-assessment-contract-v1.js';
+import {
+  EVIDENCE_CAPABILITY,
+  EVIDENCE_SUPPORT_LEVEL,
+  REVIEW_DIMENSIONS,
+  REVIEW_DIMENSION_VALUES,
+  SEMANTIC_RELEVANCE
+} from './evidence-review-contract.js';
+import { MAPPING_RELATIONSHIPS } from './requirement-evidence-mapping-contract-v1.js';
 
 const ADAPTER_VERSION = EVIDENCE_SUPPORT_ADAPTER_VERSION;
-const FRAGMENT_KEYS = new Set([
+export const SEMANTIC_ADJUDICATION_FRAGMENT_KEYS = Object.freeze([
   'semantic_relevance',
   'evidence_capability',
   'support_level',
@@ -19,6 +30,61 @@ const FRAGMENT_KEYS = new Set([
   'support_observations',
   'conflict_observations'
 ]);
+const FRAGMENT_KEYS = new Set(SEMANTIC_ADJUDICATION_FRAGMENT_KEYS);
+
+const enumSchema = values => Object.freeze({ type: 'string', enum: [...values] });
+
+/**
+ * The narrow SemanticAdjudicationFragment transport schema is derived from
+ * the same canonical enums and field allow-list used by the production
+ * evaluator.  It intentionally has no business IDs or lifecycle fields.
+ */
+export function deriveSemanticAdjudicationFragmentSchema() {
+  const supportObservation = {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      source_id: { type: 'string' },
+      source_span_id: { type: 'string' },
+      support_excerpt: { type: 'string' },
+      observation_type: enumSchema(['direct_support', 'partial_support', 'context', 'contradiction']),
+      reason_codes: { type: 'array', items: enumSchema(EVIDENCE_SUPPORT_REASON_CODES) }
+    }
+  };
+  const conflictObservation = {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      conflict_group_id: { type: 'string' },
+      dimension: { type: 'string' },
+      observed_value: {},
+      source_id: { type: 'string' },
+      source_span_id: { type: 'string' },
+      support_excerpt: { type: 'string' },
+      reason_codes: { type: 'array', items: enumSchema(EVIDENCE_SUPPORT_REASON_CODES) }
+    }
+  };
+  return {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      semantic_relevance: enumSchema(SEMANTIC_RELEVANCE),
+      evidence_capability: enumSchema(EVIDENCE_CAPABILITY),
+      support_level: enumSchema(EVIDENCE_SUPPORT_LEVEL),
+      semantic_relationship: enumSchema(MAPPING_RELATIONSHIPS),
+      review_dimensions: {
+        type: 'object',
+        additionalProperties: false,
+        properties: Object.fromEntries(REVIEW_DIMENSIONS.map(name => [name, enumSchema(REVIEW_DIMENSION_VALUES)]))
+      },
+      reason_codes: { type: 'array', items: enumSchema(EVIDENCE_SUPPORT_REASON_CODES) },
+      support_observations: { type: 'array', items: supportObservation },
+      conflict_observations: { type: 'array', items: conflictObservation }
+    }
+  };
+}
+
+export const SEMANTIC_ADJUDICATION_FRAGMENT_SCHEMA = deriveSemanticAdjudicationFragmentSchema();
 
 const asText = value => String(value ?? '').trim();
 
@@ -80,7 +146,7 @@ export function createEvidenceSupportReviewAdapter(context = {}) {
   };
 }
 
-function validateFragment(fragment) {
+export function validateSemanticAdjudicationFragment(fragment) {
   if (!fragment || typeof fragment !== 'object' || Array.isArray(fragment)) {
     throw technicalUnavailable('Semantic adjudication 返回了无效片段。', {
       technical_error_code: 'SEMANTIC_ADJUDICATION_FRAGMENT_INVALID'
@@ -94,6 +160,8 @@ function validateFragment(fragment) {
   }
   return fragment;
 }
+
+const validateFragment = validateSemanticAdjudicationFragment;
 
 /**
  * Production entry-point evaluator.  It owns no formal persistence and never
