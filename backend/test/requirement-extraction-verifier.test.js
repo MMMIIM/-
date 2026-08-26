@@ -182,6 +182,7 @@ test('live requires explicit confirmation and hard preflight before any executor
     writeReport: false
   });
   assert.equal(noConfirmation.ok, false);
+  assert.equal(noConfirmation.report.verdict, 'BLOCKED');
   assert.ok(noConfirmation.report.blockers.includes('LIVE_CONFIRMATION_REQUIRED'));
   assert.equal(calls, 0);
 
@@ -224,6 +225,7 @@ test('mock live pass and failures preserve one-call/no-retry/fallback invariants
     writeReport: false
   });
   assert.equal(pass.ok, true);
+  assert.equal(pass.report.verdict, 'LIVE_VERIFIED');
   assert.equal(calls, 1);
   assert.equal(pass.report.live.retry_count, 0);
   assert.equal(pass.report.live.fallback_count, 0);
@@ -238,6 +240,7 @@ test('mock live pass and failures preserve one-call/no-retry/fallback invariants
     writeReport: false
   });
   assert.equal(network.ok, false);
+  assert.equal(network.report.verdict, 'BLOCKED');
   assert.equal(calls, 2);
   assert.equal(network.report.live.request_count, 1);
   assert.ok(network.report.blockers.includes('PROVIDER_UNAVAILABLE'));
