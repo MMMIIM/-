@@ -16,7 +16,7 @@ const envelopeOutputSchema = contract => Object.freeze({
     schema_version: Object.freeze({ type: 'string', const: contract.contract_version }),
     task_type: Object.freeze({ type: 'string', const: contract.task_type }),
     status: Object.freeze({ enum: Object.freeze(['success', 'failed']) }),
-    data: Object.freeze({
+    data: contract.data_schema || Object.freeze({
       type: 'object',
       required: contract.data_required,
       additionalProperties: false
@@ -31,6 +31,7 @@ export const SEMANTIC_GATEWAY_TASK_REGISTRY = Object.freeze(
     return [taskType, Object.freeze({
       task_type: contract.task_type,
       contract_version: contract.contract_version,
+      instruction_hash: contract.instruction_hash,
       schema_version: contract.contract_version,
       input_schema: GATEWAY_INPUT_SCHEMA,
       output_schema: envelopeOutputSchema(contract),

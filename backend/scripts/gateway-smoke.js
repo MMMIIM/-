@@ -1,11 +1,12 @@
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { createBackendRuntime } from '../src/backend-runtime.js';
-import { REQUIREMENT_EXTRACTION_INSTRUCTION, validateRequirementExtractionEnvelope } from '../src/pipeline/requirement-extraction.js';
+import { validateRequirementExtractionEnvelope } from '../src/pipeline/requirement-extraction.js';
+import { resolveSemanticTaskInstruction } from '../../packages/semantic-contracts/index.js';
 
 export const GATEWAY_SMOKE_REQUEST = Object.freeze({
   task_type: 'requirement_extraction',
-  task_instruction: REQUIREMENT_EXTRACTION_INSTRUCTION,
+  task_instruction: resolveSemanticTaskInstruction('requirement_extraction'),
   task_payload_json: JSON.stringify({
     file_name: 'gateway-contract-smoke.txt',
     chunk: { chunk_number: 1, source_start_offset: 0, source_end_offset: 22, source_start_page: 1, source_end_page: 1, source_start_paragraph: 1, source_end_paragraph: 1 },

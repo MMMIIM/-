@@ -1,4 +1,8 @@
+import { createHash } from 'node:crypto';
+
 const object = value => value && typeof value === 'object' && !Array.isArray(value);
+
+const sha256 = value => createHash('sha256').update(String(value), 'utf8').digest('hex');
 
 export const GATEWAY_INPUT_SCHEMA = Object.freeze({
   type: 'object',
@@ -13,6 +17,7 @@ export const GATEWAY_INPUT_SCHEMA = Object.freeze({
 export const SEMANTIC_GATEWAY_ERROR_CODES = Object.freeze([
   'AUTH_INVALID',
   'TASK_UNSUPPORTED',
+  'SEMANTIC_CONTRACT_DRIFT',
   'INPUT_SCHEMA_INVALID',
   'PROVIDER_UNAVAILABLE',
   'PROVIDER_TIMEOUT',
@@ -23,63 +28,24 @@ export const SEMANTIC_GATEWAY_ERROR_CODES = Object.freeze([
   'INTERNAL_GATEWAY_ERROR'
 ]);
 
-export const SEMANTIC_TASK_CONTRACTS = Object.freeze({
-  requirement_extraction: Object.freeze({
-    task_type: 'requirement_extraction',
-    contract_version: '4.3-requirement-extraction',
-    data_required: Object.freeze(['requirements']),
-    data_allowed: Object.freeze(['requirements']),
-    parser: 'semantic-gateway-envelope-v1'
-  }),
-  response_planning: Object.freeze({
-    task_type: 'response_planning',
-    contract_version: '4.3-response-planning',
-    data_required: Object.freeze(['response_plans']),
-    data_allowed: Object.freeze(['response_plans']),
-    parser: 'semantic-gateway-envelope-v1'
-  }),
-  claim_generation: Object.freeze({
-    task_type: 'claim_generation',
-    contract_version: '4.3-claim-generation',
-    data_required: Object.freeze(['claims']),
-    data_allowed: Object.freeze(['claims']),
-    parser: 'semantic-gateway-envelope-v1'
-  }),
-  section_drafting: Object.freeze({
-    task_type: 'section_drafting',
-    contract_version: '4.3-section-drafting',
-    data_required: Object.freeze(['chapter_id', 'content_markdown']),
-    data_allowed: Object.freeze(['chapter_id', 'content_markdown']),
-    parser: 'semantic-gateway-envelope-v1'
-  }),
-  targeted_revision: Object.freeze({
-    task_type: 'targeted_revision',
-    contract_version: '4.3-targeted-revision',
-    data_required: Object.freeze(['revised_text']),
-    data_allowed: Object.freeze(['revised_text']),
-    parser: 'semantic-gateway-envelope-v1'
-  }),
-  // Compatibility-only document generation path retained for existing callers.
-  draft_sections: Object.freeze({
-    task_type: 'draft_sections',
-    contract_version: '4.3-gateway',
-    data_required: Object.freeze(['sections']),
-    data_allowed: Object.freeze(['sections']),
-    parser: 'semantic-gateway-envelope-v1',
-    compatibility_only: true
-  }),
-  evidence_support_assessment: Object.freeze({
-    task_type: 'evidence_support_assessment',
-    contract_version: '4.3-evidence-support-assessment-v1',
-    data_required: Object.freeze(['assessments', 'conflict_observations']),
-    data_allowed: Object.freeze(['assessments', 'conflict_observations']),
-    parser: 'evidence-support-assessment-envelope-v1',
-    strict_transport: true
-  })
-});
-
+/**
+ * Model-facing instructions are defined once, next to their task contracts.
+ * Backend adapters may derive the compatibility transport field from this map,
+ * but must not maintain a second editable instruction string.
+ */
 export const SEMANTIC_TASK_INSTRUCTIONS = Object.freeze({
-  requirement_extraction: '仅提取候选需求及来源原文，不生成 REQ-ID、来源坐标或最终 mandatory 值。',
+  requirement_extraction: [
+    '从招标文件文本中提取当前 chunk 中明确存在的候选技术或业务需求。',
+    '只返回定义的候选字段：text、category、source_text、source_clause、mandatory_observed、requires_confirmation。',
+    'data 只能包含 requirements 数组；当前 chunk 没有可提取需求时返回空数组。',
+    '不得生成、修改或合并 REQ-ID、最终页码/段落坐标、source_hash 或其他后端标识；不得做章节路由、响应计划、Claim、评分点、正文或企业能力判断。',
+    'source_text 必须逐字来自当前 chunk 原文，保留足以证明候选需求的完整片段，不得改写、概括、纠错、翻译或臆造。',
+    'source_clause 仅在原文明确出现条款编号时填写原编号，否则为 null。',
+    'mandatory_observed 只表示原文直接出现的明确标记；最终 mandatory 值、来源坐标、风险和确认状态由后端确定。',
+    'requires_confirmation 在语义边界、指代、范围或来源存在不确定性时设为 true，不得为了避免确认而猜测。',
+    '不得补充文件中不存在的要求；保持责任主体、数量、期限、例外和交叉引用的原始约束强度。',
+    '只输出契约要求的 JSON 数据，不输出 Markdown、解释、前言、后记、思考过程、<think> 标签或其他字段。'
+  ].join('\n'),
   response_planning: '仅基于已确认 Requirement 生成响应计划，不生成业务审批结论。',
   claim_generation: '仅基于 Requirement、Plan 与 approved Evidence 生成原子 Claim 候选。',
   section_drafting: '仅基于后端提供的已授权上下文生成章节候选正文。',
@@ -103,6 +69,90 @@ export const SEMANTIC_TASK_INSTRUCTIONS = Object.freeze({
   ].join('\n')
 });
 
+const instructionHash = taskType => sha256(SEMANTIC_TASK_INSTRUCTIONS[taskType] || '');
+
+const requirementCandidateSchema = Object.freeze({
+  type: 'object',
+  required: Object.freeze(['text', 'category', 'source_text', 'source_clause', 'mandatory_observed', 'requires_confirmation']),
+  additionalProperties: false,
+  properties: Object.freeze({
+    text: Object.freeze({ type: 'string', minLength: 1 }),
+    category: Object.freeze({ type: 'string', minLength: 1 }),
+    source_text: Object.freeze({ type: 'string', minLength: 1 }),
+    source_clause: Object.freeze({ type: ['string', 'null'] }),
+    mandatory_observed: Object.freeze({ type: 'boolean' }),
+    requires_confirmation: Object.freeze({ type: 'boolean' })
+  })
+});
+
+export const SEMANTIC_TASK_CONTRACTS = Object.freeze({
+  requirement_extraction: Object.freeze({
+    task_type: 'requirement_extraction',
+    contract_version: '4.3-requirement-extraction',
+    instruction_hash: instructionHash('requirement_extraction'),
+    data_required: Object.freeze(['requirements']),
+    data_allowed: Object.freeze(['requirements']),
+    data_schema: Object.freeze({
+      type: 'object',
+      required: Object.freeze(['requirements']),
+      additionalProperties: false,
+      properties: Object.freeze({ requirements: Object.freeze({ type: 'array', items: requirementCandidateSchema }) })
+    }),
+    parser: 'semantic-gateway-envelope-v1'
+  }),
+  response_planning: Object.freeze({
+    task_type: 'response_planning',
+    contract_version: '4.3-response-planning',
+    instruction_hash: instructionHash('response_planning'),
+    data_required: Object.freeze(['response_plans']),
+    data_allowed: Object.freeze(['response_plans']),
+    parser: 'semantic-gateway-envelope-v1'
+  }),
+  claim_generation: Object.freeze({
+    task_type: 'claim_generation',
+    contract_version: '4.3-claim-generation',
+    instruction_hash: instructionHash('claim_generation'),
+    data_required: Object.freeze(['claims']),
+    data_allowed: Object.freeze(['claims']),
+    parser: 'semantic-gateway-envelope-v1'
+  }),
+  section_drafting: Object.freeze({
+    task_type: 'section_drafting',
+    contract_version: '4.3-section-drafting',
+    instruction_hash: instructionHash('section_drafting'),
+    data_required: Object.freeze(['chapter_id', 'content_markdown']),
+    data_allowed: Object.freeze(['chapter_id', 'content_markdown']),
+    parser: 'semantic-gateway-envelope-v1'
+  }),
+  targeted_revision: Object.freeze({
+    task_type: 'targeted_revision',
+    contract_version: '4.3-targeted-revision',
+    instruction_hash: instructionHash('targeted_revision'),
+    data_required: Object.freeze(['revised_text']),
+    data_allowed: Object.freeze(['revised_text']),
+    parser: 'semantic-gateway-envelope-v1'
+  }),
+  // Compatibility-only document generation path retained for existing callers.
+  draft_sections: Object.freeze({
+    task_type: 'draft_sections',
+    contract_version: '4.3-gateway',
+    instruction_hash: instructionHash('draft_sections'),
+    data_required: Object.freeze(['sections']),
+    data_allowed: Object.freeze(['sections']),
+    parser: 'semantic-gateway-envelope-v1',
+    compatibility_only: true
+  }),
+  evidence_support_assessment: Object.freeze({
+    task_type: 'evidence_support_assessment',
+    contract_version: '4.3-evidence-support-assessment-v1',
+    instruction_hash: instructionHash('evidence_support_assessment'),
+    data_required: Object.freeze(['assessments', 'conflict_observations']),
+    data_allowed: Object.freeze(['assessments', 'conflict_observations']),
+    parser: 'evidence-support-assessment-envelope-v1',
+    strict_transport: true
+  })
+});
+
 export const SEMANTIC_TASK_TYPES = Object.freeze(Object.keys(SEMANTIC_TASK_CONTRACTS));
 
 export function getSemanticTaskContract(taskType) {
@@ -111,6 +161,19 @@ export function getSemanticTaskContract(taskType) {
 
 export function resolveSemanticTaskInstruction(taskType) {
   return SEMANTIC_TASK_INSTRUCTIONS[String(taskType || '')] || null;
+}
+
+export function getSemanticTaskInstructionMetadata(taskType) {
+  const normalizedTaskType = String(taskType || '');
+  const contract = getSemanticTaskContract(normalizedTaskType);
+  const instruction = resolveSemanticTaskInstruction(normalizedTaskType);
+  if (!contract || !instruction) return null;
+  return Object.freeze({
+    task_type: normalizedTaskType,
+    contract_version: contract.contract_version,
+    instruction,
+    instruction_hash: contract.instruction_hash
+  });
 }
 
 export function createGatewayEnvelope({ taskType, status = 'success', data, warnings = [] }) {

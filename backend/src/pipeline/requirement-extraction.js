@@ -1,13 +1,8 @@
 import { SemanticGatewayError } from './semantic-gateway-client.js';
 import { parseSourceHint } from './source-location-resolver.js';
+import { resolveSemanticTaskInstruction } from '../../../packages/semantic-contracts/index.js';
 
 export const REQUIREMENT_EXTRACTION_TASK_TYPE = 'requirement_extraction';
-export const REQUIREMENT_EXTRACTION_INSTRUCTION = [
-  '从招标文件文本中提取候选需求。',
-  'data 只能包含 requirements 数组。',
-  '每项只返回 text、category、source_text、source_clause、mandatory_observed、requires_confirmation。',
-  '不得生成 REQ-ID、页码、段落号或 source_hash；不要补充文件中不存在的要求。'
-].join('');
 
 function contractError(audit, detail) {
   return new SemanticGatewayError(
@@ -98,7 +93,9 @@ export function createRequirementExtractionGateway(client) {
     async extract({ fileName, text, paragraphs, chunk }) {
       const gatewayResponse = await client.run({
         task_type: REQUIREMENT_EXTRACTION_TASK_TYPE,
-        task_instruction: REQUIREMENT_EXTRACTION_INSTRUCTION,
+        // The transport field is required by the legacy HTTP envelope, but its
+        // value is always resolved from the canonical semantic contract.
+        task_instruction: resolveSemanticTaskInstruction(REQUIREMENT_EXTRACTION_TASK_TYPE),
         task_payload_json: JSON.stringify({
           file_name: fileName,
           chunk: chunk ? {
