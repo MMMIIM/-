@@ -546,10 +546,10 @@ export async function runRequirementExtractionLive({
     if (!live.schema_pass) report.blockers.push(live.technical_error_code || 'PROVIDER_OUTPUT_INVALID');
     if (live.backend_ingestion_pass === false) report.blockers.push('BACKEND_INGESTION_FAILED');
   }
-  report.verdict = report.blockers.length ? 'BLOCKED' : 'READY_FOR_ACCEPTANCE';
+  report.verdict = report.blockers.length ? 'BLOCKED' : 'LIVE_VERIFIED';
   const finished = finishReport(report, startedAt, now);
   if (doctorOptions.writeReport !== false) await writeVerificationReport(finished, reportPath);
-  return { ok: finished.verdict === 'READY_FOR_ACCEPTANCE', report: finished };
+  return { ok: finished.verdict === 'LIVE_VERIFIED', report: finished };
 }
 
 export { ACCEPT_COMMANDS, EXPECTED_PAYLOAD_KEYS, EXPECTED_CANDIDATE_KEYS, defaultCommandRunner };
