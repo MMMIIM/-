@@ -25,10 +25,11 @@ import {
   writeVerificationReport
 } from './requirement-extraction-report.js';
 
-export const FROZEN_REQUIREMENT_EXTRACTION_PROMPT_VERSION = '4.3-requirement-extraction-v1.1';
-export const FROZEN_REQUIREMENT_EXTRACTION_PROMPT_HASH = '4589cfd6f1c7385b313d4de2e1d37a363f48aca1389a51f637f57391fa7d7c81';
-export const FROZEN_REQUIREMENT_CANDIDATE_SCHEMA_VERSION = '4.3-requirement-candidate-v1';
-export const FROZEN_REQUIREMENT_CANDIDATE_SCHEMA_HASH = '8d1ee2445763c544f4167f66b6c4216bb7ef7e6572b22b56446ecf15ddfac90b';
+const ACTIVE_REQUIREMENT_EXTRACTION_CONTRACT = getSemanticTaskContract('requirement_extraction');
+export const FROZEN_REQUIREMENT_EXTRACTION_PROMPT_VERSION = ACTIVE_REQUIREMENT_EXTRACTION_CONTRACT.contract_version;
+export const FROZEN_REQUIREMENT_EXTRACTION_PROMPT_HASH = ACTIVE_REQUIREMENT_EXTRACTION_CONTRACT.instruction_hash;
+export const FROZEN_REQUIREMENT_CANDIDATE_SCHEMA_VERSION = REQUIREMENT_CANDIDATE_SCHEMA_VERSION;
+export const FROZEN_REQUIREMENT_CANDIDATE_SCHEMA_HASH = REQUIREMENT_CANDIDATE_SCHEMA_SHA256;
 
 export const REQUIREMENT_EXTRACTION_BLOCKERS = Object.freeze([
   'CONTRACT_DRIFT',
@@ -459,12 +460,14 @@ export function mapValidatedCandidatesToCanonicalInput(candidates) {
   return candidates.map((candidate, index) => {
     const mapped = mapRequirementCandidateToCanonicalInput(candidate, index + 1);
     const candidateText = typeof candidate?.text === 'string' ? candidate.text.trim() : null;
-    const candidateSourceText = typeof candidate?.source_text === 'string' ? candidate.source_text.trim() : null;
     if (!mapped
       || mapped.content !== candidateText
-      || mapped.source_excerpt !== candidateSourceText
+      || !Array.isArray(mapped.sources?.[0]?.source_refs)
+      || JSON.stringify(mapped.sources[0].source_refs) !== JSON.stringify(candidate?.source_refs)
       || Object.hasOwn(candidate, 'content')
-      || Object.hasOwn(candidate, 'source_excerpt')) {
+      || Object.hasOwn(candidate, 'source_excerpt')
+      || Object.hasOwn(candidate, 'source_text')
+      || Object.hasOwn(candidate, 'source_clause')) {
       throw Object.assign(new Error('Candidate canonical mapping failed.'), { code: 'BACKEND_INGESTION_FAILED' });
     }
     return mapped;

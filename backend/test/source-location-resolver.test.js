@@ -7,9 +7,9 @@ const chunk = {
   id: '11111111-1111-4111-8111-111111111111', chunk_number: 1,
   source_start_offset: 0, source_end_offset: 100,
   segments: [
-    { paragraph: 5, page: 2, text: '5.1 系统应记录审计日志。', source_start_offset: 0, source_end_offset: 15, source_section: '第四章', source_clause_id: '5.1' },
-    { paragraph: 8, page: 3, text: '重复来源条款。', source_start_offset: 16, source_end_offset: 23, source_section: '第四章', source_clause_id: '5.2' },
-    { paragraph: 12, page: 4, text: '重复来源条款。', source_start_offset: 24, source_end_offset: 31, source_section: '第四章', source_clause_id: '5.3' }
+    { source_ref: 'C001-S001', paragraph: 5, page: 2, text: '5.1 系统应记录审计日志。', source_start_offset: 0, source_end_offset: 15, source_section: '第四章', source_clause_id: '5.1' },
+    { source_ref: 'C001-S002', paragraph: 8, page: 3, text: '系统应保留操作记录。', source_start_offset: 16, source_end_offset: 25, source_section: '第四章', source_clause_id: '5.2' },
+    { source_ref: 'C001-S003', paragraph: 12, page: 4, text: '系统应支持审计查询。', source_start_offset: 26, source_end_offset: 35, source_section: '第四章', source_clause_id: '5.3' }
   ]
 };
 
@@ -26,56 +26,74 @@ test('无效 source_paragraph 被忽略并产生 warning', () => {
   assert.equal(result.warning.code, 'SOURCE_HINT_IGNORED');
 });
 
-test('唯一 source_text 匹配由后端生成真实页码、段落和 hash，模型 hint 不可覆盖', () => {
-  const result = new SourceLocationResolver().resolve({ source_text: '系统应记录审计日志。', source_clause: '5.1', source_hint: 123 }, chunk);
+test('单段 source_ref 由后端生成真实页码、段落和 hash', () => {
+  const result = new SourceLocationResolver().resolve({ source_refs: ['C001-S001'] }, chunk);
   assert.equal(result.warning, null);
+  assert.equal(result.location.source_text, '5.1 系统应记录审计日志。');
   assert.equal(result.location.source_paragraph, 5);
   assert.equal(result.location.source_page, 2);
   assert.match(result.location.source_hash, /^[a-f0-9]{64}$/);
   assert.equal(result.location.source_chunk_id, chunk.id);
+  assert.deepEqual(result.location.source_refs, ['C001-S001']);
 });
 
-test('唯一来源解析保留同条款连续证据上下文供 confirmation policy 使用',()=>{const local={...chunk,segments:[{text:'系统应支持数据同步。',page:2,paragraph:5,source_clause_id:'5.1',source_start_offset:0,source_end_offset:10},{text:'备注：平台名称、接口方式和数据范围由实施阶段双方确认。',page:2,paragraph:6,source_clause_id:'5.1',source_start_offset:11,source_end_offset:40}]};const result=new SourceLocationResolver().resolve({source_text:'系统应支持数据同步。',source_clause:'5.1'},local);assert.equal(result.location.source_verified,true);assert.match(result.location.source_context_text,/实施阶段双方确认/);});
-
-test('重复匹配无法唯一消歧时不伪造位置并产生 SOURCE_LOCATION_AMBIGUOUS', () => {
-  const result = new SourceLocationResolver().resolve({ source_text: '重复来源条款。' }, chunk);
-  assert.equal(result.location.source_paragraph, null);
-  assert.equal(result.location.source_page, null);
-  assert.equal(result.location.source_hash, null);
-  assert.equal(result.warning.code, 'SOURCE_LOCATION_AMBIGUOUS');
+test('连续多段 source_refs 反向映射段落、页码和上下文', () => {
+  const result = new SourceLocationResolver().resolve({ source_refs: ['C001-S001', 'C001-S002'] }, chunk);
+  assert.equal(result.warning, null);
+  assert.equal(result.location.source_paragraph_start, 5);
+  assert.equal(result.location.source_paragraph_end, 8);
+  assert.equal(result.location.source_page_start, 2);
+  assert.equal(result.location.source_page_end, 3);
+  assert.equal(result.location.source_paragraphs_json.length, 2);
+  assert.equal(result.location.source_match_type, 'exact_multi_paragraph_span');
+  assert.match(result.location.source_context_text, /操作记录/);
 });
 
-test('source_clause 可辅助选择重复来源，模型 source_hint 不参与正式定位', () => {
-  const byClause = new SourceLocationResolver().resolve({ source_text: '重复来源条款。', source_clause: '5.3' }, chunk);
-  const byHint = new SourceLocationResolver().resolve({ source_text: '重复来源条款。', source_hint: 8 }, chunk);
-  assert.equal(byClause.location.source_paragraph, 12);
-  assert.equal(byHint.location.source_paragraph, null);
-  assert.equal(byHint.warning.code, 'SOURCE_LOCATION_AMBIGUOUS');
-});
-
-test('无法匹配时保留 source_text/chunk_id，但不创建错误来源', () => {
-  const result = new SourceLocationResolver().resolve({ source_text: '不存在的来源。' }, chunk);
-  assert.equal(result.location.source_text, '不存在的来源。');
-  assert.equal(result.location.source_chunk_id, chunk.id);
-  assert.equal(result.location.source_paragraph, null);
+test('重复 source_ref 不能绕过 Candidate schema，resolver fail closed', () => {
+  const result = new SourceLocationResolver().resolve({ source_refs: ['C001-S001', 'C001-S001'] }, chunk);
+  assert.equal(result.location.source_verified, false);
+  assert.equal(result.location.source_match_type, 'unresolved');
   assert.equal(result.warning.code, 'SOURCE_LOCATION_UNRESOLVED');
 });
 
-test('source_text 为空仍为非法候选', () => {
-  assert.throws(() => new SourceLocationResolver().resolve({ source_text: '' }, chunk), (error) => error.code === 'GATEWAY_REQUIREMENTS_INVALID');
+test('未知 source_ref 只保留引用和 chunk lineage，不伪造来源', () => {
+  const result = new SourceLocationResolver().resolve({ source_refs: ['C001-S999'] }, chunk);
+  assert.equal(result.location.source_text, null);
+  assert.equal(result.location.source_paragraph, null);
+  assert.equal(result.location.source_page, null);
+  assert.equal(result.location.source_hash, null);
+  assert.equal(result.location.source_chunk_id, chunk.id);
+  assert.equal(result.warning.code, 'SOURCE_LOCATION_UNRESOLVED');
 });
 
-test('来源定位不接受 source_excerpt 作为模型候选回退字段', () => {
-  assert.throws(
-    () => new SourceLocationResolver().resolve({ source_excerpt: '系统应记录审计日志。' }, chunk),
-    (error) => error.code === 'GATEWAY_REQUIREMENTS_INVALID'
-  );
+test('非连续 source_refs 不自动拼接，保持 unresolved', () => {
+  const result = new SourceLocationResolver().resolve({ source_refs: ['C001-S001', 'C001-S003'] }, chunk);
+  assert.equal(result.location.source_verified, false);
+  assert.equal(result.warning.code, 'SOURCE_LOCATION_UNRESOLVED');
 });
 
-test('Schema Adapter 拒绝历史位置字段，不把模型坐标带入来源定位', () => {
-  assert.throws(() => validateRequirementExtractionEnvelope({
-    envelope: { schema_version: '4.3-requirement-extraction-v1.1', task_type: 'requirement_extraction', status: 'success', warnings: [], data: { requirements: [
-      { content: '记录日志', source_excerpt: '系统应记录审计日志。', source_page: 999, source_paragraph: '第123段' }
-    ] } }, audit: {}
-  }), error => error.code === 'GATEWAY_REQUIREMENTS_INVALID');
+test('source_refs 为空或格式非法仍为非法候选', () => {
+  assert.throws(() => new SourceLocationResolver().resolve({ source_refs: [] }, chunk), (error) => error.code === 'GATEWAY_REQUIREMENTS_INVALID');
+  assert.throws(() => new SourceLocationResolver().resolve({ source_refs: ['SPAN-1'] }, chunk), (error) => error.code === 'GATEWAY_REQUIREMENTS_INVALID');
+});
+
+test('模型来源文本和历史别名不会被 resolver 接受', () => {
+  assert.throws(() => new SourceLocationResolver().resolve({ source_text: '系统应记录审计日志。' }, chunk), (error) => error.code === 'GATEWAY_REQUIREMENTS_INVALID');
+  assert.throws(() => new SourceLocationResolver().resolve({ source_excerpt: '系统应记录审计日志。' }, chunk), (error) => error.code === 'GATEWAY_REQUIREMENTS_INVALID');
+});
+
+test('Schema Adapter 拒绝 source_text/source_clause/content/source_excerpt 模型字段', () => {
+  const envelope = (candidate) => ({
+    envelope: { schema_version: '4.3-requirement-extraction-v2', task_type: 'requirement_extraction', status: 'success', warnings: [], data: { requirements: [candidate] } },
+    audit: {}
+  });
+  const base = { text: '记录日志', category: 'technical', source_refs: ['C001-S001'], mandatory_observed: true, requires_confirmation: false };
+  for (const candidate of [
+    { ...base, source_text: '系统应记录审计日志。' },
+    { ...base, source_clause: '5.1' },
+    { ...base, content: '记录日志' },
+    { ...base, source_excerpt: '系统应记录审计日志。' }
+  ]) {
+    assert.throws(() => validateRequirementExtractionEnvelope(envelope(candidate)), error => error.code === 'GATEWAY_REQUIREMENTS_INVALID');
+  }
 });

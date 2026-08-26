@@ -72,14 +72,19 @@ export class RequirementSourceService {
       const scoped = chunk
         ? paragraphs.filter((item) => item.paragraph >= chunk.source_start_paragraph && item.paragraph <= chunk.source_end_paragraph)
         : analysis.technicalSection.paragraphs;
-      const segments = scoped.map((item) => ({
+      const segments = scoped.map((item, index) => ({
         ...item,
+        source_ref: `C${String(chunk?.chunk_number || 1).padStart(3, '0')}-S${String(index + 1).padStart(3, '0')}`,
         source_section: analysis.technicalSection.title,
         source_clause_id: analysis.technicalSection.paragraphs.find((value) => value.paragraph === item.paragraph)?.source_clause_id || null
       }));
-      return sourceUpdate(candidate, this.resolver.resolve({
-        source_text: candidate.source_text, source_clause: candidate.source_clause_id
-      }, { id: candidate.source_chunk_id, segments }));
+      const persistedSources = Array.isArray(candidate.sources_json) ? candidate.sources_json : [];
+      const sourceRefs = Array.isArray(candidate.source_refs)
+        ? candidate.source_refs
+        : persistedSources.flatMap((source) => Array.isArray(source?.source_refs) ? source.source_refs : []);
+      return sourceUpdate(candidate, this.resolver.resolve({ source_refs: sourceRefs }, {
+        id: candidate.source_chunk_id, chunk_number: chunk?.chunk_number, segments
+      }));
     });
     const stats = updates.reduce((result, item) => {
       result.total += 1;

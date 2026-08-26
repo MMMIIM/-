@@ -106,11 +106,12 @@ test('Candidate 到 Canonical Requirement 的字段映射是显式且单向的',
   const mapped = mapRequirementCandidateToCanonicalInput({
     text: '提供审计日志。',
     category: 'technical',
+    source_refs: ['C001-S001'],
     source_text: '系统应提供审计日志。',
-    source_clause: '5.1',
+    source_clause_id: '5.1',
     mandatory_observed: true,
     requires_confirmation: false
-  }, 1);
+  }, 1, { allowBackendProvenance: true });
   assert.equal(mapped.content, '提供审计日志。');
   assert.equal(mapped.source_excerpt, '系统应提供审计日志。');
   assert.equal(mapped.source_clause_id, '5.1');
@@ -118,19 +119,20 @@ test('Candidate 到 Canonical Requirement 的字段映射是显式且单向的',
   assert.equal(Object.hasOwn(mapped, 'candidate_index'), false);
   assert.equal(Object.hasOwn(mapped, 'text'), false);
   assert.equal(mapRequirementCandidateToCanonicalInput({
-    content: '旧别名', source_excerpt: '旧来源'
+    text: '旧别名', source_refs: ['C001-S001'], source_text: '旧来源',
+    category: 'technical', mandatory_observed: false, requires_confirmation: false
   }, 1), null);
 });
 
 test('汇总在分配 REQ-ID 前只合并完全重复候选', () => {
   const candidates = aggregateRequirementCandidates([
     { chunk_number: 1, candidates: [
-      { text: '', source_text: '', category: 'technical', source_clause: null, mandatory_observed: false, requires_confirmation: false },
-      { text: '提供审计日志。', source_text: '来源一', category: 'technical', source_clause: null, mandatory_observed: false, requires_confirmation: false, source_page: 1, source_paragraph: 2 }
+      { text: '', source_refs: ['C001-S001'], category: 'technical', mandatory_observed: false, requires_confirmation: false },
+      { text: '提供审计日志。', source_refs: ['C001-S002'], source_text: '来源一', category: 'technical', source_clause_id: null, mandatory_observed: false, requires_confirmation: false, source_page: 1, source_paragraph: 2 }
     ] },
     { chunk_number: 2, candidates: [
-      { text: ' 提供审计日志。 ', source_text: '来源二', category: 'technical', source_clause: null, mandatory_observed: false, requires_confirmation: false, source_page: 2, source_paragraph: 5 },
-      { text: '支持标准接口。', source_text: '来源三', category: 'technical', source_clause: null, mandatory_observed: false, requires_confirmation: false, source_page: 2, source_paragraph: 6 }
+      { text: ' 提供审计日志。 ', source_refs: ['C002-S001'], source_text: '来源二', category: 'technical', source_clause_id: null, mandatory_observed: false, requires_confirmation: false, source_page: 2, source_paragraph: 5 },
+      { text: '支持标准接口。', source_refs: ['C002-S002'], source_text: '来源三', category: 'technical', source_clause_id: null, mandatory_observed: false, requires_confirmation: false, source_page: 2, source_paragraph: 6 }
     ] }
   ]);
   assert.deepEqual(candidates.map(({ req_id, content }) => ({ req_id, content })), [
@@ -144,7 +146,7 @@ test('汇总在分配 REQ-ID 前只合并完全重复候选', () => {
 
 test('所有候选均为空时汇总失败', () => {
   assert.throws(
-    () => aggregateRequirementCandidates([{ chunk_number: 1, candidates: [{ text: '', source_text: '', category: 'technical', source_clause: null, mandatory_observed: false, requires_confirmation: false }] }]),
+    () => aggregateRequirementCandidates([{ chunk_number: 1, candidates: [{ text: '', source_refs: ['C001-S001'], category: 'technical', mandatory_observed: false, requires_confirmation: false }] }]),
     (error) => error.code === 'NO_REQUIREMENTS_EXTRACTED'
   );
 });
@@ -167,10 +169,10 @@ test('长文件串行处理所有分片并在最终汇总后生成稳定基线�
         active -= 1;
         return {
           candidates: chunk.chunk_number === 1
-            ? [{ text: '提供审计日志。', source_text: '系统应提供审计日志。', category: 'technical', source_clause: null, mandatory_observed: false, requires_confirmation: false, source_page: 1, source_paragraph: 2 }]
+            ? [{ text: '提供审计日志。', source_refs: ['C001-S002'], source_text: '系统应提供审计日志。', category: 'technical', source_clause_id: null, mandatory_observed: false, requires_confirmation: false, source_page: 1, source_paragraph: 2 }]
             : [
-              { text: '提供审计日志。', source_text: '系统应提供审计日志。', category: 'technical', source_clause: null, mandatory_observed: false, requires_confirmation: false, source_page: 2, source_paragraph: 4 },
-              { text: '支持标准接口。', source_text: '支持标准接口。', category: 'technical', source_clause: null, mandatory_observed: false, requires_confirmation: false, source_page: 3, source_paragraph: 5 }
+              { text: '提供审计日志。', source_refs: ['C002-S001'], source_text: '系统应提供审计日志。', category: 'technical', source_clause_id: null, mandatory_observed: false, requires_confirmation: false, source_page: 2, source_paragraph: 4 },
+              { text: '支持标准接口。', source_refs: ['C002-S002'], source_text: '支持标准接口。', category: 'technical', source_clause_id: null, mandatory_observed: false, requires_confirmation: false, source_page: 3, source_paragraph: 5 }
             ],
           warnings: [], audit: { provider: 'semantic_gateway' }
         };
@@ -221,7 +223,7 @@ test('非法分片输出或汇总失败均不得完成任务', async () => {
       gateway: {
         extract: async () => {
           if (error) throw error;
-          return { candidates: [{ text: '', source_text: '要求一。', category: 'technical', source_clause: null, mandatory_observed: false, requires_confirmation: false }], warnings: [], audit: {} };
+          return { candidates: [{ text: '', source_refs: ['C001-S001'], category: 'technical', mandatory_observed: false, requires_confirmation: false }], warnings: [], audit: {} };
         }
       }
     });
@@ -312,7 +314,7 @@ test('数据库任务领取锁保证同一 job/chunk 不会被重复调用', asy
   const { service, repository } = serviceFor({
     extraction: extractionFor(['第四章 项目要求和有关说明', '系统应记录审计日志。']),
     chunkBudget: { singleCallThreshold: 12000, characterBudget: 8000, tokenBudget: 8000 },
-    gateway: { extract: async () => { gatewayCalls += 1; await Promise.resolve(); return { candidates: [{ text: '记录审计日志。', source_text: '系统应记录审计日志。', category: 'technical', source_clause: null, mandatory_observed: false, requires_confirmation: false, source_page: 1, source_paragraph: 2 }], warnings: [], audit: {} }; } }
+    gateway: { extract: async () => { gatewayCalls += 1; await Promise.resolve(); return { candidates: [{ text: '记录审计日志。', source_refs: ['C001-S002'], source_text: '系统应记录审计日志。', category: 'technical', source_clause_id: null, mandatory_observed: false, requires_confirmation: false, source_page: 1, source_paragraph: 2 }], warnings: [], audit: {} }; } }
   });
   let claimed = false;
   repository.claimParseJob = async () => {

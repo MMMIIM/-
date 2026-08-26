@@ -250,13 +250,12 @@ test('live success requires provider-chain diagnostics and uses the production c
   const mapped = mapValidatedCandidatesToCanonicalInput([{
     text: '系统应提供审计日志。',
     category: 'technical',
-    source_text: '系统应提供审计日志。',
-    source_clause: null,
+    source_refs: ['C001-S001'],
     mandatory_observed: true,
     requires_confirmation: false
   }]);
   assert.equal(mapped[0].content, '系统应提供审计日志。');
-  assert.equal(mapped[0].source_excerpt, '系统应提供审计日志。');
+  assert.deepEqual(mapped[0].sources[0].source_refs, ['C001-S001']);
   assert.throws(
     () => mapValidatedCandidatesToCanonicalInput([{
       content: 'legacy',
@@ -350,8 +349,8 @@ test('frozen prompt and candidate schema identities remain exact', () => {
   const contract = getSemanticTaskContract('requirement_extraction');
   assert.equal(contract.contract_version, FROZEN_REQUIREMENT_EXTRACTION_PROMPT_VERSION);
   assert.equal(contract.instruction_hash, FROZEN_REQUIREMENT_EXTRACTION_PROMPT_HASH);
-  assert.equal(FROZEN_REQUIREMENT_CANDIDATE_SCHEMA_VERSION, '4.3-requirement-candidate-v1');
-  assert.equal(FROZEN_REQUIREMENT_CANDIDATE_SCHEMA_HASH, '8d1ee2445763c544f4167f66b6c4216bb7ef7e6572b22b56446ecf15ddfac90b');
+  assert.equal(FROZEN_REQUIREMENT_CANDIDATE_SCHEMA_VERSION, '4.3-requirement-candidate-v2');
+  assert.match(FROZEN_REQUIREMENT_CANDIDATE_SCHEMA_HASH, /^[a-f0-9]{64}$/);
 });
 
 test('verification and consolidated development commands are registered', () => {

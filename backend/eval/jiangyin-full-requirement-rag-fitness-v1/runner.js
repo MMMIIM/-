@@ -73,8 +73,7 @@ function auditRequirementSource(requirement, paragraphs) {
   const resolver = new SourceLocationResolver({ maxSpanParagraphs: 8 });
   try {
     const result = resolver.resolve({
-      source_text: sourceText,
-      source_clause: requirement.source_clause_id,
+      source_refs: Array.isArray(requirement.source_refs) ? requirement.source_refs : [],
       source_hint: Number.isInteger(Number(requirement.source_paragraph)) ? Number(requirement.source_paragraph) : null
     }, { id: 'jiangyin-tender-read-only', segments: sourceSegmentsFor(requirement, paragraphs) });
     const location = result.location;

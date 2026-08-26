@@ -115,13 +115,13 @@ test('无法提取、损坏文件和不支持类型返回可读错误码', async
 test('requirement_extraction 通过 think transport 且模型候选不包含 REQ-ID', async () => {
   let inputs;
   const envelope = {
-    schema_version: '4.3-requirement-extraction-v1.1',
+    schema_version: '4.3-requirement-extraction-v2',
     task_type: 'requirement_extraction',
     status: 'success',
     data: {
       requirements: [
-        { text: '提供审计日志。', category: 'technical', source_text: '系统应提供审计日志。', source_clause: null, mandatory_observed: true, requires_confirmation: false },
-        { text: '支持标准接口。', category: 'technical', source_text: '支持标准 API 接入。', source_clause: null, mandatory_observed: true, requires_confirmation: false }
+        { text: '提供审计日志。', category: 'technical', source_refs: ['C001-S001'], mandatory_observed: true, requires_confirmation: false },
+        { text: '支持标准接口。', category: 'technical', source_refs: ['C001-S002'], mandatory_observed: true, requires_confirmation: false }
       ]
     },
     warnings: ['页码来自文本型 PDF。']
@@ -149,7 +149,7 @@ test('requirement_extraction 通过 think transport 且模型候选不包含 REQ
     '提供审计日志。', '支持标准接口。'
   ]);
   assert.deepEqual(Object.keys(result.candidates[0]).sort(), [
-    'category', 'mandatory_observed', 'requires_confirmation', 'source_clause', 'source_text', 'text'
+    'category', 'mandatory_observed', 'requires_confirmation', 'source_refs', 'text'
   ]);
   assert.equal(result.candidates.some((candidate) => 'req_id' in candidate), false);
   assert.equal(result.audit.raw_response_payload_json, raw);
@@ -157,7 +157,7 @@ test('requirement_extraction 通过 think transport 且模型候选不包含 REQ
 
 test('缺失唯一允许字段时不读取 result/text/answer', async () => {
   const forbidden = JSON.stringify({
-    schema_version: '4.3-requirement-extraction-v1.1', task_type: 'requirement_extraction', status: 'success',
+    schema_version: '4.3-requirement-extraction-v2', task_type: 'requirement_extraction', status: 'success',
     data: { requirements: [] }, warnings: []
   });
   const response = new Response(JSON.stringify({
@@ -174,12 +174,12 @@ test('非法网关候选拒绝缺失字段、空 source_text 和模型生成 REQ
   const invalidData = [
     {},
     { requirements: [{ req_id: 'REQ-999', content: 'content', source_excerpt: 'source' }] },
-    { requirements: [{ text: 'content', source_text: '' }] }
+    { requirements: [{ text: 'content', source_refs: [] }] }
   ];
   invalidData.forEach((data) => {
     assert.throws(() => validateRequirementExtractionEnvelope({
       envelope: {
-        schema_version: '4.3-requirement-extraction-v1.1', task_type: 'requirement_extraction',
+        schema_version: '4.3-requirement-extraction-v2', task_type: 'requirement_extraction',
         status: 'success', data, warnings: []
       },
       audit: { provider: 'semantic_gateway' }
@@ -187,10 +187,10 @@ test('非法网关候选拒绝缺失字段、空 source_text 和模型生成 REQ
   });
   const validForAggregation = validateRequirementExtractionEnvelope({
     envelope: {
-      schema_version: '4.3-requirement-extraction-v1.1', task_type: 'requirement_extraction', status: 'success',
+      schema_version: '4.3-requirement-extraction-v2', task_type: 'requirement_extraction', status: 'success',
       data: { requirements: [
-        { text: 'same', category: 'technical', source_text: 'one', source_clause: null, mandatory_observed: false, requires_confirmation: false },
-        { text: ' same ', category: 'technical', source_text: 'two', source_clause: null, mandatory_observed: false, requires_confirmation: false }
+        { text: 'same', category: 'technical', source_refs: ['C001-S001'], mandatory_observed: false, requires_confirmation: false },
+        { text: ' same ', category: 'technical', source_refs: ['C001-S002'], mandatory_observed: false, requires_confirmation: false }
       ] }, warnings: []
     },
     audit: { provider: 'semantic_gateway' }
@@ -375,15 +375,14 @@ test('完整 tender parse service 使用 V43 网关地址且忽略旧 DIFY 配�
   let requestedUrl;
   let persisted;
   const raw = JSON.stringify({
-    schema_version: '4.3-requirement-extraction-v1.1',
+    schema_version: '4.3-requirement-extraction-v2',
     task_type: 'requirement_extraction',
     status: 'success',
     data: {
       requirements: [{
         text: '系统应提供审计日志。',
         category: 'technical',
-        source_text: '招标文件要求提供审计日志。',
-        source_clause: null,
+        source_refs: ['C001-S001'],
         mandatory_observed: true,
         requires_confirmation: false
       }]

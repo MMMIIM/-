@@ -17,13 +17,13 @@ test('lexical corpus inspection is bounded and does not claim semantic adjudicat
 
 test('extraction audit reports source verification but leaves gold recall/precision unknown', () => {
   const requirements = [
-    { content: '系统支持接口', source_text: '系统支持接口', source_page: 1, source_paragraph: 1, source_hash: 'a', is_mandatory: false },
-    { content: '系统支持接口', source_text: '系统支持接口', source_page: 1, source_paragraph: 1, source_hash: 'a', is_mandatory: false },
-    { content: '未找到', source_text: '未找到', source_page: 3, source_paragraph: 3, source_hash: 'b', is_mandatory: false }
+    { content: '系统支持接口', source_text: '系统支持接口', source_refs: ['C001-S001'], source_page: 1, source_paragraph: 1, source_hash: 'a', is_mandatory: false },
+    { content: '系统支持接口', source_text: '系统支持接口', source_refs: ['C001-S001'], source_page: 1, source_paragraph: 1, source_hash: 'a', is_mandatory: false },
+    { content: '未找到', source_text: '未找到', source_refs: ['C001-S999'], source_page: 3, source_paragraph: 3, source_hash: 'b', is_mandatory: false }
   ];
   const paragraphs = [
-    { paragraph: 1, page: 1, text: '系统支持接口', source_start_offset: 0, source_end_offset: 6 },
-    { paragraph: 2, page: 1, text: '其他内容', source_start_offset: 7, source_end_offset: 11 }
+    { paragraph: 1, page: 1, source_ref: 'C001-S001', text: '系统支持接口', source_start_offset: 0, source_end_offset: 6 },
+    { paragraph: 2, page: 1, source_ref: 'C001-S002', text: '其他内容', source_start_offset: 7, source_end_offset: 11 }
   ];
   const result = extractionAudit(requirements, paragraphs);
   assert.equal(result.recall, null);
