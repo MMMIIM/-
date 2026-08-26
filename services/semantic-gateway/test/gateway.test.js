@@ -312,12 +312,22 @@ test('Gateway preserves only the six canonical Requirement Candidate fields', as
   }
 });
 
-test('probe-only diagnostics expose model content and validator details without changing canonical response reads', async () => {
+test('probe-only diagnostics expose safe structure and validator details without raw content', async () => {
   const key = 'gateway-diagnostic-key';
   const provider = {
     model: 'fixture-invalid',
     async invoke() {
-      const parsed = { schema_version: '4.3-evidence-support-assessment-v1', data: { assessments: [] }, warnings: [] };
+      const parsed = {
+        requirements: [{
+          text: '系统应提供审计日志。',
+          category: 'technical',
+          source_text: '系统应提供审计日志。',
+          source_clause: null,
+          mandatory_observed: true,
+          requires_confirmation: false,
+          extra: 'must not be echoed'
+        }]
+      };
       return {
         data: parsed,
         provider_audit: {
@@ -330,7 +340,6 @@ test('probe-only diagnostics expose model content and validator details without 
           provider_http_reached: false,
           failure_stage: 'FETCH_INVOKED',
           safe_error_code: 'FETCH_FAILED',
-          model_content: JSON.stringify(parsed),
           parsed_json: parsed
         }
       };
@@ -348,14 +357,123 @@ test('probe-only diagnostics expose model content and validator details without 
     const body = await response.json();
     assert.equal(body.error_code, 'OUTPUT_SCHEMA_INVALID');
     assert.equal(body.probe_diagnostics.json_parse_success, true);
-    assert.equal(typeof body.probe_diagnostics.model_content, 'string');
+    assert.equal(Object.hasOwn(body.probe_diagnostics, 'model_content'), false);
+    assert.equal(Object.hasOwn(body.probe_diagnostics, 'parsed_json'), false);
+    assert.equal(body.probe_diagnostics.structural_summary.available, true);
+    assert.equal(body.probe_diagnostics.structural_summary.top_level_type, 'object');
+    assert.deepEqual(body.probe_diagnostics.structural_summary.top_level_keys, ['requirements']);
+    assert.equal(body.probe_diagnostics.structural_summary.requirements_present, true);
+    assert.equal(body.probe_diagnostics.structural_summary.requirements_type, 'array');
+    assert.equal(body.probe_diagnostics.structural_summary.requirements_count, 1);
+    assert.deepEqual(body.probe_diagnostics.structural_summary.candidate_summaries[0].extra_keys, ['extra']);
+    assert.equal(body.probe_diagnostics.structural_summary.candidate_summaries[0].text_empty, false);
     assert.equal(body.probe_diagnostics.schema_validation_errors.length, 1);
-    assert.equal(body.probe_diagnostics.schema_validation_errors[0].validator_code, 'OUTPUT_SCHEMA_INVALID');
+    assert.equal(body.probe_diagnostics.schema_validation_errors[0].validator_code, 'additionalProperties');
     assert.equal(body.probe_diagnostics.provider_adapter_invoked, true);
     assert.equal(body.probe_diagnostics.fetch_invoked, true);
     assert.equal(body.probe_diagnostics.provider_http_reached, false);
     assert.equal(body.probe_diagnostics.failure_stage, 'FETCH_INVOKED');
     assert.equal(body.probe_diagnostics.safe_error_code, 'FETCH_FAILED');
+    assert.doesNotMatch(JSON.stringify(body), /must not be echoed|系统应提供审计日志/);
+  } finally {
+    await new Promise(resolve => server.close(resolve));
+  }
+});
+
+test('Requirement Extraction probe diagnostics distinguish candidate schema failures safely', async () => {
+  const key = 'gateway-requirement-diagnostic-key';
+  const candidate = {
+    text: '系统应提供审计日志。',
+    category: 'technical',
+    source_text: '系统应提供审计日志。',
+    source_clause: null,
+    mandatory_observed: true,
+    requires_confirmation: false
+  };
+  const invalidCases = [
+    {
+      name: 'extra field',
+      candidate: { ...candidate, content: candidate.text },
+      validator: 'additionalProperties',
+      path: 'data.requirements[0].content'
+    },
+    {
+      name: 'missing field',
+      candidate: (() => { const value = { ...candidate }; delete value.source_text; return value; })(),
+      validator: 'required',
+      path: 'data.requirements[0].source_text'
+    },
+    {
+      name: 'wrong enum',
+      candidate: { ...candidate, category: 'not-canonical' },
+      validator: 'enum',
+      path: 'data.requirements[0].category'
+    },
+    {
+      name: 'wrong boolean',
+      candidate: { ...candidate, mandatory_observed: 'true' },
+      validator: 'type',
+      path: 'data.requirements[0].mandatory_observed'
+    },
+    {
+      name: 'wrong source clause type',
+      candidate: { ...candidate, source_clause: 12 },
+      validator: 'type',
+      path: 'data.requirements[0].source_clause'
+    }
+  ];
+  for (const invalidCase of invalidCases) {
+    const server = createStandaloneGatewayServer({
+      config: {
+        apiKey: key,
+        providerName: 'mock',
+        provider: { model: 'fixture', async invoke() { return { data: { requirements: [invalidCase.candidate] }, provider_audit: { parsed_json: { requirements: [invalidCase.candidate] } } }; } }
+      }
+    });
+    await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+    try {
+      const response = await fetch(`http://127.0.0.1:${server.address().port}/workflows/run`, {
+        method: 'POST',
+        headers: { authorization: `Bearer ${key}`, 'content-type': 'application/json', 'x-semantic-gateway-diagnostic': 'probe-v1' },
+        body: JSON.stringify({ inputs: { task_type: 'requirement_extraction', task_instruction: 'x', task_payload_json: '{}' } })
+      });
+      assert.equal(response.status, 422, invalidCase.name);
+      const body = await response.json();
+      const diagnostic = body.probe_diagnostics;
+      assert.equal(body.error_code, 'OUTPUT_SCHEMA_INVALID', invalidCase.name);
+      assert.equal(diagnostic.structural_summary.available, true, invalidCase.name);
+      assert.equal(diagnostic.structural_summary.requirements_count, 1, invalidCase.name);
+      assert.equal(diagnostic.schema_validation_errors.some(error => error.validator_code === invalidCase.validator && error.path === invalidCase.path), true, invalidCase.name);
+      assert.doesNotMatch(JSON.stringify(diagnostic), /系统应提供审计日志|content代替/);
+      assert.equal(Object.hasOwn(diagnostic, 'model_content'), false, invalidCase.name);
+      assert.equal(Object.hasOwn(diagnostic, 'parsed_json'), false, invalidCase.name);
+    } finally {
+      await new Promise(resolve => server.close(resolve));
+    }
+  }
+});
+
+test('probe diagnostics explicitly mark structural summary unavailable when JSON is absent', async () => {
+  const key = 'gateway-unavailable-structure-key';
+  const server = createStandaloneGatewayServer({
+    config: {
+      apiKey: key,
+      providerName: 'mock',
+      provider: { model: 'fixture', async invoke() { throw Object.assign(new Error('invalid output'), { code: 'PROVIDER_OUTPUT_INVALID', provider_audit: { json_parse_success: false } }); } }
+    }
+  });
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  try {
+    const response = await fetch(`http://127.0.0.1:${server.address().port}/workflows/run`, {
+      method: 'POST',
+      headers: { authorization: `Bearer ${key}`, 'content-type': 'application/json', 'x-semantic-gateway-diagnostic': 'probe-v1' },
+      body: JSON.stringify({ inputs: { task_type: 'requirement_extraction', task_instruction: 'x', task_payload_json: '{}' } })
+    });
+    const body = await response.json();
+    assert.equal(body.probe_diagnostics.structural_summary.available, false);
+    assert.deepEqual(body.probe_diagnostics.structural_summary.candidate_summaries, []);
+    assert.equal(Object.hasOwn(body.probe_diagnostics, 'model_content'), false);
+    assert.equal(Object.hasOwn(body.probe_diagnostics, 'parsed_json'), false);
   } finally {
     await new Promise(resolve => server.close(resolve));
   }

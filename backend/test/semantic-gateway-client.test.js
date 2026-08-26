@@ -119,16 +119,16 @@ test('response_payload_json 必须保留为原始字符串输入', async () => {
   await assert.rejects(
     () => client(async () => gatewayResponse(gatewayEnvelope())).run(request),
     (error) => error.code === 'GATEWAY_ENVELOPE_INVALID'
-      && error.audit.raw_response_payload_json?.schema_version === '4.3-gateway'
+      && !Object.hasOwn(error.audit, 'raw_response_payload_json')
   );
 });
 
-test('response_payload_json 非法 JSON 返回 GATEWAY_INVALID_JSON 并保留原始字符串审计', async () => {
+test('response_payload_json 非法 JSON 返回 GATEWAY_INVALID_JSON 且普通错误审计不含原始内容', async () => {
   await assert.rejects(
     () => client(async () => gatewayResponse('bad-json')).run(request),
     (error) => {
       assert.equal(error.code, 'GATEWAY_INVALID_JSON');
-      assert.equal(error.audit.raw_response_payload_json, 'bad-json');
+      assert.equal(Object.hasOwn(error.audit, 'raw_response_payload_json'), false);
       return true;
     }
   );
@@ -202,6 +202,92 @@ test('合法 Gateway structured error 保留受控 technical error code', async 
         && !('message' in error.audit)
     );
   }
+});
+
+test('生产请求默认不携带诊断 header，probe-v1 必须显式 opt-in', async () => {
+  const seenHeaders = [];
+  const raw = JSON.stringify(gatewayEnvelope());
+  const fetchImpl = async (_url, options) => {
+    seenHeaders.push(new Headers(options.headers));
+    return gatewayResponse(raw);
+  };
+  await client(fetchImpl).run(request);
+  await client(fetchImpl).run(request, { diagnosticMode: 'probe-v1' });
+  assert.equal(seenHeaders[0].has('x-semantic-gateway-diagnostic'), false);
+  assert.equal(seenHeaders[1].get('x-semantic-gateway-diagnostic'), 'probe-v1');
+});
+
+test('probe-v1 仅传递安全 Gateway 诊断，普通错误不暴露 probe 数据', async () => {
+  const diagnostics = {
+    provider_adapter_invoked: true,
+    fetch_invoked: true,
+    provider_http_reached: true,
+    provider_http_status: 200,
+    current_stage: 'MODEL_CONTENT_EXTRACTED',
+    failure_stage: null,
+    safe_error_code: null,
+    finish_reason: 'stop',
+    output_truncated: false,
+    json_parse_success: true,
+    model_content: 'MODEL_SECRET_CONTENT',
+    parsed_json: { requirements: [{ text: 'MODEL_SECRET_CONTENT' }] },
+    schema_validation_errors: [{
+      path: 'data.requirements[0].extra',
+      validator_code: 'additionalProperties',
+      expected: 'no additional properties',
+      observed_category: 'string',
+      message: 'Unsupported candidate field.'
+    }],
+    structural_summary: {
+      available: true,
+      top_level_type: 'object',
+      top_level_keys: ['requirements'],
+      requirements_present: true,
+      requirements_type: 'array',
+      requirements_count: 1,
+      candidate_summaries: [{
+        candidate_index: 0,
+        keys: ['text', 'extra'],
+        missing_keys: ['category'],
+        extra_keys: ['extra'],
+        text_type: 'string',
+        text_empty: false,
+        category_type: 'missing',
+        category_value: null,
+        source_text_type: 'string',
+        source_text_empty: false,
+        source_clause_type: 'null',
+        mandatory_observed_type: 'boolean',
+        requires_confirmation_type: 'boolean'
+      }]
+    }
+  };
+  const response = new Response(JSON.stringify({
+    error_code: 'OUTPUT_SCHEMA_INVALID',
+    probe_diagnostics: diagnostics
+  }), { status: 422, headers: { 'Content-Type': 'application/json' } });
+  await assert.rejects(
+    () => client(async () => response.clone()).run(request, { diagnosticMode: 'probe-v1' }),
+    error => {
+      assert.equal(error.code, 'OUTPUT_SCHEMA_INVALID');
+      assert.equal(error.audit.probe_diagnostics.provider_http_status, 200);
+      assert.equal(error.audit.probe_diagnostics.schema_validation_errors[0].path, 'data.requirements[0].extra');
+      assert.equal(error.audit.probe_diagnostics.structural_summary.candidate_summaries[0].extra_keys[0], 'extra');
+      assert.equal(Object.hasOwn(error.audit.probe_diagnostics, 'model_content'), false);
+      assert.equal(Object.hasOwn(error.audit.probe_diagnostics, 'parsed_json'), false);
+      assert.doesNotMatch(JSON.stringify(error.audit), /MODEL_SECRET_CONTENT/);
+      return true;
+    }
+  );
+  await assert.rejects(
+    () => client(async () => response.clone()).run(request),
+    error => {
+      assert.equal(error.code, 'OUTPUT_SCHEMA_INVALID');
+      assert.equal(Object.hasOwn(error.audit, 'probe_diagnostics'), false);
+      assert.doesNotMatch(JSON.stringify(error.audit), /MODEL_SECRET_CONTENT/);
+      return true;
+    }
+  );
 });
 
 test('unknown、非法 JSON、HTML 与空 body 安全回退为 GATEWAY_HTTP_ERROR', async () => {

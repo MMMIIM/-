@@ -14,7 +14,139 @@ function observedCategory(value) {
   return typeof value;
 }
 
-function validationDiagnostics(error, data) {
+const REQUIREMENT_CANDIDATE_FIELDS = Object.freeze([
+  'text', 'category', 'source_text', 'source_clause',
+  'mandatory_observed', 'requires_confirmation'
+]);
+const REQUIREMENT_CATEGORIES = Object.freeze([
+  'functional', 'technical', 'performance', 'security', 'data',
+  'implementation', 'delivery', 'acceptance', 'service', 'constraint', 'other'
+]);
+
+function requirementValidationDiagnostics(data) {
+  const errors = [];
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    return [{
+      path: 'data',
+      expected: 'object',
+      observed_category: observedCategory(data),
+      validator_code: 'type',
+      message: 'Task data must be an object.'
+    }];
+  }
+  const dataKeys = Object.keys(data);
+  for (const key of dataKeys.filter(key => key !== 'requirements')) {
+    errors.push({
+      path: `data.${key}`,
+      expected: 'no additional properties',
+      observed_category: observedCategory(data[key]),
+      validator_code: 'additionalProperties',
+      message: 'Unsupported task data field.'
+    });
+  }
+  if (!Object.prototype.hasOwnProperty.call(data, 'requirements')) {
+    errors.push({
+      path: 'data.requirements',
+      expected: 'required field',
+      observed_category: 'missing',
+      validator_code: 'required',
+      message: 'Required canonical field is missing.'
+    });
+    return errors;
+  }
+  if (!Array.isArray(data.requirements)) {
+    errors.push({
+      path: 'data.requirements',
+      expected: 'array',
+      observed_category: observedCategory(data.requirements),
+      validator_code: 'type',
+      message: 'Requirements must be an array.'
+    });
+    return errors;
+  }
+  data.requirements.forEach((candidate, index) => {
+    const path = `data.requirements[${index}]`;
+    if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) {
+      errors.push({
+        path,
+        expected: 'object',
+        observed_category: observedCategory(candidate),
+        validator_code: 'type',
+        message: 'Requirement candidate must be an object.'
+      });
+      return;
+    }
+    for (const key of Object.keys(candidate).filter(key => !REQUIREMENT_CANDIDATE_FIELDS.includes(key))) {
+      errors.push({
+        path: `${path}.${key}`,
+        expected: 'no additional properties',
+        observed_category: observedCategory(candidate[key]),
+        validator_code: 'additionalProperties',
+        message: 'Unsupported candidate field.'
+      });
+    }
+    for (const key of REQUIREMENT_CANDIDATE_FIELDS.filter(key => !Object.prototype.hasOwnProperty.call(candidate, key))) {
+      errors.push({
+        path: `${path}.${key}`,
+        expected: 'required field',
+        observed_category: 'missing',
+        validator_code: 'required',
+        message: 'Required candidate field is missing.'
+      });
+    }
+    if (typeof candidate.text !== 'string' || !candidate.text.trim()) {
+      errors.push({
+        path: `${path}.text`,
+        expected: 'non-empty string',
+        observed_category: observedCategory(candidate.text),
+        validator_code: typeof candidate.text === 'string' ? 'minLength' : 'type',
+        message: 'Candidate text must be non-empty text.'
+      });
+    }
+    if (typeof candidate.source_text !== 'string' || !candidate.source_text.trim()) {
+      errors.push({
+        path: `${path}.source_text`,
+        expected: 'non-empty string',
+        observed_category: observedCategory(candidate.source_text),
+        validator_code: typeof candidate.source_text === 'string' ? 'minLength' : 'type',
+        message: 'Candidate source_text must be non-empty text.'
+      });
+    }
+    if (typeof candidate.category !== 'string' || !REQUIREMENT_CATEGORIES.includes(candidate.category)) {
+      errors.push({
+        path: `${path}.category`,
+        expected: `one of: ${REQUIREMENT_CATEGORIES.join(', ')}`,
+        observed_category: observedCategory(candidate.category),
+        validator_code: 'enum',
+        message: 'Candidate category is not a canonical enum value.'
+      });
+    }
+    if (candidate.source_clause !== null && typeof candidate.source_clause !== 'string') {
+      errors.push({
+        path: `${path}.source_clause`,
+        expected: 'string or null',
+        observed_category: observedCategory(candidate.source_clause),
+        validator_code: 'type',
+        message: 'Candidate source_clause must be a string or null.'
+      });
+    }
+    for (const key of ['mandatory_observed', 'requires_confirmation']) {
+      if (typeof candidate[key] !== 'boolean') {
+        errors.push({
+          path: `${path}.${key}`,
+          expected: 'boolean',
+          observed_category: observedCategory(candidate[key]),
+          validator_code: 'type',
+          message: `Candidate ${key} must be boolean.`
+        });
+      }
+    }
+  });
+  return errors;
+}
+
+function validationDiagnostics(error, data, taskType) {
+  if (taskType === 'requirement_extraction') return requirementValidationDiagnostics(data);
   const message = String(error?.message || 'schema validation failed');
   const envelopeLike = data && typeof data === 'object' && !Array.isArray(data)
     && Object.prototype.hasOwnProperty.call(data, 'schema_version')
@@ -75,7 +207,7 @@ export function createSemanticTaskRouter({ provider } = {}) {
         data = validateTaskData(taskType, providerResult?.data, payload);
       } catch (error) {
         error.provider_audit = providerResult?.provider_audit || null;
-        error.validation_diagnostics = validationDiagnostics(error, providerResult?.data);
+        error.validation_diagnostics = validationDiagnostics(error, providerResult?.data, taskType);
         if (!error.code) {
           error.code = error.message.includes('source-bound')
             ? 'SUPPORT_SPAN_INVALID'

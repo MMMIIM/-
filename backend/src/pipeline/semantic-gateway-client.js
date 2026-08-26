@@ -4,6 +4,7 @@ import { readSemanticGatewayRuntimeConfig } from '../../../packages/semantic-con
 
 const VALID_GATEWAY_STATUSES = new Set(['success', 'failed']);
 const CONTROLLED_GATEWAY_ERROR_CODES = new Set(SEMANTIC_GATEWAY_ERROR_CODES);
+const PROBE_DIAGNOSTIC_MODE = 'probe-v1';
 
 function normalizeBaseUrl(value) {
   return String(value || '').trim().replace(/\/+$/, '');
@@ -70,7 +71,92 @@ function safeContentType(response) {
   return contentType.startsWith('application/json') || contentType.startsWith('application/problem+json');
 }
 
-async function parseStructuredGatewayError(response) {
+function safeDiagnosticScalar(value, maxLength = 240) {
+  return typeof value === 'string' ? value.slice(0, maxLength) : null;
+}
+
+function safeValidationDiagnostics(value) {
+  if (!Array.isArray(value)) return [];
+  return value.slice(0, 100).map(item => ({
+    path: safeDiagnosticScalar(item?.path, 200),
+    validator_code: safeDiagnosticScalar(item?.validator_code, 80),
+    expected: safeDiagnosticScalar(item?.expected, 240),
+    observed_category: safeDiagnosticScalar(item?.observed_category, 80),
+    message: safeDiagnosticScalar(item?.message, 240)
+  }));
+}
+
+function safeStructuralSummary(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return { available: false };
+  }
+  const candidateSummaries = Array.isArray(value.candidate_summaries)
+    ? value.candidate_summaries.slice(0, 200).map(candidate => ({
+      candidate_index: Number.isInteger(candidate?.candidate_index) ? candidate.candidate_index : null,
+      keys: Array.isArray(candidate?.keys) ? candidate.keys.filter(key => typeof key === 'string').slice(0, 40).map(key => key.slice(0, 80)) : [],
+      missing_keys: Array.isArray(candidate?.missing_keys) ? candidate.missing_keys.filter(key => typeof key === 'string').slice(0, 20).map(key => key.slice(0, 80)) : [],
+      extra_keys: Array.isArray(candidate?.extra_keys) ? candidate.extra_keys.filter(key => typeof key === 'string').slice(0, 20).map(key => key.slice(0, 80)) : [],
+      text_type: safeDiagnosticScalar(candidate?.text_type, 40),
+      text_empty: typeof candidate?.text_empty === 'boolean' ? candidate.text_empty : null,
+      category_type: safeDiagnosticScalar(candidate?.category_type, 40),
+      category_value: safeDiagnosticScalar(candidate?.category_value, 80),
+      source_text_type: safeDiagnosticScalar(candidate?.source_text_type, 40),
+      source_text_empty: typeof candidate?.source_text_empty === 'boolean' ? candidate.source_text_empty : null,
+      source_clause_type: safeDiagnosticScalar(candidate?.source_clause_type, 40),
+      mandatory_observed_type: safeDiagnosticScalar(candidate?.mandatory_observed_type, 40),
+      requires_confirmation_type: safeDiagnosticScalar(candidate?.requires_confirmation_type, 40)
+    }))
+    : [];
+  return {
+    available: value.available === true,
+    top_level_type: safeDiagnosticScalar(value.top_level_type, 40),
+    top_level_keys: Array.isArray(value.top_level_keys)
+      ? value.top_level_keys.filter(key => typeof key === 'string').slice(0, 40).map(key => key.slice(0, 80))
+      : [],
+    requirements_present: typeof value.requirements_present === 'boolean' ? value.requirements_present : null,
+    requirements_type: safeDiagnosticScalar(value.requirements_type, 40),
+    requirements_count: Number.isInteger(value.requirements_count) ? value.requirements_count : null,
+    candidate_summaries: candidateSummaries,
+    candidate_summaries_truncated: value.candidate_summaries_truncated === true
+  };
+}
+
+function safeProbeDiagnostics(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const safe = {
+    json_parse_success: typeof value.json_parse_success === 'boolean' ? value.json_parse_success : null,
+    markdown_fence_present: typeof value.markdown_fence_present === 'boolean' ? value.markdown_fence_present : null,
+    provider_http_status: Number.isInteger(value.provider_http_status) ? value.provider_http_status : null,
+    provider_adapter_invoked: value.provider_adapter_invoked === true,
+    fetch_invoked: value.fetch_invoked === true,
+    provider_http_reached: value.provider_http_reached === true,
+    current_stage: safeDiagnosticScalar(value.current_stage, 80),
+    failure_stage: safeDiagnosticScalar(value.failure_stage, 80),
+    error_name: safeDiagnosticScalar(value.error_name, 80),
+    safe_error_code: safeDiagnosticScalar(value.safe_error_code, 80),
+    safe_error_message: safeDiagnosticScalar(value.safe_error_message, 240),
+    cause_name: safeDiagnosticScalar(value.cause_name, 80),
+    cause_code: safeDiagnosticScalar(value.cause_code, 80),
+    cause_message: safeDiagnosticScalar(value.cause_message, 240),
+    finish_reason: safeDiagnosticScalar(value.finish_reason, 40),
+    prompt_tokens: Number.isInteger(value.prompt_tokens) ? value.prompt_tokens : null,
+    completion_tokens: Number.isInteger(value.completion_tokens) ? value.completion_tokens : null,
+    total_tokens: Number.isInteger(value.total_tokens) ? value.total_tokens : null,
+    response_model: safeDiagnosticScalar(value.response_model, 120),
+    response_id: safeDiagnosticScalar(value.response_id, 128),
+    provider_trace_id: safeDiagnosticScalar(value.provider_trace_id, 128),
+    model_content_length_chars: Number.isInteger(value.model_content_length_chars) ? value.model_content_length_chars : null,
+    output_truncated: value.output_truncated === true,
+    json_parse_error_offset: Number.isInteger(value.json_parse_error_offset) ? value.json_parse_error_offset : null,
+    schema_validation_errors: safeValidationDiagnostics(value.schema_validation_errors),
+    envelope_validation_errors: safeValidationDiagnostics(value.envelope_validation_errors),
+    legacy_schema_detected: value.legacy_schema_detected === true,
+    structural_summary: safeStructuralSummary(value.structural_summary)
+  };
+  return safe;
+}
+
+async function parseStructuredGatewayError(response, { diagnosticMode = null } = {}) {
   if (!safeContentType(response)) return null;
   let body;
   try {
@@ -83,6 +169,10 @@ async function parseStructuredGatewayError(response) {
   const audit = { http_status: response.status, gateway_error_code: body.error_code };
   if (typeof body.request_id === 'string' && body.request_id.length > 0 && body.request_id.length <= 128) {
     audit.request_id = body.request_id;
+  }
+  if (diagnosticMode === PROBE_DIAGNOSTIC_MODE) {
+    const diagnostics = safeProbeDiagnostics(body.probe_diagnostics);
+    if (diagnostics) audit.probe_diagnostics = diagnostics;
   }
   return { code: body.error_code, audit };
 }
@@ -145,8 +235,11 @@ export function classifyGatewayPayload(raw, normalized = raw) {
   return 'extra_commentary';
 }
 
-function validateGatewayEnvelope(value, requestedTaskType, rawResponsePayloadJson, taskSpec = getSemanticGatewayTask(requestedTaskType)) {
-  const audit = auditFor(requestedTaskType, { raw_response_payload_json: rawResponsePayloadJson });
+function validateGatewayEnvelope(value, requestedTaskType, taskSpec = getSemanticGatewayTask(requestedTaskType)) {
+  // Keep provider/model output out of ordinary error audits. The raw payload is
+  // retained only on successful return values, where the existing pipeline can
+  // apply its normal audit sanitizer before persistence.
+  const audit = auditFor(requestedTaskType);
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     throw new SemanticGatewayError('GATEWAY_ENVELOPE_INVALID', '网关 envelope 必须是对象。', audit);
   }
@@ -212,7 +305,7 @@ export class SemanticGatewayClient {
     });
   }
 
-  async run({ task_type: taskType, task_instruction: taskInstruction, task_payload_json: taskPayloadJson } = {}) {
+  async run({ task_type: taskType, task_instruction: taskInstruction, task_payload_json: taskPayloadJson } = {}, { diagnosticMode = null } = {}) {
     if (this.configuredTaskType && taskType !== this.configuredTaskType) {
       throw new SemanticGatewayError(
         'TASK_UNSUPPORTED',
@@ -259,12 +352,14 @@ export class SemanticGatewayClient {
 
     let response;
     try {
+      const headers = {
+        Authorization: `Bearer ${this.apiKey}`,
+        'Content-Type': 'application/json'
+      };
+      if (diagnosticMode === PROBE_DIAGNOSTIC_MODE) headers['x-semantic-gateway-diagnostic'] = PROBE_DIAGNOSTIC_MODE;
       response = await this.fetchImpl(`${this.apiBase}/workflows/run`, {
         method: 'POST',
-        headers: {
-          Authorization: `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json'
-        },
+        headers,
         body: JSON.stringify({
           inputs: {
             task_type: taskType,
@@ -293,7 +388,7 @@ export class SemanticGatewayClient {
     }
 
     if (!response.ok) {
-      const structuredError = await parseStructuredGatewayError(response);
+      const structuredError = await parseStructuredGatewayError(response, { diagnosticMode });
       this.diagnose(structuredError?.code || 'GATEWAY_HTTP_ERROR');
       if (structuredError) {
         throw new SemanticGatewayError(
@@ -336,6 +431,7 @@ export class SemanticGatewayClient {
 
     const rawResponsePayloadJson = outputs.response_payload_json;
     const audit = auditFor(taskType, { raw_response_payload_json: rawResponsePayloadJson });
+    const errorAudit = auditFor(taskType);
     let normalized;
     try {
       normalized = normalizeGatewayTransport(rawResponsePayloadJson, {
@@ -343,7 +439,7 @@ export class SemanticGatewayClient {
       });
     } catch (error) {
       if (error instanceof SemanticGatewayError) {
-        error.audit = { ...audit, error_code: error.code };
+        error.audit = { ...errorAudit, error_code: error.code };
         throw error;
       }
       throw error;
@@ -359,11 +455,11 @@ export class SemanticGatewayClient {
         responseClassification === 'truncated_json'
           ? 'response_payload_json 在完整 JSON 结束前被截断。'
           : 'response_payload_json 不是可整体解析的 JSON。',
-        { ...audit, response_classification: responseClassification }
+        { ...errorAudit, response_classification: responseClassification }
       );
     }
     try {
-      validateGatewayEnvelope(envelope, taskType, rawResponsePayloadJson, taskSpec);
+      validateGatewayEnvelope(envelope, taskType, taskSpec);
     } catch (error) {
       if (error instanceof SemanticGatewayError) {
         error.audit = { ...error.audit, response_classification: 'wrong_schema' };
