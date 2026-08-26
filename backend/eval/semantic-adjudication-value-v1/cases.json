@@ -1,0 +1,152 @@
+{
+  "schema_version": "semantic-adjudication-value-v1",
+  "oracle_owner": "HUMAN_AUTHORED_BEFORE_MODEL_CALL",
+  "model_generated_oracle": 0,
+  "data_classification": "SAFE_SYNTHETIC",
+  "cases": [
+    {
+      "case_id": "SAV1-A01",
+      "category": "HIGH_RELEVANCE_NOT_SUFFICIENT",
+      "requirement_text": "系统应在并发用户不少于1000时保持稳定响应。",
+      "evidence_text": "平台具备高并发访问能力，已服务多个大型客户。",
+      "deterministic_findings": { "semantic_relationship": "unknown", "quantitative_match": "unknown", "support_sufficiency": "unknown" },
+      "unresolved_question": "该材料是否足以证明不少于1000并发用户的稳定响应能力？",
+      "expected_semantic_relationship": "partial",
+      "allowed_reason_code_family": ["SUPPORT_INSUFFICIENT", "QUANTITATIVE_MISMATCH"],
+      "unsafe_if_supported": true,
+      "oracle_rationale": "主题相关但没有对应并发实测或可核验数量，不能形成 full_support。"
+    },
+    {
+      "case_id": "SAV1-A02",
+      "category": "HIGH_RELEVANCE_NOT_SUFFICIENT",
+      "requirement_text": "投标人应提供通过国家认可检测的安全产品检测报告。",
+      "evidence_text": "公司重视信息安全，产品采用多层安全防护机制。",
+      "deterministic_findings": { "semantic_relationship": "unknown", "source_authority": "unknown", "support_sufficiency": "unknown" },
+      "unresolved_question": "该材料是否足以证明存在国家认可检测报告？",
+      "expected_semantic_relationship": "partial",
+      "allowed_reason_code_family": ["SUPPORT_INSUFFICIENT", "SOURCE_AUTHORITY_INSUFFICIENT"],
+      "unsafe_if_supported": true,
+      "oracle_rationale": "安全主题相关，但没有检测机构、报告编号或报告来源。"
+    },
+    {
+      "case_id": "SAV1-B01",
+      "category": "SEMANTIC_PARAPHRASE",
+      "requirement_text": "系统应支持将审计记录导出为CSV文件。",
+      "evidence_text": "审计日志可以下载成CSV格式文件。",
+      "deterministic_findings": { "semantic_relationship": "unknown", "support_sufficiency": "unknown" },
+      "unresolved_question": "两段表述是否描述同一项CSV审计记录导出能力？",
+      "expected_semantic_relationship": "direct",
+      "allowed_reason_code_family": [],
+      "unsafe_if_supported": false,
+      "oracle_rationale": "下载成CSV与导出为CSV在对象和结果格式上语义等价。"
+    },
+    {
+      "case_id": "SAV1-B02",
+      "category": "SEMANTIC_PARAPHRASE",
+      "requirement_text": "系统应支持统一身份认证。",
+      "evidence_text": "用户可通过LDAP或AD完成单点登录。",
+      "deterministic_findings": { "semantic_relationship": "unknown", "entity_match": "unknown", "support_sufficiency": "unknown" },
+      "unresolved_question": "LDAP/AD单点登录是否足以支持统一身份认证要求？",
+      "expected_semantic_relationship": "direct",
+      "allowed_reason_code_family": [],
+      "unsafe_if_supported": false,
+      "oracle_rationale": "企业身份目录单点登录是统一身份认证的具体实现方式。"
+    },
+    {
+      "case_id": "SAV1-C01",
+      "category": "ROLE_RESPONSIBILITY_STRENGTH",
+      "requirement_text": "投标人应独立完成本项目的系统实施。",
+      "evidence_text": "公司曾参与某市系统建设项目，负责部分技术支持。",
+      "deterministic_findings": { "semantic_relationship": "unknown", "status_match": "unknown", "support_sufficiency": "unknown" },
+      "unresolved_question": "参与建设并负责部分技术支持是否足以证明投标人独立完成系统实施？",
+      "expected_semantic_relationship": "partial",
+      "allowed_reason_code_family": ["SUPPORT_INSUFFICIENT"],
+      "unsafe_if_supported": true,
+      "oracle_rationale": "参与和部分支持不能推出独立承担全部实施责任。"
+    },
+    {
+      "case_id": "SAV1-C02",
+      "category": "ROLE_RESPONSIBILITY_STRENGTH",
+      "requirement_text": "投标人应负责平台上线后的持续运维。",
+      "evidence_text": "项目完成后为客户提供技术咨询和故障协助。",
+      "deterministic_findings": { "semantic_relationship": "unknown", "status_match": "unknown", "support_sufficiency": "unknown" },
+      "unresolved_question": "技术咨询和故障协助是否等同于承担持续运维责任？",
+      "expected_semantic_relationship": "partial",
+      "allowed_reason_code_family": ["SUPPORT_INSUFFICIENT"],
+      "unsafe_if_supported": true,
+      "oracle_rationale": "协助不等于明确承担持续运维的职责范围和责任。"
+    },
+    {
+      "case_id": "SAV1-D01",
+      "category": "PARTIAL_SUPPORT",
+      "requirement_text": "系统应支持微信、支付宝和银联三种支付方式。",
+      "evidence_text": "平台已经接入微信支付。",
+      "deterministic_findings": { "semantic_relationship": "unknown", "scope_match": "unknown", "support_sufficiency": "unknown" },
+      "unresolved_question": "仅接入微信支付是否覆盖三种支付方式的完整要求？",
+      "expected_semantic_relationship": "partial",
+      "allowed_reason_code_family": ["SCOPE_MISMATCH", "SUPPORT_INSUFFICIENT"],
+      "unsafe_if_supported": true,
+      "oracle_rationale": "只覆盖三项中的一项，不能宣称完整满足。"
+    },
+    {
+      "case_id": "SAV1-D02",
+      "category": "PARTIAL_SUPPORT",
+      "requirement_text": "服务应提供7×24小时响应，并在2小时内完成首次响应。",
+      "evidence_text": "公司在工作日提供技术支持，收到问题后及时联系客户。",
+      "deterministic_findings": { "semantic_relationship": "unknown", "quantitative_match": "unknown", "status_match": "unknown" },
+      "unresolved_question": "工作日技术支持是否覆盖7×24和2小时首次响应要求？",
+      "expected_semantic_relationship": "partial",
+      "allowed_reason_code_family": ["SCOPE_MISMATCH", "QUANTITATIVE_MISMATCH", "SUPPORT_INSUFFICIENT"],
+      "unsafe_if_supported": true,
+      "oracle_rationale": "服务时段和响应时限均未达到要求。"
+    },
+    {
+      "case_id": "SAV1-E01",
+      "category": "NATURAL_LANGUAGE_CONFLICT",
+      "requirement_text": "系统必须部署在采购人的私有云环境。",
+      "evidence_text": "本项目采用公有云托管部署模式。",
+      "deterministic_findings": { "semantic_relationship": "unknown", "scope_match": "unknown", "support_sufficiency": "unknown" },
+      "unresolved_question": "公有云托管部署是否与私有云部署要求一致？",
+      "expected_semantic_relationship": "conflict",
+      "allowed_reason_code_family": ["SCOPE_MISMATCH"],
+      "unsafe_if_supported": true,
+      "oracle_rationale": "部署边界明确相反，不能按相关性判定支持。"
+    },
+    {
+      "case_id": "SAV1-E02",
+      "category": "NATURAL_LANGUAGE_CONFLICT",
+      "requirement_text": "项目验收后应提供三年免费保修。",
+      "evidence_text": "标准服务条款提供一年免费保修。",
+      "deterministic_findings": { "semantic_relationship": "unknown", "quantitative_match": "unknown", "support_sufficiency": "unknown" },
+      "unresolved_question": "一年保修是否满足验收后三年免费保修要求？",
+      "expected_semantic_relationship": "conflict",
+      "allowed_reason_code_family": ["QUANTITATIVE_MISMATCH"],
+      "unsafe_if_supported": true,
+      "oracle_rationale": "保修期限直接不一致。"
+    },
+    {
+      "case_id": "SAV1-F01",
+      "category": "GENUINELY_UNCERTAIN",
+      "requirement_text": "投标人应具备大型项目实施经验并提供可核验案例。",
+      "evidence_text": "公司拥有丰富项目经验。",
+      "deterministic_findings": { "semantic_relationship": "unknown", "source_authority": "unknown", "support_sufficiency": "unknown" },
+      "unresolved_question": "“丰富项目经验”是否足以证明大型项目实施经验和可核验案例？",
+      "expected_semantic_relationship": "unknown",
+      "allowed_reason_code_family": ["SUPPORT_INSUFFICIENT"],
+      "unsafe_if_supported": true,
+      "oracle_rationale": "缺少项目规模、实施角色和可核验案例，不能安全下结论。"
+    },
+    {
+      "case_id": "SAV1-F02",
+      "category": "GENUINELY_UNCERTAIN",
+      "requirement_text": "系统应符合适用的国家密码标准并提供检测依据。",
+      "evidence_text": "系统采用了安全加密机制。",
+      "deterministic_findings": { "semantic_relationship": "unknown", "validity_match": "unknown", "source_authority": "unknown" },
+      "unresolved_question": "安全加密机制是否符合适用国家密码标准并具有检测依据？",
+      "expected_semantic_relationship": "unknown",
+      "allowed_reason_code_family": ["SOURCE_AUTHORITY_INSUFFICIENT", "SUPPORT_INSUFFICIENT"],
+      "unsafe_if_supported": true,
+      "oracle_rationale": "未说明标准、算法合规性或检测依据，必须保留不确定。"
+    }
+  ]
+}
