@@ -110,12 +110,107 @@ function legacySchemaDetected(value, observedTokens = []) {
   ));
 }
 
-function safeProbeDiagnostics({ providerAudit = null, validationErrors = [], envelopeErrors = [], parsedJson = null } = {}) {
-  const audit = providerAudit && typeof providerAudit === 'object' ? providerAudit : {};
-  const modelContent = typeof audit.model_content === 'string' ? audit.model_content : null;
+const REQUIREMENT_CANDIDATE_FIELDS = Object.freeze([
+  'text', 'category', 'source_text', 'source_clause',
+  'mandatory_observed', 'requires_confirmation'
+]);
+
+function observedType(value) {
+  if (value === null) return 'null';
+  if (Array.isArray(value)) return 'array';
+  return typeof value;
+}
+
+function safeStructuralKey(value) {
+  return typeof value === 'string' ? value.slice(0, 80) : String(value).slice(0, 80);
+}
+
+function safeStructuralCandidate(candidate, index) {
+  const objectCandidate = candidate && typeof candidate === 'object' && !Array.isArray(candidate)
+    ? candidate : null;
+  const keys = objectCandidate ? Object.keys(objectCandidate).map(safeStructuralKey) : [];
+  const missingKeys = objectCandidate
+    ? REQUIREMENT_CANDIDATE_FIELDS.filter(key => !Object.prototype.hasOwnProperty.call(objectCandidate, key))
+    : [...REQUIREMENT_CANDIDATE_FIELDS];
+  const extraKeys = objectCandidate
+    ? Object.keys(objectCandidate).filter(key => !REQUIREMENT_CANDIDATE_FIELDS.includes(key)).map(safeStructuralKey)
+    : [];
+  const text = objectCandidate?.text;
+  const sourceText = objectCandidate?.source_text;
   return {
-    model_content: modelContent && modelContent.length <= 200000 ? modelContent : modelContent ? `${modelContent.slice(0, 200000)}…` : null,
-    parsed_json: audit.parsed_json ?? parsedJson,
+    candidate_index: index,
+    keys,
+    missing_keys: missingKeys,
+    extra_keys: extraKeys,
+    text_type: observedType(text),
+    text_empty: typeof text === 'string' ? text.trim().length === 0 : null,
+    category_type: observedType(objectCandidate?.category),
+    category_value: typeof objectCandidate?.category === 'string' ? objectCandidate.category.slice(0, 80) : null,
+    source_text_type: observedType(sourceText),
+    source_text_empty: typeof sourceText === 'string' ? sourceText.trim().length === 0 : null,
+    source_clause_type: observedType(objectCandidate?.source_clause),
+    mandatory_observed_type: observedType(objectCandidate?.mandatory_observed),
+    requires_confirmation_type: observedType(objectCandidate?.requires_confirmation)
+  };
+}
+
+function safeRequirementStructureSummary(parsedJson) {
+  if (!parsedJson || typeof parsedJson !== 'object') {
+    return {
+      available: false,
+      top_level_type: parsedJson === null ? 'null' : observedType(parsedJson),
+      top_level_keys: [],
+      requirements_present: false,
+      requirements_type: null,
+      requirements_count: null,
+      candidate_summaries: []
+    };
+  }
+  const topLevelKeys = Object.keys(parsedJson).map(safeStructuralKey);
+  const data = parsedJson.schema_version && parsedJson.data && typeof parsedJson.data === 'object'
+    && !Array.isArray(parsedJson.data) ? parsedJson.data : parsedJson;
+  const hasRequirements = Object.prototype.hasOwnProperty.call(data, 'requirements');
+  const requirements = data.requirements;
+  return {
+    available: true,
+    top_level_type: observedType(parsedJson),
+    top_level_keys: topLevelKeys,
+    requirements_present: hasRequirements,
+    requirements_type: hasRequirements ? observedType(requirements) : null,
+    requirements_count: Array.isArray(requirements) ? requirements.length : null,
+    candidate_summaries: Array.isArray(requirements)
+      ? requirements.slice(0, 200).map((candidate, index) => safeStructuralCandidate(candidate, index))
+      : [],
+    candidate_summaries_truncated: Array.isArray(requirements) && requirements.length > 200
+  };
+}
+
+function unavailableStructureSummary() {
+  return {
+    available: false,
+    top_level_type: null,
+    top_level_keys: [],
+    requirements_present: null,
+    requirements_type: null,
+    requirements_count: null,
+    candidate_summaries: []
+  };
+}
+
+function safeValidationErrors(errors) {
+  return Array.isArray(errors) ? errors.slice(0, 100).map(error => ({
+    path: typeof error?.path === 'string' ? error.path.slice(0, 200) : null,
+    validator_code: typeof error?.validator_code === 'string' ? error.validator_code.slice(0, 80) : null,
+    expected: typeof error?.expected === 'string' ? error.expected.slice(0, 240) : null,
+    observed_category: typeof error?.observed_category === 'string' ? error.observed_category.slice(0, 80) : null,
+    message: typeof error?.message === 'string' ? error.message.slice(0, 240) : null
+  })) : [];
+}
+
+function safeProbeDiagnostics({ providerAudit = null, validationErrors = [], envelopeErrors = [], parsedJson = null, taskType = null } = {}) {
+  const audit = providerAudit && typeof providerAudit === 'object' ? providerAudit : {};
+  const parsed = audit.parsed_json ?? parsedJson;
+  return {
     json_parse_success: typeof audit.json_parse_success === 'boolean' ? audit.json_parse_success : null,
     markdown_fence_present: typeof audit.markdown_fence_present === 'boolean' ? audit.markdown_fence_present : null,
     provider_http_status: Number.isInteger(audit.http_status) ? audit.http_status : null,
@@ -178,9 +273,12 @@ function safeProbeDiagnostics({ providerAudit = null, validationErrors = [], env
         contamination: audit.outbound_prompt_diagnostics.contamination === true
       }
       : null,
-    schema_validation_errors: Array.isArray(validationErrors) ? validationErrors : [],
-    envelope_validation_errors: Array.isArray(envelopeErrors) ? envelopeErrors : [],
-    legacy_schema_detected: legacySchemaDetected(audit.parsed_json ?? parsedJson, audit.legacy_schema_tokens_observed)
+    schema_validation_errors: safeValidationErrors(validationErrors),
+    envelope_validation_errors: safeValidationErrors(envelopeErrors),
+    legacy_schema_detected: legacySchemaDetected(parsed, audit.legacy_schema_tokens_observed),
+    structural_summary: taskType === 'requirement_extraction'
+      ? (parsed && typeof parsed === 'object' ? safeRequirementStructureSummary(parsed) : unavailableStructureSummary())
+      : unavailableStructureSummary()
   };
 }
 
@@ -268,7 +366,7 @@ export function createStandaloneGatewayHandler({ env = process.env, config = con
       });
       const result = { data: { outputs: { response_payload_json: JSON.stringify(envelope) } } };
       if (diagnosticsRequested) {
-        result.probe_diagnostics = safeProbeDiagnostics({ providerAudit: routed.provider_audit });
+        result.probe_diagnostics = safeProbeDiagnostics({ providerAudit: routed.provider_audit, taskType });
       }
       writeJson(response, 200, result);
     } catch (error) {
@@ -286,7 +384,8 @@ export function createStandaloneGatewayHandler({ env = process.env, config = con
         result.probe_diagnostics = safeProbeDiagnostics({
           providerAudit: error?.provider_audit,
           validationErrors: error?.validation_diagnostics,
-          envelopeErrors: error?.envelope_validation_diagnostics
+          envelopeErrors: error?.envelope_validation_diagnostics,
+          taskType
         });
       }
       writeJson(response, statusFor(code), result);
