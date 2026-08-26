@@ -16,6 +16,7 @@
     "probe:evidence-support-provider": "node scripts/evidence-support-provider-probe.js",
     "probe:semantic-adjudication-capability": "node scripts/semantic-adjudication-capability-probe.js",
     "eval:semantic-adjudication-value-v1": "node eval/semantic-adjudication-value-v1/runner.js",
+    "eval:jiangyin-ambiguity-prevalence-v1": "node eval/jiangyin-ambiguity-prevalence-v1/runner.js",
     "reconcile:sources": "node scripts/reconcile-requirement-sources.js",
     "eval:requirements": "node scripts/eval-requirements.js",
     "eval:enterprise-retrieval": "node scripts/eval-enterprise-retrieval.js",
