@@ -14,6 +14,7 @@ import { rerankProductionCandidates, PRODUCTION_CANDIDATE_K, PRODUCTION_REVIEW_K
 import { PUBLIC_CORPUS_PROJECT_ID } from '../../src/pipeline/corpus-contract.js';
 import { adaptRetrievalCandidate } from '../../src/pipeline/evidence-support-assessment-contract-v1.js';
 import { readOnlySnapshot } from '../jiangyin-ambiguity-prevalence-v1/runner.js';
+import { getSemanticTaskContract } from '../../../packages/semantic-contracts/index.js';
 
 const { Pool } = pg;
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -22,7 +23,7 @@ const defaultReportPath = path.resolve(repoRoot, 'backend/eval/reports/jiangyin-
 const TARGET_FILE = '江阴市国有企业集中采购.pdf';
 const TARGET_PROJECT = '112b3805-df67-4483-b1aa-c8941a111465';
 const EXTRACTOR_VERSION = 'tender-text-extractor/pdf-parse-2.4.5/v1';
-const EXTRACTION_CONTRACT = '4.3-requirement-extraction';
+const EXTRACTION_CONTRACT = getSemanticTaskContract('requirement_extraction').contract_version;
 const sha256 = value => createHash('sha256').update(value).digest('hex');
 
 function safeRate(numerator, denominator) {

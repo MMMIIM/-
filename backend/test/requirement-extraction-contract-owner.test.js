@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
+  SEMANTIC_TASK_INSTRUCTIONS,
   getSemanticTaskContract,
   getSemanticTaskInstructionMetadata,
   resolveSemanticTaskInstruction
@@ -20,9 +21,12 @@ const requirementExtractionSource = fs.readFileSync(
 test('Requirement Extraction has exactly one canonical instruction and explicit hash', () => {
   const metadata = getSemanticTaskInstructionMetadata('requirement_extraction');
   assert.ok(metadata);
+  const activeRequirementInstructions = Object.entries(SEMANTIC_TASK_INSTRUCTIONS)
+    .filter(([taskType, instruction]) => taskType === 'requirement_extraction' && typeof instruction === 'string' && instruction.trim());
+  assert.equal(activeRequirementInstructions.length, 1);
   assert.equal(metadata.instruction, resolveSemanticTaskInstruction('requirement_extraction'));
-  assert.equal(metadata.contract_version, '4.3-requirement-extraction');
-  assert.match(metadata.instruction_hash, /^[a-f0-9]{64}$/);
+  assert.equal(metadata.contract_version, '4.3-requirement-extraction-v1.1');
+  assert.equal(metadata.instruction_hash, '4589cfd6f1c7385b313d4de2e1d37a363f48aca1389a51f637f57391fa7d7c81');
   const schema = getSemanticTaskContract('requirement_extraction').data_schema;
   assert.deepEqual(schema.properties.requirements.items.required, [
     'text', 'category', 'source_text', 'source_clause', 'mandatory_observed', 'requires_confirmation'

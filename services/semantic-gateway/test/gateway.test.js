@@ -91,7 +91,7 @@ test('OpenAI-compatible readiness fails closed when Provider key is missing', as
 test('backend SemanticGatewayClient uses the same /workflows/run transport contract', async () => {
   await withGateway(async ({ port, key }) => {
     const result = await client(port, key).run({ task_type: 'requirement_extraction', task_instruction: 'backend instruction', task_payload_json: '{}' });
-    assert.equal(result.envelope.schema_version, '4.3-requirement-extraction');
+    assert.equal(result.envelope.schema_version, '4.3-requirement-extraction-v1.1');
     assert.equal(result.envelope.task_type, 'requirement_extraction');
     assert.deepEqual(result.envelope.data, { requirements: [] });
   });
@@ -100,7 +100,7 @@ test('backend SemanticGatewayClient uses the same /workflows/run transport contr
 test('all existing formal tasks dispatch through the same mock provider contract', async () => {
   await withGateway(async ({ port, key }) => {
     const cases = [
-      ['requirement_extraction', {}, '4.3-requirement-extraction', data => Array.isArray(data.requirements)],
+      ['requirement_extraction', {}, '4.3-requirement-extraction-v1.1', data => Array.isArray(data.requirements)],
       ['response_planning', { requirements: [{ req_id: 'REQ-001' }] }, '4.3-response-planning', data => Array.isArray(data.response_plans)],
       ['claim_generation', { plans: [{ requirement_id: 'REQ-001', response_summary: 'x' }] }, '4.3-claim-generation', data => Array.isArray(data.claims)],
       ['section_drafting', { chapter_id: 'chapter-1' }, '4.3-section-drafting', data => typeof data.content_markdown === 'string'],

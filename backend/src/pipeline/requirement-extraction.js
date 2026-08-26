@@ -1,8 +1,14 @@
 import { SemanticGatewayError } from './semantic-gateway-client.js';
 import { parseSourceHint } from './source-location-resolver.js';
-import { resolveSemanticTaskInstruction } from '../../../packages/semantic-contracts/index.js';
+import {
+  getSemanticTaskContract,
+  resolveSemanticTaskInstruction
+} from '../../../packages/semantic-contracts/index.js';
 
 export const REQUIREMENT_EXTRACTION_TASK_TYPE = 'requirement_extraction';
+export const REQUIREMENT_EXTRACTION_CONTRACT_VERSION = getSemanticTaskContract(
+  REQUIREMENT_EXTRACTION_TASK_TYPE
+).contract_version;
 
 function contractError(audit, detail) {
   return new SemanticGatewayError(
@@ -33,7 +39,7 @@ function normalizeWarnings(warnings, audit) {
 
 export function validateRequirementExtractionEnvelope(gatewayResponse) {
   const { envelope, audit } = gatewayResponse;
-  if (envelope.schema_version !== '4.3-requirement-extraction'
+  if (envelope.schema_version !== REQUIREMENT_EXTRACTION_CONTRACT_VERSION
     || envelope.task_type !== REQUIREMENT_EXTRACTION_TASK_TYPE) {
     throw contractError(audit, 'schema_version 或 task_type 与需求抽取契约不一致。');
   }
