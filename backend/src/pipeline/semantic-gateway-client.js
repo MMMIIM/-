@@ -431,6 +431,10 @@ export class SemanticGatewayClient {
 
     const rawResponsePayloadJson = outputs.response_payload_json;
     const audit = auditFor(taskType, { raw_response_payload_json: rawResponsePayloadJson });
+    if (diagnosticMode === PROBE_DIAGNOSTIC_MODE) {
+      const diagnostics = safeProbeDiagnostics(outerPayload.probe_diagnostics);
+      if (diagnostics) audit.probe_diagnostics = diagnostics;
+    }
     const errorAudit = auditFor(taskType);
     let normalized;
     try {

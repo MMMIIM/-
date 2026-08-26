@@ -78,6 +78,35 @@ test('干净 response_payload_json 成功并按契约发送三个 inputs', async
   assert.equal(sentBody.user, 'gateway-test');
 });
 
+test('probe-v1 成功响应保留安全 Provider 链路诊断，普通请求不暴露诊断', async () => {
+  const raw = JSON.stringify(gatewayEnvelope());
+  const diagnostics = {
+    provider_adapter_invoked: true,
+    fetch_invoked: true,
+    provider_http_reached: true,
+    provider_http_status: 200,
+    finish_reason: 'stop',
+    model_content: 'PRIVATE_MODEL_CONTENT',
+    parsed_json: { private: true }
+  };
+  const response = () => new Response(JSON.stringify({
+    data: { outputs: { response_payload_json: raw } },
+    probe_diagnostics: diagnostics
+  }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+
+  const probe = await client(async () => response()).run(request, { diagnosticMode: 'probe-v1' });
+  assert.equal(probe.audit.probe_diagnostics.provider_adapter_invoked, true);
+  assert.equal(probe.audit.probe_diagnostics.fetch_invoked, true);
+  assert.equal(probe.audit.probe_diagnostics.provider_http_reached, true);
+  assert.equal(probe.audit.probe_diagnostics.provider_http_status, 200);
+  assert.equal(Object.hasOwn(probe.audit.probe_diagnostics, 'model_content'), false);
+  assert.equal(Object.hasOwn(probe.audit.probe_diagnostics, 'parsed_json'), false);
+  assert.doesNotMatch(JSON.stringify(probe.audit), /PRIVATE_MODEL_CONTENT/);
+
+  const normal = await client(async () => response()).run(request);
+  assert.equal(Object.hasOwn(normal.audit, 'probe_diagnostics'), false);
+});
+
 test('仅剥离字符串开头的一段完整 think 块及相邻空白', async () => {
   const json = JSON.stringify(gatewayEnvelope());
   const raw = `<think>仅用于 transport 测试</think>\n\t ${json}`;
