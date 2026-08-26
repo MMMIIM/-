@@ -64,13 +64,10 @@ test('source_text 为空仍为非法候选', () => {
   assert.throws(() => new SourceLocationResolver().resolve({ source_text: '' }, chunk), (error) => error.code === 'GATEWAY_REQUIREMENTS_INVALID');
 });
 
-test('Schema Adapter 接受历史位置格式但只输出 hint，不信任模型页码', () => {
-  const response = validateRequirementExtractionEnvelope({
+test('Schema Adapter 拒绝历史位置字段，不把模型坐标带入来源定位', () => {
+  assert.throws(() => validateRequirementExtractionEnvelope({
     envelope: { schema_version: '4.3-requirement-extraction-v1.1', task_type: 'requirement_extraction', status: 'success', warnings: [], data: { requirements: [
       { content: '记录日志', source_excerpt: '系统应记录审计日志。', source_page: 999, source_paragraph: '第123段' }
     ] } }, audit: {}
-  });
-  assert.equal(response.candidates[0].source_hint, 123);
-  assert.equal(Object.hasOwn(response.candidates[0], 'source_page'), false);
-  assert.equal(Object.hasOwn(response.candidates[0], 'source_paragraph'), false);
+  }), error => error.code === 'GATEWAY_REQUIREMENTS_INVALID');
 });

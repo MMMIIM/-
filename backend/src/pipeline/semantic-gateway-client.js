@@ -15,28 +15,32 @@ function positiveTimeout(value, fallback) {
 }
 
 export function parseSemanticGatewayConfig(env = {}, { taskType = null } = {}) {
+  const canonicalTask = taskType === 'evidence_support_assessment' || taskType === 'requirement_extraction';
   const canonicalEvidenceSupport = taskType === 'evidence_support_assessment';
+  const canonicalRequirementExtraction = taskType === 'requirement_extraction';
   const canonicalRuntime = readSemanticGatewayRuntimeConfig(env);
   const timeoutMs = positiveTimeout(
     canonicalEvidenceSupport
       ? (env.SEMANTIC_GATEWAY_EVIDENCE_SUPPORT_TIMEOUT_MS || env.SEMANTIC_GATEWAY_TIMEOUT_MS)
+      : canonicalRequirementExtraction
+        ? (env.SEMANTIC_GATEWAY_REQUIREMENT_EXTRACTION_TIMEOUT_MS || env.SEMANTIC_GATEWAY_TIMEOUT_MS)
       : env.V43_GATEWAY_TIMEOUT_MS,
-    canonicalEvidenceSupport ? 120_000 : 30_000
+    canonicalEvidenceSupport ? 120_000 : canonicalRequirementExtraction ? 300_000 : 30_000
   );
   return Object.freeze({
-    apiBase: normalizeBaseUrl(canonicalEvidenceSupport ? canonicalRuntime.gatewayApiBase : env.V43_GATEWAY_API_BASE),
-    apiKey: String(canonicalEvidenceSupport ? canonicalRuntime.serviceApiKey : env.V43_GATEWAY_API_KEY || '').trim(),
-    user: String(canonicalEvidenceSupport ? (env.SEMANTIC_GATEWAY_USER || env.V43_GATEWAY_USER) : env.V43_GATEWAY_USER || '').trim(),
+    apiBase: normalizeBaseUrl(canonicalTask ? canonicalRuntime.gatewayApiBase : env.V43_GATEWAY_API_BASE),
+    apiKey: String(canonicalTask ? canonicalRuntime.serviceApiKey : env.V43_GATEWAY_API_KEY || '').trim(),
+    user: String(canonicalTask ? (env.SEMANTIC_GATEWAY_USER || env.V43_GATEWAY_USER) : env.V43_GATEWAY_USER || '').trim(),
     timeoutMs,
-    configuredTaskType: canonicalEvidenceSupport ? taskType : null,
-    config_source: canonicalEvidenceSupport ? 'canonical_semantic_gateway' : 'legacy_v43_gateway',
+    configuredTaskType: canonicalTask ? taskType : null,
+    config_source: canonicalTask ? 'canonical_semantic_gateway' : 'legacy_v43_gateway',
     taskTimeouts: Object.freeze({
       healthcheck: positiveTimeout(
-        canonicalEvidenceSupport ? env.SEMANTIC_GATEWAY_HEALTHCHECK_TIMEOUT_MS : env.V43_GATEWAY_HEALTHCHECK_TIMEOUT_MS,
+        canonicalTask ? env.SEMANTIC_GATEWAY_HEALTHCHECK_TIMEOUT_MS : env.V43_GATEWAY_HEALTHCHECK_TIMEOUT_MS,
         15_000
       ),
       requirement_extraction: positiveTimeout(
-        canonicalEvidenceSupport
+        canonicalTask
           ? env.SEMANTIC_GATEWAY_REQUIREMENT_EXTRACTION_TIMEOUT_MS
           : env.V43_GATEWAY_REQUIREMENT_EXTRACTION_TIMEOUT_MS,
         300_000

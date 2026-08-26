@@ -120,8 +120,8 @@ test('requirement_extraction 通过 think transport 且模型候选不包含 REQ
     status: 'success',
     data: {
       requirements: [
-        { content: '提供审计日志。', source_excerpt: '系统应提供审计日志。', source_page: 2, source_paragraph: 8 },
-        { content: '支持标准接口。', source_excerpt: '支持标准 API 接入。', source_page: 1, source_paragraph: 3 }
+        { text: '提供审计日志。', category: 'technical', source_text: '系统应提供审计日志。', source_clause: null, mandatory_observed: true, requires_confirmation: false },
+        { text: '支持标准接口。', category: 'technical', source_text: '支持标准 API 接入。', source_clause: null, mandatory_observed: true, requires_confirmation: false }
       ]
     },
     warnings: ['页码来自文本型 PDF。']
@@ -140,6 +140,11 @@ test('requirement_extraction 通过 think transport 且模型候选不包含 REQ
 
   assert.equal(inputs.task_type, 'requirement_extraction');
   assert.equal(typeof inputs.task_payload_json, 'string');
+  const modelPayload = JSON.parse(inputs.task_payload_json);
+  assert.deepEqual(Object.keys(modelPayload).sort(), [
+    'chunk_count', 'chunk_index', 'chunk_text', 'project_name', 'section_name'
+  ]);
+  assert.equal(modelPayload.chunk_text, '支持标准 API 接入。\n系统应提供审计日志。');
   assert.deepEqual(result.candidates.map(({ content }) => content), [
     '提供审计日志。', '支持标准接口。'
   ]);
@@ -181,8 +186,8 @@ test('非法网关候选拒绝缺失字段、空 source_text 和模型生成 REQ
     envelope: {
       schema_version: '4.3-requirement-extraction-v1.1', task_type: 'requirement_extraction', status: 'success',
       data: { requirements: [
-        { content: 'same', source_excerpt: 'one' },
-        { content: ' same ', source_excerpt: 'two' }
+        { text: 'same', category: 'technical', source_text: 'one', source_clause: null, mandatory_observed: false, requires_confirmation: false },
+        { text: ' same ', category: 'technical', source_text: 'two', source_clause: null, mandatory_observed: false, requires_confirmation: false }
       ] }, warnings: []
     },
     audit: { provider: 'semantic_gateway' }
@@ -372,10 +377,12 @@ test('完整 tender parse service 使用 V43 网关地址且忽略旧 DIFY 配�
     status: 'success',
     data: {
       requirements: [{
-        content: '系统应提供审计日志。',
-        source_excerpt: '招标文件要求提供审计日志。',
-        source_page: 1,
-        source_paragraph: 1
+        text: '系统应提供审计日志。',
+        category: 'technical',
+        source_text: '招标文件要求提供审计日志。',
+        source_clause: null,
+        mandatory_observed: true,
+        requires_confirmation: false
       }]
     },
     warnings: []
@@ -386,11 +393,15 @@ test('完整 tender parse service 使用 V43 网关地址且忽略旧 DIFY 配�
       V43_GATEWAY_API_BASE: 'http://127.0.0.1:18080/v1',
       V43_GATEWAY_API_KEY: 'v43-test-key',
       V43_GATEWAY_USER: 'v43-test-user',
+      SEMANTIC_GATEWAY_API_BASE: 'http://127.0.0.1:18082',
+      SEMANTIC_GATEWAY_API_KEY: 'standalone-test-key',
+      SEMANTIC_GATEWAY_USER: 'standalone-test-user',
       DIFY_API_BASE: 'https://api.dify.invalid/v1',
       DIFY_API_KEY: 'legacy-test-key'
     }
   });
   const gatewayClient = runtime.createSemanticGatewayClient({
+    taskType: 'requirement_extraction',
     fetchImpl: async (url) => {
       requestedUrl = url;
       return gatewayResponse(raw);
@@ -435,7 +446,7 @@ test('完整 tender parse service 使用 V43 网关地址且忽略旧 DIFY 配�
 
   const result = await service.start({ projectId, tenderFileId, waitForCompletion: true });
   assert.equal(result.status, 'succeeded');
-  assert.equal(requestedUrl, 'http://127.0.0.1:18080/v1/workflows/run');
+  assert.equal(requestedUrl, 'http://127.0.0.1:18082/workflows/run');
   assert.doesNotMatch(requestedUrl, /api\.dify\.invalid/);
   assert.equal(persisted.candidates[0].req_id, 'REQ-001');
 });

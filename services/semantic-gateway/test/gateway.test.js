@@ -42,6 +42,21 @@ test('standalone gateway health/readiness/auth are explicit', async () => {
   });
 });
 
+test('standalone gateway /info exposes safe runtime and contract diagnostics', async () => {
+  await withGateway(async ({ port }) => {
+    const response = await fetch(`http://127.0.0.1:${port}/info`);
+    assert.equal(response.status, 200);
+    const info = await response.json();
+    assert.equal(info.service, 'semantic-gateway');
+    assert.equal(info.gateway_schema_version, 'semantic-gateway-envelope-v1');
+    assert.equal(info.requirement_extraction_contract_version, '4.3-requirement-extraction-v1.1');
+    assert.match(info.requirement_extraction_instruction_hash, /^[a-f0-9]{64}$/);
+    assert.ok(Array.isArray(info.task_types));
+    assert.equal(Object.hasOwn(info, 'api_key'), false);
+    assert.equal(Object.hasOwn(info, 'provider_api_key'), false);
+  });
+});
+
 test('Gateway service auth is independent from Provider auth', async () => {
   const server = createStandaloneGatewayServer({
     env: {
@@ -193,6 +208,43 @@ test('provider schema violations are classified as OUTPUT_SCHEMA_INVALID', async
     assert.equal((await response.json()).error_code, 'OUTPUT_SCHEMA_INVALID');
   } finally {
     await new Promise(resolve => server.close(resolve));
+  }
+});
+
+test('requirement candidate schema is strict at the Gateway boundary', async () => {
+  const key = 'gateway-requirement-schema-key';
+  const candidate = {
+    text: '系统应提供审计日志。',
+    category: 'technical',
+    source_text: '系统应提供审计日志。',
+    source_clause: null,
+    mandatory_observed: true,
+    requires_confirmation: false
+  };
+  for (const invalid of [
+    { ...candidate, content: candidate.text },
+    { ...candidate, mandatory_observed: 'true' },
+    (() => { const copy = { ...candidate }; delete copy.source_text; return copy; })()
+  ]) {
+    const server = createStandaloneGatewayServer({
+      config: {
+        apiKey: key,
+        providerName: 'mock',
+        provider: { model: 'fixture', async invoke() { return { data: { requirements: [invalid] } }; } }
+      }
+    });
+    await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+    try {
+      const response = await fetch(`http://127.0.0.1:${server.address().port}/workflows/run`, {
+        method: 'POST',
+        headers: { authorization: `Bearer ${key}`, 'content-type': 'application/json' },
+        body: JSON.stringify({ inputs: { task_type: 'requirement_extraction', task_instruction: 'x', task_payload_json: '{}' } })
+      });
+      assert.equal(response.status, 422);
+      assert.equal((await response.json()).error_code, 'OUTPUT_SCHEMA_INVALID');
+    } finally {
+      await new Promise(resolve => server.close(resolve));
+    }
   }
 });
 

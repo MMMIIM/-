@@ -7,7 +7,8 @@ import {
   SEMANTIC_TASK_INSTRUCTIONS,
   getSemanticTaskContract,
   getSemanticTaskInstructionMetadata,
-  resolveSemanticTaskInstruction
+  resolveSemanticTaskInstruction,
+  validateTaskData
 } from '../../packages/semantic-contracts/index.js';
 import { createSemanticTaskRouter } from '../../services/semantic-gateway/src/task-router.js';
 import { createStandaloneGatewayServer } from '../../services/semantic-gateway/src/gateway.js';
@@ -52,6 +53,28 @@ test('Gateway Task Router resolves the canonical instruction and emits contract 
   assert.equal(invocation.instruction, resolveSemanticTaskInstruction('requirement_extraction'));
   assert.equal(result.provider_audit.semantic_contract_version, contract.contract_version);
   assert.equal(result.provider_audit.instruction_sha256, contract.instruction_hash);
+});
+
+test('Requirement Extraction shared validator enforces the six-field candidate schema', () => {
+  const candidate = {
+    text: '系统应提供审计日志。',
+    category: 'technical',
+    source_text: '系统应提供审计日志。',
+    source_clause: null,
+    mandatory_observed: true,
+    requires_confirmation: false
+  };
+  assert.deepEqual(validateTaskData('requirement_extraction', { requirements: [candidate] }), { requirements: [candidate] });
+  for (const invalid of [
+    { ...candidate, legacy: true },
+    { ...candidate, mandatory_observed: 'true' },
+    { ...candidate, requires_confirmation: 0 },
+    { ...candidate, category: 'not-a-category' },
+    { ...candidate, source_clause: 3 },
+    (() => { const copy = { ...candidate }; delete copy.source_text; return copy; })()
+  ]) {
+    assert.throws(() => validateTaskData('requirement_extraction', { requirements: [invalid] }), /unsupported fields|missing|required|canonical categories|boolean|string or null/);
+  }
 });
 
 test('Gateway rejects supplied contract metadata drift before Provider invocation', async () => {

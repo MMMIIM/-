@@ -4,6 +4,7 @@ import {
   SemanticGatewayClient,
   createGenerationProvider,
   createSemanticGatewayClientFromEnv,
+  parseSemanticGatewayConfig,
   normalizeGatewayTransport,
   classifyGatewayPayload
 } from '../src/pipeline/semantic-gateway-client.js';
@@ -329,6 +330,25 @@ test('网关配置解析器只接受 V43_GATEWAY_*，绝不回退到旧 DIFY_*',
     () => legacyOnlyClient.run(request),
     (error) => error.code === 'GATEWAY_NOT_CONFIGURED'
   );
+});
+
+test('requirement_extraction 绑定 standalone Semantic Gateway，不读取历史 V43 target', () => {
+  const config = parseSemanticGatewayConfig({
+    SEMANTIC_GATEWAY_API_BASE: 'http://127.0.0.1:18082',
+    SEMANTIC_GATEWAY_API_KEY: 'standalone-key',
+    SEMANTIC_GATEWAY_USER: 'standalone-user',
+    V43_GATEWAY_API_BASE: 'http://127.0.0.1:18080/v1',
+    V43_GATEWAY_API_KEY: 'legacy-key',
+    V43_GATEWAY_USER: 'legacy-user',
+    V43_GATEWAY_REQUIREMENT_EXTRACTION_TIMEOUT_MS: '1'
+  }, { taskType: 'requirement_extraction' });
+  assert.equal(config.apiBase, 'http://127.0.0.1:18082');
+  assert.equal(config.apiKey, 'standalone-key');
+  assert.equal(config.user, 'standalone-user');
+  assert.equal(config.config_source, 'canonical_semantic_gateway');
+  assert.equal(config.configuredTaskType, 'requirement_extraction');
+  assert.equal(config.taskTimeouts.requirement_extraction, 300000);
+  assert.notEqual(config.apiBase, 'http://127.0.0.1:18080/v1');
 });
 
 test('网络诊断只记录 provider、host、port 与错误分类', async () => {

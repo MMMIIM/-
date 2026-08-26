@@ -1,8 +1,8 @@
 import { SemanticGatewayError } from './semantic-gateway-client.js';
-import { parseSourceHint } from './source-location-resolver.js';
 import {
   getSemanticTaskContract,
-  resolveSemanticTaskInstruction
+  resolveSemanticTaskInstruction,
+  validateTaskData
 } from '../../../packages/semantic-contracts/index.js';
 
 export const REQUIREMENT_EXTRACTION_TASK_TYPE = 'requirement_extraction';
@@ -20,6 +20,7 @@ function contractError(audit, detail) {
 }
 
 function normalizeWarnings(warnings, audit) {
+  if (!Array.isArray(warnings)) throw contractError(audit, 'warnings 必须为数组。');
   return warnings.map((warning) => {
     if (typeof warning === 'string' && warning.trim()) {
       return { code: 'GATEWAY_WARNING', message: warning.trim().slice(0, 500) };
@@ -39,6 +40,9 @@ function normalizeWarnings(warnings, audit) {
 
 export function validateRequirementExtractionEnvelope(gatewayResponse) {
   const { envelope, audit } = gatewayResponse;
+  if (!envelope || typeof envelope !== 'object' || Array.isArray(envelope)) {
+    throw contractError(audit, '网关 envelope 必须为对象。');
+  }
   if (envelope.schema_version !== REQUIREMENT_EXTRACTION_CONTRACT_VERSION
     || envelope.task_type !== REQUIREMENT_EXTRACTION_TASK_TYPE) {
     throw contractError(audit, 'schema_version 或 task_type 与需求抽取契约不一致。');
@@ -51,83 +55,72 @@ export function validateRequirementExtractionEnvelope(gatewayResponse) {
       502
     );
   }
-  if (Object.keys(envelope.data).some((key) => key !== 'requirements')
-    || !Array.isArray(envelope.data.requirements)) {
-    throw contractError(audit, 'data 必须且只能包含 requirements 数组。');
+  try {
+    validateTaskData(REQUIREMENT_EXTRACTION_TASK_TYPE, envelope.data);
+  } catch (error) {
+    throw contractError(audit, `data 不符合 Candidate 契约：${error.message}`);
   }
 
-  const adapterWarnings = [];
   const candidates = envelope.data.requirements.map((candidate, originalIndex) => {
-    if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) {
-      throw contractError(audit, 'requirements 项必须为对象。');
-    }
-    const allowedKeys = new Set([
-      'text', 'category', 'source_text', 'source_clause', 'mandatory_observed', 'requires_confirmation',
-      // TODO(v4.3-compat): remove these aliases after all published extraction apps use the six-field contract.
-      'content', 'source_excerpt', 'source_page', 'source_paragraph'
-    ]);
-    if (Object.keys(candidate).some((key) => !allowedKeys.has(key))) {
-      throw contractError(audit, 'requirements 项包含禁止字段（REQ-ID 必须由后端生成）。');
-    }
-    const text = typeof candidate.text === 'string' ? candidate.text : candidate.content;
-    const sourceText = typeof candidate.source_text === 'string' ? candidate.source_text : candidate.source_excerpt;
-    if (typeof text !== 'string' || typeof sourceText !== 'string') throw contractError(audit, 'text 与 source_text 必须为字符串。');
-    if (!sourceText.trim()) throw contractError(audit, 'source_text 不能为空。');
-    const parsedHint = parseSourceHint(candidate.source_paragraph);
-    if (parsedHint.warning) adapterWarnings.push({ ...parsedHint.warning, candidate_index: originalIndex + 1 });
+    const text = candidate.text.trim();
+    const sourceText = candidate.source_text.trim();
     return {
       content: text.trim(), text: text.trim(),
       source_excerpt: sourceText.trim(), source_text: sourceText.trim(),
-      category: typeof candidate.category === 'string' ? candidate.category.trim() || null : null,
-      source_clause: typeof candidate.source_clause === 'string' ? candidate.source_clause.trim() || null : null,
-      mandatory_observed: candidate.mandatory_observed === true,
-      requires_confirmation: candidate.requires_confirmation === true,
-      source_hint: parsedHint.hint,
+      category: candidate.category,
+      source_clause: candidate.source_clause === null ? null : candidate.source_clause.trim() || null,
+      mandatory_observed: candidate.mandatory_observed,
+      requires_confirmation: candidate.requires_confirmation,
       candidate_index: originalIndex + 1
     };
   });
 
   return {
     candidates,
-    warnings: [...normalizeWarnings(envelope.warnings, audit), ...adapterWarnings],
+    warnings: normalizeWarnings(envelope.warnings, audit),
     audit
+  };
+}
+
+export function buildRequirementExtractionPayload({
+  projectName,
+  sectionName,
+  chunkIndex,
+  chunkCount,
+  chunkText
+} = {}) {
+  return {
+    project_name: String(projectName || ''),
+    section_name: String(sectionName || ''),
+    chunk_index: Number.isInteger(chunkIndex) && chunkIndex > 0 ? chunkIndex : 1,
+    chunk_count: Number.isInteger(chunkCount) && chunkCount > 0 ? chunkCount : 1,
+    chunk_text: String(chunkText || '')
   };
 }
 
 export function createRequirementExtractionGateway(client) {
   return {
-    async extract({ fileName, text, paragraphs, chunk }) {
+    async extract({
+      fileName,
+      text,
+      paragraphs = [],
+      chunk,
+      projectName,
+      sectionName,
+      chunkCount
+    }) {
       const gatewayResponse = await client.run({
         task_type: REQUIREMENT_EXTRACTION_TASK_TYPE,
         // The transport field is required by the legacy HTTP envelope, but its
         // value is always resolved from the canonical semantic contract.
         task_instruction: resolveSemanticTaskInstruction(REQUIREMENT_EXTRACTION_TASK_TYPE),
-        task_payload_json: JSON.stringify({
-          file_name: fileName,
-          chunk: chunk ? {
-            chunk_number: chunk.chunk_number,
-            source_start_offset: chunk.source_start_offset,
-            source_end_offset: chunk.source_end_offset,
-            source_start_page: chunk.source_start_page,
-            source_end_page: chunk.source_end_page,
-            source_start_paragraph: chunk.source_start_paragraph,
-            source_end_paragraph: chunk.source_end_paragraph
-          } : undefined,
-          text,
-          segments: paragraphs.map(({
-            paragraph, page, text: segmentText, source_start_offset: sourceStartOffset,
-            source_end_offset: sourceEndOffset, source_section: sourceSection,
-            source_clause_id: sourceClauseId
-          }) => ({
-            paragraph,
-            page,
-            text: segmentText,
-            source_start_offset: sourceStartOffset,
-            source_end_offset: sourceEndOffset,
-            source_section: sourceSection,
-            source_clause_id: sourceClauseId
-          }))
-        })
+        task_payload_json: JSON.stringify(buildRequirementExtractionPayload({
+          projectName: projectName || fileName,
+          sectionName: sectionName || chunk?.segments?.[0]?.source_section,
+          chunkIndex: chunk?.chunk_number,
+          chunkCount,
+          chunkText: text
+        }))
       });
       return validateRequirementExtractionEnvelope(gatewayResponse);
     }
