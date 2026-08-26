@@ -1,5 +1,12 @@
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { getSemanticTaskContract } from '../../../packages/semantic-contracts/index.js';
+
+const REQUIREMENT_EXTRACTION_CONTRACT_VERSION = getSemanticTaskContract('requirement_extraction').contract_version;
+// These are immutable offline outputs captured before the active prompt
+// replacement. They are accepted only by the fixture evaluator, never by the
+// production Gateway or Requirement pipeline.
+const HISTORICAL_FIXTURE_CONTRACT_VERSIONS = new Set(['4.3-requirement-extraction']);
 
 export const BETA_THRESHOLDS = Object.freeze({
   schema_pass_rate: 1, mandatory_recall: 1, false_positive_count: 0,
@@ -21,7 +28,8 @@ function matches(candidate, expected) {
 function schemaValid(fixture) {
   if (fixture.blocked === true) return !fixture.gateway_envelope;
   const envelope = fixture.gateway_envelope;
-  if (!envelope || envelope.schema_version !== '4.3-requirement-extraction'
+  if (!envelope || (envelope.schema_version !== REQUIREMENT_EXTRACTION_CONTRACT_VERSION
+    && !HISTORICAL_FIXTURE_CONTRACT_VERSIONS.has(envelope.schema_version))
     || envelope.task_type !== 'requirement_extraction' || envelope.status !== 'success'
     || !envelope.data || Object.keys(envelope.data).some((key) => key !== 'requirements')
     || !Array.isArray(envelope.data.requirements) || !Array.isArray(envelope.warnings)) return false;
