@@ -83,7 +83,9 @@ unresolved semantic question, and requests semantic relationship, semantic
 reason codes and support observations. The frozen
 `evidence_support_assessment` instruction remains the default until a new
 remote contract is explicitly approved; no external call is made by this
-change.
+change. Its bounded integration budget is 800 output tokens, below the
+historical overloaded-task baseline of 3200; the current frozen task remains
+unchanged.
 
 ## Lifecycle and metrics
 

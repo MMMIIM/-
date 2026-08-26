@@ -6,6 +6,9 @@
  * task until a separately versioned remote contract is approved.
  */
 export const SEMANTIC_ADJUDICATION_PROMPT_VERSION = 'semantic-adjudication-prompt-v1';
+// Eval/runtime integrations must use a bounded budget; this is intentionally
+// below the historical 3200-token overloaded-task baseline.
+export const SEMANTIC_ADJUDICATION_MAX_OUTPUT_TOKENS = 800;
 
 const asText = value => String(value ?? '').trim();
 const asObject = value => value && typeof value === 'object' && !Array.isArray(value) ? value : {};

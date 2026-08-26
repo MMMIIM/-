@@ -17,6 +17,7 @@ import {
   runDeterministicEvidenceChecks
 } from '../src/pipeline/evidence-support-responsibility.js';
 import {
+  SEMANTIC_ADJUDICATION_MAX_OUTPUT_TOKENS,
   SEMANTIC_ADJUDICATION_PROMPT_VERSION,
   buildSemanticAdjudicationPrompt
 } from '../src/pipeline/semantic-adjudication-prompt.js';
@@ -187,4 +188,5 @@ test('adjudication prompt is narrow and leaves deterministic ownership outside t
   assert.match(prompt, /support_observations/);
   assert.match(prompt, /不得重新计算或覆盖/);
   assert.match(prompt, /不创建事实、映射、Claim 或审批状态/);
+  assert.equal(SEMANTIC_ADJUDICATION_MAX_OUTPUT_TOKENS < 3200, true);
 });
