@@ -56,7 +56,7 @@ function errorCode(error) {
 
 function statusFor(code) {
   if (code === 'AUTH_INVALID') return 401;
-  if (code === 'TASK_UNSUPPORTED' || code === 'INPUT_SCHEMA_INVALID' || code === 'OUTPUT_SCHEMA_INVALID' || code === 'SUPPORT_SPAN_INVALID') return 422;
+  if (code === 'TASK_UNSUPPORTED' || code === 'SEMANTIC_CONTRACT_DRIFT' || code === 'INPUT_SCHEMA_INVALID' || code === 'OUTPUT_SCHEMA_INVALID' || code === 'SUPPORT_SPAN_INVALID') return 422;
   if (code === 'PROVIDER_TIMEOUT') return 504;
   if (code === 'PROVIDER_HTTP_FAILURE' || code === 'PROVIDER_UNAVAILABLE' || code === 'PROVIDER_OUTPUT_INVALID') return 502;
   return 500;
@@ -66,6 +66,7 @@ function safeMessage(code) {
   return {
     AUTH_INVALID: 'Gateway authentication failed.',
     TASK_UNSUPPORTED: 'The requested semantic task is not registered.',
+    SEMANTIC_CONTRACT_DRIFT: 'Semantic task contract metadata is inconsistent.',
     INPUT_SCHEMA_INVALID: 'Gateway input does not match the task contract.',
     PROVIDER_UNAVAILABLE: 'Semantic provider is unavailable.',
     PROVIDER_TIMEOUT: 'Semantic provider request timed out.',
@@ -134,6 +135,8 @@ function safeProbeDiagnostics({ providerAudit = null, validationErrors = [], env
     response_model: typeof audit.response_model === 'string' ? audit.response_model : null,
     response_id: typeof audit.response_id === 'string' ? audit.response_id : null,
     provider_trace_id: typeof audit.provider_trace_id === 'string' ? audit.provider_trace_id : null,
+    semantic_contract_version: typeof audit.semantic_contract_version === 'string' ? audit.semantic_contract_version : null,
+    instruction_sha256: typeof audit.instruction_sha256 === 'string' ? audit.instruction_sha256 : null,
     model_content_length_chars: Number.isInteger(audit.model_content_length_chars) ? audit.model_content_length_chars : null,
     output_truncated: audit.output_truncated === true,
     json_parse_error_offset: Number.isInteger(audit.json_parse_error_offset) ? audit.json_parse_error_offset : null,

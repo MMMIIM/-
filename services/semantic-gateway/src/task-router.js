@@ -1,8 +1,11 @@
 import {
   getSemanticTaskContract,
-  resolveSemanticTaskInstruction,
+  getSemanticTaskInstructionMetadata,
   validateTaskData
 } from '../../../packages/semantic-contracts/index.js';
+import { createHash } from 'node:crypto';
+
+const instructionHash = value => createHash('sha256').update(String(value), 'utf8').digest('hex');
 
 function observedCategory(value) {
   if (value === undefined) return 'missing';
@@ -54,11 +57,18 @@ export function createSemanticTaskRouter({ provider } = {}) {
     throw new Error('Semantic task router requires a provider adapter.');
   }
   return {
-    async dispatch({ taskType, payload }) {
+    async dispatch({ taskType, payload, contractVersion = null, instructionHash: requestedInstructionHash = null }) {
       const contract = getSemanticTaskContract(taskType);
       if (!contract) throw Object.assign(new Error('task unsupported'), { code: 'TASK_UNSUPPORTED' });
-      const instruction = resolveSemanticTaskInstruction(taskType);
-      if (!instruction) throw Object.assign(new Error('task instruction missing'), { code: 'TASK_UNSUPPORTED' });
+      const instructionMetadata = getSemanticTaskInstructionMetadata(taskType);
+      const instruction = instructionMetadata?.instruction;
+      if (!instruction || !instructionMetadata?.instruction_hash || instructionHash(instruction) !== instructionMetadata.instruction_hash) {
+        throw Object.assign(new Error('semantic task contract instruction hash mismatch'), { code: 'SEMANTIC_CONTRACT_DRIFT' });
+      }
+      if ((contractVersion && contractVersion !== contract.contract_version)
+        || (requestedInstructionHash && requestedInstructionHash !== instructionMetadata.instruction_hash)) {
+        throw Object.assign(new Error('semantic task contract metadata mismatch'), { code: 'SEMANTIC_CONTRACT_DRIFT' });
+      }
       const providerResult = await provider.invoke({ taskType, instruction, payload });
       let data;
       try {
@@ -73,7 +83,14 @@ export function createSemanticTaskRouter({ provider } = {}) {
         }
         throw error;
       }
-      return { data, provider_audit: providerResult?.provider_audit || null };
+      return {
+        data,
+        provider_audit: {
+          ...(providerResult?.provider_audit || {}),
+          semantic_contract_version: contract.contract_version,
+          instruction_sha256: instructionMetadata.instruction_hash
+        }
+      };
     }
   };
 }
