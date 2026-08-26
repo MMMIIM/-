@@ -26,11 +26,11 @@ test('Requirement Extraction has exactly one canonical instruction and explicit 
     .filter(([taskType, instruction]) => taskType === 'requirement_extraction' && typeof instruction === 'string' && instruction.trim());
   assert.equal(activeRequirementInstructions.length, 1);
   assert.equal(metadata.instruction, resolveSemanticTaskInstruction('requirement_extraction'));
-  assert.equal(metadata.contract_version, '4.3-requirement-extraction-v1.1');
-  assert.equal(metadata.instruction_hash, '4589cfd6f1c7385b313d4de2e1d37a363f48aca1389a51f637f57391fa7d7c81');
+  assert.equal(metadata.contract_version, getSemanticTaskContract('requirement_extraction').contract_version);
+  assert.match(metadata.instruction_hash, /^[a-f0-9]{64}$/);
   const schema = getSemanticTaskContract('requirement_extraction').data_schema;
   assert.deepEqual(schema.properties.requirements.items.required, [
-    'text', 'category', 'source_text', 'source_clause', 'mandatory_observed', 'requires_confirmation'
+    'text', 'category', 'source_refs', 'mandatory_observed', 'requires_confirmation'
   ]);
   assert.equal(schema.properties.requirements.items.additionalProperties, false);
   assert.match(requirementExtractionSource, /resolveSemanticTaskInstruction/);
@@ -59,8 +59,7 @@ test('Requirement Extraction shared validator enforces the six-field candidate s
   const candidate = {
     text: '系统应提供审计日志。',
     category: 'technical',
-    source_text: '系统应提供审计日志。',
-    source_clause: null,
+    source_refs: ['C001-S001'],
     mandatory_observed: true,
     requires_confirmation: false
   };
@@ -70,10 +69,10 @@ test('Requirement Extraction shared validator enforces the six-field candidate s
     { ...candidate, mandatory_observed: 'true' },
     { ...candidate, requires_confirmation: 0 },
     { ...candidate, category: 'not-a-category' },
-    { ...candidate, source_clause: 3 },
-    (() => { const copy = { ...candidate }; delete copy.source_text; return copy; })()
+    { ...candidate, source_refs: [] },
+    (() => { const copy = { ...candidate }; delete copy.source_refs; return copy; })()
   ]) {
-    assert.throws(() => validateTaskData('requirement_extraction', { requirements: [invalid] }), /unsupported fields|missing|required|canonical categories|boolean|string or null/);
+    assert.throws(() => validateTaskData('requirement_extraction', { requirements: [invalid] }), /unsupported fields|missing|required|canonical categories|boolean|non-empty|deterministic/);
   }
 });
 

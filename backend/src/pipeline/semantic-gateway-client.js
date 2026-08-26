@@ -100,9 +100,9 @@ function safeStructuralSummary(value) {
       text_empty: typeof candidate?.text_empty === 'boolean' ? candidate.text_empty : null,
       category_type: safeDiagnosticScalar(candidate?.category_type, 40),
       category_value: safeDiagnosticScalar(candidate?.category_value, 80),
-      source_text_type: safeDiagnosticScalar(candidate?.source_text_type, 40),
-      source_text_empty: typeof candidate?.source_text_empty === 'boolean' ? candidate.source_text_empty : null,
-      source_clause_type: safeDiagnosticScalar(candidate?.source_clause_type, 40),
+      source_refs_type: safeDiagnosticScalar(candidate?.source_refs_type, 40),
+      source_refs_empty: typeof candidate?.source_refs_empty === 'boolean' ? candidate.source_refs_empty : null,
+      source_refs_count: Number.isInteger(candidate?.source_refs_count) ? candidate.source_refs_count : null,
       mandatory_observed_type: safeDiagnosticScalar(candidate?.mandatory_observed_type, 40),
       requires_confirmation_type: safeDiagnosticScalar(candidate?.requires_confirmation_type, 40)
     }))

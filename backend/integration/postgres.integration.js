@@ -484,8 +484,7 @@ test('PostgreSQL 确认 Requirement 基线后禁止增删改合并', async () =>
         candidates: [{
           text: '系统应支持标准接口并提供安全审计。',
           category: 'security',
-          source_text: '★系统应支持标准接口并提供安全审计，详见第 3.2 条。',
-          source_clause: '3.2',
+          source_refs: ['C001-S001'],
           mandatory_observed: true,
           requires_confirmation: false
         }],
@@ -654,12 +653,12 @@ test('PostgreSQL 持久化章节、succeeded_empty 与章节级 mandatory scope'
         const exception = chunk.segments.find((segment) => segment.source_clause_id === '5.2.6');
         if (mandatory) requirements.push({
           text: '提供审计能力。', category: 'security',
-          source_text: '5.2.1 审计要求。', source_clause: '5.2.1',
+          source_refs: [mandatory.source_ref],
           mandatory_observed: true, requires_confirmation: false
         });
         if (exception) requirements.push({
           text: '提供例外能力。', category: 'technical',
-          source_text: '5.2.6 例外要求。', source_clause: '5.2.6',
+          source_refs: [exception.source_ref],
           mandatory_observed: false, requires_confirmation: false
         });
         return { candidates: requirements, warnings: [], audit: { provider: 'semantic_gateway' } };

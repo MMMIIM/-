@@ -7,6 +7,7 @@ import { createHash } from 'node:crypto';
 
 function chunk(values) {
   return { id: '00000000-0000-0000-0000-000000000001', segments: values.map((text, index) => ({
+    source_ref: `C001-S${String(index + 1).padStart(3, '0')}`,
     text, paragraph: index + 10, page: index < 2 ? 16 : 17,
     source_start_offset: index * 100, source_end_offset: index * 100 + text.length
   })) };
@@ -15,11 +16,11 @@ function chunk(values) {
 test('来源 resolver 支持单段、跨2至8段及跨页确定性反向映射', () => {
   const resolver = new SourceLocationResolver();
   const value = chunk(['第一段要求', '第二段连续', '第三段跨页', '第四段结束']);
-  const single = resolver.resolve({ source_text: '第一段要求' }, value).location;
+  const single = resolver.resolve({ source_refs: ['C001-S001'] }, value).location;
   assert.equal(single.source_match_type, 'exact_single_paragraph');
-  const multi = resolver.resolve({ source_text: '第一段要求第二段连续第三段跨页第四段结束' }, value).location;
+  const multi = resolver.resolve({ source_refs: ['C001-S001', 'C001-S002', 'C001-S003', 'C001-S004'] }, value).location;
   assert.equal(multi.source_verified, true);
-  assert.equal(multi.source_match_type, 'normalized_multi_paragraph_span');
+  assert.equal(multi.source_match_type, 'exact_multi_paragraph_span');
   assert.equal(multi.source_paragraph_start, 10);
   assert.equal(multi.source_paragraph_end, 13);
   assert.equal(multi.source_page_start, 16);
@@ -27,21 +28,21 @@ test('来源 resolver 支持单段、跨2至8段及跨页确定性反向映射',
   assert.equal(multi.source_paragraphs_json.length, 4);
 });
 
-test('全半角标点、空白和PDF行内换行只做确定性标准化', () => {
+test('source refs 保持后端原文边界，不接受模型改写文本', () => {
   const result = new SourceLocationResolver().resolve(
-    { source_text: '系统（含审计）应支持：日志查询。' },
+    { source_refs: ['C001-S001', 'C001-S002'] },
     chunk(['系统(含审计)应支持:', '日志查询.'])
   ).location;
   assert.equal(result.source_verified, true);
-  assert.equal(result.source_match_type, 'normalized_multi_paragraph_span');
+  assert.equal(result.source_match_type, 'exact_multi_paragraph_span');
 });
 
-test('模糊结果只能 suggested，不能自动认证来源', () => {
-  const resolver = new SourceLocationResolver({ suggestionThreshold: 0.05 });
-  const result = resolver.resolve({ source_text: '模型改写后的审计能力描述' }, chunk(['原文要求提供完整的审计能力和日志查询功能']));
-  assert.equal(result.location.source_resolution_status, 'suggested');
+test('模型改写或未知来源只能 unresolved，不能自动认证来源', () => {
+  const resolver = new SourceLocationResolver();
+  const result = resolver.resolve({ source_refs: ['C001-S999'] }, chunk(['原文要求提供完整的审计能力和日志查询功能']));
+  assert.equal(result.location.source_resolution_status, 'unresolved');
   assert.equal(result.location.source_verified, false);
-  assert.equal(result.warning.code, 'SOURCE_LOCATION_SUGGESTED');
+  assert.equal(result.warning.code, 'SOURCE_LOCATION_UNRESOLVED');
 });
 
 test('生产确认门禁阻止 mandatory 未定位及 pending，并允许全部处理后的 include', () => {
@@ -67,7 +68,7 @@ function reconciliationFixture({ previousFileHash = null, extractedHash } = {}) 
       file: { id: 'file', storage_key: 'file.pdf', original_name: 'file.pdf', mime_type: 'application/pdf', size_bytes: buffer.length },
       previous_file_hash: previousFileHash,
       technical_section: { content_sha256: classifyTenderSections(extraction).technicalSection.content_sha256 },
-      chunks: [], candidates: [{ id: 'candidate', req_id: 'REQ-001', content: '正文不变', source_text: '第一段要求第二段连续', source_clause_id: '5.1', is_mandatory: false, ordinal: 1, candidate_decision: 'pending' }]
+      chunks: [], candidates: [{ id: 'candidate', req_id: 'REQ-001', content: '正文不变', source_text: '第一段要求第二段连续', source_refs: ['C001-S002', 'C001-S003'], source_clause_id: '5.1', is_mandatory: false, ordinal: 1, candidate_decision: 'pending' }]
     }),
     saveSourceReconciliation: async (value) => saved.push(value)
   };

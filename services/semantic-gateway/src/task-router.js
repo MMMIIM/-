@@ -1,7 +1,9 @@
 import {
   getSemanticTaskContract,
   getSemanticTaskInstructionMetadata,
-  validateTaskData
+  validateTaskData,
+  REQUIREMENT_CANDIDATE_SCHEMA,
+  REQUIREMENT_CANDIDATE_CATEGORIES
 } from '../../../packages/semantic-contracts/index.js';
 import { createHash } from 'node:crypto';
 
@@ -14,14 +16,8 @@ function observedCategory(value) {
   return typeof value;
 }
 
-const REQUIREMENT_CANDIDATE_FIELDS = Object.freeze([
-  'text', 'category', 'source_text', 'source_clause',
-  'mandatory_observed', 'requires_confirmation'
-]);
-const REQUIREMENT_CATEGORIES = Object.freeze([
-  'functional', 'technical', 'performance', 'security', 'data',
-  'implementation', 'delivery', 'acceptance', 'service', 'constraint', 'other'
-]);
+const REQUIREMENT_CANDIDATE_FIELDS = Object.freeze([...REQUIREMENT_CANDIDATE_SCHEMA.required]);
+const REQUIREMENT_CATEGORIES = REQUIREMENT_CANDIDATE_CATEGORIES;
 
 function requirementValidationDiagnostics(data) {
   const errors = [];
@@ -103,13 +99,29 @@ function requirementValidationDiagnostics(data) {
         message: 'Candidate text must be non-empty text.'
       });
     }
-    if (typeof candidate.source_text !== 'string' || !candidate.source_text.trim()) {
+    if (!Array.isArray(candidate.source_refs) || candidate.source_refs.length === 0) {
       errors.push({
-        path: `${path}.source_text`,
-        expected: 'non-empty string',
-        observed_category: observedCategory(candidate.source_text),
-        validator_code: typeof candidate.source_text === 'string' ? 'minLength' : 'type',
-        message: 'Candidate source_text must be non-empty text.'
+        path: `${path}.source_refs`,
+        expected: 'non-empty array of unique Cxxx-Sxxx references',
+        observed_category: observedCategory(candidate.source_refs),
+        validator_code: Array.isArray(candidate.source_refs) ? 'minItems' : 'type',
+        message: 'Candidate source_refs must be a non-empty array.'
+      });
+    } else {
+      if (new Set(candidate.source_refs).size !== candidate.source_refs.length) {
+        errors.push({
+          path: `${path}.source_refs`, expected: 'uniqueItems', observed_category: 'duplicate',
+          validator_code: 'uniqueItems', message: 'Candidate source_refs must be unique.'
+        });
+      }
+      candidate.source_refs.forEach((ref, refIndex) => {
+        if (typeof ref !== 'string' || !/^C\d{3}-S\d{3}$/.test(ref)) {
+          errors.push({
+            path: `${path}.source_refs[${refIndex}]`,
+            expected: 'Cxxx-Sxxx string', observed_category: observedCategory(ref),
+            validator_code: 'pattern', message: 'Candidate source_ref is not a deterministic span reference.'
+          });
+        }
       });
     }
     if (typeof candidate.category !== 'string' || !REQUIREMENT_CATEGORIES.includes(candidate.category)) {
@@ -119,15 +131,6 @@ function requirementValidationDiagnostics(data) {
         observed_category: observedCategory(candidate.category),
         validator_code: 'enum',
         message: 'Candidate category is not a canonical enum value.'
-      });
-    }
-    if (candidate.source_clause !== null && typeof candidate.source_clause !== 'string') {
-      errors.push({
-        path: `${path}.source_clause`,
-        expected: 'string or null',
-        observed_category: observedCategory(candidate.source_clause),
-        validator_code: 'type',
-        message: 'Candidate source_clause must be a string or null.'
       });
     }
     for (const key of ['mandatory_observed', 'requires_confirmation']) {

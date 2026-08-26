@@ -5,6 +5,7 @@ import {
   SEMANTIC_GATEWAY_ERROR_CODES,
   getSemanticTaskContract,
   createGatewayEnvelope,
+  REQUIREMENT_CANDIDATE_SCHEMA,
   REQUIREMENT_CANDIDATE_SCHEMA_VERSION,
   REQUIREMENT_CANDIDATE_SCHEMA_SHA256
 } from '../../../packages/semantic-contracts/index.js';
@@ -110,10 +111,7 @@ function legacySchemaDetected(value, observedTokens = []) {
   ));
 }
 
-const REQUIREMENT_CANDIDATE_FIELDS = Object.freeze([
-  'text', 'category', 'source_text', 'source_clause',
-  'mandatory_observed', 'requires_confirmation'
-]);
+const REQUIREMENT_CANDIDATE_FIELDS = Object.freeze([...REQUIREMENT_CANDIDATE_SCHEMA.required]);
 
 function observedType(value) {
   if (value === null) return 'null';
@@ -136,7 +134,7 @@ function safeStructuralCandidate(candidate, index) {
     ? Object.keys(objectCandidate).filter(key => !REQUIREMENT_CANDIDATE_FIELDS.includes(key)).map(safeStructuralKey)
     : [];
   const text = objectCandidate?.text;
-  const sourceText = objectCandidate?.source_text;
+  const sourceRefs = objectCandidate?.source_refs;
   return {
     candidate_index: index,
     keys,
@@ -146,9 +144,9 @@ function safeStructuralCandidate(candidate, index) {
     text_empty: typeof text === 'string' ? text.trim().length === 0 : null,
     category_type: observedType(objectCandidate?.category),
     category_value: typeof objectCandidate?.category === 'string' ? objectCandidate.category.slice(0, 80) : null,
-    source_text_type: observedType(sourceText),
-    source_text_empty: typeof sourceText === 'string' ? sourceText.trim().length === 0 : null,
-    source_clause_type: observedType(objectCandidate?.source_clause),
+    source_refs_type: observedType(sourceRefs),
+    source_refs_empty: Array.isArray(sourceRefs) ? sourceRefs.length === 0 : null,
+    source_refs_count: Array.isArray(sourceRefs) ? sourceRefs.length : null,
     mandatory_observed_type: observedType(objectCandidate?.mandatory_observed),
     requires_confirmation_type: observedType(objectCandidate?.requires_confirmation)
   };

@@ -63,12 +63,10 @@ export function validateRequirementExtractionEnvelope(gatewayResponse) {
 
   const candidates = envelope.data.requirements.map((candidate) => {
     const text = candidate.text.trim();
-    const sourceText = candidate.source_text.trim();
     return {
       text: text.trim(),
-      source_text: sourceText.trim(),
       category: candidate.category,
-      source_clause: candidate.source_clause === null ? null : candidate.source_clause.trim() || null,
+      source_refs: [...candidate.source_refs],
       mandatory_observed: candidate.mandatory_observed,
       requires_confirmation: candidate.requires_confirmation
     };
@@ -119,7 +117,7 @@ export function createRequirementExtractionGateway(client) {
           sectionName: sectionName || chunk?.segments?.[0]?.source_section,
           chunkIndex: chunk?.chunk_number,
           chunkCount,
-          chunkText: text
+          chunkText: chunk?.model_text || text
         }))
       }, { diagnosticMode });
       return validateRequirementExtractionEnvelope(gatewayResponse);

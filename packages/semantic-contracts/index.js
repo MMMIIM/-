@@ -99,8 +99,7 @@ export const SEMANTIC_TASK_INSTRUCTIONS = Object.freeze({
     '每条 Requirement 只允许包含：',
     '- text',
     '- category',
-    '- source_text',
-    '- source_clause',
+    '- source_refs',
     '- mandatory_observed',
     '- requires_confirmation',
     '',
@@ -116,14 +115,10 @@ export const SEMANTIC_TASK_INSTRUCTIONS = Object.freeze({
     '只能使用 Schema 中允许的类别。',
     '若同时涉及多类，选择主要类别。',
     '',
-    'source_text：',
-    '必须逐字来自 chunk_text。',
-    '选择能够直接证明该 Requirement 的最小充分原文。',
-    '不得改写、补写或使用生成后的 text 代替原文。',
-    '',
-    'source_clause：',
-    '只有在原文中能够明确识别章节号、条款号或标题时填写。',
-    '无法确定时按 Schema 返回空值，不得猜测。',
+    'source_refs：',
+    '必须返回一个非空数组，数组元素只能是 chunk_text 中明确提供的确定性段落标识，格式为 Cxxx-Sxxx。',
+    'source_refs 必须覆盖能够直接证明该 Requirement 的最小充分原文；可以引用连续的多个段落。',
+    '不得输出 source_text、source_clause、页码、段落号、哈希或任何其他来源字段；不得编造不存在的引用标识。',
     '',
     'mandatory_observed：',
     '仅表示原文中是否观察到“必须、应、须、不得、★”等明显强制表达。',
@@ -185,13 +180,15 @@ export const REQUIREMENT_CANDIDATE_CATEGORIES = Object.freeze([
 
 export const REQUIREMENT_CANDIDATE_SCHEMA = Object.freeze({
   type: 'object',
-  required: Object.freeze(['text', 'category', 'source_text', 'source_clause', 'mandatory_observed', 'requires_confirmation']),
+  required: Object.freeze(['text', 'category', 'source_refs', 'mandatory_observed', 'requires_confirmation']),
   additionalProperties: false,
   properties: Object.freeze({
     text: Object.freeze({ type: 'string', minLength: 1 }),
     category: Object.freeze({ type: 'string', enum: REQUIREMENT_CANDIDATE_CATEGORIES }),
-    source_text: Object.freeze({ type: 'string', minLength: 1 }),
-    source_clause: Object.freeze({ type: ['string', 'null'] }),
+    source_refs: Object.freeze({
+      type: 'array', minItems: 1, uniqueItems: true,
+      items: Object.freeze({ type: 'string', pattern: '^C\\d{3}-S\\d{3}$' })
+    }),
     mandatory_observed: Object.freeze({ type: 'boolean' }),
     requires_confirmation: Object.freeze({ type: 'boolean' })
   })
@@ -199,13 +196,13 @@ export const REQUIREMENT_CANDIDATE_SCHEMA = Object.freeze({
 
 // Diagnostics are derived from this exact shared schema object so the Gateway
 // cannot report an independently maintained Candidate contract fingerprint.
-export const REQUIREMENT_CANDIDATE_SCHEMA_VERSION = '4.3-requirement-candidate-v1';
+export const REQUIREMENT_CANDIDATE_SCHEMA_VERSION = '4.3-requirement-candidate-v2';
 export const REQUIREMENT_CANDIDATE_SCHEMA_SHA256 = sha256(JSON.stringify(REQUIREMENT_CANDIDATE_SCHEMA));
 
 export const SEMANTIC_TASK_CONTRACTS = Object.freeze({
   requirement_extraction: Object.freeze({
     task_type: 'requirement_extraction',
-    contract_version: '4.3-requirement-extraction-v1.1',
+    contract_version: '4.3-requirement-extraction-v2',
     instruction_hash: instructionHash('requirement_extraction'),
     data_required: Object.freeze(['requirements']),
     data_allowed: Object.freeze(['requirements']),
@@ -330,25 +327,29 @@ function validateRequirementExtractionData(data) {
     const label = `data.requirements[${index}]`;
     assertObject(candidate, label);
     assertExactKeys(candidate, [
-      'text', 'category', 'source_text', 'source_clause',
-      'mandatory_observed', 'requires_confirmation'
+      'text', 'category', 'source_refs', 'mandatory_observed', 'requires_confirmation'
     ], label);
     for (const key of [
-      'text', 'category', 'source_text', 'source_clause',
-      'mandatory_observed', 'requires_confirmation'
+      'text', 'category', 'source_refs', 'mandatory_observed', 'requires_confirmation'
     ]) {
       if (!Object.prototype.hasOwnProperty.call(candidate, key)) {
         throw new Error(`missing ${label}.${key}`);
       }
     }
     assertText(candidate.text, `${label}.text`);
-    assertText(candidate.source_text, `${label}.source_text`);
+    assertArray(candidate.source_refs, `${label}.source_refs`);
+    if (!candidate.source_refs.length) throw new Error(`${label}.source_refs must be non-empty`);
+    if (new Set(candidate.source_refs).size !== candidate.source_refs.length) {
+      throw new Error(`${label}.source_refs must contain unique span references`);
+    }
+    for (const [refIndex, ref] of candidate.source_refs.entries()) {
+      if (typeof ref !== 'string' || !/^C\d{3}-S\d{3}$/.test(ref)) {
+        throw new Error(`${label}.source_refs[${refIndex}] must be a deterministic span reference`);
+      }
+    }
     if (typeof candidate.category !== 'string'
       || !REQUIREMENT_CANDIDATE_CATEGORIES.includes(candidate.category)) {
       throw new Error(`${label}.category must be one of the canonical categories`);
-    }
-    if (candidate.source_clause !== null && typeof candidate.source_clause !== 'string') {
-      throw new Error(`${label}.source_clause must be a string or null`);
     }
     if (typeof candidate.mandatory_observed !== 'boolean') {
       throw new Error(`${label}.mandatory_observed must be boolean`);

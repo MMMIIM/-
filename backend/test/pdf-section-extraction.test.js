@@ -76,14 +76,14 @@ test('章节级 mandatory scope 传播到第四章候选但排除5.2.6', () => {
   assert.deepEqual(rules[0].exception_clause_ids, ['5.2.6']);
   const candidates = aggregateRequirementCandidates([{ chunk_number: 1, candidates: [
     {
-      text: '提供审计能力。', source_text: '5.2.1 应提供审计能力。',
-      category: 'technical', source_clause: '5.2.1', mandatory_observed: true,
+      text: '提供审计能力。', source_refs: ['C001-S001'], source_text: '5.2.1 应提供审计能力。',
+      category: 'technical', source_clause_id: '5.2.1', mandatory_observed: true,
       requires_confirmation: false, source_section: '项目要求和有关说明',
       source_clause_id: '5.2.1', source_page: 10, source_paragraph: 20
     },
     {
-      text: '可选扩展能力。', source_text: '5.2.6 可选扩展能力。',
-      category: 'technical', source_clause: '5.2.6', mandatory_observed: false,
+      text: '可选扩展能力。', source_refs: ['C001-S002'], source_text: '5.2.6 可选扩展能力。',
+      category: 'technical', source_clause_id: '5.2.6', mandatory_observed: false,
       requires_confirmation: false, source_section: '项目要求和有关说明',
       source_clause_id: '5.2.6', source_page: 10, source_paragraph: 21
     }
@@ -99,7 +99,7 @@ test('章节级 mandatory scope 传播到第四章候选但排除5.2.6', () => {
 test('网关 requirements 空数组是合法成功，非数组和多余字段仍失败', () => {
   const result = validateRequirementExtractionEnvelope({
     envelope: {
-      schema_version: '4.3-requirement-extraction-v1.1', task_type: 'requirement_extraction',
+      schema_version: '4.3-requirement-extraction-v2', task_type: 'requirement_extraction',
       status: 'success', data: { requirements: [] }, warnings: []
     },
     audit: { provider: 'semantic_gateway' }
@@ -108,7 +108,7 @@ test('网关 requirements 空数组是合法成功，非数组和多余字段仍
   for (const data of [{ requirements: 'invalid' }, { requirements: [], extra: true }, {}]) {
     assert.throws(() => validateRequirementExtractionEnvelope({
       envelope: {
-        schema_version: '4.3-requirement-extraction-v1.1', task_type: 'requirement_extraction',
+        schema_version: '4.3-requirement-extraction-v2', task_type: 'requirement_extraction',
         status: 'success', data, warnings: []
       }, audit: {}
     }), (error) => error.code === 'GATEWAY_REQUIREMENTS_INVALID');
@@ -158,9 +158,8 @@ test('空分片继续成功处理；仅所有分片为空时整体 NO_REQUIREMEN
           return {
             candidates: [{
               text: '接口要求。', category: 'technical',
-              source_text: '5.2.2 接口要求。', source_clause: '5.2.2',
-              mandatory_observed: false, requires_confirmation: false,
-              source_page: chunk.source_start_page, source_paragraph: chunk.source_start_paragraph
+              source_refs: [chunk.segments[0].source_ref],
+              mandatory_observed: false, requires_confirmation: false
             }], warnings: [], audit: {}
           };
         }

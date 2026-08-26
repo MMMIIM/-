@@ -84,12 +84,20 @@ function splitOversizedUnit(unit, characterBudget, tokenBudget) {
 
 function buildChunk(units, chunkNumber) {
   const text = units.map((unit) => unit.text).join('\n');
+  const segments = units.map((unit, index) => ({
+    ...unit,
+    source_ref: `C${String(chunkNumber).padStart(3, '0')}-S${String(index + 1).padStart(3, '0')}`
+  }));
+  // The model receives deterministic span labels, while `text` remains the
+  // exact extracted content used for hashes, offsets, and persistence.
+  const modelText = segments.map((unit) => `[${unit.source_ref}] ${unit.text}`).join('\n');
   const pages = units.map((unit) => unit.page).filter(Number.isInteger);
   const paragraphs = units.map((unit) => unit.paragraph).filter(Number.isInteger);
   return {
     chunk_number: chunkNumber,
     text,
-    segments: units.map((unit) => ({ ...unit })),
+    model_text: modelText,
+    segments,
     character_count: text.length,
     estimated_token_count: estimateTokenCount(text),
     source_start_offset: units[0].source_start_offset,
@@ -148,17 +156,27 @@ export function chunkExtractedText({
  * Requirement input shape.  `content` and `source_excerpt` are domain fields;
  * they are never accepted as aliases on the model-facing Candidate object.
  */
-export function mapRequirementCandidateToCanonicalInput(candidate, chunkNumber) {
+export function mapRequirementCandidateToCanonicalInput(candidate, chunkNumber, { allowBackendProvenance = false } = {}) {
   const content = String(candidate?.text || '').trim();
-  const sourceText = String(candidate?.source_text || '').trim();
-  if (!content || !sourceText) return null;
+  const sourceRefs = Array.isArray(candidate?.source_refs)
+    ? candidate.source_refs.filter((value) => typeof value === 'string' && value.trim())
+    : [];
+  if (!content || !sourceRefs.length) return null;
+  // Model candidates are never allowed to provide canonical provenance. Only
+  // the post-resolver projection may carry backend-derived source fields.
+  if (!allowBackendProvenance && (Object.hasOwn(candidate, 'source_text')
+    || Object.hasOwn(candidate, 'source_clause')
+    || Object.hasOwn(candidate, 'source_excerpt')
+    || Object.hasOwn(candidate, 'content'))) return null;
+  const sourceText = allowBackendProvenance && typeof candidate.source_text === 'string'
+    ? candidate.source_text.trim() : null;
   const source = {
         source_excerpt: sourceText,
         source_text: sourceText,
         source_page: candidate.source_page ?? null,
         source_paragraph: candidate.source_paragraph ?? null,
         source_section: candidate.source_section ?? null,
-        source_clause_id: candidate.source_clause_id ?? candidate.source_clause ?? null,
+        source_clause_id: candidate.source_clause_id ?? null,
         source_hash: candidate.source_hash ?? null,
         source_chunk_id: candidate.source_chunk_id ?? null,
         source_context_text: candidate.source_context_text ?? null,
@@ -173,11 +191,12 @@ export function mapRequirementCandidateToCanonicalInput(candidate, chunkNumber) 
         source_paragraph_end: candidate.source_paragraph_end ?? candidate.source_paragraph ?? null,
         source_paragraphs_json: candidate.source_paragraphs_json ?? [],
         category: candidate.category ?? null,
-        mandatory_observed: candidate.mandatory_observed === true,
-        requires_confirmation: candidate.requires_confirmation === true,
+        mandatory_observed: candidate.mandatory_observed,
+        requires_confirmation: candidate.requires_confirmation,
         source_start_offset: candidate.source_start_offset ?? null,
         source_end_offset: candidate.source_end_offset ?? null,
-        chunk_number: chunkNumber
+        chunk_number: chunkNumber,
+        source_refs: [...sourceRefs]
       };
   return { content, ...source, sources: [source] };
 }
@@ -186,7 +205,7 @@ export function aggregateRequirementCandidates(chunkResults, { mandatoryScopeRul
   const candidates = [];
   for (const chunkResult of chunkResults) {
     for (const candidate of chunkResult.candidates || []) {
-      const mapped = mapRequirementCandidateToCanonicalInput(candidate, chunkResult.chunk_number);
+      const mapped = mapRequirementCandidateToCanonicalInput(candidate, chunkResult.chunk_number, { allowBackendProvenance: true });
       if (mapped) candidates.push(mapped);
     }
   }
