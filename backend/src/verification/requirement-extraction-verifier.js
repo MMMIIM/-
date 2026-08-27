@@ -14,6 +14,7 @@ import {
   validateRequirementExtractionEnvelope
 } from '../pipeline/requirement-extraction.js';
 import { mapRequirementCandidateToCanonicalInput } from '../pipeline/requirement-chunker.js';
+import { SourceLocationResolver } from '../pipeline/source-location-resolver.js';
 import {
   createSemanticGatewayClientFromEnv,
   parseSemanticGatewayConfig
@@ -214,6 +215,7 @@ function baseReport(mode, startedAt, gitInfo) {
       provider_http_status: null,
       candidate_count: null,
       schema_pass: null,
+      source_resolution_pass: null,
       backend_ingestion_pass: null,
       diagnostics: null
     },
@@ -442,6 +444,7 @@ function safeLiveResult(value = {}) {
     provider_chain_verified: value.provider_chain_verified === true,
     candidate_count: Number.isInteger(value.candidate_count) ? value.candidate_count : null,
     schema_pass: typeof value.schema_pass === 'boolean' ? value.schema_pass : null,
+    source_resolution_pass: typeof value.source_resolution_pass === 'boolean' ? value.source_resolution_pass : null,
     backend_ingestion_pass: typeof value.backend_ingestion_pass === 'boolean' ? value.backend_ingestion_pass : null,
     diagnostics: value.diagnostics || null,
     technical_error_code: typeof value.technical_error_code === 'string' ? value.technical_error_code : null
@@ -453,17 +456,26 @@ function safeLiveResult(value = {}) {
  * The verifier only validates the in-memory projection; it never persists a
  * Requirement or mutates formal business state.
  */
-export function mapValidatedCandidatesToCanonicalInput(candidates) {
+export function mapValidatedCandidatesToCanonicalInput(candidates, { resolutions = null } = {}) {
   if (!Array.isArray(candidates)) {
     throw Object.assign(new Error('Candidate list is invalid.'), { code: 'BACKEND_INGESTION_FAILED' });
   }
   return candidates.map((candidate, index) => {
-    const mapped = mapRequirementCandidateToCanonicalInput(candidate, index + 1);
+    const resolution = Array.isArray(resolutions) ? resolutions[index] : null;
+    const resolvedCandidate = resolution?.location
+      ? { ...candidate, ...resolution.location }
+      : candidate;
+    const mapped = mapRequirementCandidateToCanonicalInput(
+      resolvedCandidate,
+      index + 1,
+      { allowBackendProvenance: Boolean(resolution?.location) }
+    );
     const candidateText = typeof candidate?.text === 'string' ? candidate.text.trim() : null;
     if (!mapped
       || mapped.content !== candidateText
       || !Array.isArray(mapped.sources?.[0]?.source_refs)
-      || JSON.stringify(mapped.sources[0].source_refs) !== JSON.stringify(candidate?.source_refs)
+      || JSON.stringify(mapped.sources[0].source_refs)
+        !== JSON.stringify(resolvedCandidate?.source_refs)
       || Object.hasOwn(candidate, 'content')
       || Object.hasOwn(candidate, 'source_excerpt')
       || Object.hasOwn(candidate, 'source_text')
@@ -474,13 +486,25 @@ export function mapValidatedCandidatesToCanonicalInput(candidates) {
   });
 }
 
-async function defaultLiveExecutor({ env, liveRequest }) {
-  const client = createSemanticGatewayClientFromEnv({ env, taskType: 'requirement_extraction' });
+export async function defaultLiveExecutor({ env, liveRequest, fetchImpl = fetch }) {
+  const client = createSemanticGatewayClientFromEnv({ env, taskType: 'requirement_extraction', fetchImpl });
   const gateway = createRequirementExtractionGateway(client);
+  const sourceLocationResolver = new SourceLocationResolver();
+  let gatewayResult = null;
+  let schemaPass = false;
+  let candidateCount = null;
   try {
-    const result = await gateway.extract({ ...liveRequest, diagnosticMode: 'probe-v1' });
-    const diagnostics = result.audit?.probe_diagnostics || null;
-    const mappedCandidates = mapValidatedCandidatesToCanonicalInput(result.candidates);
+    gatewayResult = await gateway.extract({ ...liveRequest, diagnosticMode: 'probe-v1' });
+    schemaPass = true;
+    candidateCount = gatewayResult.candidates.length;
+    const diagnostics = gatewayResult.audit?.probe_diagnostics || null;
+    // Resolve every Candidate against the exact production chunk window
+    // before invoking the production Candidate → Canonical projection.  A
+    // single unresolved reference therefore blocks the complete live run.
+    const resolutions = gatewayResult.candidates.map((candidate) => (
+      sourceLocationResolver.resolve(candidate, liveRequest.chunk)
+    ));
+    const mappedCandidates = mapValidatedCandidatesToCanonicalInput(gatewayResult.candidates, { resolutions });
     const providerChainVerified = diagnostics?.provider_adapter_invoked === true
       && diagnostics?.fetch_invoked === true
       && diagnostics?.provider_http_reached === true
@@ -496,21 +520,30 @@ async function defaultLiveExecutor({ env, liveRequest }) {
       provider_chain_verified: providerChainVerified,
       candidate_count: mappedCandidates.length,
       schema_pass: true,
+      source_resolution_pass: true,
       backend_ingestion_pass: true,
       diagnostics
     });
   } catch (error) {
+    const diagnostics = gatewayResult?.audit?.probe_diagnostics || error?.audit?.probe_diagnostics || null;
+    const providerChainVerified = diagnostics?.provider_adapter_invoked === true
+      && diagnostics?.fetch_invoked === true
+      && diagnostics?.provider_http_reached === true
+      && diagnostics?.provider_http_status === 200;
     return safeLiveResult({
       executed: true,
       request_count: 1,
       technical_error_code: error?.code || 'PROVIDER_OUTPUT_INVALID',
-      diagnostics: error?.audit?.probe_diagnostics || null,
-      provider_adapter_invoked: error?.audit?.probe_diagnostics?.provider_adapter_invoked,
-      fetch_invoked: error?.audit?.probe_diagnostics?.fetch_invoked,
-      provider_http_reached: error?.audit?.probe_diagnostics?.provider_http_reached,
-      provider_http_status: error?.audit?.probe_diagnostics?.provider_http_status,
-      provider_chain_verified: false,
-      schema_pass: false,
+      gateway_http_status: gatewayResult ? 200 : null,
+      diagnostics,
+      provider_adapter_invoked: diagnostics?.provider_adapter_invoked,
+      fetch_invoked: diagnostics?.fetch_invoked,
+      provider_http_reached: diagnostics?.provider_http_reached,
+      provider_http_status: diagnostics?.provider_http_status,
+      provider_chain_verified: providerChainVerified,
+      candidate_count: candidateCount,
+      schema_pass: schemaPass,
+      source_resolution_pass: schemaPass ? false : null,
       backend_ingestion_pass: false
     });
   }
@@ -520,20 +553,26 @@ export async function runRequirementExtractionLive({
   confirmOneLiveCall = false,
   liveRequest = null,
   liveExecutor = defaultLiveExecutor,
+  liveRequestError = null,
   env = process.env,
+  fetchImpl = fetch,
   now = Date.now,
   reportPath = DEFAULT_REQUIREMENT_EXTRACTION_REPORT_PATH,
   ...doctorOptions
 } = {}) {
-  const doctor = await doctorInternal({ ...doctorOptions, env, now, writeReport: false });
+  const doctor = await doctorInternal({ ...doctorOptions, env, fetchImpl, now, writeReport: false });
   const startedAt = Date.parse(doctor.started_at);
   const report = { ...doctor, mode: 'live', live: { ...doctor.live } };
   if (!confirmOneLiveCall) report.blockers.push('LIVE_CONFIRMATION_REQUIRED');
-  else if (report.blockers.length === 0 && !liveRequest) report.blockers.push('LIVE_PAYLOAD_REQUIRED');
+  else if (report.blockers.length === 0 && !liveRequest) {
+    report.blockers.push(typeof liveRequestError === 'string' && liveRequestError
+      ? liveRequestError
+      : 'LIVE_PAYLOAD_REQUIRED');
+  }
   else if (report.blockers.length === 0) {
     let live;
     try {
-      live = safeLiveResult(await liveExecutor({ env, liveRequest }));
+      live = safeLiveResult(await liveExecutor({ env, liveRequest, fetchImpl }));
     } catch (error) {
       live = safeLiveResult({
         executed: true,
@@ -547,6 +586,7 @@ export async function runRequirementExtractionLive({
     if (live.request_count > 1 || live.retry_count !== 0 || live.fallback_count !== 0) report.blockers.push('DIAGNOSTIC_INSUFFICIENT');
     if (live.provider_chain_verified !== true) report.blockers.push('DIAGNOSTIC_INSUFFICIENT');
     if (!live.schema_pass) report.blockers.push(live.technical_error_code || 'PROVIDER_OUTPUT_INVALID');
+    if (live.source_resolution_pass === false) report.blockers.push(live.technical_error_code || 'SOURCE_LOCATION_UNRESOLVED');
     if (live.backend_ingestion_pass === false) report.blockers.push('BACKEND_INGESTION_FAILED');
   }
   report.verdict = report.blockers.length ? 'BLOCKED' : 'LIVE_VERIFIED';

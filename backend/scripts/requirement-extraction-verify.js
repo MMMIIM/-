@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { loadBackendEnvironment } from '../src/backend-runtime.js';
@@ -7,6 +8,7 @@ import {
   runRequirementExtractionLive
 } from '../src/verification/requirement-extraction-verifier.js';
 import { DEFAULT_REQUIREMENT_EXTRACTION_REPORT_PATH } from '../src/verification/requirement-extraction-report.js';
+import { buildRequirementExtractionLiveRequest } from '../src/verification/requirement-extraction-live-input.js';
 
 function argumentValue(name) {
   const prefix = `${name}=`;
@@ -38,17 +40,21 @@ function printSummary(mode, result, reportPath) {
 }
 
 function buildLiveRequest() {
-  const chunkText = argumentValue('--chunk-text');
+  const chunkTextFile = argumentValue('--chunk-text-file');
+  const inlineChunkText = argumentValue('--chunk-text');
+  if (chunkTextFile && inlineChunkText != null) {
+    throw Object.assign(new Error('Choose either --chunk-text-file or --chunk-text.'), { code: 'LIVE_PAYLOAD_CONFLICT' });
+  }
+  const chunkText = chunkTextFile
+    ? readFileSync(resolve(chunkTextFile), 'utf8')
+    : inlineChunkText;
   if (chunkText == null) return null;
-  return {
-    fileName: argumentValue('--file-name') || 'FAST-01',
+  return buildRequirementExtractionLiveRequest({
     text: chunkText,
-    paragraphs: [],
-    chunk: { chunk_number: 1, segments: [] },
+    fileName: argumentValue('--file-name') || 'FAST-01',
     projectName: argumentValue('--project-name') || 'FAST-01',
-    sectionName: argumentValue('--section-name') || 'verification',
-    chunkCount: 1
-  };
+    sectionName: argumentValue('--section-name') || 'verification'
+  });
 }
 
 async function main() {
@@ -64,10 +70,18 @@ async function main() {
   } else if (mode === 'accept') {
     result = await runRequirementExtractionAccept(common);
   } else if (mode === 'live') {
+    let liveRequest;
+    let liveRequestError = null;
+    try {
+      liveRequest = buildLiveRequest();
+    } catch (error) {
+      liveRequestError = error?.code || 'LIVE_PAYLOAD_REQUIRED';
+    }
     result = await runRequirementExtractionLive({
       ...common,
       confirmOneLiveCall: hasFlag('--confirm-one-live-call'),
-      liveRequest: buildLiveRequest()
+      liveRequest,
+      liveRequestError
     });
   } else {
     throw new Error(`Unsupported Requirement Extraction verification mode: ${mode}`);
