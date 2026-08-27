@@ -1,188 +1,114 @@
-# Repository Development Rules
+# Repository Instruction Router
 
-## Project goal
+This file is the project's stable instruction entry point. It keeps product
+boundaries and source-of-truth routing only. Detailed checkpoint governance is
+provided by the `engineering-governance` Skill; execution mechanics such as
+TDD, debugging, planning, and general review remain with the applicable
+development tools or Superpowers workflow.
 
-This repository builds a government and enterprise bid-writing AI platform.
-The goal is a controllable, traceable, reviewable, editable, and deliverable
-bid-production workflow—not text generation alone.
+## Product identity
 
-## Core principles
+This repository builds a controllable, traceable, reviewable, editable, and
+deliverable government and enterprise bid-writing workflow. It is not a text
+generation-only product.
 
-- AI handles uncertainty; the system guarantees determinism.
-- Models discover; the system finalizes.
-- Relevant is not Evidence. Evidence is not Fact. Fact is not Claim.
-- Mapping Approval is not Claim Permission.
-- Requirement Coverage is not Claim Safety.
-- An Approved Project Fact is not an Approved Claim.
-- Unknown must remain unknown.
-- Backend is the formal Control Plane.
+## Stable product boundaries
 
-## Knowledge and material invariants
+- AI and providers discover or draft uncertain content; the Backend Control
+  Plane validates, authorizes, versions, audits, and finalizes business state.
+- `Relevant` is not `Evidence`; `Evidence` is not `Fact`; `Fact` is not
+  `Claim`; Mapping approval is not Claim permission; Requirement coverage is
+  not Claim safety. Unknown remains unknown.
+- `Material`, `Chunk`, `Evidence`, `Evidence Fact`, `Mapping`, `Claim`, and
+  `Writer Authorization` are separate lifecycle objects. Generic or industry
+  knowledge must not silently become enterprise capability or an approved
+  claim.
+- GENERAL, INDUSTRY, and ENTERPRISE_PRIVATE use one shared material and
+  retrieval foundation. New corpus content enters Production Retrieval only
+  after governance and evaluation activation.
+- Core domain ownership remains here: Requirement, Evidence, Fact, Mapping,
+  Claim Safety, Project Fact, Propagation, Readiness, review UX, and document
+  delivery contracts.
+- Provider/model choice is an adapter concern. No provider, model, prompt, or
+  external service may bypass the Backend Control Plane or create formal
+  business state directly.
 
-- 企业资料库提供 GENERAL、INDUSTRY、ENTERPRISE_PRIVATE 三个业务范围；首批行业范围为 GOVERNMENT_ENTERPRISE 和 HEALTHCARE。
-- 三个范围共用一套 Material / Retrieval 基础设施，不创建彼此隔离的 RAG 系统。
-- Material ≠ Chunk ≠ Evidence ≠ Evidence Fact ≠ Claim。
-- 新语料必须经过治理与评测激活后，才能进入正式 Production Retrieval。
-- Corpus Readiness L3 是当前可用于投标的语料目标；资料数量本身不构成 PASS。
-- 通用/行业知识不得静默升级为企业能力或 Approved Claim。
+## Source of truth
 
-## Development rules
+Read only the sources relevant to the current task:
 
-- Solve demonstrated problems only. Without E2E, evaluation, or user evidence,
-  do not add complexity.
-- Prefer the minimum fix, smallest blast radius, existing architecture, and
-  mature compatible open-source components.
-- Common capabilities (parsing, DOCX, templates, auth, RBAC, vector/RAG
-  helpers) should reuse or adapt mature MIT/Apache-compatible projects.
-- Core bid-domain behavior remains owned here: Requirement, Evidence, Fact,
-  Mapping, Claim Safety, Project Fact, Propagation, Readiness, and review UX.
-- AGPL projects are reference-only by default until a license decision exists.
+1. `ARCHITECTURE.md` — product and runtime architecture.
+2. `docs/CURRENT_STAGE.md` — current stage, authorization, and blockers.
+3. `docs/ROADMAP.md` — sequencing only; roadmap items are not authorization.
+4. `docs/EVAL_POLICY.md` — evaluation and evidence governance.
+5. Relevant files under `docs/decisions/`, plus directly related code/tests.
+6. `config/branch-policy.json` — authoritative branch and synchronization
+   policy before any Git, runtime, deploy, or live operation.
 
-## Git and validation
+Do not put mutable commit SHAs, schema hashes, runtime revisions, case counts,
+or operational status in this router. Keep those facts in the current-stage,
+audit, or runtime artifacts that own them.
 
-- Keep each independent logical change in its own commit.
-- Run related tests before committing; run the full regression at stage exit.
+## Governance routing
 
-## Branch policy and production target
+Classify a change by its highest-risk affected surface. GREEN ordinary work
+skips governance; YELLOW and RED work use the `engineering-governance` Skill at
+the checkpoints it defines. That Skill is scoped to Authority, Boundary,
+Contract, Compatibility, Runtime, and Evidence; it does not broaden the task or
+scan unrelated files.
 
-- Before checkout, feature creation, synchronization, cherry-pick, merge,
-  deploy, runtime restart, or live verification, read
-  `config/branch-policy.json`. Never infer the authoritative or production
-  branch from a branch name alone. `fix/*` and `feat/*` work is allowed only
-  after lineage is proven against the configured authoritative branch; live,
-  deploy, and runtime restart require that exact branch. Historical branches
-  are audit/read-only and are never production eligible. Synchronization is
-  ff-only where possible and any divergence stops without merge, rebase,
-  cherry-pick, reset, or force-push.
-- Default policy is no merge, push, deploy, or force-push without explicit
-  user authorization.
-- Preserve existing user changes and never use destructive reset/checkout.
+## Branch and operational safety
 
-## Permanent formal-invariant entry-point coverage
+- Read `config/branch-policy.json` before checkout, branch creation,
+  synchronization, cherry-pick, merge, deploy, runtime restart, or live
+  verification. Never infer a production branch from its name.
+- Feature work may proceed only after Git lineage is proven against the policy
+  authoritative branch. Historical branches are readable/auditable but are not
+  production, live, or synchronization targets.
+- Live, deploy, and production runtime restart require the exact policy
+  authoritative branch. Feature-to-authoritative synchronization is ff-only;
+  divergence stops without merge, rebase, cherry-pick, reset, or force-push.
+- Preserve user changes. Never use destructive reset/checkout, force-push, or
+  destructive database operations. Push, merge, deploy, and external calls
+  require explicit authorization from the current task.
 
-Owning-service unit tests alone do not establish that a formal business
-invariant is enforced. For every safety-critical or truth-critical invariant,
-the invariant matrix must track and the regression suite must cover:
+## Formal invariant entry-point rule
 
-1. owning-service positive behavior;
-2. owning-service negative behavior;
-3. at least one real production entry point negative-control test; and
-4. a persistence-state assertion whenever formal business state is mutated.
-
-Formal entry points include HTTP/API handlers, Agent actions, retry and
-compatibility endpoints, background execution, provider adapters, and import /
-ingestion paths. The required proof is:
+Owning-service tests alone do not prove a formal invariant. For every
+safety/truth-critical mutation, evidence must cover:
 
 ```text
-entry point → owning service → canonical contract → persistence
+production entry point → owning service → canonical contract → persistence
 ```
 
-The entry point must not reproduce the service's policy or bypass it. A route
-that mutates formal state through `route → repository` when an owning service
-exists is an architectural smell. Client-supplied reviewer/editor identity,
-compatibility weakening of a canonical contract, and test/eval paths mutating
-production truth are forbidden patterns.
-
 The matrix dimensions are `SERVICE_TESTED`, `ENTRY_POINT_TESTED`,
-`PERSISTENCE_TESTED`, and `NEGATIVE_CONTROL_PRESENT`. An invariant may be
-marked `ENFORCED` only when all required dimensions are covered; otherwise it
-is `PARTIAL` (or retains `CONTRADICTED` when a reachable violation exists).
+`PERSISTENCE_TESTED`, and `NEGATIVE_CONTROL_PRESENT`; an invariant is
+`ENFORCED` only when all required dimensions are present. Client-provided
+reviewer/editor identity, route-to-repository writes that bypass an owning
+service, compatibility contract weakening, and test/eval writes to production
+truth are forbidden. When a bypass is found, fix the owning boundary, add the
+real entry-point regression, update the matrix, and inspect sibling entry
+points.
 
-When a bypass is found: fix the owning boundary, add a regression at the real
-bypass entry point, update the invariant matrix, search repository-wide for
-sibling entry points, and do not close the finding from service tests alone.
+## GPT decision handoff
 
-## Semi-autonomous execution
+When a user message begins with `GPT DECISION` and contains stage-decision
+fields, treat it as the current decision. Read this router, `CURRENT_STAGE.md`,
+and only the directly relevant sources. Update `CURRENT_STAGE.md` only when
+the decision changes the stage. Do not change the roadmap without explicit
+roadmap authorization, and do not create an ADR unless required by the
+decision or a genuinely new long-term architecture choice.
 
-For ordinary implementation, test, DTO, frontend, integration, or migration
-bugs: identify the root cause, make a minimum fix, run targeted tests and
-regression, then continue. Stop only for a stop condition below.
+Honor explicit external-data limits and stop conditions: no unapproved model,
+embedding, Dify, provider, project-data, destructive, merge, push, or deploy
+operation; no false allow, lineage loss, automatic Unknown upgrade, or bypass
+of Claim Gate. If a stage's selected work is complete, report a concise
+checkpoint and wait for the next decision instead of opening roadmap work.
 
-## GPT Decision handoff protocol
+## Product UX boundary
 
-When a user message begins with **GPT DECISION** and includes any stage
-decision fields (such as Decision, Current Stage, Next Goal, Allowed Scope,
-Success Criteria, Stop Conditions, External Authorization, ADR Required, or
-Roadmap Change), treat it as the latest user-level stage decision. Do not ask
-for the project background again.
-
-Read in this order: `AGENTS.md`, `docs/CURRENT_STAGE.md`, then only the
-architecture, ADR, UX, roadmap, code, tests, and docs directly relevant to the
-decision. If the decision changes the stage, update `docs/CURRENT_STAGE.md`
-with the current stage, priority, goal, allowed scope, success criteria, stop
-conditions, authorization, and status; keep it short and current.
-
-Do not change `docs/ROADMAP.md` unless the decision explicitly says
-`Roadmap Change: YES`. Create or update an ADR only when `ADR Required: YES`
-or a genuinely new long-term architecture decision triggers a stop condition.
-Never use a GPT Decision to override frozen contracts, security boundaries, or
-external-data limits; report the conflict and wait for the minimum decision.
-
-For a clear, safe scope, continue autonomously through inspect, minimum fix,
-targeted tests, regression, independent commit, and clean status. Ordinary
-frontend/backend, DTO, query, navigation, fixture, integration, audit, and
-minor UX issues do not require interruption when formal semantics stay intact.
-External Authorization is exact and single-purpose: `NONE` means zero external
-LLM, embedding, Dify, or provider calls, and unused prior authorization is not
-inherited. Stop conditions always win, including false allow, Claim Gate
-bypass, lineage loss, unauthorized scope, provider/data changes, destructive
-Git/DB actions, merge, push, deploy, or repeated failure without new evidence.
-
-When the selected stage's success criteria are complete, report a concise
-`STATUS CHECKPOINT` (HEAD, stage, completed work, commits, regression, status,
-blocker, next stage, and `User Decision Required: YES`) and wait for the next
-GPT Decision rather than opening roadmap work automatically.
-
-## Stop conditions
-
-Stop and report before proceeding when a change would:
-
-- alter a frozen contract semantically;
-- add a new external AI scope, provider/model, or project-data scope;
-- externalize customer private data;
-- create a false allow, bypass Claim Gate, or upgrade Unknown automatically;
-- lose source lineage;
-- require a major architecture escalation;
-- perform destructive database/Git work;
-- merge, push, or deploy;
-- repeat the same unresolved failure without new evidence.
-
-## Reading order
-
-Do not rescan the whole repository for every task. Codex pre-reads:
-
-1. This file
-2. [Architecture](ARCHITECTURE.md)
-3. [Current stage](docs/CURRENT_STAGE.md)
-4. [Roadmap](docs/ROADMAP.md)
-5. Relevant ADRs
-6. Directly related code, tests, and stage documents
-
-For Corpus L3 work, also read
-[`docs/decisions/008-curated-corpus-governance.md`](docs/decisions/008-curated-corpus-governance.md)
-and [`docs/RAG_CORPUS_L3_PLAN.md`](docs/RAG_CORPUS_L3_PLAN.md). Do not load unrelated
-Word or Agent deep documentation unless the task touches it.
-
-## Source documents
-
-- [Architecture](ARCHITECTURE.md)
-- [UX principles](docs/UX_PRINCIPLES.md)
-- [Roadmap](docs/ROADMAP.md)
-- [Evaluation policy](docs/EVAL_POLICY.md)
-- [Current stage](docs/CURRENT_STAGE.md)
-- [Decisions](docs/decisions/)
-- [V4.3 semantic architecture supplement](docs/v4.3-semantic-architecture.md)
-
-Roadmap items are not implementation authorization. Implement only what the
-current stage explicitly selects.
-
-Permanent product principles:
-
-- Main UI expresses user tasks, not Backend Pipeline structure.
-- Business-critical actions should use reusable Backend Service boundaries
-  when practical.
-- Future Agent tools call formal services and never duplicate business truth in
-  prompts.
-
-Product architecture references: [Product IA](docs/PRODUCT_IA.md) and [Agent
-Product Strategy](docs/AGENT_PRODUCT_STRATEGY.md).
+The main UI expresses user tasks and business language, not Backend Pipeline
+internals. Keep technical identifiers, hashes, and reason codes in progressive
+disclosure. Business-critical actions should use reusable Backend Services;
+future Agent tools must call those services and never duplicate business truth
+in prompts.

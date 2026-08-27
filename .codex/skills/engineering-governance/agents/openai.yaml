@@ -1,0 +1,7 @@
+interface:
+  display_name: "Engineering Governance"
+  short_description: "Checkpoint review for risky changes"
+  default_prompt: "Use $engineering-governance to run the relevant implementation or completion checkpoint."
+
+policy:
+  allow_implicit_invocation: false
