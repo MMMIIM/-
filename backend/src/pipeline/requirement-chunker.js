@@ -1,7 +1,7 @@
 import { buildCanonicalRequirements } from './canonical-requirements.js';
 
-const DEFAULT_SINGLE_CALL_THRESHOLD = 8_000;
-const DEFAULT_CHARACTER_BUDGET = 8_000;
+const DEFAULT_SINGLE_CALL_THRESHOLD = 3_000;
+const DEFAULT_CHARACTER_BUDGET = 3_000;
 const DEFAULT_TOKEN_BUDGET = 8_000;
 
 function positiveInteger(value, fallback) {
@@ -60,26 +60,13 @@ function locateParagraphs(text, paragraphs) {
   });
 }
 
-function splitOversizedUnit(unit, characterBudget, tokenBudget) {
-  const segments = [];
-  let localStart = 0;
-  while (localStart < unit.text.length) {
-    let localEnd = Math.min(unit.text.length, localStart + characterBudget);
-    while (localEnd > localStart + 1
-      && estimateTokenCount(unit.text.slice(localStart, localEnd)) > tokenBudget) {
-      localEnd = localStart + Math.max(1, Math.floor((localEnd - localStart) * 0.9));
-    }
-    const text = unit.text.slice(localStart, localEnd);
-    segments.push({
-      ...unit,
-      text,
-      source_start_offset: unit.source_start_offset + localStart,
-      source_end_offset: unit.source_start_offset + localEnd,
-      starts_at_title_boundary: localStart === 0 && unit.starts_at_title_boundary
+function assertSourceSpanFitsBudget(unit, characterBudget, tokenBudget) {
+  if (unit.text.length > characterBudget || estimateTokenCount(unit.text) > tokenBudget) {
+    throw Object.assign(new Error('单个原文段落超过需求提取分片预算，已停止切断来源范围。'), {
+      code: 'REQUIREMENT_SOURCE_SPAN_EXCEEDS_BUDGET'
     });
-    localStart = localEnd;
   }
-  return segments;
+  return unit;
 }
 
 function buildChunk(units, chunkNumber) {
@@ -126,10 +113,12 @@ export function chunkExtractedText({
   // A single request must satisfy both the character and token hard caps.
   // When either limit is exceeded, use the same paragraph-aware splitter as
   // large documents rather than allowing an oversized one-shot request.
-  if (content.length <= singleCallLimit && estimateTokenCount(content) <= tokenLimit) {
+  if (content.length <= singleCallLimit
+    && content.length <= charLimit
+    && estimateTokenCount(content) <= tokenLimit) {
     return [buildChunk(located, 1)];
   }
-  const units = located.flatMap((unit) => splitOversizedUnit(unit, charLimit, tokenLimit));
+  const units = located.map((unit) => assertSourceSpanFitsBudget(unit, charLimit, tokenLimit));
   const chunks = [];
   let current = [];
   const flush = () => {

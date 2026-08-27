@@ -645,7 +645,10 @@ test('PostgreSQL 持久化章节、succeeded_empty 与章节级 mandatory scope'
     repository,
     storage: { read: async () => Buffer.from('fixture') },
     textExtractor: async () => ({ text, paragraphs, pages: [], warnings: [] }),
-    chunkBudget: { singleCallThreshold: 1, characterBudget: 120, tokenBudget: 120 },
+    // Keep each natural fixture paragraph intact under the explicit chunk budget;
+    // the single-call threshold still forces this integration path to exercise
+    // multi-window persistence behavior.
+    chunkBudget: { singleCallThreshold: 1, characterBudget: 200, tokenBudget: 300 },
     extractionGateway: {
       extract: async ({ chunk }) => {
         const requirements = [];
