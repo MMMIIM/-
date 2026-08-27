@@ -42,6 +42,18 @@ bid-production workflow—not text generation alone.
 
 - Keep each independent logical change in its own commit.
 - Run related tests before committing; run the full regression at stage exit.
+
+## Branch policy and production target
+
+- Before checkout, feature creation, synchronization, cherry-pick, merge,
+  deploy, runtime restart, or live verification, read
+  `config/branch-policy.json`. Never infer the authoritative or production
+  branch from a branch name alone. `fix/*` and `feat/*` work is allowed only
+  after lineage is proven against the configured authoritative branch; live,
+  deploy, and runtime restart require that exact branch. Historical branches
+  are audit/read-only and are never production eligible. Synchronization is
+  ff-only where possible and any divergence stops without merge, rebase,
+  cherry-pick, reset, or force-push.
 - Default policy is no merge, push, deploy, or force-push without explicit
   user authorization.
 - Preserve existing user changes and never use destructive reset/checkout.

@@ -58,7 +58,7 @@ function healthyFetch(overrides = {}) {
 }
 
 function gitInfo() {
-  return { branch: 'fix/v4.3-requirement-extraction-contract-owner', revision: '782a40c', tracked_clean: true };
+  return { branch: 'feat/v4.3-semantic-boundary-routing', revision: '782a40c', tracked_clean: true };
 }
 
 test('doctor passes all offline-injected checks and uses the shared contracts', async () => {

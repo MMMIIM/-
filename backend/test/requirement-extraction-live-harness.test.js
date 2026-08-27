@@ -81,7 +81,7 @@ test('missing live payload is rejected without an executor call', async () => {
   const result = await runRequirementExtractionLive({
     env,
     confirmOneLiveCall: true,
-    gitInfo: { branch: 'test', revision: 'test', tracked_clean: true },
+    gitInfo: { branch: 'feat/v4.3-semantic-boundary-routing', revision: 'test', tracked_clean: true },
     fetchImpl: healthyFetch,
     liveExecutor: async () => { calls += 1; return {}; },
     writeReport: false
@@ -162,7 +162,7 @@ test('source resolution failure is surfaced as BLOCKED with no retry or fallback
     env,
     confirmOneLiveCall: true,
     liveRequest: { text: 'synthetic' },
-    gitInfo: { branch: 'test', revision: 'test', tracked_clean: true },
+    gitInfo: { branch: 'feat/v4.3-semantic-boundary-routing', revision: 'test', tracked_clean: true },
     fetchImpl: healthyFetch,
     liveExecutor: async () => ({
       executed: true,

@@ -25,6 +25,12 @@ import {
   sanitizeVerificationReport,
   writeVerificationReport
 } from './requirement-extraction-report.js';
+import {
+  BRANCH_ROLES,
+  assertLiveBranch,
+  classifyBranch,
+  loadBranchPolicy
+} from './branch-policy.js';
 
 const ACTIVE_REQUIREMENT_EXTRACTION_CONTRACT = getSemanticTaskContract('requirement_extraction');
 export const FROZEN_REQUIREMENT_EXTRACTION_PROMPT_VERSION = ACTIVE_REQUIREMENT_EXTRACTION_CONTRACT.contract_version;
@@ -54,7 +60,9 @@ export const REQUIREMENT_EXTRACTION_BLOCKERS = Object.freeze([
   'BACKEND_INGESTION_FAILED',
   'DIAGNOSTIC_INSUFFICIENT',
   'LIVE_CONFIRMATION_REQUIRED',
-  'LIVE_PAYLOAD_REQUIRED'
+  'LIVE_PAYLOAD_REQUIRED',
+  'BRANCH_DRIFT',
+  'BRANCH_LINEAGE_DRIFT'
 ]);
 
 const EXPECTED_PAYLOAD_KEYS = Object.freeze([
@@ -115,18 +123,28 @@ function isAllowedBenchmarkUntracked(line) {
   return normalized.startsWith('?? backend/eval/tender-benchmark-v1/');
 }
 
+function enrichGitInfo(gitInfo, repoRoot) {
+  const policy = loadBranchPolicy({ repoRoot });
+  const branchInfo = classifyBranch({
+    branch: gitInfo?.branch || null,
+    policy,
+    repoRoot
+  });
+  return { ...gitInfo, ...branchInfo };
+}
+
 function defaultGitInfo(repoRoot = process.cwd()) {
   const read = (args) => execFileSync('git', args, { cwd: repoRoot, encoding: 'utf8' }).trim();
   try {
     const status = read(['status', '--short']);
     const lines = status ? status.split(/\r?\n/).filter(Boolean) : [];
     const trackedLines = lines.filter((line) => !isAllowedBenchmarkUntracked(line));
-    return {
+    return enrichGitInfo({
       branch: read(['branch', '--show-current']),
       revision: read(['rev-parse', '--short', 'HEAD']),
       tracked_clean: trackedLines.length === 0,
       allowed_untracked_benchmark: lines.some(isAllowedBenchmarkUntracked)
-    };
+    }, repoRoot);
   } catch (_error) {
     return { branch: null, revision: null, tracked_clean: false, allowed_untracked_benchmark: false };
   }
@@ -187,8 +205,13 @@ function baseReport(mode, startedAt, gitInfo) {
     duration_ms: null,
     git: {
       branch: gitInfo?.branch || null,
+      branch_name: gitInfo?.branch_name || gitInfo?.branch || null,
       revision: gitInfo?.revision || null,
-      tracked_clean: gitInfo?.tracked_clean === true
+      tracked_clean: gitInfo?.tracked_clean === true,
+      branch_role: gitInfo?.branch_role || null,
+      authoritative_branch: gitInfo?.authoritative_branch || null,
+      production_eligible: gitInfo?.production_eligible === true,
+      lineage_verified: gitInfo?.lineage_verified === true
     },
     contract: {
       prompt_version: null,
@@ -334,8 +357,16 @@ async function doctorInternal({
   repoRoot = process.cwd()
 } = {}) {
   const startedAt = nowValue(now);
-  const resolvedGit = gitInfo || defaultGitInfo(repoRoot);
+  const resolvedGit = enrichGitInfo(gitInfo || defaultGitInfo(repoRoot), repoRoot);
   const report = baseReport('doctor', startedAt, resolvedGit);
+  const branchPass = resolvedGit.branch_role !== BRANCH_ROLES.UNRELATED
+    && resolvedGit.lineage_verified === true;
+  addGate(report, 'git.branch_policy', branchPass, 'BRANCH_LINEAGE_DRIFT',
+    '当前分支无法根据 branch-policy.json 证明与权威分支的有效 lineage。', {
+      branch_role: resolvedGit.branch_role,
+      production_eligible: resolvedGit.production_eligible,
+      lineage_verified: resolvedGit.lineage_verified
+    });
   const { payload } = contractChecks(report, { candidateSchemaVersion, candidateSchemaHash });
   const config = routeChecks(report, env, gatewayUrl);
 
@@ -424,7 +455,11 @@ export async function runRequirementExtractionAccept({
       }
     }
   }
-  report.verdict = report.blockers.length ? 'BLOCKED' : 'READY_FOR_LIVE';
+  report.verdict = report.blockers.length
+    ? 'BLOCKED'
+    : report.git.branch_role === BRANCH_ROLES.HISTORICAL
+      ? 'READY_FOR_ACCEPTANCE'
+      : 'READY_FOR_LIVE';
   const finished = finishReport(report, startedAt, now);
   if (doctorOptions.writeReport !== false) await writeVerificationReport(finished, reportPath);
   return { ok: finished.verdict === 'READY_FOR_LIVE', report: finished };
@@ -563,6 +598,7 @@ export async function runRequirementExtractionLive({
   const doctor = await doctorInternal({ ...doctorOptions, env, fetchImpl, now, writeReport: false });
   const startedAt = Date.parse(doctor.started_at);
   const report = { ...doctor, mode: 'live', live: { ...doctor.live } };
+  if (!assertLiveBranch({ branchInfo: report.git }).allowed) report.blockers.push('BRANCH_DRIFT');
   if (!confirmOneLiveCall) report.blockers.push('LIVE_CONFIRMATION_REQUIRED');
   else if (report.blockers.length === 0 && !liveRequest) {
     report.blockers.push(typeof liveRequestError === 'string' && liveRequestError

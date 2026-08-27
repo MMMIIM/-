@@ -1,0 +1,11 @@
+{
+  "requirement_extraction": {
+    "authoritative_branch": "feat/v4.3-semantic-boundary-routing",
+    "historical_branches": [
+      "feat/v4.3-production-beta"
+    ],
+    "production_sync_policy": "ff-preferred-stop-on-divergence",
+    "force_push_allowed": false,
+    "automatic_reset_allowed": false
+  }
+}

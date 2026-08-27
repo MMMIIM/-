@@ -1,0 +1,210 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import {
+  BRANCH_ROLES,
+  assertLiveBranch,
+  checkFastForwardSync,
+  classifyBranch,
+  evaluateFastForwardSync,
+  loadBranchPolicy
+} from '../src/verification/branch-policy.js';
+import {
+  runRequirementExtractionAccept,
+  runRequirementExtractionDoctor,
+  runRequirementExtractionLive
+} from '../src/verification/requirement-extraction-verifier.js';
+
+const repoRoot = process.cwd();
+const policy = loadBranchPolicy({ repoRoot });
+const env = {
+  SEMANTIC_GATEWAY_PROVIDER: 'openai_compatible',
+  SEMANTIC_GATEWAY_API_BASE: 'http://127.0.0.1:18082',
+  SEMANTIC_GATEWAY_API_KEY: 'service-test-key',
+  SEMANTIC_GATEWAY_USER: 'branch-policy-test',
+  SEMANTIC_GATEWAY_PROVIDER_API_BASE: 'https://provider.test/v1',
+  SEMANTIC_GATEWAY_PROVIDER_API_KEY: 'provider-test-key',
+  SEMANTIC_GATEWAY_MODEL: 'test-model'
+};
+
+function response(body, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'content-type': 'application/json' }
+  });
+}
+
+function healthyFetch(url) {
+  if (url.endsWith('/api/health')) return response({ ok: true, database: 'connected' });
+  if (url.endsWith('/health')) return response({ status: 'ok', service: 'semantic-gateway' });
+  if (url.endsWith('/ready')) return response({ status: 'ready', provider_configured: true });
+  if (url.endsWith('/info')) return response({
+    service: 'semantic-gateway',
+    task_registry_loaded: true,
+    task_types: ['requirement_extraction'],
+    requirement_extraction_contract_version: '4.3-requirement-extraction-v2',
+    requirement_extraction_prompt_hash: '1d5f078ee92c360648f74cd1b394428e6cdaa08f16bc745c7b407d82f414357b',
+    candidate_schema_contract_version: '4.3-requirement-candidate-v2',
+    candidate_schema_sha256: '366a466202f828ca97cae771a6bc34eb9f926a071ade509294ccb85139ac37da'
+  });
+  throw new Error(`unexpected url ${url}`);
+}
+
+const gitInfo = (branch) => ({ branch, revision: 'test', tracked_clean: true });
+
+test('branch policy is machine-readable and forbids dangerous automatic Git repair', () => {
+  assert.equal(policy.authoritative_branch, 'feat/v4.3-semantic-boundary-routing');
+  assert.deepEqual(policy.historical_branches, ['feat/v4.3-production-beta']);
+  assert.equal(policy.production_sync_policy, 'ff-preferred-stop-on-divergence');
+  assert.equal(policy.force_push_allowed, false);
+  assert.equal(policy.automatic_reset_allowed, false);
+  assert.equal(Object.hasOwn(policy, 'sha'), false);
+});
+
+test('authoritative, valid fix/feat, historical and unrelated branches have explicit roles', () => {
+  const authoritative = classifyBranch({
+    branch: 'feat/v4.3-semantic-boundary-routing', policy, repoRoot
+  });
+  const fixFeature = classifyBranch({
+    branch: 'fix/v4.3-requirement-extraction-live-harness-closure', policy, repoRoot
+  });
+  const featFeature = classifyBranch({
+    branch: 'feat/v4.3-semantic-gateway-client', policy, repoRoot
+  });
+  const historical = classifyBranch({ branch: 'feat/v4.3-production-beta', policy, repoRoot });
+  const unrelated = classifyBranch({ branch: 'main', policy, repoRoot });
+
+  assert.equal(authoritative.branch_role, BRANCH_ROLES.AUTHORITATIVE);
+  assert.equal(authoritative.production_eligible, true);
+  assert.equal(authoritative.lineage_verified, true);
+  assert.equal(fixFeature.branch_role, BRANCH_ROLES.FEATURE);
+  assert.equal(fixFeature.lineage_verified, true);
+  assert.equal(featFeature.branch_role, BRANCH_ROLES.FEATURE);
+  assert.equal(featFeature.lineage_verified, true);
+  assert.equal(historical.branch_role, BRANCH_ROLES.HISTORICAL);
+  assert.equal(historical.production_eligible, false);
+  assert.equal(historical.blocker, null);
+  assert.equal(unrelated.branch_role, BRANCH_ROLES.UNRELATED);
+  assert.equal(unrelated.blocker, 'BRANCH_LINEAGE_DRIFT');
+});
+
+test('live branch guard allows only the exact authoritative role', () => {
+  assert.deepEqual(assertLiveBranch({
+    branchInfo: { branch_role: BRANCH_ROLES.AUTHORITATIVE }
+  }), { allowed: true, blocker: null });
+  assert.deepEqual(assertLiveBranch({
+    branchInfo: { branch_role: BRANCH_ROLES.FEATURE }
+  }), { allowed: false, blocker: 'BRANCH_DRIFT' });
+  assert.deepEqual(assertLiveBranch({
+    branchInfo: { branch_role: BRANCH_ROLES.HISTORICAL }
+  }), { allowed: false, blocker: 'BRANCH_DRIFT' });
+});
+
+test('ff-only sync permits an ancestor or equal tip and stops on divergence', () => {
+  assert.deepEqual(evaluateFastForwardSync({
+    authoritativeHead: 'a', featureHead: 'b', authoritativeIsAncestor: true
+  }), { allowed: true, status: 'FAST_FORWARD_ALLOWED' });
+  assert.deepEqual(evaluateFastForwardSync({
+    authoritativeHead: 'a', featureHead: 'a', authoritativeIsAncestor: false
+  }), { allowed: true, status: 'ALREADY_SYNCED' });
+  assert.deepEqual(evaluateFastForwardSync({
+    authoritativeHead: 'a', featureHead: 'b', authoritativeIsAncestor: false
+  }), { allowed: false, status: 'BRANCH_LINEAGE_DIVERGED' });
+});
+
+test('real authoritative and feature refs are inspectable without a Git mutation', () => {
+  const result = checkFastForwardSync({
+    repoRoot,
+    authoritativeBranch: policy.authoritative_branch,
+    featureBranch: 'fix/v4.3-branch-policy-guard'
+  });
+  assert.equal(result.allowed, true);
+  assert.ok(['ALREADY_SYNCED', 'FAST_FORWARD_ALLOWED'].includes(result.status));
+  assert.equal(result.authoritative_branch, policy.authoritative_branch);
+  assert.equal(result.feature_branch, 'fix/v4.3-branch-policy-guard');
+});
+
+test('doctor passes a valid feature and historical branch remains non-production eligible', async () => {
+  const feature = await runRequirementExtractionDoctor({
+    env, fetchImpl: healthyFetch, gitInfo: gitInfo('fix/v4.3-branch-policy-guard'), writeReport: false, repoRoot
+  });
+  assert.equal(feature.ok, true);
+  assert.equal(feature.report.git.branch_role, BRANCH_ROLES.FEATURE);
+  assert.equal(feature.report.git.branch_name, 'fix/v4.3-branch-policy-guard');
+  assert.equal(feature.report.git.production_eligible, false);
+
+  const historical = await runRequirementExtractionDoctor({
+    env, fetchImpl: healthyFetch, gitInfo: gitInfo('feat/v4.3-production-beta'), writeReport: false, repoRoot
+  });
+  assert.equal(historical.ok, true);
+  assert.equal(historical.report.git.branch_role, BRANCH_ROLES.HISTORICAL);
+  assert.equal(historical.report.git.production_eligible, false);
+});
+
+test('doctor blocks unrelated lineage and historical accept never becomes live-ready', async () => {
+  const unrelated = await runRequirementExtractionDoctor({
+    env, fetchImpl: healthyFetch, gitInfo: gitInfo('main'), writeReport: false, repoRoot
+  });
+  assert.equal(unrelated.ok, false);
+  assert.ok(unrelated.report.blockers.includes('BRANCH_LINEAGE_DRIFT'));
+
+  const historical = await runRequirementExtractionAccept({
+    env,
+    fetchImpl: healthyFetch,
+    gitInfo: gitInfo('feat/v4.3-production-beta'),
+    commandRunner: () => ({ exit_code: 0, duration_ms: 1 }),
+    writeReport: false,
+    repoRoot
+  });
+  assert.equal(historical.ok, false);
+  assert.equal(historical.report.verdict, 'READY_FOR_ACCEPTANCE');
+  assert.equal(historical.report.git.production_eligible, false);
+});
+
+test('live on a non-authoritative branch is blocked before executor invocation', async () => {
+  let calls = 0;
+  const result = await runRequirementExtractionLive({
+    env,
+    fetchImpl: healthyFetch,
+    gitInfo: gitInfo('fix/v4.3-branch-policy-guard'),
+    confirmOneLiveCall: true,
+    liveRequest: { text: 'synthetic' },
+    liveExecutor: async () => { calls += 1; return {}; },
+    writeReport: false,
+    repoRoot
+  });
+  assert.equal(result.ok, false);
+  assert.ok(result.report.blockers.includes('BRANCH_DRIFT'));
+  assert.equal(calls, 0);
+});
+
+test('live on the authoritative branch may invoke only the injected executor', async () => {
+  let calls = 0;
+  const result = await runRequirementExtractionLive({
+    env,
+    fetchImpl: healthyFetch,
+    gitInfo: gitInfo('feat/v4.3-semantic-boundary-routing'),
+    confirmOneLiveCall: true,
+    liveRequest: { text: 'synthetic' },
+    liveExecutor: async () => {
+      calls += 1;
+      return {
+        executed: true,
+        request_count: 1,
+        provider_adapter_invoked: true,
+        fetch_invoked: true,
+        provider_http_reached: true,
+        provider_http_status: 200,
+        provider_chain_verified: true,
+        schema_pass: true,
+        source_resolution_pass: true,
+        backend_ingestion_pass: true
+      };
+    },
+    writeReport: false,
+    repoRoot
+  });
+  assert.equal(result.ok, true);
+  assert.equal(result.report.verdict, 'LIVE_VERIFIED');
+  assert.equal(calls, 1);
+  assert.equal(result.report.git.production_eligible, true);
+});
