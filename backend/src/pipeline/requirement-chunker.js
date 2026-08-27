@@ -1,6 +1,6 @@
 import { buildCanonicalRequirements } from './canonical-requirements.js';
 
-const DEFAULT_SINGLE_CALL_THRESHOLD = 12_000;
+const DEFAULT_SINGLE_CALL_THRESHOLD = 8_000;
 const DEFAULT_CHARACTER_BUDGET = 8_000;
 const DEFAULT_TOKEN_BUDGET = 8_000;
 
@@ -123,7 +123,12 @@ export function chunkExtractedText({
   const tokenLimit = positiveInteger(tokenBudget, DEFAULT_TOKEN_BUDGET);
   const located = locateParagraphs(content, Array.isArray(paragraphs) ? paragraphs : []);
   if (!located.length) throw Object.assign(new Error('提取文本没有可分片段落。'), { code: 'REQUIREMENT_CHUNKING_FAILED' });
-  if (content.length <= singleCallLimit) return [buildChunk(located, 1)];
+  // A single request must satisfy both the character and token hard caps.
+  // When either limit is exceeded, use the same paragraph-aware splitter as
+  // large documents rather than allowing an oversized one-shot request.
+  if (content.length <= singleCallLimit && estimateTokenCount(content) <= tokenLimit) {
+    return [buildChunk(located, 1)];
+  }
   const units = located.flatMap((unit) => splitOversizedUnit(unit, charLimit, tokenLimit));
   const chunks = [];
   let current = [];

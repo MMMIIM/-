@@ -278,7 +278,7 @@ test('requirement candidate schema is strict at the Gateway boundary', async () 
   }
 });
 
-test('Gateway preserves only the six canonical Requirement Candidate fields', async () => {
+test('Gateway preserves only the five canonical Candidate v2 fields', async () => {
   const key = 'gateway-canonical-candidate-key';
   const candidate = {
     text: '系统应提供审计日志。',

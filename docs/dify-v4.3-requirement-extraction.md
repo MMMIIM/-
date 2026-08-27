@@ -14,7 +14,7 @@ Start
   → End
 ```
 
-不添加 Iteration。后端已经把文件切成 chunk，并对每个 chunk 串行调用此 Workflow。
+不添加 Iteration。后端已经把文件切成 chunk，并以最多 2 个并发调用此 Workflow，最终按 chunk 顺序汇总。
 
 ## 2. Start 输入变量
 
