@@ -1,20 +1,20 @@
-import { chunkExtractedText } from '../pipeline/requirement-chunker.js';
-
-const SINGLE_CALL_THRESHOLD = 8_000;
-const CHARACTER_BUDGET = 8_000;
-const TOKEN_BUDGET = 8_000;
+import {
+  chunkExtractedText,
+  resolveRequirementChunkBudget
+} from '../pipeline/requirement-chunker.js';
 
 /**
- * Build the in-memory input used by the single-call live harness from a raw
- * extracted chunk.  The production chunker remains the only owner of span
- * identifiers and model_text construction; this helper only supplies the
- * paragraph snapshot that the chunker requires.
+ * Build the in-memory input used by the live harness from raw extracted text.
+ * The production chunker remains the only owner of span identifiers and
+ * model_text construction; this helper only supplies the paragraph snapshot
+ * that the chunker requires.
  */
 export function buildRequirementExtractionLiveRequest({
   text,
   fileName = 'FAST-01',
   projectName = 'FAST-01',
-  sectionName = 'verification'
+  sectionName = 'verification',
+  env = process.env
 } = {}) {
   if (typeof text !== 'string' || !text.trim()) return null;
   const normalizedText = text.replace(/\r\n?/g, '\n');
@@ -36,27 +36,23 @@ export function buildRequirementExtractionLiveRequest({
     }
     cursor += line.length + 1;
   }
+  const budget = resolveRequirementChunkBudget(env);
   const chunks = chunkExtractedText({
     text: normalizedText,
     paragraphs,
-    singleCallThreshold: SINGLE_CALL_THRESHOLD,
-    characterBudget: CHARACTER_BUDGET,
-    tokenBudget: TOKEN_BUDGET
+    ...budget
   });
-  if (chunks.length !== 1) {
-    throw Object.assign(new Error('Live harness input must resolve to exactly one chunk.'), {
-      code: 'LIVE_CHUNKING_REQUIRED'
-    });
-  }
-  const chunk = chunks[0];
   return {
     fileName,
-    text: chunk.text,
+    text: normalizedText,
     paragraphs,
-    chunk,
+    chunks,
+    // Preserve the single-window convenience property for callers that use
+    // short verification inputs, while multi-window requests use `chunks`.
+    chunk: chunks.length === 1 ? chunks[0] : null,
     projectName,
     sectionName,
-    chunkCount: 1
+    chunkCount: chunks.length
   };
 }
 

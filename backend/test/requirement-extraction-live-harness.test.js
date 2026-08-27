@@ -21,7 +21,7 @@ const env = {
   SEMANTIC_GATEWAY_MODEL: 'test-model'
 };
 
-function gatewayResponse(candidate) {
+function gatewayResponse(candidate, diagnosticOverrides = {}) {
   return new Response(JSON.stringify({
     data: {
       outputs: {
@@ -38,7 +38,11 @@ function gatewayResponse(candidate) {
       provider_adapter_invoked: true,
       fetch_invoked: true,
       provider_http_reached: true,
-      provider_http_status: 200
+      provider_http_status: 200,
+      finish_reason: 'stop',
+      output_truncated: false,
+      completion_tokens: 12,
+      ...diagnosticOverrides
     }
   }), { status: 200, headers: { 'content-type': 'application/json' } });
 }
@@ -91,15 +95,94 @@ test('missing live payload is rejected without an executor call', async () => {
   assert.equal(calls, 0);
 });
 
-test('raw FAST-01 chunk builds production span IDs and stays one chunk at 4,930 chars', () => {
-  const request = buildRequirementExtractionLiveRequest({ text: '中'.repeat(4_930) });
-  assert.equal(request.chunkCount, 1);
-  assert.equal(request.chunk.chunk_number, 1);
-  assert.equal(request.chunk.segments.length, 1);
-  assert.equal(request.chunk.segments[0].source_ref, 'C001-S001');
-  assert.equal(request.chunk.segments[0].text.length, 4_930);
-  assert.equal(request.chunk.character_count, 4_930);
-  assert.match(request.chunk.model_text, /^\[C001-S001\] /);
+test('raw FAST-01-like input uses the production multi-chunk budget and preserves spans', () => {
+  const text = Array.from({ length: 255 }, (_, index) => `第${index + 1}条${'中'.repeat(15)}`).join('\n');
+  const request = buildRequirementExtractionLiveRequest({ text });
+  const repeated = buildRequirementExtractionLiveRequest({ text });
+  assert.ok(request.chunkCount > 1);
+  assert.deepEqual(repeated.chunks, request.chunks);
+  assert.equal(request.chunk, null);
+  assert.equal(request.chunks.length, request.chunkCount);
+  assert.ok(request.chunks.every((chunk) => chunk.character_count <= 3_000));
+  const refs = request.chunks.flatMap((chunk) => chunk.segments.map((segment) => segment.source_ref));
+  assert.equal(refs.length, 255);
+  assert.equal(new Set(refs).size, refs.length);
+  assert.deepEqual(refs.slice(0, 3), ['C001-S001', 'C001-S002', 'C001-S003']);
+  assert.equal(refs.at(-1), `C${String(request.chunkCount).padStart(3, '0')}-S${String(request.chunks.at(-1).segments.length).padStart(3, '0')}`);
+  assert.match(request.chunks[0].model_text, /^\[C001-S001\] /);
+});
+
+test('multi-chunk executor uses bounded concurrency and resolves each candidate in its own chunk', async () => {
+  const text = Array.from({ length: 255 }, (_, index) => `第${index + 1}条${'中'.repeat(15)}`).join('\n');
+  const liveRequest = buildRequirementExtractionLiveRequest({ text });
+  let active = 0;
+  let maximumActive = 0;
+  const seenChunks = [];
+  const fetchImpl = async (url, options) => {
+    assert.match(url, /\/workflows\/run$/);
+    const body = JSON.parse(options.body);
+    const payload = JSON.parse(body.inputs.task_payload_json);
+    seenChunks.push(payload.chunk_index);
+    active += 1;
+    maximumActive = Math.max(maximumActive, active);
+    await new Promise((resolve) => setTimeout(resolve, 5));
+    active -= 1;
+    return gatewayResponse(candidate([`C${String(payload.chunk_index).padStart(3, '0')}-S001`]));
+  };
+  const result = await defaultLiveExecutor({ env, liveRequest, fetchImpl });
+  assert.equal(result.verification_run_count, 1);
+  assert.equal(result.production_chunk_count, liveRequest.chunkCount);
+  assert.equal(result.provider_request_count, liveRequest.chunkCount);
+  assert.equal(result.request_count, liveRequest.chunkCount);
+  assert.equal(result.concurrency_limit, 2);
+  assert.ok(maximumActive <= 2);
+  assert.deepEqual([...seenChunks].sort((a, b) => a - b), Array.from({ length: liveRequest.chunkCount }, (_, i) => i + 1));
+  assert.equal(result.total_candidate_count, liveRequest.chunkCount);
+  assert.equal(result.source_resolution_pass, true);
+  assert.equal(result.backend_ingestion_pass, true);
+  assert.equal(result.schema_pass, true);
+  assert.equal(result.final_probe_status, 'PASS');
+  assert.equal(result.chunk_results.length, liveRequest.chunkCount);
+  assert.doesNotMatch(JSON.stringify(result), /第1条/);
+});
+
+test('one failed chunk blocks the run and stops scheduling remaining chunks', async () => {
+  const text = Array.from({ length: 255 }, (_, index) => `第${index + 1}条${'中'.repeat(15)}`).join('\n');
+  const liveRequest = buildRequirementExtractionLiveRequest({ text });
+  const started = [];
+  const fetchImpl = async (_url, options) => {
+    const payload = JSON.parse(JSON.parse(options.body).inputs.task_payload_json);
+    started.push(payload.chunk_index);
+    await new Promise((resolve) => setTimeout(resolve, payload.chunk_index === 1 ? 30 : 5));
+    const refs = payload.chunk_index === 2 ? ['C002-S999'] : [`C${String(payload.chunk_index).padStart(3, '0')}-S001`];
+    return gatewayResponse(candidate(refs));
+  };
+  const result = await defaultLiveExecutor({ env, liveRequest, fetchImpl });
+  assert.equal(result.final_probe_status, 'BLOCKED');
+  assert.equal(result.source_resolution_pass, false);
+  assert.equal(result.backend_ingestion_pass, false);
+  assert.equal(result.provider_request_count, 2);
+  assert.deepEqual(started.sort((a, b) => a - b), [1, 2]);
+  assert.equal(result.retry_count, 0);
+  assert.equal(result.fallback_count, 0);
+});
+
+test('a truncated chunk fails the complete bounded run', async () => {
+  const liveRequest = buildRequirementExtractionLiveRequest({ text: '系统应提供审计日志。' });
+  const result = await defaultLiveExecutor({
+    env,
+    liveRequest,
+    fetchImpl: async (url, options) => {
+      assert.match(url, /\/workflows\/run$/);
+      assert.equal(options.method, 'POST');
+      return gatewayResponse(candidate(), { finish_reason: 'length', output_truncated: true });
+    }
+  });
+  assert.equal(result.provider_request_count, 1);
+  assert.equal(result.chunk_results[0].finish_reason, 'length');
+  assert.equal(result.chunk_results[0].output_truncated, true);
+  assert.equal(result.final_probe_status, 'BLOCKED');
+  assert.equal(result.schema_pass, false);
 });
 
 test('default live executor resolves valid refs before Canonical ingestion', async () => {

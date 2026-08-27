@@ -39,7 +39,7 @@ function printSummary(mode, result, reportPath) {
   console.log(lines.join('\n'));
 }
 
-function buildLiveRequest() {
+function buildLiveRequest(env) {
   const chunkTextFile = argumentValue('--chunk-text-file');
   const inlineChunkText = argumentValue('--chunk-text');
   if (chunkTextFile && inlineChunkText != null) {
@@ -53,7 +53,8 @@ function buildLiveRequest() {
     text: chunkText,
     fileName: argumentValue('--file-name') || 'FAST-01',
     projectName: argumentValue('--project-name') || 'FAST-01',
-    sectionName: argumentValue('--section-name') || 'verification'
+    sectionName: argumentValue('--section-name') || 'verification',
+    env
   });
 }
 
@@ -73,7 +74,7 @@ async function main() {
     let liveRequest;
     let liveRequestError = null;
     try {
-      liveRequest = buildLiveRequest();
+      liveRequest = buildLiveRequest(env);
     } catch (error) {
       liveRequestError = error?.code || 'LIVE_PAYLOAD_REQUIRED';
     }

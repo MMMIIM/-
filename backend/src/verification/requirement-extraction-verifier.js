@@ -231,15 +231,27 @@ function baseReport(mode, startedAt, gitInfo) {
     tests: [],
     live: {
       executed: false,
+      verification_run_count: 0,
+      production_chunk_count: 0,
+      expected_chunk_count: 0,
+      provider_request_count: 0,
+      max_provider_request_count: 0,
+      concurrency_limit: 0,
       request_count: 0,
       retry_count: 0,
       fallback_count: 0,
+      dify_call_count: 0,
+      embedding_call_count: 0,
       gateway_http_status: null,
       provider_http_status: null,
       candidate_count: null,
+      total_candidate_count: null,
       schema_pass: null,
       source_resolution_pass: null,
       backend_ingestion_pass: null,
+      chunk_character_sizes: [],
+      chunk_results: [],
+      final_probe_status: null,
       diagnostics: null
     },
     verdict: null,
@@ -466,11 +478,30 @@ export async function runRequirementExtractionAccept({
 }
 
 function safeLiveResult(value = {}) {
+  const providerRequestCount = Number.isInteger(value.provider_request_count)
+    ? value.provider_request_count
+    : Number.isInteger(value.request_count) ? value.request_count : 0;
+  const executed = value.executed === true;
+  const verificationRunCount = Number.isInteger(value.verification_run_count)
+    ? value.verification_run_count
+    : executed ? 1 : 0;
   return sanitizeVerificationReport({
-    executed: value.executed === true,
-    request_count: Number.isInteger(value.request_count) ? value.request_count : 0,
+    executed,
+    verification_run_count: verificationRunCount,
+    production_chunk_count: Number.isInteger(value.production_chunk_count) ? value.production_chunk_count : 0,
+    expected_chunk_count: Number.isInteger(value.expected_chunk_count) ? value.expected_chunk_count : 0,
+    provider_request_count: providerRequestCount,
+    max_provider_request_count: Number.isInteger(value.max_provider_request_count)
+      ? value.max_provider_request_count : providerRequestCount,
+    concurrency_limit: Number.isInteger(value.concurrency_limit) ? value.concurrency_limit : 0,
+    // request_count is retained as a safe compatibility name for existing
+    // report consumers; its value is the number of provider requests made in
+    // this bounded verification run, not a one-call assertion.
+    request_count: providerRequestCount,
     retry_count: Number.isInteger(value.retry_count) ? value.retry_count : 0,
     fallback_count: Number.isInteger(value.fallback_count) ? value.fallback_count : 0,
+    dify_call_count: Number.isInteger(value.dify_call_count) ? value.dify_call_count : 0,
+    embedding_call_count: Number.isInteger(value.embedding_call_count) ? value.embedding_call_count : 0,
     gateway_http_status: Number.isInteger(value.gateway_http_status) ? value.gateway_http_status : null,
     provider_http_status: Number.isInteger(value.provider_http_status) ? value.provider_http_status : null,
     provider_adapter_invoked: value.provider_adapter_invoked === true,
@@ -478,9 +509,14 @@ function safeLiveResult(value = {}) {
     provider_http_reached: value.provider_http_reached === true,
     provider_chain_verified: value.provider_chain_verified === true,
     candidate_count: Number.isInteger(value.candidate_count) ? value.candidate_count : null,
+    total_candidate_count: Number.isInteger(value.total_candidate_count) ? value.total_candidate_count : null,
     schema_pass: typeof value.schema_pass === 'boolean' ? value.schema_pass : null,
     source_resolution_pass: typeof value.source_resolution_pass === 'boolean' ? value.source_resolution_pass : null,
     backend_ingestion_pass: typeof value.backend_ingestion_pass === 'boolean' ? value.backend_ingestion_pass : null,
+    chunk_character_sizes: Array.isArray(value.chunk_character_sizes)
+      ? value.chunk_character_sizes.filter(Number.isInteger).slice(0, 1000) : [],
+    chunk_results: Array.isArray(value.chunk_results) ? value.chunk_results.slice(0, 1000) : [],
+    final_probe_status: typeof value.final_probe_status === 'string' ? value.final_probe_status : null,
     diagnostics: value.diagnostics || null,
     technical_error_code: typeof value.technical_error_code === 'string' ? value.technical_error_code : null
   });
@@ -525,63 +561,154 @@ export async function defaultLiveExecutor({ env, liveRequest, fetchImpl = fetch 
   const client = createSemanticGatewayClientFromEnv({ env, taskType: 'requirement_extraction', fetchImpl });
   const gateway = createRequirementExtractionGateway(client);
   const sourceLocationResolver = new SourceLocationResolver();
-  let gatewayResult = null;
-  let schemaPass = false;
-  let candidateCount = null;
-  try {
-    gatewayResult = await gateway.extract({ ...liveRequest, diagnosticMode: 'probe-v1' });
-    schemaPass = true;
-    candidateCount = gatewayResult.candidates.length;
-    const diagnostics = gatewayResult.audit?.probe_diagnostics || null;
-    // Resolve every Candidate against the exact production chunk window
-    // before invoking the production Candidate → Canonical projection.  A
-    // single unresolved reference therefore blocks the complete live run.
-    const resolutions = gatewayResult.candidates.map((candidate) => (
-      sourceLocationResolver.resolve(candidate, liveRequest.chunk)
-    ));
-    const mappedCandidates = mapValidatedCandidatesToCanonicalInput(gatewayResult.candidates, { resolutions });
-    const providerChainVerified = diagnostics?.provider_adapter_invoked === true
-      && diagnostics?.fetch_invoked === true
-      && diagnostics?.provider_http_reached === true
-      && diagnostics?.provider_http_status === 200;
+  const chunks = Array.isArray(liveRequest?.chunks) && liveRequest.chunks.length
+    ? liveRequest.chunks
+    : liveRequest?.chunk ? [liveRequest.chunk] : [];
+  if (!chunks.length) {
     return safeLiveResult({
-      executed: true,
-      request_count: 1,
-      gateway_http_status: 200,
-      provider_http_status: diagnostics?.provider_http_status || null,
-      provider_adapter_invoked: diagnostics?.provider_adapter_invoked,
-      fetch_invoked: diagnostics?.fetch_invoked,
-      provider_http_reached: diagnostics?.provider_http_reached,
-      provider_chain_verified: providerChainVerified,
-      candidate_count: mappedCandidates.length,
-      schema_pass: true,
-      source_resolution_pass: true,
-      backend_ingestion_pass: true,
-      diagnostics
-    });
-  } catch (error) {
-    const diagnostics = gatewayResult?.audit?.probe_diagnostics || error?.audit?.probe_diagnostics || null;
-    const providerChainVerified = diagnostics?.provider_adapter_invoked === true
-      && diagnostics?.fetch_invoked === true
-      && diagnostics?.provider_http_reached === true
-      && diagnostics?.provider_http_status === 200;
-    return safeLiveResult({
-      executed: true,
-      request_count: 1,
-      technical_error_code: error?.code || 'PROVIDER_OUTPUT_INVALID',
-      gateway_http_status: gatewayResult ? 200 : null,
-      diagnostics,
-      provider_adapter_invoked: diagnostics?.provider_adapter_invoked,
-      fetch_invoked: diagnostics?.fetch_invoked,
-      provider_http_reached: diagnostics?.provider_http_reached,
-      provider_http_status: diagnostics?.provider_http_status,
-      provider_chain_verified: providerChainVerified,
-      candidate_count: candidateCount,
-      schema_pass: schemaPass,
-      source_resolution_pass: schemaPass ? false : null,
-      backend_ingestion_pass: false
+      executed: false,
+      verification_run_count: 0,
+      production_chunk_count: 0,
+      expected_chunk_count: 0,
+      technical_error_code: 'LIVE_PAYLOAD_REQUIRED',
+      final_probe_status: 'BLOCKED'
     });
   }
+
+  const concurrencyLimit = Math.min(2, chunks.length);
+  const chunkResults = new Array(chunks.length);
+  let nextIndex = 0;
+  let providerRequestCount = 0;
+  let firstFailure = null;
+
+  const executeChunk = async (chunk, index) => {
+    let gatewayResult = null;
+    let schemaPass = false;
+    let candidateCount = null;
+    try {
+      gatewayResult = await gateway.extract({
+        ...liveRequest,
+        chunk,
+        text: chunk.text,
+        chunkCount: chunks.length,
+        diagnosticMode: 'probe-v1'
+      });
+      schemaPass = true;
+      candidateCount = gatewayResult.candidates.length;
+      const diagnostics = gatewayResult.audit?.probe_diagnostics || null;
+      // Resolve every Candidate against this exact production chunk window
+      // before invoking the production Candidate → Canonical projection.
+      const resolutions = gatewayResult.candidates.map((candidate) => (
+        sourceLocationResolver.resolve(candidate, chunk)
+      ));
+      const mappedCandidates = mapValidatedCandidatesToCanonicalInput(gatewayResult.candidates, { resolutions });
+      const providerChainVerified = diagnostics?.provider_adapter_invoked === true
+        && diagnostics?.fetch_invoked === true
+        && diagnostics?.provider_http_reached === true
+        && diagnostics?.provider_http_status === 200;
+      return {
+        ok: true,
+        chunk_number: chunk.chunk_number || index + 1,
+        character_count: chunk.character_count,
+        gateway_http_status: 200,
+        provider_http_status: diagnostics?.provider_http_status || null,
+        finish_reason: diagnostics?.finish_reason || null,
+        prompt_tokens: diagnostics?.prompt_tokens ?? null,
+        completion_tokens: diagnostics?.completion_tokens ?? null,
+        output_truncated: diagnostics?.output_truncated === true,
+        provider_chain_verified: providerChainVerified,
+        candidate_count: mappedCandidates.length,
+        schema_pass: true,
+        source_resolution_pass: true,
+        backend_ingestion_pass: true,
+        unresolved_ref_count: 0,
+        duplicate_ref_failure_count: 0,
+        non_contiguous_ref_failure_count: 0,
+        diagnostics
+      };
+    } catch (error) {
+      const diagnostics = gatewayResult?.audit?.probe_diagnostics || error?.audit?.probe_diagnostics || null;
+      const providerChainVerified = diagnostics?.provider_adapter_invoked === true
+        && diagnostics?.fetch_invoked === true
+        && diagnostics?.provider_http_reached === true
+        && diagnostics?.provider_http_status === 200;
+      const sourceResolutionFailure = error?.code === 'SOURCE_LOCATION_UNRESOLVED'
+        || error?.code === 'GATEWAY_REQUIREMENTS_INVALID';
+      const nonContiguous = sourceResolutionFailure && /连续段落/.test(error?.message || '');
+      const duplicate = sourceResolutionFailure && /重复引用/.test(error?.message || '');
+      return {
+        ok: false,
+        chunk_number: chunk.chunk_number || index + 1,
+        character_count: chunk.character_count,
+        gateway_http_status: gatewayResult ? 200 : Number.isInteger(error?.audit?.http_status) ? error.audit.http_status : null,
+        provider_http_status: diagnostics?.provider_http_status || null,
+        finish_reason: diagnostics?.finish_reason || null,
+        prompt_tokens: diagnostics?.prompt_tokens ?? null,
+        completion_tokens: diagnostics?.completion_tokens ?? null,
+        output_truncated: diagnostics?.output_truncated === true,
+        provider_chain_verified: providerChainVerified,
+        candidate_count: candidateCount,
+        schema_pass: schemaPass,
+        source_resolution_pass: sourceResolutionFailure ? false : null,
+        backend_ingestion_pass: false,
+        unresolved_ref_count: sourceResolutionFailure && !nonContiguous && !duplicate ? 1 : 0,
+        duplicate_ref_failure_count: duplicate ? 1 : 0,
+        non_contiguous_ref_failure_count: nonContiguous ? 1 : 0,
+        technical_error_code: error?.code || 'PROVIDER_OUTPUT_INVALID',
+        diagnostics
+      };
+    }
+  };
+
+  const worker = async () => {
+    while (true) {
+      if (firstFailure) return;
+      const index = nextIndex++;
+      if (index >= chunks.length) return;
+      providerRequestCount += 1;
+      const result = await executeChunk(chunks[index], index);
+      chunkResults[index] = result;
+      if (!result.ok && !firstFailure) firstFailure = result;
+    }
+  };
+  await Promise.all(Array.from({ length: concurrencyLimit }, () => worker()));
+
+  const completedResults = chunkResults.filter(Boolean);
+  const totalCandidateCount = completedResults.reduce(
+    (count, result) => count + (Number.isInteger(result.candidate_count) ? result.candidate_count : 0), 0
+  );
+  const allSucceeded = completedResults.length === chunks.length
+    && completedResults.every((result) => result.ok && result.schema_pass === true
+      && result.source_resolution_pass === true && result.backend_ingestion_pass === true
+      && result.provider_chain_verified === true
+      && result.finish_reason !== 'length'
+      && result.output_truncated !== true);
+  const diagnostics = completedResults.length === 1
+    ? completedResults[0].diagnostics || null
+    : completedResults.map((result) => result.diagnostics || null);
+  const first = completedResults[0] || {};
+  return safeLiveResult({
+    executed: providerRequestCount > 0,
+    verification_run_count: 1,
+    production_chunk_count: chunks.length,
+    expected_chunk_count: chunks.length,
+    provider_request_count: providerRequestCount,
+    max_provider_request_count: chunks.length,
+    concurrency_limit: concurrencyLimit,
+    gateway_http_status: first.gateway_http_status,
+    provider_http_status: first.provider_http_status,
+    provider_chain_verified: allSucceeded,
+    candidate_count: totalCandidateCount,
+    total_candidate_count: totalCandidateCount,
+    schema_pass: allSucceeded,
+    source_resolution_pass: allSucceeded,
+    backend_ingestion_pass: allSucceeded,
+    chunk_character_sizes: chunks.map((chunk) => chunk.character_count),
+    chunk_results: completedResults,
+    diagnostics,
+    technical_error_code: firstFailure?.technical_error_code || null,
+    final_probe_status: allSucceeded ? 'PASS' : 'BLOCKED'
+  });
 }
 
 export async function runRequirementExtractionLive({
@@ -619,9 +746,16 @@ export async function runRequirementExtractionLive({
       });
     }
     report.live = live;
-    if (live.request_count > 1 || live.retry_count !== 0 || live.fallback_count !== 0) report.blockers.push('DIAGNOSTIC_INSUFFICIENT');
+    const expectedChunkCount = Array.isArray(liveRequest?.chunks) && liveRequest.chunks.length
+      ? liveRequest.chunks.length
+      : liveRequest ? 1 : 0;
+    if (live.verification_run_count !== 1
+      || live.provider_request_count > expectedChunkCount
+      || live.max_provider_request_count !== expectedChunkCount
+      || live.retry_count !== 0
+      || live.fallback_count !== 0) report.blockers.push('DIAGNOSTIC_INSUFFICIENT');
     if (live.provider_chain_verified !== true) report.blockers.push('DIAGNOSTIC_INSUFFICIENT');
-    if (!live.schema_pass) report.blockers.push(live.technical_error_code || 'PROVIDER_OUTPUT_INVALID');
+    if (live.schema_pass !== true) report.blockers.push(live.technical_error_code || 'PROVIDER_OUTPUT_INVALID');
     if (live.source_resolution_pass === false) report.blockers.push(live.technical_error_code || 'SOURCE_LOCATION_UNRESOLVED');
     if (live.backend_ingestion_pass === false) report.blockers.push('BACKEND_INGESTION_FAILED');
   }
