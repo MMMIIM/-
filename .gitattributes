@@ -1,0 +1,5 @@
+# Preserve byte-sensitive evaluation fixtures as LF without changing other repository EOL policy.
+backend/eval/corpus/l3-synthetic-enterprise/*.md text eol=lf
+backend/eval/corpus/representative-sme/*.json text eol=lf
+backend/eval/scale-stress/corpus/*.md text eol=lf
+backend/eval/scale-stress/*.json text eol=lf
