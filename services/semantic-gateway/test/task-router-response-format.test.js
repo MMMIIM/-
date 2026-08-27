@@ -31,6 +31,7 @@ test('requirement extraction dispatch derives strict json_schema from canonical 
   assert.equal(invocation.response_format.type, 'json_schema');
   assert.equal(invocation.response_format.json_schema.strict, true);
   assert.equal(invocation.response_format.json_schema.name, 'requirement_extraction_data');
+  assert.equal(invocation.response_format.json_schema.schema, canonicalSchema);
   assert.deepEqual(invocation.response_format.json_schema.schema, canonicalSchema);
 });
 

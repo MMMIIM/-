@@ -34,7 +34,7 @@ export function deriveTaskResponseFormat(taskType) {
     json_schema: {
       name: schemaName,
       strict: true,
-      schema: structuredClone(contract.data_schema)
+      schema: contract.data_schema
     }
   };
 }
