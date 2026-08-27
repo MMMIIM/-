@@ -120,7 +120,7 @@ function safeCause(error) {
   };
 }
 
-function normalizedResponseFormat(value) {
+function normalizedResponseFormat(value, { allowDefault = true } = {}) {
   if (value && typeof value === 'object' && value.type === 'json_schema'
     && value.json_schema && typeof value.json_schema === 'object'
     && typeof value.json_schema.name === 'string'
@@ -134,7 +134,11 @@ function normalizedResponseFormat(value) {
       }
     };
   }
-  return { type: 'json_object' };
+  if (value && typeof value === 'object' && value.type === 'json_object') {
+    return { type: 'json_object' };
+  }
+  if (allowDefault) return { type: 'json_object' };
+  throw Object.assign(new Error('Invalid explicit provider response format'), { code: 'PROVIDER_OUTPUT_INVALID' });
 }
 
 function createAudit(model, started, generationConfig, promptDiagnostics) {
@@ -163,6 +167,8 @@ function createAudit(model, started, generationConfig, promptDiagnostics) {
     provider_trace_id: null,
     model_content_length_chars: null,
     output_truncated: false,
+    response_format_type: generationConfig.response_format?.type === 'json_schema'
+      ? 'json_schema' : 'json_object',
     json_parse_error_offset: null,
     legacy_schema_tokens_observed: [],
     generation_config: generationConfig,
@@ -231,9 +237,24 @@ export class OpenAICompatibleProvider {
     return Boolean(this.baseUrl && this.apiKey && this.model);
   }
 
-  async invoke({ instruction, payload }) {
+  async invoke({ instruction, payload, response_format: requestedResponseFormat }) {
     const started = Date.now();
-    const audit = createAudit(this.model, started, this.generationConfig, outboundPromptDiagnostics(instruction, payload));
+    let responseFormat;
+    try {
+      responseFormat = requestedResponseFormat === undefined
+        ? this.generationConfig.response_format
+        : normalizedResponseFormat(requestedResponseFormat, { allowDefault: false });
+    } catch (error) {
+      const audit = createAudit(this.model, started, this.generationConfig, outboundPromptDiagnostics(instruction, payload));
+      audit.current_stage = PROVIDER_STAGES.CONFIG_RESOLVED;
+      throw attachAudit(error, audit, started, {
+        safeErrorCode: 'INVALID_RESPONSE_FORMAT',
+        safeErrorMessage: 'Explicit provider response format is invalid.',
+        failureStage: PROVIDER_STAGES.CONFIG_RESOLVED
+      });
+    }
+    const generationConfig = Object.freeze({ ...this.generationConfig, response_format: responseFormat });
+    const audit = createAudit(this.model, started, generationConfig, outboundPromptDiagnostics(instruction, payload));
     if (!this.configured) {
       audit.current_stage = PROVIDER_STAGES.CONFIG_RESOLVED;
       throw attachAudit(
@@ -270,13 +291,13 @@ export class OpenAICompatibleProvider {
             { role: 'system', content: instruction },
             { role: 'user', content: JSON.stringify(payload) }
           ],
-          response_format: this.generationConfig.response_format,
-          max_tokens: this.generationConfig.max_tokens,
-          temperature: this.generationConfig.temperature,
-          top_p: this.generationConfig.top_p,
-          top_k: this.generationConfig.top_k,
-          frequency_penalty: this.generationConfig.frequency_penalty,
-          stream: this.generationConfig.stream
+          response_format: generationConfig.response_format,
+          max_tokens: generationConfig.max_tokens,
+          temperature: generationConfig.temperature,
+          top_p: generationConfig.top_p,
+          top_k: generationConfig.top_k,
+          frequency_penalty: generationConfig.frequency_penalty,
+          stream: generationConfig.stream
         };
         audit.current_stage = PROVIDER_STAGES.REQUEST_BODY_BUILT;
       } catch (error) {

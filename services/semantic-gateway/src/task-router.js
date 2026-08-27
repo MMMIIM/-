@@ -19,6 +19,26 @@ function observedCategory(value) {
 const REQUIREMENT_CANDIDATE_FIELDS = Object.freeze([...REQUIREMENT_CANDIDATE_SCHEMA.required]);
 const REQUIREMENT_CATEGORIES = REQUIREMENT_CANDIDATE_CATEGORIES;
 
+/**
+ * Derive a provider response format from the task contract when that contract
+ * owns a canonical data schema.  The schema itself remains owned by
+ * packages/semantic-contracts; this helper only adapts it to the generic
+ * OpenAI-compatible transport shape.
+ */
+export function deriveTaskResponseFormat(taskType) {
+  const contract = getSemanticTaskContract(taskType);
+  if (!contract?.data_schema) return undefined;
+  const schemaName = `${String(taskType).replace(/[^A-Za-z0-9_-]/g, '_')}_data`;
+  return {
+    type: 'json_schema',
+    json_schema: {
+      name: schemaName,
+      strict: true,
+      schema: structuredClone(contract.data_schema)
+    }
+  };
+}
+
 function requirementValidationDiagnostics(data) {
   const errors = [];
   if (!data || typeof data !== 'object' || Array.isArray(data)) {
@@ -204,7 +224,10 @@ export function createSemanticTaskRouter({ provider } = {}) {
         || (requestedInstructionHash && requestedInstructionHash !== instructionMetadata.instruction_hash)) {
         throw Object.assign(new Error('semantic task contract metadata mismatch'), { code: 'SEMANTIC_CONTRACT_DRIFT' });
       }
-      const providerResult = await provider.invoke({ taskType, instruction, payload });
+      const response_format = deriveTaskResponseFormat(taskType);
+      const invocation = { taskType, instruction, payload };
+      if (response_format) invocation.response_format = response_format;
+      const providerResult = await provider.invoke(invocation);
       let data;
       try {
         data = validateTaskData(taskType, providerResult?.data, payload);

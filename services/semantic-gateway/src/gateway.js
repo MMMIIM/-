@@ -234,6 +234,8 @@ function safeProbeDiagnostics({ providerAudit = null, validationErrors = [], env
     instruction_sha256: typeof audit.instruction_sha256 === 'string' ? audit.instruction_sha256 : null,
     model_content_length_chars: Number.isInteger(audit.model_content_length_chars) ? audit.model_content_length_chars : null,
     output_truncated: audit.output_truncated === true,
+    response_format_type: audit.response_format_type === 'json_schema' || audit.response_format_type === 'json_object'
+      ? audit.response_format_type : null,
     json_parse_error_offset: Number.isInteger(audit.json_parse_error_offset) ? audit.json_parse_error_offset : null,
     legacy_schema_tokens_observed: Array.isArray(audit.legacy_schema_tokens_observed)
       ? audit.legacy_schema_tokens_observed.filter(token => typeof token === 'string').slice(0, 20)
