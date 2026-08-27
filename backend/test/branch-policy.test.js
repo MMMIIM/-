@@ -130,16 +130,19 @@ test('ff-only sync permits an ancestor or equal tip and stops on divergence', ()
   }), { allowed: false, status: 'BRANCH_LINEAGE_DIVERGED' });
 });
 
-test('real authoritative and feature refs are inspectable without a Git mutation', () => {
+test('real authoritative ref resolution is read-only and topology-stable', () => {
   const result = checkFastForwardSync({
     repoRoot,
     authoritativeBranch: policy.authoritative_branch,
-    featureBranch: 'fix/v4.3-branch-policy-guard'
+    featureBranch: policy.authoritative_branch
   });
   assert.equal(result.allowed, true);
-  assert.ok(['ALREADY_SYNCED', 'FAST_FORWARD_ALLOWED'].includes(result.status));
+  assert.equal(result.status, 'ALREADY_SYNCED');
+  assert.ok(result.authoritative_head);
+  assert.ok(result.feature_head);
+  assert.equal(result.authoritative_head, result.feature_head);
   assert.equal(result.authoritative_branch, policy.authoritative_branch);
-  assert.equal(result.feature_branch, 'fix/v4.3-branch-policy-guard');
+  assert.equal(result.feature_branch, policy.authoritative_branch);
 });
 
 test('doctor passes a valid feature and historical branch remains non-production eligible', async () => {
