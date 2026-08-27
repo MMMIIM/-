@@ -151,21 +151,23 @@ test('所有候选均为空时汇总失败', () => {
   );
 });
 
-test('长文件串行处理所有分片并在最终汇总后生成稳定基线候选', async () => {
+test('长文件以最多 2 个并发处理且按 chunk_number 稳定汇总', async () => {
   const extraction = extractionFor([
     '第一章 技术要求', '系统应提供审计日志。',
     '第二章 服务接口需求', '系统应提供审计日志。', '支持标准接口。'
   ]);
   let active = 0;
   let maxActive = 0;
+  let gatewayCalls = 0;
   const { service, repository } = serviceFor({
     extraction,
     chunkBudget: { singleCallThreshold: 1, characterBudget: 35, tokenBudget: 35 },
     gateway: {
       extract: async ({ chunk }) => {
+        gatewayCalls += 1;
         active += 1;
         maxActive = Math.max(maxActive, active);
-        await Promise.resolve();
+        await new Promise((resolve) => setTimeout(resolve, chunk.chunk_number === 1 ? 20 : 5));
         active -= 1;
         return {
           candidates: chunk.chunk_number === 1
@@ -180,12 +182,45 @@ test('长文件串行处理所有分片并在最终汇总后生成稳定基线�
     }
   });
   const result = await service.start({ projectId: 'project-1', tenderFileId: 'file-1', waitForCompletion: true });
-  assert.equal(maxActive, 1);
+  assert.ok(maxActive <= 2);
+  assert.equal(maxActive, 2);
   assert.ok(repository.state.chunks.length >= 2);
+  assert.equal(gatewayCalls, repository.state.chunks.length);
+  assert.deepEqual(result.candidates.map((candidate) => candidate.content), ['提供审计日志。', '支持标准接口。']);
   assert.deepEqual(result.candidates.map((candidate) => candidate.req_id), ['REQ-001', 'REQ-002']);
   assert.equal(result.candidates[0].deduplication.merged_candidate_count, 2);
   assert.equal(repository.state.completedChunks.length, repository.state.chunks.length);
   assert.equal(repository.state.failedJob, null);
+});
+
+test('unknown 或非连续 source_ref 使当前 chunk 失败且不完成解析基线', async () => {
+  const cases = [
+    ['C001-S999'],
+    ['C001-S001', 'C001-S003']
+  ];
+  for (const sourceRefs of cases) {
+    const { service, repository } = serviceFor({
+      extraction: extractionFor([
+        '第一章 技术要求', '系统应提供审计日志。', '系统应保留操作记录。', '系统应支持审计查询。'
+      ]),
+      chunkBudget: { singleCallThreshold: 1, characterBudget: 200, tokenBudget: 200 },
+      gateway: {
+        extract: async () => ({
+          candidates: [{
+            text: '提供审计日志。', category: 'technical', source_refs: sourceRefs,
+            mandatory_observed: true, requires_confirmation: false
+          }], warnings: [], audit: {}
+        })
+      }
+    });
+    await assert.rejects(
+      () => service.start({ projectId: 'project-1', tenderFileId: 'file-1', waitForCompletion: true }),
+      (error) => error.code === 'SOURCE_LOCATION_UNRESOLVED'
+    );
+    assert.equal(repository.state.completedJob, null);
+    assert.ok(repository.state.failedJob);
+    assert.equal(repository.state.failedJob.failedChunkNumber, 1);
+  }
 });
 
 test('单片超时保存失败分片与耗时，不完成任务或创建部分基线', async () => {
@@ -263,7 +298,7 @@ test('5,610 中文字符与 134 段仍只形成一个 chunk', () => {
   assert.equal(extraction.paragraphs.length, 134);
   const chunks = chunkExtractedText({
     ...extraction,
-    singleCallThreshold: 12000,
+    singleCallThreshold: 8000,
     characterBudget: 8000,
     tokenBudget: 8000
   });
@@ -271,14 +306,14 @@ test('5,610 中文字符与 134 段仍只形成一个 chunk', () => {
   assert.equal(chunks[0].character_count, 5610);
 });
 
-test('超过 12,000 字符才启用 8,000 字符确定性分片', () => {
-  const below = extractionFor(['中'.repeat(12000)]);
+test('超过 8,000 字符才启用 8,000 字符确定性分片', () => {
+  const below = extractionFor(['中'.repeat(8000)]);
   const above = extractionFor(['中'.repeat(6000), '中'.repeat(6001)]);
   assert.equal(chunkExtractedText({
-    ...below, singleCallThreshold: 12000, characterBudget: 8000, tokenBudget: 8000
+    ...below, singleCallThreshold: 8000, characterBudget: 8000, tokenBudget: 8000
   }).length, 1);
   const chunks = chunkExtractedText({
-    ...above, singleCallThreshold: 12000, characterBudget: 8000, tokenBudget: 8000
+    ...above, singleCallThreshold: 8000, characterBudget: 8000, tokenBudget: 8000
   });
   assert.ok(chunks.length > 1);
   assert.ok(chunks.every((chunk) => chunk.character_count <= 8000));
@@ -304,16 +339,16 @@ test('requirement_extraction 默认 300 秒、healthcheck 15 秒且配置传入 
   assert.equal(client.taskTimeouts.healthcheck, 15000);
   assert.equal(client.taskTimeouts.requirement_extraction, 300000);
   assert.deepEqual(resolveRequirementChunkBudget({
-    REQUIREMENT_SINGLE_CALL_CHAR_THRESHOLD: '12000',
+    REQUIREMENT_SINGLE_CALL_CHAR_THRESHOLD: '8000',
     REQUIREMENT_CHUNK_CHAR_BUDGET: '8000', REQUIREMENT_CHUNK_TOKEN_BUDGET: '8000'
-  }), { singleCallThreshold: 12000, characterBudget: 8000, tokenBudget: 8000 });
+  }), { singleCallThreshold: 8000, characterBudget: 8000, tokenBudget: 8000 });
 });
 
 test('数据库任务领取锁保证同一 job/chunk 不会被重复调用', async () => {
   let gatewayCalls = 0;
   const { service, repository } = serviceFor({
     extraction: extractionFor(['第四章 项目要求和有关说明', '系统应记录审计日志。']),
-    chunkBudget: { singleCallThreshold: 12000, characterBudget: 8000, tokenBudget: 8000 },
+    chunkBudget: { singleCallThreshold: 8000, characterBudget: 8000, tokenBudget: 8000 },
     gateway: { extract: async () => { gatewayCalls += 1; await Promise.resolve(); return { candidates: [{ text: '记录审计日志。', source_refs: ['C001-S002'], source_text: '系统应记录审计日志。', category: 'technical', source_clause_id: null, mandatory_observed: false, requires_confirmation: false, source_page: 1, source_paragraph: 2 }], warnings: [], audit: {} }; } }
   });
   let claimed = false;

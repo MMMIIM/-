@@ -58,7 +58,7 @@ test('约46k字符短段落按累计预算分片，不产生数百个微型 chun
   const extraction = extractionFromParagraphs(values);
   assert.ok(extraction.text.length > 46000);
   const chunks = chunkExtractedText({
-    ...extraction, singleCallThreshold: 12000, characterBudget: 8000, tokenBudget: 8000
+    ...extraction, singleCallThreshold: 8000, characterBudget: 8000, tokenBudget: 8000
   });
   assert.ok(chunks.length <= 15);
   assert.ok(chunks.length >= 6);

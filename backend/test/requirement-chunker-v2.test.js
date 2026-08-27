@@ -24,6 +24,55 @@ test('chunker assigns deterministic Cxxx-Sxxx span ids and an annotated model te
   assert.match(chunks[0].model_text, /\[C001-S002\] 第二段要求。/);
 });
 
+test('8,000 字符以内保持单片，超过上限进入段落分片', () => {
+  const paragraph = (text) => ({ paragraph: 1, page: 1, text });
+  const exactlyAtLimit = 'a'.repeat(8_000);
+  const atLimit = chunkExtractedText({
+    text: exactlyAtLimit,
+    paragraphs: [paragraph(exactlyAtLimit)],
+    singleCallThreshold: 8_000,
+    characterBudget: 8_000,
+    tokenBudget: 8_000
+  });
+  assert.equal(atLimit.length, 1);
+  assert.equal(atLimit[0].character_count, 8_000);
+
+  const overLimit = 'a'.repeat(8_001);
+  const chunks = chunkExtractedText({
+    text: overLimit,
+    paragraphs: [paragraph(overLimit)],
+    singleCallThreshold: 8_000,
+    characterBudget: 8_000,
+    tokenBudget: 8_000
+  });
+  assert.ok(chunks.length > 1);
+  assert.ok(chunks.every((chunk) => chunk.character_count <= 8_000));
+});
+
+test('4,930 字符 FAST-01 仍保持单片，单片同时受 token 上限约束', () => {
+  const text = '中'.repeat(4_930);
+  const chunks = chunkExtractedText({
+    text,
+    paragraphs: [{ paragraph: 1, page: 1, text }],
+    singleCallThreshold: 8_000,
+    characterBudget: 8_000,
+    tokenBudget: 8_000
+  });
+  assert.equal(chunks.length, 1);
+  assert.equal(chunks[0].character_count, 4_930);
+
+  const punctuation = '.'.repeat(8_000);
+  const tokenLimited = chunkExtractedText({
+    text: punctuation,
+    paragraphs: [{ paragraph: 1, page: 1, text: punctuation }],
+    singleCallThreshold: 8_000,
+    characterBudget: 8_000,
+    tokenBudget: 7_999
+  });
+  assert.ok(tokenLimited.length > 1);
+  assert.ok(tokenLimited.every((chunk) => chunk.estimated_token_count <= 7_999));
+});
+
 test('model Candidate cannot inject canonical source_text/source_clause, while source_refs remain accepted', () => {
   const candidate = {
     text: '系统应记录日志。', category: 'technical', source_refs: ['C001-S001'],

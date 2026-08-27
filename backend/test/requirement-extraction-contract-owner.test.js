@@ -55,7 +55,7 @@ test('Gateway Task Router resolves the canonical instruction and emits contract 
   assert.equal(result.provider_audit.instruction_sha256, contract.instruction_hash);
 });
 
-test('Requirement Extraction shared validator enforces the six-field candidate schema', () => {
+test('Requirement Extraction shared validator enforces the five-field Candidate v2 schema', () => {
   const candidate = {
     text: '系统应提供审计日志。',
     category: 'technical',

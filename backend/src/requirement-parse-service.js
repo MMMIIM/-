@@ -182,13 +182,16 @@ export class RequirementParseService {
         chunks = chunks.map((chunk) => ({ ...chunk, id: ids.get(chunk.chunk_number) || null }));
       }
 
-      const chunkResults = [];
-      const warnings = [...extraction.warnings, ...sectionAnalysis.warnings];
-      for (const chunk of chunks) {
-        failedChunkNumber = chunk.chunk_number;
-        await this.repository.startParseChunk(job.id, chunk.chunk_number);
+      const chunkResults = new Array(chunks.length);
+      const chunkWarnings = new Array(chunks.length).fill(null).map(() => []);
+      const concurrency = Math.min(2, chunks.length);
+      let nextChunkIndex = 0;
+      let firstFailure = null;
+
+      const processChunk = async (chunk, chunkIndex) => {
         const chunkStartedAt = Date.now();
         try {
+          await this.repository.startParseChunk(job.id, chunk.chunk_number);
           const gatewayResult = await this.extractionGateway.extract({
             fileName: tenderFile.original_name, text: chunk.text,
             paragraphs: chunk.segments, chunk,
@@ -210,27 +213,57 @@ export class RequirementParseService {
             candidateCount: candidates.length, runtimeMs,
             gatewayAudit: sanitizeAuditJson(gatewayResult.audit)
           });
-          warnings.push(...gatewayResult.warnings.map((warning) => ({
+          chunkWarnings[chunkIndex].push(...gatewayResult.warnings.map((warning) => ({
             ...warning, chunk_number: chunk.chunk_number
           })));
-          warnings.push(...resolvedCandidates.filter(({ resolution }) => resolution.warning).map(({ candidateIndex, resolution }) => ({
+          chunkWarnings[chunkIndex].push(...resolvedCandidates.filter(({ resolution }) => resolution.warning).map(({ candidateIndex, resolution }) => ({
             ...resolution.warning, chunk_number: chunk.chunk_number,
             candidate_index: candidateIndex
           })));
-          chunkResults.push({ chunk_number: chunk.chunk_number, candidates });
+          chunkResults[chunkIndex] = { chunk_number: chunk.chunk_number, candidates };
         } catch (caught) {
           const error = normalizeError(caught);
           const runtimeMs = Date.now() - chunkStartedAt;
-          await this.repository.failParseChunk({
-            jobId: job.id, chunkNumber: chunk.chunk_number,
-            errorCode: error.code, errorMessage: error.message, runtimeMs,
-            gatewayAudit: sanitizeAuditJson(caught?.audit)
-          });
+          try {
+            await this.repository.failParseChunk({
+              jobId: job.id, chunkNumber: chunk.chunk_number,
+              errorCode: error.code, errorMessage: error.message, runtimeMs,
+              gatewayAudit: sanitizeAuditJson(caught?.audit)
+            });
+          } catch (persistenceError) {
+            this.logger.error('Tender parse chunk failure audit failed', {
+              parseJobId: job.id, chunkNumber: chunk.chunk_number,
+              errorCode: persistenceError?.code || 'PARSE_CHUNK_FAILURE_AUDIT_FAILED'
+            });
+          }
           error.failedChunkNumber = chunk.chunk_number;
           error.chunkRuntimeMs = runtimeMs;
           throw error;
         }
-      }
+      };
+
+      const worker = async () => {
+        while (!firstFailure) {
+          const chunkIndex = nextChunkIndex++;
+          if (chunkIndex >= chunks.length) return;
+          const chunk = chunks[chunkIndex];
+          try {
+            await processChunk(chunk, chunkIndex);
+          } catch (error) {
+            if (!firstFailure) {
+              firstFailure = error;
+              failedChunkNumber = error.failedChunkNumber ?? chunk.chunk_number;
+            }
+            return;
+          }
+        }
+      };
+
+      await Promise.all(Array.from({ length: concurrency }, () => worker()));
+      if (firstFailure) throw firstFailure;
+
+      const warnings = [...extraction.warnings, ...sectionAnalysis.warnings];
+      for (const warningList of chunkWarnings) warnings.push(...warningList);
 
       failedChunkNumber = null;
       await this.repository.updateParseJobProgress({
@@ -253,7 +286,7 @@ export class RequirementParseService {
         warnings,
         gatewayAudit: {
           provider: 'semantic_gateway', task_type: 'requirement_extraction',
-          processing: 'serial_chunks', chunk_count: chunks.length
+          processing: 'bounded_concurrency', concurrency, chunk_count: chunks.length
         },
         extractedTextSha256,
         extractedCharacterCount: extraction.text.length,

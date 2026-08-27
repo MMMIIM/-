@@ -60,33 +60,20 @@ export class SourceLocationResolver {
       throw Object.assign(new Error('候选需求必须提供有效 source_refs。'), { code: 'GATEWAY_REQUIREMENTS_INVALID' });
     }
     if (new Set(sourceRefs).size !== sourceRefs.length) {
-      return this.unverified(sourceRefs, chunk, SOURCE_MATCH_TYPES.UNRESOLVED, 'SOURCE_LOCATION_UNRESOLVED', 'source_refs 含重复引用，无法确定性定位。');
+      throw Object.assign(new Error('source_refs 含重复引用，无法确定性定位。'), { code: 'GATEWAY_REQUIREMENTS_INVALID' });
     }
     const selected = sourceRefs.map((ref) => byRef.get(ref));
     if (selected.some((value) => !value)) {
-      return this.unverified(sourceRefs, chunk, SOURCE_MATCH_TYPES.UNRESOLVED, 'SOURCE_LOCATION_UNRESOLVED', '来源引用不在当前分片窗口内，无法确定性定位。');
+      throw Object.assign(new Error('来源引用不在当前分片窗口内，无法确定性定位。'), { code: 'SOURCE_LOCATION_UNRESOLVED' });
     }
     const ordered = [...selected].sort((left, right) => left.index - right.index);
     const contiguous = ordered.every((value, index) => index === 0 || value.index === ordered[index - 1].index + 1);
     if (!contiguous) {
-      return this.unverified(sourceRefs, chunk, SOURCE_MATCH_TYPES.UNRESOLVED, 'SOURCE_LOCATION_UNRESOLVED', '来源引用不是当前分片中的连续段落范围。');
+      throw Object.assign(new Error('来源引用不是当前分片中的连续段落范围。'), { code: 'SOURCE_LOCATION_UNRESOLVED' });
     }
     const match = { segments: ordered.map((value) => value.item) };
     const matchType = match.segments.length === 1 ? SOURCE_MATCH_TYPES.EXACT_SINGLE : SOURCE_MATCH_TYPES.EXACT_MULTI;
     return { location: { source_text: match.segments.map((item) => item.text).join('\n'), ...location(match, chunk, matchType, 1, sourceRefs) }, warning: null };
-  }
-
-  unverified(sourceRefs, chunk, matchType, code, message) {
-    return { location: {
-      source_text: null, source_context_text: null, source_page: null, source_paragraph: null,
-      source_page_start: null, source_page_end: null, source_paragraph_start: null,
-      source_paragraph_end: null, source_paragraphs_json: [], source_hash: null,
-      source_start_offset: chunk.source_start_offset ?? null, source_end_offset: chunk.source_end_offset ?? null,
-      source_section: null, source_clause_id: null,
-      source_chunk_id: chunk.id || chunk.chunk_id || null, source_match_type: matchType,
-      source_match_score: null, source_resolution_status: 'unresolved',
-      source_resolution_method: 'automatic', source_verified: false, source_refs: [...sourceRefs]
-    }, warning: { code, message } };
   }
 }
 

@@ -49,27 +49,25 @@ test('连续多段 source_refs 反向映射段落、页码和上下文', () => {
   assert.match(result.location.source_context_text, /操作记录/);
 });
 
-test('重复 source_ref 不能绕过 Candidate schema，resolver fail closed', () => {
-  const result = new SourceLocationResolver().resolve({ source_refs: ['C001-S001', 'C001-S001'] }, chunk);
-  assert.equal(result.location.source_verified, false);
-  assert.equal(result.location.source_match_type, 'unresolved');
-  assert.equal(result.warning.code, 'SOURCE_LOCATION_UNRESOLVED');
+test('重复 source_ref 由 resolver fail closed', () => {
+  assert.throws(
+    () => new SourceLocationResolver().resolve({ source_refs: ['C001-S001', 'C001-S001'] }, chunk),
+    (error) => error.code === 'GATEWAY_REQUIREMENTS_INVALID'
+  );
 });
 
-test('未知 source_ref 只保留引用和 chunk lineage，不伪造来源', () => {
-  const result = new SourceLocationResolver().resolve({ source_refs: ['C001-S999'] }, chunk);
-  assert.equal(result.location.source_text, null);
-  assert.equal(result.location.source_paragraph, null);
-  assert.equal(result.location.source_page, null);
-  assert.equal(result.location.source_hash, null);
-  assert.equal(result.location.source_chunk_id, chunk.id);
-  assert.equal(result.warning.code, 'SOURCE_LOCATION_UNRESOLVED');
+test('未知 source_ref 使当前 chunk fail closed', () => {
+  assert.throws(
+    () => new SourceLocationResolver().resolve({ source_refs: ['C001-S999'] }, chunk),
+    (error) => error.code === 'SOURCE_LOCATION_UNRESOLVED'
+  );
 });
 
-test('非连续 source_refs 不自动拼接，保持 unresolved', () => {
-  const result = new SourceLocationResolver().resolve({ source_refs: ['C001-S001', 'C001-S003'] }, chunk);
-  assert.equal(result.location.source_verified, false);
-  assert.equal(result.warning.code, 'SOURCE_LOCATION_UNRESOLVED');
+test('非连续 source_refs 使当前 chunk fail closed', () => {
+  assert.throws(
+    () => new SourceLocationResolver().resolve({ source_refs: ['C001-S001', 'C001-S003'] }, chunk),
+    (error) => error.code === 'SOURCE_LOCATION_UNRESOLVED'
+  );
 });
 
 test('source_refs 为空或格式非法仍为非法候选', () => {

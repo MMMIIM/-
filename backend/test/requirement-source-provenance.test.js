@@ -37,12 +37,12 @@ test('source refs 保持后端原文边界，不接受模型改写文本', () =>
   assert.equal(result.source_match_type, 'exact_multi_paragraph_span');
 });
 
-test('模型改写或未知来源只能 unresolved，不能自动认证来源', () => {
+test('未知来源使当前 chunk fail closed，不能进入 unresolved Candidate', () => {
   const resolver = new SourceLocationResolver();
-  const result = resolver.resolve({ source_refs: ['C001-S999'] }, chunk(['原文要求提供完整的审计能力和日志查询功能']));
-  assert.equal(result.location.source_resolution_status, 'unresolved');
-  assert.equal(result.location.source_verified, false);
-  assert.equal(result.warning.code, 'SOURCE_LOCATION_UNRESOLVED');
+  assert.throws(
+    () => resolver.resolve({ source_refs: ['C001-S999'] }, chunk(['原文要求提供完整的审计能力和日志查询功能'])),
+    (error) => error.code === 'SOURCE_LOCATION_UNRESOLVED'
+  );
 });
 
 test('生产确认门禁阻止 mandatory 未定位及 pending，并允许全部处理后的 include', () => {
