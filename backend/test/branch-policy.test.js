@@ -99,6 +99,25 @@ test('live branch guard allows only the exact authoritative role', () => {
   }), { allowed: false, blocker: 'BRANCH_DRIFT' });
 });
 
+test('authoritative branch identity is not pinned to a historical SHA', () => {
+  const before = classifyBranch({
+    branch: policy.authoritative_branch,
+    policy,
+    repoRoot,
+    headRef: 'deadbeef'
+  });
+  const after = classifyBranch({
+    branch: policy.authoritative_branch,
+    policy,
+    repoRoot,
+    headRef: 'another-tip'
+  });
+  assert.equal(before.branch_role, BRANCH_ROLES.AUTHORITATIVE);
+  assert.equal(after.branch_role, BRANCH_ROLES.AUTHORITATIVE);
+  assert.equal(before.blocker, null);
+  assert.equal(after.blocker, null);
+});
+
 test('ff-only sync permits an ancestor or equal tip and stops on divergence', () => {
   assert.deepEqual(evaluateFastForwardSync({
     authoritativeHead: 'a', featureHead: 'b', authoritativeIsAncestor: true
