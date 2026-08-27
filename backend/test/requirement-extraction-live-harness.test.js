@@ -26,7 +26,7 @@ function gatewayResponse(candidate) {
     data: {
       outputs: {
         response_payload_json: JSON.stringify({
-          schema_version: '4.3-requirement-extraction-v2',
+          schema_version: '4.3-requirement-extraction-v2.1',
           task_type: 'requirement_extraction',
           status: 'success',
           data: { requirements: [candidate] },
@@ -58,7 +58,7 @@ function healthyFetch(url) {
   if (url.endsWith('/info')) return new Response(JSON.stringify({
     service: 'semantic-gateway', task_registry_loaded: true,
     task_types: ['requirement_extraction'],
-    requirement_extraction_contract_version: '4.3-requirement-extraction-v2',
+    requirement_extraction_contract_version: '4.3-requirement-extraction-v2.1',
     requirement_extraction_prompt_hash: FROZEN_REQUIREMENT_EXTRACTION_PROMPT_HASH,
     candidate_schema_contract_version: '4.3-requirement-candidate-v2',
     candidate_schema_sha256: FROZEN_REQUIREMENT_CANDIDATE_SCHEMA_HASH

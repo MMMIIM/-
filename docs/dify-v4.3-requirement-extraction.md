@@ -2,7 +2,7 @@
 
 本文用于配置 Production-shaped Beta 的逐片需求抽取语义流程。Dify 只负责一个 chunk 的语义提取；PDF 解析、章节分类、分片调度、JSON 校验、来源定位、合并、REQ-ID、mandatory 最终判定和基线冻结均由 Node 后端负责。
 
-当前唯一 ACTIVE semantic contract：`4.3-requirement-extraction-v2`；Candidate contract：`4.3-requirement-candidate-v2`。Prompt 与 Candidate hash 以 `packages/semantic-contracts` 运行时导出为准。
+当前唯一 ACTIVE semantic contract：`4.3-requirement-extraction-v2.1`；Candidate contract：`4.3-requirement-candidate-v2`。Prompt 与 Candidate hash 以 `packages/semantic-contracts` 运行时导出为准。
 
 禁止在本 Workflow 内加入业务 Code 节点、Iteration、REQ-ID 生成、页码/段落定位、章节路由或基线逻辑。DeepSeek 仅由 Dify 模型插件调用。v4.2 Workflow 保持冻结。
 
@@ -107,7 +107,7 @@ requires_confirmation：仅当原文明示存在待确认、待确定、由双�
 
 成功输出必须满足：
 {
-  "schema_version": "4.3-requirement-extraction-v2",
+  "schema_version": "4.3-requirement-extraction-v2.1",
   "task_type": "requirement_extraction",
   "status": "success",
   "data": {
@@ -142,7 +142,7 @@ task_payload_json:
 
 ```json
 {
-  "schema_version": "4.3-requirement-extraction-v2",
+  "schema_version": "4.3-requirement-extraction-v2.1",
   "task_type": "requirement_extraction",
   "status": "success",
   "data": {
@@ -168,7 +168,7 @@ task_payload_json:
   "additionalProperties": false,
   "required": ["schema_version", "task_type", "status", "data", "warnings"],
   "properties": {
-    "schema_version": { "const": "4.3-requirement-extraction-v2" },
+    "schema_version": { "const": "4.3-requirement-extraction-v2.1" },
     "task_type": { "const": "requirement_extraction" },
     "status": { "type": "string", "enum": ["success", "failed"] },
     "data": {

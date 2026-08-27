@@ -82,7 +82,7 @@ test('模型来源文本和历史别名不会被 resolver 接受', () => {
 
 test('Schema Adapter 拒绝 source_text/source_clause/content/source_excerpt 模型字段', () => {
   const envelope = (candidate) => ({
-    envelope: { schema_version: '4.3-requirement-extraction-v2', task_type: 'requirement_extraction', status: 'success', warnings: [], data: { requirements: [candidate] } },
+    envelope: { schema_version: '4.3-requirement-extraction-v2.1', task_type: 'requirement_extraction', status: 'success', warnings: [], data: { requirements: [candidate] } },
     audit: {}
   });
   const base = { text: '记录日志', category: 'technical', source_refs: ['C001-S001'], mandatory_observed: true, requires_confirmation: false };

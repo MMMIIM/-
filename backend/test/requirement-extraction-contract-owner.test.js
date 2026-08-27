@@ -38,6 +38,20 @@ test('Requirement Extraction has exactly one canonical instruction and explicit 
   assert.doesNotMatch(requirementExtractionSource, /从招标文件文本中提取候选需求。/);
 });
 
+test('Requirement Extraction prompt requires a complete requirements-only top-level object', () => {
+  const instruction = resolveSemanticTaskInstruction('requirement_extraction');
+  assert.match(instruction, /【最终输出结构】/);
+  assert.match(instruction, /最外层必须且只能是一个 JSON 对象/);
+  assert.match(instruction, /最外层只允许 requirements 一个字段/);
+  assert.match(instruction, /requirements 必须始终为数组/);
+  assert.match(instruction, /不得将以下 Candidate 字段直接放在最外层/);
+  assert.match(instruction, /\"requirements\": \[\.\.\.\]/);
+  assert.match(instruction, /\"requirements\": \[\]/);
+  assert.match(instruction, /必须完整检查整个 chunk_text 后再输出/);
+  assert.match(instruction, /不得只提取第一条、前几条或示例性 Requirement/);
+  assert.match(instruction, /所有明确存在且符合提取范围的独立响应义务都应进入 requirements/);
+});
+
 test('Gateway Task Router resolves the canonical instruction and emits contract metadata', async () => {
   let invocation;
   const router = createSemanticTaskRouter({

@@ -12,7 +12,7 @@ test('shared task registry exposes one canonical contract set', () => {
     'requirement_extraction', 'response_planning', 'claim_generation',
     'section_drafting', 'targeted_revision', 'evidence_support_assessment'
   ]);
-  assert.equal(getSemanticTaskContract('requirement_extraction').contract_version, '4.3-requirement-extraction-v2');
+  assert.equal(getSemanticTaskContract('requirement_extraction').contract_version, '4.3-requirement-extraction-v2.1');
   assert.equal(getSemanticTaskContract('evidence_support_assessment').contract_version, '4.3-evidence-support-assessment-v1');
 });
 

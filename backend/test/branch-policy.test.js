@@ -41,8 +41,8 @@ function healthyFetch(url) {
     service: 'semantic-gateway',
     task_registry_loaded: true,
     task_types: ['requirement_extraction'],
-    requirement_extraction_contract_version: '4.3-requirement-extraction-v2',
-    requirement_extraction_prompt_hash: '1d5f078ee92c360648f74cd1b394428e6cdaa08f16bc745c7b407d82f414357b',
+    requirement_extraction_contract_version: '4.3-requirement-extraction-v2.1',
+    requirement_extraction_prompt_hash: '16f94efd34cef23eb263f7fd38d27d7a47328e3043934123438e3e0d779a7abf',
     candidate_schema_contract_version: '4.3-requirement-candidate-v2',
     candidate_schema_sha256: '366a466202f828ca97cae771a6bc34eb9f926a071ade509294ccb85139ac37da'
   });
