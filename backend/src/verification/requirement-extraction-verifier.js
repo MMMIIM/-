@@ -237,7 +237,6 @@ function baseReport(mode, startedAt, gitInfo) {
       provider_request_count: 0,
       max_provider_request_count: 0,
       concurrency_limit: 0,
-      request_count: 0,
       retry_count: 0,
       fallback_count: 0,
       dify_call_count: 0,
@@ -479,8 +478,7 @@ export async function runRequirementExtractionAccept({
 
 function safeLiveResult(value = {}) {
   const providerRequestCount = Number.isInteger(value.provider_request_count)
-    ? value.provider_request_count
-    : Number.isInteger(value.request_count) ? value.request_count : 0;
+    ? value.provider_request_count : 0;
   const executed = value.executed === true;
   const verificationRunCount = Number.isInteger(value.verification_run_count)
     ? value.verification_run_count
@@ -494,10 +492,6 @@ function safeLiveResult(value = {}) {
     max_provider_request_count: Number.isInteger(value.max_provider_request_count)
       ? value.max_provider_request_count : providerRequestCount,
     concurrency_limit: Number.isInteger(value.concurrency_limit) ? value.concurrency_limit : 0,
-    // request_count is retained as a safe compatibility name for existing
-    // report consumers; its value is the number of provider requests made in
-    // this bounded verification run, not a one-call assertion.
-    request_count: providerRequestCount,
     retry_count: Number.isInteger(value.retry_count) ? value.retry_count : 0,
     fallback_count: Number.isInteger(value.fallback_count) ? value.fallback_count : 0,
     dify_call_count: Number.isInteger(value.dify_call_count) ? value.dify_call_count : 0,
@@ -712,7 +706,9 @@ export async function defaultLiveExecutor({ env, liveRequest, fetchImpl = fetch 
 }
 
 export async function runRequirementExtractionLive({
-  confirmOneLiveCall = false,
+  // One explicit confirmation covers the bounded verification run, which may
+  // contain one provider request per production chunk.
+  confirmLiveRun = false,
   liveRequest = null,
   liveExecutor = defaultLiveExecutor,
   liveRequestError = null,
@@ -726,7 +722,7 @@ export async function runRequirementExtractionLive({
   const startedAt = Date.parse(doctor.started_at);
   const report = { ...doctor, mode: 'live', live: { ...doctor.live } };
   if (!assertLiveBranch({ branchInfo: report.git }).allowed) report.blockers.push('BRANCH_DRIFT');
-  if (!confirmOneLiveCall) report.blockers.push('LIVE_CONFIRMATION_REQUIRED');
+  if (!confirmLiveRun) report.blockers.push('LIVE_CONFIRMATION_REQUIRED');
   else if (report.blockers.length === 0 && !liveRequest) {
     report.blockers.push(typeof liveRequestError === 'string' && liveRequestError
       ? liveRequestError
@@ -739,7 +735,7 @@ export async function runRequirementExtractionLive({
     } catch (error) {
       live = safeLiveResult({
         executed: true,
-        request_count: 0,
+        provider_request_count: 0,
         technical_error_code: error?.code || 'PROVIDER_OUTPUT_INVALID',
         schema_pass: false,
         backend_ingestion_pass: false

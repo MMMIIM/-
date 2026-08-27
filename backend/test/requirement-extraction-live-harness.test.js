@@ -84,7 +84,7 @@ test('missing live payload is rejected without an executor call', async () => {
   let calls = 0;
   const result = await runRequirementExtractionLive({
     env,
-    confirmOneLiveCall: true,
+    confirmLiveRun: true,
     gitInfo: { branch: 'feat/v4.3-semantic-boundary-routing', revision: 'test', tracked_clean: true },
     fetchImpl: healthyFetch,
     liveExecutor: async () => { calls += 1; return {}; },
@@ -133,7 +133,6 @@ test('multi-chunk executor uses bounded concurrency and resolves each candidate 
   assert.equal(result.verification_run_count, 1);
   assert.equal(result.production_chunk_count, liveRequest.chunkCount);
   assert.equal(result.provider_request_count, liveRequest.chunkCount);
-  assert.equal(result.request_count, liveRequest.chunkCount);
   assert.equal(result.concurrency_limit, 2);
   assert.ok(maximumActive <= 2);
   assert.deepEqual([...seenChunks].sort((a, b) => a - b), Array.from({ length: liveRequest.chunkCount }, (_, i) => i + 1));
@@ -243,13 +242,13 @@ test('live report retains only safe booleans/counts and never source or model te
 test('source resolution failure is surfaced as BLOCKED with no retry or fallback', async () => {
   const result = await runRequirementExtractionLive({
     env,
-    confirmOneLiveCall: true,
+    confirmLiveRun: true,
     liveRequest: { text: 'synthetic' },
     gitInfo: { branch: 'feat/v4.3-semantic-boundary-routing', revision: 'test', tracked_clean: true },
     fetchImpl: healthyFetch,
     liveExecutor: async () => ({
       executed: true,
-      request_count: 1,
+      provider_request_count: 1,
       retry_count: 0,
       fallback_count: 0,
       provider_chain_verified: true,

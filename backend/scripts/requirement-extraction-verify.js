@@ -80,7 +80,7 @@ async function main() {
     }
     result = await runRequirementExtractionLive({
       ...common,
-      confirmOneLiveCall: hasFlag('--confirm-one-live-call'),
+      confirmLiveRun: hasFlag('--confirm-live-run'),
       liveRequest,
       liveRequestError
     });

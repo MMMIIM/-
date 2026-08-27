@@ -13,7 +13,10 @@ import {
 } from '../src/verification/requirement-extraction-verifier.js';
 import { createRequirementExtractionGateway } from '../src/pipeline/requirement-extraction.js';
 import { getSemanticTaskContract } from '../../packages/semantic-contracts/index.js';
-import { sanitizeVerificationReport } from '../src/verification/requirement-extraction-report.js';
+import {
+  VERIFICATION_REPORT_SCHEMA_VERSION,
+  sanitizeVerificationReport
+} from '../src/verification/requirement-extraction-report.js';
 
 const env = {
   SEMANTIC_GATEWAY_PROVIDER: 'openai_compatible',
@@ -92,7 +95,7 @@ test('doctor reports contract, revision, provider and routing blockers without c
     gitInfo: gitInfo(),
     writeReport: false
   });
-  assert.equal(unavailable.report.live.request_count, 0);
+  assert.equal(unavailable.report.live.provider_request_count, 0);
 });
 
 test('missing observed Candidate schema identity cannot fall back to the expected value', async () => {
@@ -178,7 +181,7 @@ test('live requires explicit confirmation and hard preflight before any executor
     env,
     fetchImpl: healthyFetch(),
     gitInfo: gitInfo(),
-    liveExecutor: async () => { calls += 1; return { executed: true, request_count: 1, schema_pass: true, backend_ingestion_pass: true }; },
+    liveExecutor: async () => { calls += 1; return { executed: true, provider_request_count: 1, schema_pass: true, backend_ingestion_pass: true }; },
     writeReport: false
   });
   assert.equal(noConfirmation.ok, false);
@@ -186,13 +189,26 @@ test('live requires explicit confirmation and hard preflight before any executor
   assert.ok(noConfirmation.report.blockers.includes('LIVE_CONFIRMATION_REQUIRED'));
   assert.equal(calls, 0);
 
+  const legacyConfirmation = await runRequirementExtractionLive({
+    env,
+    fetchImpl: healthyFetch(),
+    gitInfo: gitInfo(),
+    confirmOneLiveCall: true,
+    liveRequest: { text: 'synthetic' },
+    liveExecutor: async () => { calls += 1; return { executed: true, provider_request_count: 1, schema_pass: true, backend_ingestion_pass: true }; },
+    writeReport: false
+  });
+  assert.equal(legacyConfirmation.ok, false);
+  assert.ok(legacyConfirmation.report.blockers.includes('LIVE_CONFIRMATION_REQUIRED'));
+  assert.equal(calls, 0);
+
   const preflight = await runRequirementExtractionLive({
     env,
     fetchImpl: healthyFetch({ info: { requirement_extraction_prompt_hash: 'stale' } }),
     gitInfo: gitInfo(),
-    confirmOneLiveCall: true,
+    confirmLiveRun: true,
     liveRequest: { text: 'synthetic' },
-    liveExecutor: async () => { calls += 1; return { executed: true, request_count: 1, schema_pass: true, backend_ingestion_pass: true }; },
+    liveExecutor: async () => { calls += 1; return { executed: true, provider_request_count: 1, schema_pass: true, backend_ingestion_pass: true }; },
     writeReport: false
   });
   assert.equal(preflight.ok, false);
@@ -206,13 +222,13 @@ test('mock live pass and failures preserve one-call/no-retry/fallback invariants
     env,
     fetchImpl: healthyFetch(),
     gitInfo: gitInfo(),
-    confirmOneLiveCall: true,
+    confirmLiveRun: true,
     liveRequest,
     liveExecutor: async () => {
       calls += 1;
       return {
         executed: true,
-        request_count: 1,
+        provider_request_count: 1,
         provider_adapter_invoked: true,
         fetch_invoked: true,
         provider_http_reached: true,
@@ -234,15 +250,15 @@ test('mock live pass and failures preserve one-call/no-retry/fallback invariants
     env,
     fetchImpl: healthyFetch(),
     gitInfo: gitInfo(),
-    confirmOneLiveCall: true,
+    confirmLiveRun: true,
     liveRequest,
-    liveExecutor: async () => { calls += 1; return { executed: true, request_count: 1, technical_error_code: 'PROVIDER_UNAVAILABLE', schema_pass: false, backend_ingestion_pass: false }; },
+    liveExecutor: async () => { calls += 1; return { executed: true, provider_request_count: 1, technical_error_code: 'PROVIDER_UNAVAILABLE', schema_pass: false, backend_ingestion_pass: false }; },
     writeReport: false
   });
   assert.equal(network.ok, false);
   assert.equal(network.report.verdict, 'BLOCKED');
   assert.equal(calls, 2);
-  assert.equal(network.report.live.request_count, 1);
+  assert.equal(network.report.live.provider_request_count, 1);
   assert.ok(network.report.blockers.includes('PROVIDER_UNAVAILABLE'));
 });
 
@@ -269,11 +285,11 @@ test('live success requires provider-chain diagnostics and uses the production c
     env,
     fetchImpl: healthyFetch(),
     gitInfo: gitInfo(),
-    confirmOneLiveCall: true,
+    confirmLiveRun: true,
     liveRequest: { text: 'synthetic' },
     liveExecutor: async () => {
       calls += 1;
-      return { executed: true, request_count: 1, schema_pass: true, backend_ingestion_pass: true };
+      return { executed: true, provider_request_count: 1, schema_pass: true, backend_ingestion_pass: true };
     },
     writeReport: false
   });
@@ -285,11 +301,11 @@ test('live success requires provider-chain diagnostics and uses the production c
     env,
     fetchImpl: healthyFetch(),
     gitInfo: gitInfo(),
-    confirmOneLiveCall: true,
+    confirmLiveRun: true,
     liveRequest: { text: 'synthetic' },
     liveExecutor: async () => ({
       executed: true,
-      request_count: 1,
+      provider_request_count: 1,
       provider_chain_verified: true,
       schema_pass: true,
       backend_ingestion_pass: false,
@@ -314,9 +330,9 @@ test('422 probe diagnostics are retained only as safe structural metadata', asyn
     env,
     fetchImpl: healthyFetch(),
     gitInfo: gitInfo(),
-    confirmOneLiveCall: true,
+    confirmLiveRun: true,
     liveRequest: { text: 'synthetic' },
-    liveExecutor: async () => { calls += 1; return { executed: true, request_count: 1, technical_error_code: 'OUTPUT_SCHEMA_INVALID', schema_pass: false, backend_ingestion_pass: false, diagnostics }; },
+    liveExecutor: async () => { calls += 1; return { executed: true, provider_request_count: 1, technical_error_code: 'OUTPUT_SCHEMA_INVALID', schema_pass: false, backend_ingestion_pass: false, diagnostics }; },
     writeReport: false
   });
   const serialized = JSON.stringify(report.report);
@@ -343,6 +359,71 @@ test('report sanitizer omits secret/content-bearing fields while retaining safe 
   assert.equal(Object.hasOwn(sanitized, 'parsed_json'), false);
   assert.deepEqual(sanitized.keys, ['text', 'source_text']);
   assert.equal(sanitized.category, 'technical');
+});
+
+test('Requirement Extraction verification contract uses canonical names only', async () => {
+  const result = await runRequirementExtractionLive({
+    env,
+    confirmLiveRun: true,
+    gitInfo: gitInfo(),
+    liveRequest: { text: 'synthetic' },
+    liveExecutor: async () => ({
+      executed: true,
+      provider_request_count: 1,
+      schema_pass: true,
+      backend_ingestion_pass: true,
+      provider_chain_verified: true
+    }),
+    writeReport: false
+  });
+  assert.equal(VERIFICATION_REPORT_SCHEMA_VERSION, 'requirement-extraction-verification-report-v2');
+  assert.equal(result.ok, true);
+  assert.equal(result.report.live.provider_request_count, 1);
+  assert.equal(Object.hasOwn(result.report.live, 'request_count'), false);
+});
+
+test('legacy live confirmation identifiers are absent from active verification surfaces', () => {
+  const activeSurfaces = [
+    '../src/verification/requirement-extraction-verifier.js',
+    '../scripts/requirement-extraction-verify.js',
+    '../src/verification/requirement-extraction-report.js'
+  ];
+  for (const relativePath of activeSurfaces) {
+    const source = readFileSync(new URL(relativePath, import.meta.url), 'utf8');
+    assert.doesNotMatch(source, /confirmOneLiveCall/);
+    assert.doesNotMatch(source, /--confirm-one-live-call/);
+    assert.doesNotMatch(source, /\brequest_count\b/);
+  }
+  const cliSource = readFileSync(new URL('../scripts/requirement-extraction-verify.js', import.meta.url), 'utf8');
+  assert.match(cliSource, /--confirm-live-run/);
+});
+
+test('live input derives chunk budget from the production resolver only', () => {
+  const source = readFileSync(new URL('../src/verification/requirement-extraction-live-input.js', import.meta.url), 'utf8');
+  assert.match(source, /resolveRequirementChunkBudget/);
+  assert.doesNotMatch(source, /SINGLE_CALL_THRESHOLD|CHARACTER_BUDGET|TOKEN_BUDGET/);
+  assert.doesNotMatch(source, /\b3000\b/);
+});
+
+test('legacy request_count input cannot authorize or populate the live report', async () => {
+  const result = await runRequirementExtractionLive({
+    env,
+    confirmLiveRun: true,
+    gitInfo: gitInfo(),
+    liveRequest: { text: 'synthetic' },
+    liveExecutor: async () => ({
+      executed: true,
+      request_count: 1,
+      schema_pass: true,
+      backend_ingestion_pass: true,
+      provider_chain_verified: true
+    }),
+    writeReport: false
+  });
+  assert.equal(result.ok, false);
+  assert.equal(result.report.live.provider_request_count, 0);
+  assert.equal(Object.hasOwn(result.report.live, 'request_count'), false);
+  assert.ok(result.report.blockers.includes('DIAGNOSTIC_INSUFFICIENT'));
 });
 
 test('frozen prompt and candidate schema identities remain exact', () => {

@@ -2,7 +2,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-export const VERIFICATION_REPORT_SCHEMA_VERSION = 'requirement-extraction-verification-report-v1';
+export const VERIFICATION_REPORT_SCHEMA_VERSION = 'requirement-extraction-verification-report-v2';
 
 const moduleDirectory = dirname(fileURLToPath(import.meta.url));
 export const DEFAULT_REQUIREMENT_EXTRACTION_REPORT_PATH = resolve(
