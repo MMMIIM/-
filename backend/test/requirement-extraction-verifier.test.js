@@ -367,6 +367,7 @@ test('Requirement Extraction verification contract uses canonical names only', a
     confirmLiveRun: true,
     gitInfo: gitInfo(),
     liveRequest: { text: 'synthetic' },
+    fetchImpl: healthyFetch(),
     liveExecutor: async () => ({
       executed: true,
       provider_request_count: 1,
@@ -402,7 +403,7 @@ test('live input derives chunk budget from the production resolver only', () => 
   const source = readFileSync(new URL('../src/verification/requirement-extraction-live-input.js', import.meta.url), 'utf8');
   assert.match(source, /resolveRequirementChunkBudget/);
   assert.doesNotMatch(source, /SINGLE_CALL_THRESHOLD|CHARACTER_BUDGET|TOKEN_BUDGET/);
-  assert.doesNotMatch(source, /\b3000\b/);
+  assert.doesNotMatch(source, /\b(?:2000|3000|50)\b/);
 });
 
 test('legacy request_count input cannot authorize or populate the live report', async () => {
@@ -411,6 +412,7 @@ test('legacy request_count input cannot authorize or populate the live report', 
     confirmLiveRun: true,
     gitInfo: gitInfo(),
     liveRequest: { text: 'synthetic' },
+    fetchImpl: healthyFetch(),
     liveExecutor: async () => ({
       executed: true,
       request_count: 1,

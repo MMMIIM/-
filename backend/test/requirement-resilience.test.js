@@ -288,7 +288,7 @@ test('解析 API 默认立即返回 running，后台任务由调度器接管', a
   assert.equal(repository.state.completedJob, null);
 });
 
-test('5,610 中文字符与 134 段仍只形成一个 chunk', () => {
+test('5,610 中文字符与 134 段按来源段预算形成稳定分片', () => {
   const paragraphTexts = [
     ...Array.from({ length: 133 }, () => '中'.repeat(40)),
     '中'.repeat(157)
@@ -302,8 +302,9 @@ test('5,610 中文字符与 134 段仍只形成一个 chunk', () => {
     characterBudget: 8000,
     tokenBudget: 8000
   });
-  assert.equal(chunks.length, 1);
-  assert.equal(chunks[0].character_count, 5610);
+  assert.equal(chunks.length, 3);
+  assert.ok(chunks.every((chunk) => chunk.character_count <= 8000));
+  assert.ok(chunks.every((chunk) => chunk.segments.length <= 50));
 });
 
 test('超过 8,000 字符才启用 8,000 字符确定性分片', () => {
@@ -341,7 +342,7 @@ test('requirement_extraction 默认 300 秒、healthcheck 15 秒且配置传入 
   assert.deepEqual(resolveRequirementChunkBudget({
     REQUIREMENT_SINGLE_CALL_CHAR_THRESHOLD: '8000',
     REQUIREMENT_CHUNK_CHAR_BUDGET: '8000', REQUIREMENT_CHUNK_TOKEN_BUDGET: '8000'
-  }), { singleCallThreshold: 8000, characterBudget: 8000, tokenBudget: 8000 });
+  }), { singleCallThreshold: 8000, characterBudget: 8000, tokenBudget: 8000, sourceSpanBudget: 50 });
 });
 
 test('数据库任务领取锁保证同一 job/chunk 不会被重复调用', async () => {

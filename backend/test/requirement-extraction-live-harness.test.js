@@ -4,6 +4,10 @@ import {
   buildRequirementExtractionLiveRequest
 } from '../src/verification/requirement-extraction-live-input.js';
 import {
+  chunkExtractedText,
+  resolveRequirementChunkBudget
+} from '../src/pipeline/requirement-chunker.js';
+import {
   defaultLiveExecutor,
   FROZEN_REQUIREMENT_EXTRACTION_PROMPT_HASH,
   FROZEN_REQUIREMENT_CANDIDATE_SCHEMA_HASH,
@@ -26,7 +30,7 @@ function gatewayResponse(candidate, diagnosticOverrides = {}) {
     data: {
       outputs: {
         response_payload_json: JSON.stringify({
-          schema_version: '4.3-requirement-extraction-v2.1',
+          schema_version: '4.3-requirement-extraction-v2.2',
           task_type: 'requirement_extraction',
           status: 'success',
           data: { requirements: [candidate] },
@@ -62,7 +66,7 @@ function healthyFetch(url) {
   if (url.endsWith('/info')) return new Response(JSON.stringify({
     service: 'semantic-gateway', task_registry_loaded: true,
     task_types: ['requirement_extraction'],
-    requirement_extraction_contract_version: '4.3-requirement-extraction-v2.1',
+    requirement_extraction_contract_version: '4.3-requirement-extraction-v2.2',
     requirement_extraction_prompt_hash: FROZEN_REQUIREMENT_EXTRACTION_PROMPT_HASH,
     candidate_schema_contract_version: '4.3-requirement-candidate-v2',
     candidate_schema_sha256: FROZEN_REQUIREMENT_CANDIDATE_SCHEMA_HASH
@@ -103,13 +107,25 @@ test('raw FAST-01-like input uses the production multi-chunk budget and preserve
   assert.deepEqual(repeated.chunks, request.chunks);
   assert.equal(request.chunk, null);
   assert.equal(request.chunks.length, request.chunkCount);
-  assert.ok(request.chunks.every((chunk) => chunk.character_count <= 3_000));
+  assert.ok(request.chunks.every((chunk) => chunk.character_count <= 2_000));
+  assert.ok(request.chunks.every((chunk) => chunk.segments.length <= 50));
   const refs = request.chunks.flatMap((chunk) => chunk.segments.map((segment) => segment.source_ref));
   assert.equal(refs.length, 255);
   assert.equal(new Set(refs).size, refs.length);
   assert.deepEqual(refs.slice(0, 3), ['C001-S001', 'C001-S002', 'C001-S003']);
   assert.equal(refs.at(-1), `C${String(request.chunkCount).padStart(3, '0')}-S${String(request.chunks.at(-1).segments.length).padStart(3, '0')}`);
   assert.match(request.chunks[0].model_text, /^\[C001-S001\] /);
+});
+
+test('live harness chunk output is identical to the production chunker for the same window', () => {
+  const text = Array.from({ length: 255 }, (_, index) => `第${index + 1}条${'中'.repeat(15)}`).join('\n');
+  const request = buildRequirementExtractionLiveRequest({ text });
+  const productionChunks = chunkExtractedText({
+    text,
+    paragraphs: request.paragraphs,
+    ...resolveRequirementChunkBudget({})
+  });
+  assert.deepEqual(request.chunks, productionChunks);
 });
 
 test('multi-chunk executor uses bounded concurrency and resolves each candidate in its own chunk', async () => {

@@ -105,6 +105,14 @@ export const SEMANTIC_TASK_INSTRUCTIONS = Object.freeze({
     '',
     '不得增加其他字段。',
     '',
+    '【候选真实性】',
+    '只返回实际识别出的 Requirement，不得生成占位 Candidate 对象。',
+    'Candidate 的 text 必须是非空、非空白的 Requirement 陈述。',
+    '没有 Requirement 的来源段落不得生成 Candidate。',
+    '候选数量不必等于来源段落数量。',
+    '不得用空 Candidate 表示已检查的段落。',
+    '一个来源段落可以支持零条、一条或多条独立 Requirement。',
+    '',
     '【字段规则】',
     '',
     'text：',
@@ -226,7 +234,7 @@ export const REQUIREMENT_CANDIDATE_SCHEMA_SHA256 = sha256(JSON.stringify(REQUIRE
 export const SEMANTIC_TASK_CONTRACTS = Object.freeze({
   requirement_extraction: Object.freeze({
     task_type: 'requirement_extraction',
-    contract_version: '4.3-requirement-extraction-v2.1',
+    contract_version: '4.3-requirement-extraction-v2.2',
     instruction_hash: instructionHash('requirement_extraction'),
     data_required: Object.freeze(['requirements']),
     data_allowed: Object.freeze(['requirements']),

@@ -1,12 +1,91 @@
 import { buildCanonicalRequirements } from './canonical-requirements.js';
 
-const DEFAULT_SINGLE_CALL_THRESHOLD = 3_000;
-const DEFAULT_CHARACTER_BUDGET = 3_000;
+const DEFAULT_SINGLE_CALL_THRESHOLD = 2_000;
+const DEFAULT_CHARACTER_BUDGET = 2_000;
 const DEFAULT_TOKEN_BUDGET = 8_000;
+const DEFAULT_SOURCE_SPAN_BUDGET = 50;
+const MAX_BOUNDARY_LOOKBACK = 64;
 
 function positiveInteger(value, fallback) {
   const parsed = Number(value);
   return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+const CHILD_ENUMERATION_PATTERN = /^(?:[（(]\s*[一二三四五六七八九十百千万\d]+\s*[)）]|[一二三四五六七八九十百千万]+[、.．]|\d+[、.)．])/;
+const INDEPENDENT_CLAUSE_PATTERN = /^(?:#{1,6}\s+|第[一二三四五六七八九十百千万\d]+[章节部分]|\d+(?:\.\d+){0,3}[、.．\s]|[一二三四五六七八九十百千万]+、)/;
+
+function isParentEnumerationIntro(text) {
+  return /[：:]\s*$/.test(String(text || '').trim());
+}
+
+function isNumberedChild(text) {
+  return CHILD_ENUMERATION_PATTERN.test(String(text || '').trim());
+}
+
+function isIndependentNumberedClause(text) {
+  const value = String(text || '').trim();
+  // PDF extractors commonly expose page counters as standalone spans such as
+  // "18 / 56". They are not section boundaries or response obligations.
+  if (/^\d+\s*\/\s*\d+$/.test(value)) return false;
+  return INDEPENDENT_CLAUSE_PATTERN.test(value);
+}
+
+function isClearlyHighLevelClause(text) {
+  const value = String(text || '').trim();
+  return /^(?:#{1,6}\s+|第[一二三四五六七八九十百千万\d]+[章节部分]|[一二三四五六七八九十百千万]+、|\d+(?:\.\d+){1,3}[、.．\s])/.test(value);
+}
+
+function isCompleteStatement(text) {
+  return /[。！？；;.!?》）)】]$/.test(String(text || '').trim());
+}
+
+/**
+ * Classify the boundary between two source spans without consulting a model.
+ * The result is intentionally small and deterministic so packing policy can
+ * be tested independently from chunk construction.
+ */
+export function classifyBoundary(previousUnit, nextUnit) {
+  const previous = previousUnit || {};
+  const next = nextUnit || {};
+  const sameClause = previous.source_clause_id != null
+    && next.source_clause_id != null
+    && String(previous.source_clause_id) === String(next.source_clause_id);
+
+  if (isParentEnumerationIntro(previous.text) && isNumberedChild(next.text)) {
+    return { classification: 'UNSAFE', reason: 'PARENT_ENUMERATION' };
+  }
+  if (sameClause) {
+    return { classification: 'UNSAFE', reason: 'SAME_SOURCE_CLAUSE' };
+  }
+
+  if (previous.source_section != null && next.source_section != null
+    && String(previous.source_section) !== String(next.source_section)) {
+    return { classification: 'STRONG', reason: 'SOURCE_SECTION_CHANGE' };
+  }
+  if (previous.source_clause_id != null && next.source_clause_id != null
+    && String(previous.source_clause_id) !== String(next.source_clause_id)) {
+    return { classification: 'STRONG', reason: 'SOURCE_CLAUSE_CHANGE' };
+  }
+  const pageChanged = Number.isInteger(previous.page) && Number.isInteger(next.page)
+    && previous.page !== next.page;
+  const nextIsIndependent = isIndependentNumberedClause(next.text);
+  if (pageChanged && isCompleteStatement(previous.text) && nextIsIndependent) {
+    return { classification: 'MEDIUM', reason: 'PAGE_AND_INDEPENDENT_CLAUSE' };
+  }
+  // An unannotated numeric heading is strong only after a completed unit.
+  // This avoids treating every numbered list line in dense extracted text as
+  // an independent chapter while still recognizing a clear new heading.
+  if (isClearlyHighLevelClause(next.text) && isCompleteStatement(previous.text)) {
+    return { classification: 'STRONG', reason: 'INDEPENDENT_CLAUSE' };
+  }
+  if (isCompleteStatement(previous.text) && nextIsIndependent) {
+    return { classification: 'MEDIUM', reason: 'INDEPENDENT_CLAUSE_AFTER_COMPLETE' };
+  }
+  if (pageChanged && isCompleteStatement(previous.text)) {
+    return { classification: 'MEDIUM', reason: 'PAGE_AFTER_COMPLETE' };
+  }
+  if (pageChanged) return { classification: 'UNSAFE', reason: 'PAGE_CONTINUATION' };
+  return { classification: 'UNSAFE', reason: 'CONTINUATION' };
 }
 
 export function resolveRequirementChunkBudget(env = {}) {
@@ -16,7 +95,8 @@ export function resolveRequirementChunkBudget(env = {}) {
       DEFAULT_SINGLE_CALL_THRESHOLD
     ),
     characterBudget: positiveInteger(env.REQUIREMENT_CHUNK_CHAR_BUDGET, DEFAULT_CHARACTER_BUDGET),
-    tokenBudget: positiveInteger(env.REQUIREMENT_CHUNK_TOKEN_BUDGET, DEFAULT_TOKEN_BUDGET)
+    tokenBudget: positiveInteger(env.REQUIREMENT_CHUNK_TOKEN_BUDGET, DEFAULT_TOKEN_BUDGET),
+    sourceSpanBudget: positiveInteger(env.REQUIREMENT_CHUNK_SOURCE_SPAN_BUDGET, DEFAULT_SOURCE_SPAN_BUDGET)
   });
 }
 
@@ -32,6 +112,7 @@ export function estimateTokenCount(text) {
 export function isTitleBoundary(text) {
   const value = String(text || '').trim();
   if (!value || value.length > 80) return false;
+  if (/^\d+\s*\/\s*\d+$/.test(value)) return false;
   return /^(?:#{1,6}\s+|第[一二三四五六七八九十百\d]+[章节部分]|[一二三四五六七八九十]+[、.．]|[（(]\s*[一二三四五六七八九十\d]+\s*[)）]|\d+(?:\.\d+){0,3}[、.．\s])/.test(value);
 }
 
@@ -97,51 +178,110 @@ function buildChunk(units, chunkNumber) {
   };
 }
 
+function chunkText(units) {
+  return units.map((unit) => unit.text).join('\n');
+}
+
+function exceedsBudget(units, characterBudget, tokenBudget, sourceSpanBudget) {
+  if (!units.length) return false;
+  const text = chunkText(units);
+  return text.length > characterBudget
+    || estimateTokenCount(text) > tokenBudget
+    || units.length > sourceSpanBudget;
+}
+
+function meaningfulChunk(units, characterBudget) {
+  const textLength = chunkText(units).length;
+  return textLength >= Math.min(300, Math.max(40, Math.floor(characterBudget * 0.15)));
+}
+
+/**
+ * Find a bounded, safe lookback cut. Semantic boundaries are remembered as
+ * possible cut locations while a window is packed. When hard-budget pressure
+ * arrives, the nearest suitable STRONG boundary wins over every MEDIUM
+ * boundary; MEDIUM is considered only when no suitable STRONG cut exists.
+ * The caller falls back to an atomic paragraph cut when null.
+ */
+function findSafeBoundary(units, characterBudget, tokenBudget, sourceSpanBudget) {
+  const lookback = Math.min(MAX_BOUNDARY_LOOKBACK, Math.max(2, sourceSpanBudget));
+  const firstIndex = Math.max(1, units.length - lookback);
+  const suitable = (index, classification) => {
+    const boundary = classifyBoundary(units[index - 1], units[index]);
+    if (boundary.classification !== classification) return false;
+    const prefix = units.slice(0, index);
+    if (!meaningfulChunk(prefix, characterBudget) && prefix.length < 3) return false;
+    return !exceedsBudget(prefix, characterBudget, tokenBudget, sourceSpanBudget);
+  };
+  for (const classification of ['STRONG', 'MEDIUM']) {
+    for (let index = units.length - 1; index >= firstIndex; index -= 1) {
+      if (suitable(index, classification)) return index;
+    }
+  }
+  return null;
+}
+
 export function chunkExtractedText({
   text,
   paragraphs,
   singleCallThreshold,
   characterBudget,
-  tokenBudget
+  tokenBudget,
+  sourceSpanBudget
 }) {
   const content = String(text || '');
   const singleCallLimit = positiveInteger(singleCallThreshold, DEFAULT_SINGLE_CALL_THRESHOLD);
   const charLimit = positiveInteger(characterBudget, DEFAULT_CHARACTER_BUDGET);
   const tokenLimit = positiveInteger(tokenBudget, DEFAULT_TOKEN_BUDGET);
+  const spanLimit = positiveInteger(sourceSpanBudget, DEFAULT_SOURCE_SPAN_BUDGET);
   const located = locateParagraphs(content, Array.isArray(paragraphs) ? paragraphs : []);
   if (!located.length) throw Object.assign(new Error('提取文本没有可分片段落。'), { code: 'REQUIREMENT_CHUNKING_FAILED' });
   // A single request must satisfy both the character and token hard caps.
   // When either limit is exceeded, use the same paragraph-aware splitter as
-  // large documents rather than allowing an oversized one-shot request.
+  // large documents rather than allowing an oversized one-shot request. A
+  // semantic boundary alone is not a reason to fragment an otherwise fitting
+  // request; it is retained as a possible late cut if a hard budget is hit.
   if (content.length <= singleCallLimit
     && content.length <= charLimit
-    && estimateTokenCount(content) <= tokenLimit) {
+    && estimateTokenCount(content) <= tokenLimit
+    && located.length <= spanLimit) {
     return [buildChunk(located, 1)];
   }
   const units = located.map((unit) => assertSourceSpanFitsBudget(unit, charLimit, tokenLimit));
   const chunks = [];
   let current = [];
-  const flush = () => {
-    if (!current.length) return;
-    chunks.push(buildChunk(current, chunks.length + 1));
+  const flush = (units = current) => {
+    if (!units.length) return;
+    chunks.push(buildChunk(units, chunks.length + 1));
+  };
+  const reset = () => {
     current = [];
   };
+  const flushCurrent = () => {
+    if (!current.length) return;
+    flush(current);
+    reset();
+  };
   for (const unit of units) {
-    const currentText = current.map((item) => item.text).join('\n');
-    const titleBoundary = unit.starts_at_title_boundary
-      && currentText.length >= Math.floor(charLimit * 0.75);
-    const previousPage = current.at(-1)?.page;
-    const pageBoundary = current.length
-      && Number.isInteger(unit.page)
-      && Number.isInteger(previousPage)
-      && unit.page !== previousPage
-      && currentText.length >= Math.floor(charLimit * 0.85);
-    if (titleBoundary || pageBoundary) flush();
-    const candidateText = [...current.map((item) => item.text), unit.text].join('\n');
-    if (current.length && (candidateText.length > charLimit || estimateTokenCount(candidateText) > tokenLimit)) flush();
+    // Keep packing across safe boundaries. `findSafeBoundary` evaluates these
+    // candidate locations only when the next append puts the window over a
+    // hard budget, so independent sections can share one model request.
     current.push(unit);
+    while (exceedsBudget(current, charLimit, tokenLimit, spanLimit)) {
+      const cut = findSafeBoundary(current, charLimit, tokenLimit, spanLimit);
+      if (cut != null) {
+        flush(current.slice(0, cut));
+        current = current.slice(cut);
+        continue;
+      }
+      // No safe semantic boundary exists in the bounded lookback window.
+      // Preserve the existing atomic source-span fallback and never cut text.
+      const last = current.pop();
+      flushCurrent();
+      current = [last];
+      break;
+    }
   }
-  flush();
+  flushCurrent();
   return chunks;
 }
 

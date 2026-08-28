@@ -174,7 +174,8 @@ export class RequirementParseService {
         paragraphs: extractionScope.paragraphs,
         singleCallThreshold: this.chunkBudget.singleCallThreshold,
         characterBudget: this.chunkBudget.characterBudget,
-        tokenBudget: this.chunkBudget.tokenBudget
+        tokenBudget: this.chunkBudget.tokenBudget,
+        sourceSpanBudget: this.chunkBudget.sourceSpanBudget
       }).map((chunk) => ({ ...chunk, content_sha256: sha256(chunk.text) }));
       const persistedChunks = await this.repository.initializeParseChunks(job.id, chunks);
       if (Array.isArray(persistedChunks)) {
@@ -279,6 +280,7 @@ export class RequirementParseService {
           single_call_threshold: this.chunkBudget.singleCallThreshold,
           character_budget: this.chunkBudget.characterBudget,
           token_budget: this.chunkBudget.tokenBudget,
+          source_span_budget: this.chunkBudget.sourceSpanBudget,
           empty_chunk_count: chunkResults.filter((result) => result.candidates.length === 0).length,
           requirement_count: candidates.length,
           canonicalization_audit: candidates.audit

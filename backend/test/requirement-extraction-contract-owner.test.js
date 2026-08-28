@@ -52,6 +52,19 @@ test('Requirement Extraction prompt requires a complete requirements-only top-le
   assert.match(instruction, /所有明确存在且符合提取范围的独立响应义务都应进入 requirements/);
 });
 
+test('Requirement Extraction v2.2 prompt forbids placeholder candidates', () => {
+  const contract = getSemanticTaskContract('requirement_extraction');
+  const instruction = resolveSemanticTaskInstruction('requirement_extraction');
+  assert.equal(contract.contract_version, '4.3-requirement-extraction-v2.2');
+  assert.match(instruction, /只返回实际识别出的 Requirement/);
+  assert.match(instruction, /不得生成占位 Candidate/);
+  assert.match(instruction, /text 必须是非空/);
+  assert.match(instruction, /没有 Requirement 的来源段落不得生成 Candidate/);
+  assert.match(instruction, /候选数量不必等于来源段落数量/);
+  assert.match(instruction, /不得用空 Candidate 表示已检查的段落/);
+  assert.match(instruction, /一个来源段落可以支持零条、一条或多条独立 Requirement/);
+});
+
 test('Gateway Task Router resolves the canonical instruction and emits contract metadata', async () => {
   let invocation;
   const router = createSemanticTaskRouter({
@@ -83,6 +96,8 @@ test('Requirement Extraction shared validator enforces the five-field Candidate 
     { ...candidate, mandatory_observed: 'true' },
     { ...candidate, requires_confirmation: 0 },
     { ...candidate, category: 'not-a-category' },
+    { ...candidate, text: '' },
+    { ...candidate, text: '   ' },
     { ...candidate, source_refs: [] },
     (() => { const copy = { ...candidate }; delete copy.source_refs; return copy; })()
   ]) {

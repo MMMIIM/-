@@ -51,7 +51,7 @@ test('找不到第四章标题时使用受控全文回退并产生 warning', () 
   assert.equal(analysis.warnings[0].code, 'TECHNICAL_SECTION_FALLBACK');
 });
 
-test('约46k字符短段落按累计预算分片，不产生数百个微型 chunk', () => {
+test('约46k字符短段落同时受字符与来源段预算约束，不产生微型 chunk', () => {
   const values = Array.from({ length: 1400 }, (_, index) => (
     `${Math.floor(index / 20) + 1}.${(index % 20) + 1} ${'技术要求与验收说明'.repeat(3)}`
   ));
@@ -60,8 +60,8 @@ test('约46k字符短段落按累计预算分片，不产生数百个微型 chun
   const chunks = chunkExtractedText({
     ...extraction, singleCallThreshold: 8000, characterBudget: 8000, tokenBudget: 8000
   });
-  assert.ok(chunks.length <= 15);
-  assert.ok(chunks.length >= 6);
+  assert.equal(chunks.length, 28);
+  assert.ok(chunks.every((chunk) => chunk.segments.length <= 50));
   assert.ok(chunks.every((chunk) => chunk.character_count > 1000));
 });
 
@@ -99,7 +99,7 @@ test('章节级 mandatory scope 传播到第四章候选但排除5.2.6', () => {
 test('网关 requirements 空数组是合法成功，非数组和多余字段仍失败', () => {
   const result = validateRequirementExtractionEnvelope({
     envelope: {
-      schema_version: '4.3-requirement-extraction-v2.1', task_type: 'requirement_extraction',
+      schema_version: '4.3-requirement-extraction-v2.2', task_type: 'requirement_extraction',
       status: 'success', data: { requirements: [] }, warnings: []
     },
     audit: { provider: 'semantic_gateway' }
@@ -108,7 +108,7 @@ test('网关 requirements 空数组是合法成功，非数组和多余字段仍
   for (const data of [{ requirements: 'invalid' }, { requirements: [], extra: true }, {}]) {
     assert.throws(() => validateRequirementExtractionEnvelope({
       envelope: {
-      schema_version: '4.3-requirement-extraction-v2.1', task_type: 'requirement_extraction',
+      schema_version: '4.3-requirement-extraction-v2.2', task_type: 'requirement_extraction',
         status: 'success', data, warnings: []
       }, audit: {}
     }), (error) => error.code === 'GATEWAY_REQUIREMENTS_INVALID');
