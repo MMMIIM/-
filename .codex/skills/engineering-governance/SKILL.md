@@ -1,64 +1,44 @@
 ---
 name: engineering-governance
-description: Review risky engineering changes at implementation and completion checkpoints without supervising ordinary local work.
+description: Use when a change touches shared concepts, authorities, contracts, production/eval parity, runtime identity, migrations, compatibility paths, or other cross-boundary behavior that may drift.
 metadata:
-  short-description: Checkpoint governance for risky changes
+  short-description: Low-interference anti-drift checkpoints
 ---
 
 # Engineering Governance
 
-Use this skill as a checkpoint reviewer, not as a continuous supervisor.
+Use this as a checkpoint, not a continuous supervisor.
 
 ## Routing
 
-- GREEN: ordinary, local, low-risk edits. Skip governance and proceed normally.
-- YELLOW: API, schema, prompt contract, database, gateway, module boundary,
-  concurrency, dependency, or similar interface/runtime changes. Run a focused
-  FAST CHECK before implementation and a COMPLETION CHECK before handoff.
-- RED: architecture, migrations, hard contract cuts, security, production
-  deploy/restart, or destructive data changes. Use the applicable plan,
-  pre-merge, and runtime gates; stop when authority or evidence is missing.
+- **GREEN** — local implementation detail with no shared meaning, boundary, or runtime impact: skip governance and proceed normally.
+- **YELLOW** — API/schema/prompt/eval/gateway/module boundary, duplicated transformation, concurrency, dependency, compatibility, or runtime-facing change: run the fast check.
+- **RED** — canonical authority/identity, persistence, migration, security, destructive action, production contract cut, deploy/restart: stop if ownership or required evidence is unclear.
 
-Classify the change by its highest-risk affected surface. Do not escalate a
-task merely because the repository contains a related high-risk subsystem.
+Classify only the surfaces actually changed. Do not scan unrelated subsystems.
 
-## Focused checks
+## Fast anti-drift check
 
-Inspect only the change-relevant evidence across these dimensions:
+Check only relevant invariants:
 
-1. Authority — correct owner and decision authority.
-2. Boundary — service/module/entry-point ownership and isolation.
-3. Contract — input/output, persistence, and compatibility semantics.
-4. Compatibility — existing callers, flags, fixtures, and migrations.
-5. Runtime — configuration, rollout, restart, and failure behavior.
-6. Evidence — targeted tests, persistence assertions, and reproducible proof.
+1. **Definition** — one canonical meaning; search existing contract/schema/concept before creating another business term.
+2. **Authority** — one owner for canonical identity, state, persistence, approval, and critical transformations.
+3. **Identity** — runtime/contract/prompt/schema/evaluator identity is explicit where comparison matters.
+4. **Parity** — equivalent paths reuse the same canonical implementation or prove executable parity. Documentation/intent is not parity.
+5. **Stable identity** — run-local rank/chunk/temporary refs never become cross-run identity.
+6. **Representation** — exact/canonical data owns provenance and identity; derived/model-facing forms must not redefine them.
+7. **Fallback** — no silent legacy fallback, compatibility alias, bypass, or state promotion may hide a contract break unless explicitly governed.
 
-Do not scan the whole repository unless the task explicitly requires it. Do
-not invoke this review after every edit, enlarge scope, refactor opportunistically,
-add architecture for “standards”, or speculate about future-proofing.
+Prefer shared canonical code over maintaining two implementations plus parity tests.
 
 ## Checkpoint protocol
 
-FAST CHECK (YELLOW/RED before implementation): identify the owner, affected
-boundary, contract impact, compatibility risk, required authorization, and the
-smallest validation set. For RED changes, establish a plan and explicit runtime
-or destructive-action gate before execution.
+Before YELLOW/RED work: identify the owner, affected invariant/boundary, smallest validation set, and any explicit authorization needed.
 
-COMPLETION CHECK (YELLOW/RED before handoff): confirm the owner still governs
-the behavior, no bypass or compatibility weakening was introduced, and the
-targeted evidence proves the changed boundary. For state-mutating invariants,
-require service behavior, a real entry-point negative control, and persistence
-assertion. RED changes additionally require the applicable pre-merge/runtime
-evidence and an explicit stop if it is absent.
+Before handoff: confirm authority remains singular, required parity holds, no hidden fallback/bypass was introduced, and targeted evidence reaches the changed boundary. Use the first failure boundary; fix one primary root cause at the owning layer, replay affected cases, and rerun only impacted layers. Passed layers stay frozen unless new evidence invalidates them.
 
 ## Boundaries
 
-The project `AGENTS.md`, architecture documents, ADRs, and explicit user
-authorization remain authoritative. This skill does not grant merge, push,
-deploy, external-provider, destructive database, or contract-change authority.
-If evidence conflicts or a required owner is unclear, stop and report the
-minimum decision needed.
+`AGENTS.md`, architecture/ADR/contracts, and explicit user authorization remain authoritative. This skill grants no commit/push/merge/deploy, external-provider, destructive DB, or contract-change authority. Do not enlarge scope, add architecture for standards, or refactor opportunistically.
 
-Superpowers (TDD, debugging, planning, and general review mechanics) remains
-the execution method when separately active; this skill only routes when
-governance checkpoints are required and does not duplicate those mechanics.
+Superpowers remains the execution method when separately active; this skill only decides when anti-drift governance is required.
